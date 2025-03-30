@@ -5,6 +5,25 @@
 //  Created by Helmut Fieres on 26.03.25.
 //
 
+// 52 bit virtual address: 20bit segment, 32 offset. => 4 Exabytes
+// 4Gb Segments, 1Mio Segments
+//
+
+// Assembler notes:
+//
+// opCode [ .<opt> ] Rr, <imm>
+// opCode [ .<opt> ] Rr, Ra
+// opCode [ .<opt> ] Rr, Ra, Rb
+// opCode [ .<opt> ] Rr, ( Rb )
+// opCode [ .<opt> ] Rr, <ofs> ( Rb )
+// opCode [ .<opt> ] Rr, Ra ( Rb )
+// opCode [ .<opt> ] Rr, <ofs>
+//
+// -> very few different formats
+
+// ( <instr1> : <instr2> )      -> parallel
+// ( <instr1> :: <instr2> )     -> serialized
+
 #include <iostream>
  
 typedef struct {
@@ -53,6 +72,73 @@ typedef union {
     uint64_t raw;
     
 } InstrBundle;
+
+// ??? larger than a 64 bit word... Lower portion should be the one that is set via
+// ITLB instruction.
+//
+typedef union {
+    
+    struct {
+        
+        uint64_t valid          : 1;
+        uint64_t dirty          : 1;
+        uint64_t refTrap        : 1;
+        uint64_t dRefTrap       : 1;
+        uint64_t protectCheck   : 1;
+        uint64_t accessRights   : 4;
+        uint64_t reserved       : 9;
+        uint64_t ppn            : 18;
+        uint64_t vpn            : 38;
+    };
+    
+    uint64_t raw;
+    
+} TlbEntry;
+
+// argument used in ITLB. Just barely fits.
+
+typedef union {
+    
+    struct {
+        
+        uint64_t refTrap        : 1;
+        uint64_t dRefTrap       : 1;
+        uint64_t protectCheck   : 1;
+        uint64_t accessRights   : 4;
+        uint64_t reserved       : 1;
+        uint64_t ppn            : 18;
+        uint64_t vpn            : 38;
+    };
+    
+    uint64_t raw;
+    
+} TlbInfo;
+
+// a two word structure, lots of speace left, still.
+typedef union {
+    
+    struct {
+        
+        // word 1
+        uint64_t valid          : 1;
+        uint64_t dirty          : 1;
+        uint64_t refTrap        : 1;
+        uint64_t dRefTrap       : 1;
+        uint64_t protectCheck   : 1;
+        uint64_t accessRights   : 4;
+        uint64_t vpn            : 38;
+        uint64_t reserved1      : 17;
+        
+        // word2
+        uint64_t resrved2       : 26;
+        uint64_t ppn            : 18;
+        uint64_t nextEntry      : 20;
+        
+    };
+    
+    uint64_t raw;
+    
+} PageTableEntry;
 
 
 InstrBundle testInstrBundle;
