@@ -47,7 +47,6 @@ typedef struct {
     
 } InstrFormatB;
 
-
 typedef union {
     
     uint32_t raw;
@@ -57,15 +56,17 @@ typedef union {
     
 } Instr;
 
-
+// ??? comiler allocates from right to left. So, I have to declare in that way...
+// ??? true on Widows too ?
+//
 typedef union {
 
     struct {
         
-        uint64_t        iTemplate   : 3;
-        uint64_t        iSerialize  : 1;
-        uint64_t        instr1      : 30;
         uint64_t        instr2      : 30;
+        uint64_t        instr1      : 30;
+        uint64_t        iSerialize  : 1;
+        uint64_t        iTemplate   : 3;
         
     } ib;
     
@@ -108,7 +109,7 @@ typedef union {
         uint64_t reserved       : 1;
         uint64_t ppn            : 18;
         uint64_t vpn            : 38;
-    };
+    } ib;
     
     uint64_t raw;
     
@@ -162,11 +163,12 @@ int main(int argc, const char * argv[]) {
     printf( "Sizeof Instruction word: %d\n", (int)sizeof( Instr ));
     printf( "Sizeof FormatA: %d\n", (int)sizeof( InstrFormatA ));
     
-    printf("Template: %u\n", (unsigned)testInstrBundle.ib.iTemplate);
-    printf("Serialize: %u\n", (unsigned)testInstrBundle.ib.iSerialize);
-    printf("Serialize: %u\n", (unsigned)testInstrBundle.ib.instr1);
-    printf("Serialize: %u\n", (unsigned)testInstrBundle.ib.instr2);
+    printf( "Hex: 0x%x\n", testInstrBundle.ib.iTemplate );
+    printf( "Hex: 0x%x\n", testInstrBundle.ib.iSerialize );
+    printf( "Hex: 0x%x\n", testInstrBundle.ib.instr1 );
+    printf( "Hex: 0x%x\n", testInstrBundle.ib.instr2 );
     
+    printf( "Hex: 0x%llx\n", testInstrBundle.raw );
     
     return 0;
 }
