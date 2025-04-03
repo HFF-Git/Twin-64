@@ -142,6 +142,190 @@ typedef union {
 } PageTableEntry;
 
 
+// ------- Basics
+
+uint64_t getBitField( uint64_t arg, int pos, int len ) {
+    
+    return ( 0 );
+}
+
+bool getBit ( uint64_t arg, int pos ) {
+    
+    return ( 0 );
+}
+
+void setBitField( uint64_t *target, uint64_t val, int pos, int len ) {
+    
+    
+}
+
+void setBit( uint64_t *target, uint64_t val, int pos ) {
+    
+    
+}
+
+
+// ----- Memory
+
+struct T64_PhysMem {
+    
+public:
+    
+    T64_PhysMem( uint64_t size );
+    
+    uint8_t     getMem8( uint64_t adr );
+    void        setMem8( uint64_t adr, uint8_t arg );
+    
+    uint32_t    getMem32( uint64_t adr );
+    void        setMem32( uint64_t adr, uint32_t arg );
+    
+    uint64_t    getMem64( uint64_t adr );
+    void        setMem64( uint64_t adr, uint64_t arg );
+    
+private:
+    
+    uint64_t    *mem; // to allocate....
+    
+};
+
+struct T64_IoMem {
+    
+public:
+    
+    T64_IoMem( );
+    
+    uint8_t     getMem8( uint64_t adr );
+    void        setMem8( uint64_t adr, uint8_t arg );
+    
+    uint32_t    getMem32( uint64_t adr );
+    void        setMem32( uint64_t adr, uint32_t arg );
+    
+    uint64_t    getMem64( uint64_t adr );
+    void        setMem64( uint64_t adr, uint64_t arg );
+    
+private:
+    
+    // how to structure this space...
+    
+};
+
+// ---- registers
+
+struct T64_Reg {
+    
+public:
+    
+    T64_Reg( );
+
+    uint64_t    get( )              { return( val ); }
+    void        put( uint64_t arg ) { val = arg ; }
+    void        reset( )            { val = 0;}
+    
+private:
+    
+    uint64_t val = 0;
+};
+
+
+// ??? do we need a cache ?
+
+struct T64_CacheEntry {
+    
+    
+};
+
+struct T64_Cache {
+    
+public:
+    
+    T64_Cache( T64_PhysMem *physMem );
+    
+    void        reset( );
+    
+    void        purgeCacheLine( uint64_t adr );
+    void        flushCacheLine( uint64_t adr );
+    
+    uint8_t     getMem8( uint64_t adr );
+    void        setMem8( uint64_t adr, uint8_t arg );
+    
+    uint32_t    getMem32( uint64_t adr );
+    void        setMem32( uint64_t adr, uint32_t arg );
+    
+    uint64_t    getMem64( uint64_t adr );
+    void        setMem64( uint64_t adr, uint64_t arg );
+    
+    void        getCacheLine( int index );
+   
+private:
+    
+    T64_PhysMem *mem;
+    
+};
+
+// ------ Tlb
+
+struct T64_Tlb_entry {
+    
+    
+};
+
+struct T64_Tlb {
+    
+public:
+    
+    T64_Tlb( );
+    
+    void        reset( );
+    void        lookupTlb( uint64_t adr, T64_Tlb_entry *entry );
+    
+    void        insertTlb( uint64_t adr, T64_Tlb_entry *entry );
+    void        purgeTlb( uint64_t adr, T64_Tlb_entry *entry );
+    
+    void        getTlbEntry( int index );
+    void        setTlbEntry( int index );
+    
+private:
+    
+    // maybe a bit more complex... set assiciateove ?
+    
+    T64_Tlb_entry *map;
+    
+};
+
+// ------- CPU
+
+struct T64_Cpu {
+    
+public:
+    
+    T64_Cpu( T64_PhysMem *mem, T64_IoMem *io );
+    
+    void        reset( );
+    
+    void        step( int count );
+    
+    uint64_t    getReg( );
+    void        setReg( );
+    
+    void        getTlbENtry( );
+    void        setTlbEntry( );
+    
+private:
+    
+    T64_Reg     cregs[ 16 ];
+    T64_Reg     gRegs[ 16 ];
+    T64_Reg     pDState;
+    
+    T64_PhysMem *mem    = nullptr;
+    T64_IoMem   *io     = nullptr;
+    T64_Tlb     *iTlb   = nullptr;
+    T64_Tlb     *dTlb   = nullptr;
+    
+};
+
+
+// ---------
+
 InstrBundle testInstrBundle;
 Instr       testInstr;
 
