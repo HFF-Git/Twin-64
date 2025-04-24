@@ -1,10 +1,30 @@
+//------------------------------------------------------------------------------------------------------------
 //
-//  main.cpp
-//  Twin-64 Emulator
+// Twin-64 - A 64-bit CPU - Sketch
 //
-//  Created by Helmut Fieres on 26.03.25.
+//------------------------------------------------------------------------------------------------------------
+// This module contains all of the mothods for the different windows that the simlulator supports. The
+// exception is the command window, which is in a separate file. A window generally consist of a banner line,
+// shown in inverse video and a nuber of body lines.
 //
+//------------------------------------------------------------------------------------------------------------
+//
+// Twin-64 - A 64-bit CPU - Sketch
+// Copyright (C) 2025 - 2025 Helmut Fieres
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation, either version 3 of the License,
+// or any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+// License for more details. You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//------------------------------------------------------------------------------------------------------------
 
+
+//
 // 52 bit virtual address: 20bit segment, 32 offset. => 4 Exabytes
 // 4Gb Segments, 1Mio Segments
 //
@@ -28,60 +48,133 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// ------- Constants -----------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+const   int     MAX_GREGS       = 16;
+const   int     MAX_CREGS       = 16;
+const   int     PAGE_SIZE       = 16 * 1024;
 
-const int MAX_GREGS     = 16;
-const int MAX_CREGS     = 16;
-const int PAGE_SIZE     = 16 * 1024;
+const   int64_t IO_MEM_START    = 0xF0000000;
+const   int64_t IO_MEM_LIMIT    = 0xFFFFFFFF;
 
-const uint64_t IO_MEM_START = 0xF0000000;
-const uint64_t IO_MEM_LIMIT = 0xFFFFFFFF;
-
-// ------- Traps
-
-enum TrapCode : uint16_t {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+enum TrapCode : int {
     
     NO_TRAP             = 0,
     PHYS_MEM_ADR_TRAP   = 1,
     IO_MEM_ADR_TRAP     = 2,
-    MEM_ADR_ALIGN_TRAP  = 3
+    MEM_ADR_ALIGN_TRAP  = 3,
+    OVERFLOW_TRAP       = 4,
+   
     
 };
 
-// ------- Basics ----------------------------------------------------------------------------------------
-
-static inline bool isAligned( uint64_t adr, uint8_t align ) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+enum OpCodes : int {
     
-    return (( adr & (align -1 )) == 0 );
+    OP_GRP_ALU      = 0x00,
+    OP_GRP_MEM      = 0x10,
+    OP_GRP_BR       = 0x20,
+    OP_GRP_SYS      = 0x30,
+    
+    OP_ALU_NOP      = OP_GRP_ALU | 0x00,
+    OP_ALU_AND      = OP_GRP_ALU | 0x01,
+    OP_ALU_OR       = OP_GRP_ALU | 0x02,
+    OP_ALU_XOR      = OP_GRP_ALU | 0x03,
+    OP_ALU_ADD      = OP_GRP_ALU | 0x04,
+    OP_ALU_SUB      = OP_GRP_ALU | 0x05,
+    OP_ALU_CMP      = OP_GRP_ALU | 0x06,
+    OP_ALU_EXTR     = OP_GRP_ALU | 0x07,
+    OP_ALU_DEP      = OP_GRP_ALU | 0x08,
+    OP_ALU_DSR      = OP_GRP_ALU | 0x09,
+    OP_ALU_CHK      = OP_GRP_ALU | 0x0A,
+    
+    OP_MEM_LD       = OP_GRP_MEM | 0x00,
+    OP_MEM_ST       = OP_GRP_MEM | 0x01,
+    OP_MEM_LDR      = OP_GRP_MEM | 0x02,
+    OP_MEM_STC      = OP_GRP_MEM | 0x03,
+    OP_MEM_AND      = OP_GRP_MEM | 0x04,
+    OP_MEM_OR       = OP_GRP_MEM | 0x05,
+    OP_MEM_XOR      = OP_GRP_MEM | 0x06,
+    OP_MEM_ADD      = OP_GRP_MEM | 0x07,
+    OP_MEM_SUB      = OP_GRP_MEM | 0x08,
+    OP_MEM_CMP      = OP_GRP_MEM | 0x09,
+    
+    OP_BR_LDI       = OP_GRP_BR  | 0x00,
+    OP_BR_ADDIL     = OP_GRP_BR  | 0x01,
+    OP_BR_LDO       = OP_GRP_BR  | 0x02,
+    OP_BR_B         = OP_GRP_BR  | 0x03,
+    OP_BR_GATE      = OP_GRP_BR  | 0x04,
+    OP_BR_BR        = OP_GRP_BR  | 0x05,
+    OP_BR_BV        = OP_GRP_BR  | 0x06,
+    OP_BR_CBR       = OP_GRP_BR  | 0x07,
+    OP_BR_TBR       = OP_GRP_BR  | 0x08,
+    OP_BR_MBR       = OP_GRP_BR  | 0x09,
+    
+    OP_SYS_MR       = OP_GRP_SYS | 0x00,
+    OP_SYS_MST      = OP_GRP_SYS | 0x01,
+    OP_SYS_LPA      = OP_GRP_SYS | 0x02,
+    OP_SYS_PRB      = OP_GRP_SYS | 0x03,
+    OP_SYS_ITLB     = OP_GRP_SYS | 0x04,
+    OP_SYS_DTLB     = OP_GRP_SYS | 0x05,
+    OP_SYS_PCA      = OP_GRP_SYS | 0x06,
+    OP_SYS_DIAG     = OP_GRP_SYS | 0x07,
+    OP_SYS_BRK      = OP_GRP_SYS | 0x08,
+    OP_SYS_RFI      = OP_GRP_SYS | 0x09,
+};
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// Basics
+//
+//************************************************************************************************************
+//************************************************************************************************************
+static inline bool isAligned( int64_t adr, int align ) {
+    
+    return (( adr & ( align - 1 )) == 0 );
 }
 
-static inline bool isInRange( uint64_t adr, uint64_t low, uint64_t high ) {
+static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
     
     return(( adr >= low ) && ( adr <= high ));
 }
 
-static inline uint64_t extractBit( uint64_t arg, int bitpos ) {
+static inline int64_t extractBit( int64_t arg, int bitpos ) {
     
     return ( arg >> bitpos ) & 1;
 }
 
-static inline uint64_t extractField( uint64_t arg, int bitpos, int len) {
+static inline int64_t extractField( int64_t arg, int bitpos, int len) {
     
-    return ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-static inline int64_t extractSignedField( uint64_t arg, int bitpos, int len ) {
+static inline int64_t extractSignedField( int64_t arg, int bitpos, int len ) {
     
-    uint64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    int64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
-    if ( len < 64 )  return (int64_t) ( field << ( 64 - len )) >> ( 64 - len );
-    else                return (int64_t) field;
+    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
+    else             return ( field );
     
 }
 
-static inline uint64_t depositField(uint64_t word, int bitpos, int len, uint64_t value) {
+static inline int64_t depositField( int64_t word, int bitpos, int len, int64_t value) {
     
-    uint64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
+    int64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
     return ( word & ~mask ) | (( value << bitpos ) & mask );
 }
 
@@ -110,16 +203,26 @@ bool willShiftLftOverflow( int64_t a, int shift ) {
     return (( a > max ) || ( a < min ));
 }
 
-// ----- Traps ------------------------------------------------------------------------------------------------
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// Basics
+//
+//************************************************************************************************************
+//************************************************************************************************************
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64Trap {
     
 public:
-
-    T64Trap( uint16_t trapCode,
-             uint64_t trapInfo1 = 0,
-             uint64_t trapInfo2 = 0,
-             uint64_t trapInfo3 = 0 ) {
+    
+    T64Trap( int    trapCode,
+             int    trapInfo1 = 0,
+             int    trapInfo2 = 0,
+             int    trapInfo3 = 0 ) {
         
         this -> trapCode  = trapCode;
         this -> trapInfo1 = trapInfo1;
@@ -129,132 +232,91 @@ public:
     
 private:
     
-    uint16_t trapCode;
-    uint64_t trapInfo1;
-    uint64_t trapInfo2;
-    uint64_t trapInfo3;
+    int trapCode;
+    int trapInfo1;
+    int trapInfo2;
+    int trapInfo3;
 };
 
-// ----- Memory ----------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64PhysMem {
     
 public:
     
     T64PhysMem( uint64_t size );
     
-    uint8_t     getMem8( uint64_t adr );
-    void        setMem8( uint64_t adr, uint8_t arg );
+    void        reset( );
     
-    uint16_t    getMem16( uint64_t adr );
-    void        setMem16( uint64_t adr, uint16_t arg );
+    int8_t      getMem8( int64_t adr );
+    void        setMem8( int64_t adr, int8_t arg );
     
-    uint32_t    getMem32( uint64_t adr );
-    void        setMem32( uint64_t adr, uint32_t arg );
+    int16_t     getMem16( int64_t adr );
+    void        setMem16( int64_t adr, int16_t arg );
     
-    uint64_t    getMem64( uint64_t adr );
-    void        setMem64( uint64_t adr, uint64_t arg );
+    int32_t     getMem32( int64_t adr );
+    void        setMem32( int64_t adr, int32_t arg );
+    
+    int64_t     getMem64( int64_t adr );
+    void        setMem64( int64_t adr, int64_t arg );
     
 private:
     
-    uint64_t    size = 0;
-    uint64_t    *mem = nullptr;
+    int64_t    size = 0;
+    uint8_t    *mem = nullptr;
     
 };
 
-// ----- IO memory ----------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64IoMem {
     
 public:
     
-    T64IoMem( uint64_t size );
+    T64IoMem( int64_t size );
     
-    uint8_t     getMem8( uint64_t adr );
-    void        setMem8( uint64_t adr, uint8_t arg );
+    void        reset( );
     
-    uint16_t    getMem16( uint64_t adr );
-    void        setMem16( uint64_t adr, uint16_t arg );
+    int8_t      getMem8( int64_t adr );
+    void        setMem8( int64_t adr, int8_t arg );
     
-    uint32_t    getMem32( uint64_t adr );
-    void        setMem32( uint64_t adr, uint32_t arg );
+    int16_t     getMem16( int64_t adr );
+    void        setMem16( int64_t adr, int16_t arg );
     
-    uint64_t    getMem64( uint64_t adr );
-    void        setMem64( uint64_t adr, uint64_t arg );
+    int32_t     getMem32( int64_t adr );
+    void        setMem32( int64_t adr, int32_t arg );
+    
+    int64_t     getMem64( int64_t adr );
+    void        setMem64( int64_t adr, int64_t arg );
     
 private:
     
-    uint64_t    size = 0;
+    int64_t    size = 0;
     
     // how to structure this space...
     
 };
 
-// ---- registers ------------------------------------------------------------------------------------------------
-
-struct T64Reg {
-    
-public:
-    
-    T64Reg( );
-    
-    uint64_t    get( )              { return( valOut ); }
-    void        put( uint64_t arg ) { valIn = arg ; }
-    void        reset( )            { valIn = 0; valOut = 0; }
-    void        tick( )             { valOut = valIn; }
-    
-private:
-    
-    int64_t     valIn  = 0;
-    int64_t     valOut = 0;
-};
-
-// ---- Caches -----------------------------------------------------------------------------------------------------
-// ??? do we need a cache ?
-
-struct T64_CacheEntry {
-    
-    
-};
-
-struct T64Cache {
-    
-public:
-    
-    T64Cache( T64PhysMem *physMem );
-    
-    void        reset( );
-    
-    void        purgeCacheLine( uint64_t adr );
-    void        flushCacheLine( uint64_t adr );
-    
-    uint8_t     getMem8( uint64_t adr );
-    void        setMem8( uint64_t adr, uint8_t arg );
-    
-    uint16_t    getMem16( uint64_t adr );
-    void        setMem16( uint64_t adr, uint16_t arg );
-    
-    uint32_t    getMem32( uint64_t adr );
-    void        setMem32( uint64_t adr, uint32_t arg );
-    
-    uint64_t    getMem64( uint64_t adr );
-    void        setMem64( uint64_t adr, uint64_t arg );
-    
-    void        getCacheLine( int index );
-    
-private:
-    
-    T64PhysMem *mem;
-    
-};
-
-// ------ Tlb --------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64TlbEntry {
     
+public:
     
+    T64TlbEntry( );
+    void            reset( );
 };
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64Tlb {
     
 public:
@@ -263,20 +325,23 @@ public:
     
     void            reset( );
     
-    void            lookupTlb( uint64_t adr, T64TlbEntry *entry );
-    void            purgeTlb( uint64_t adr, T64TlbEntry *entry );
+    void            lookupTlb( int64_t adr, T64TlbEntry *entry );
+    void            purgeTlb( int64_t adr, T64TlbEntry *entry );
     
     T64TlbEntry     *getTlbEntry( int index );
     void            setTlbEntry( int index, T64TlbEntry *entry );
     
 private:
     
-    T64TlbEntry *map; // allocate ...
+    int             size = 0;
+    T64TlbEntry     *map = nullptr;
     
 };
 
-// ------- CPU --------------------------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64Cpu {
     
 public:
@@ -289,13 +354,13 @@ public:
     void            step( int count );
     
     uint64_t        getGeneralReg( int index );
-    void            setGeneralReg( int index, uint64_t val );
+    void            setGeneralReg( int index, int64_t val );
     
     uint64_t        getControlReg( int index );
-    void            setControlReg( int index, uint64_t val );
+    void            setControlReg( int index, int64_t val );
     
     uint64_t        getPswReg( );
-    void            setPswReg( uint64_t val );
+    void            setPswReg( int64_t val );
     
     T64TlbEntry     *getTlbENtry( int index );
     void            setTlbEntry( int index );
@@ -306,15 +371,15 @@ private:
     void            executeInstr( );
     bool            accessCheck( );
     bool            protectionCheck( );
-    uint64_t        virtToPhys( uint64_t vAdr );
+    int64_t         virtToPhys( int64_t vAdr );
     void            updateState( );
     
 private:
     
-    T64Reg          cRegs[ MAX_CREGS ];
-    T64Reg          gRegs[ MAX_GREGS ];
-    T64Reg          psw;
-    T64Reg          instr;
+    int64_t         cRegs[ MAX_CREGS ];
+    int64_t         gRegs[ MAX_GREGS ];
+    int64_t         psw;
+    int64_t         instr;
     
     T64PhysMem      *mem    = nullptr;
     T64IoMem        *io     = nullptr;
@@ -324,46 +389,45 @@ private:
     
 };
 
-
-// ------- Methods --------------------------------------------------------------------------------------------------------
-
-T64Reg::T64Reg ( ) {
-    
-    valIn   = 0;
-    valOut  = 0;
-}
-
-// ------- Methods --------------------------------------------------------------------------------------------------------
-
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// Physical memory
+//
+//************************************************************************************************************
+//************************************************************************************************************
 T64PhysMem::T64PhysMem( uint64_t size ) {
     
+}
+
+void T64PhysMem::reset( ) {
     
 }
 
-uint8_t T64PhysMem::getMem8( uint64_t adr ) {
+int8_t T64PhysMem::getMem8( int64_t adr ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     return mem[ adr ];
 }
 
-void T64PhysMem::setMem8( uint64_t adr, uint8_t arg ) {
+void T64PhysMem::setMem8( int64_t adr, int8_t arg ) {
     
     if (adr >= size) throw T64Trap( PHYS_MEM_ADR_TRAP );
     mem[ adr ] = arg;
 }
 
-uint16_t T64PhysMem::getMem16( uint64_t adr ) {
+int16_t T64PhysMem::getMem16( int64_t adr ) {
     
-    if ( adr + 1 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+    if ( adr + 1 >= size )      throw T64Trap( PHYS_MEM_ADR_TRAP );
+    if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
     
-    uint16_t val = 0;
-    val |= (uint16_t) mem[ adr ] << 8;
-    val |= (uint16_t) mem[ adr + 1 ];
+    int16_t val = 0;
+    val |= (int16_t) mem[ adr ] << 8;
+    val |= (int16_t) mem[ adr + 1 ];
     return val;
 }
 
-void T64PhysMem::setMem16( uint64_t adr, uint16_t arg ) {
+void T64PhysMem::setMem16( int64_t adr, int16_t arg ) {
     
     if ( adr + 1 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -372,20 +436,20 @@ void T64PhysMem::setMem16( uint64_t adr, uint16_t arg ) {
     mem[ adr + 1 ]  = ( arg       ) & 0xFF;
 }
 
-uint32_t T64PhysMem::getMem32( uint64_t adr ) {
+int32_t T64PhysMem::getMem32( int64_t adr ) {
     
     if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     
-    uint32_t val = 0;
-    val |= (uint32_t) mem[ adr]     << 24;
-    val |= (uint32_t) mem[ adr + 1 ] << 16;
-    val |= (uint32_t) mem[ adr + 2 ] << 8;
-    val |= (uint32_t) mem[ adr + 3 ];
+    int32_t val = 0;
+    val |= (int32_t) mem[ adr]     << 24;
+    val |= (int32_t) mem[ adr + 1 ] << 16;
+    val |= (int32_t) mem[ adr + 2 ] << 8;
+    val |= (int32_t) mem[ adr + 3 ];
     return val;
 }
 
-void T64PhysMem::setMem32( uint64_t adr, uint32_t arg ) {
+void T64PhysMem::setMem32( int64_t adr, int32_t arg ) {
     
     if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -396,24 +460,24 @@ void T64PhysMem::setMem32( uint64_t adr, uint32_t arg ) {
     mem[ adr + 3 ] = ( arg       ) & 0xFF;
 }
 
-uint64_t T64PhysMem::getMem64( uint64_t adr ) {
+int64_t T64PhysMem::getMem64( int64_t adr ) {
     
     if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     
-    uint64_t val = 0;
-    val |= (uint64_t) mem[ adr ]     << 56;
-    val |= (uint64_t) mem[ adr + 1 ] << 48;
-    val |= (uint64_t) mem[ adr + 2 ] << 40;
-    val |= (uint64_t) mem[ adr + 3 ] << 32;
-    val |= (uint64_t) mem[ adr + 4 ] << 24;
-    val |= (uint64_t) mem[ adr + 5 ] << 16;
-    val |= (uint64_t) mem[ adr + 6 ] << 8;
-    val |= (uint64_t) mem[ adr + 7 ];
+    int64_t val = 0;
+    val |= (int64_t) mem[ adr ]     << 56;
+    val |= (int64_t) mem[ adr + 1 ] << 48;
+    val |= (int64_t) mem[ adr + 2 ] << 40;
+    val |= (int64_t) mem[ adr + 3 ] << 32;
+    val |= (int64_t) mem[ adr + 4 ] << 24;
+    val |= (int64_t) mem[ adr + 5 ] << 16;
+    val |= (int64_t) mem[ adr + 6 ] << 8;
+    val |= (int64_t) mem[ adr + 7 ];
     return val;
 }
 
-void T64PhysMem::setMem64( uint64_t adr, uint64_t arg ) {
+void T64PhysMem::setMem64( int64_t adr, int64_t arg ) {
     
     if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -428,75 +492,117 @@ void T64PhysMem::setMem64( uint64_t adr, uint64_t arg ) {
     mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
 }
 
-// ------- Methods --------------------------------------------------------------------------------------------------------
-
-T64IoMem::T64IoMem( uint64_t size ) {
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// IO Memory
+//
+//************************************************************************************************************
+//************************************************************************************************************
+T64IoMem::T64IoMem( int64_t size ) {
     
 }
 
-uint8_t T64IoMem::getMem8( uint64_t adr ) {
+void T64IoMem::reset( ) {
+    
+}
+
+int8_t T64IoMem::getMem8( int64_t adr ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     return 0;
 }
 
-void T64IoMem::setMem8( uint64_t adr, uint8_t arg ) {
+void T64IoMem::setMem8( int64_t adr, int8_t arg ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
 }
 
-uint16_t T64IoMem::getMem16( uint64_t adr ) {
+int16_t T64IoMem::getMem16( int64_t adr ) {
     
     if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     return 0;
 }
 
-void T64IoMem::setMem16( uint64_t adr, uint16_t arg ) {
+void T64IoMem::setMem16( int64_t adr, int16_t arg ) {
     
     if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
 
-uint32_t T64IoMem::getMem32( uint64_t adr ) {
+int32_t T64IoMem::getMem32( int64_t adr ) {
     
     if ( ! isInRange( adr + 3, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     return 0;
 }
 
-void T64IoMem::setMem32( uint64_t adr, uint32_t arg ) {
+void T64IoMem::setMem32( int64_t adr, int32_t arg ) {
     
     if ( ! isInRange( adr + 3, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
 
-uint64_t T64IoMem::getMem64( uint64_t adr ) {
+int64_t T64IoMem::getMem64( int64_t adr ) {
     
     if ( ! isInRange( adr + 7, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     return 0;
 }
 
-void T64IoMem::setMem64( uint64_t adr, uint64_t arg ) {
+void T64IoMem::setMem64( int64_t adr, int64_t arg ) {
     
     if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
 
-// ------- Methods --------------------------------------------------------------------------------------------------------
-
-T64Tlb::T64Tlb( ) {
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// TLB Entry
+//
+//************************************************************************************************************
+//************************************************************************************************************
+T64TlbEntry::T64TlbEntry( ) {
     
+}
+
+void T64TlbEntry::reset( ) {
+    
+}
+
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// TLB
+//
+//************************************************************************************************************
+//************************************************************************************************************
+T64Tlb::T64Tlb( ) {
     
 }
 
 void T64Tlb::reset( ) {
     
+    for ( uint32_t i = 0; i < size; i++ ) {
+        
+        map[ i ].reset( );
+    }
 }
 
-// ------- Methods --------------------------------------------------------------------------------------------------------
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// CPU
+//
+//************************************************************************************************************
+//************************************************************************************************************
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 T64Cpu::T64Cpu( T64PhysMem *mem, T64IoMem *io, T64Tlb *tlb ) {
     
     this -> mem = mem;
@@ -506,35 +612,102 @@ T64Cpu::T64Cpu( T64PhysMem *mem, T64IoMem *io, T64Tlb *tlb ) {
     reset( );
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Cpu::reset( ) {
     
-    for ( int i = 0; i < MAX_CREGS; i++ ) cRegs[ i ].reset( );
-    for ( int i = 0; i < MAX_GREGS; i++ ) gRegs[ i ].reset( );
-    psw.reset( );
-    instr.reset( );
+    for ( int i = 0; i < MAX_CREGS; i++ ) cRegs[ i ] = 0;
+    for ( int i = 0; i < MAX_GREGS; i++ ) gRegs[ i ] = 0;
+    psw     = 0;
+    instr   = 0;
     
     tlb -> reset( );
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint64_t T64Cpu::getGeneralReg( int index ) {
+    
+    if ( index == 0 )   return( 0 );
+    else                return( gRegs[ index % MAX_GREGS ] );
+}
+
+void T64Cpu::setGeneralReg( int index, int64_t val ) {
+    
+    if ( index != 0 ) gRegs[ index % MAX_GREGS ] = val;
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint64_t T64Cpu::getControlReg( int index ) {
+    
+    return( cRegs[ index % MAX_CREGS ] );
+}
+
+void T64Cpu::setControlReg( int index, int64_t val ) {
+    
+    cRegs[ index % MAX_CREGS ] = val;
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint64_t T64Cpu::getPswReg( ) {
+    
+    return( psw );
+}
+
+void T64Cpu::setPswReg( int64_t val ) {
+    
+    psw = val;
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 bool T64Cpu::accessCheck( ) {
     
     return ( true );
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 bool T64Cpu::protectionCheck( ) {
     
     return ( true );
 }
 
-uint64_t T64Cpu::virtToPhys( uint64_t vAdr ) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+int64_t T64Cpu::virtToPhys( int64_t vAdr ) {
     
     return ( 0 );
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Cpu::updateState( ) {
     
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Cpu::fetchInstr ( ) {
     
     try {
@@ -544,7 +717,7 @@ void T64Cpu::fetchInstr ( ) {
         // protection check
         
         // set instr
-    
+        
     }
     catch ( const T64Trap t ) {
         
@@ -553,14 +726,262 @@ void T64Cpu::fetchInstr ( ) {
     }
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Cpu::executeInstr( ) {
     
     try {
         
-        uint8_t opCode = 0;
+        int opCode      = (int) extractField( instr, 26, 6 );
+        int regRIndx    = (int) extractField( instr, 22, 4 );
+        int regBIndx    = (int) extractField( instr, 15, 4 );
+        int regAIndx    = (int) extractField( instr, 9, 4 );
         
         switch ( opCode ) {
                 
+            case OP_ALU_NOP: {
+                
+            } break;
+                
+            case OP_ALU_AND: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                if ( extractBit( instr, 20 ))   valA = ~ valA;
+                
+                int64_t valR = valB | valA;
+                
+                if ( extractBit( instr, 21 )) valR = ~ valR;
+                setGeneralReg( regRIndx, valR );
+                
+            } break;
+                
+            case OP_ALU_OR: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                int64_t valR = valB | valA;
+                
+                if ( extractBit( instr, 21 )) valR = ~ valR;
+                setGeneralReg( regRIndx, valR );
+                
+            } break;
+                
+            case OP_ALU_XOR: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                int64_t valR = valB ^ valA;
+                
+                if ( extractBit( instr, 21 )) valR = ~ valR;
+                setGeneralReg( regRIndx, valR );
+                
+            } break;
+                
+            case OP_ALU_ADD: {
+                
+                uint64_t valB = getGeneralReg( regBIndx );
+                uint64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                if ( ! willAddOverflow( valB, valA )) {
+                   
+                    int64_t valR = valB + valA;
+                    setGeneralReg( regRIndx, valR );
+                }
+                else throw T64Trap( OVERFLOW_TRAP );
+                
+            } break;
+                
+            case OP_ALU_SUB: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                if ( ! willSubOverflow( valB, valA )) {
+                    
+                    int64_t valR = valB - valA;
+                    setGeneralReg( regRIndx, valR );
+                }
+                else throw T64Trap( OVERFLOW_TRAP );
+                
+            } break;
+                
+            case OP_ALU_CMP: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                else                            valA = getGeneralReg( regAIndx );
+                
+                // ....
+                
+            } break;
+                
+            case OP_ALU_EXTR: {
+                
+            } break;
+                
+            case OP_ALU_DEP: {
+                
+            } break;
+                
+            case OP_ALU_DSR: {
+                
+            } break;
+                
+            case OP_ALU_CHK: {
+                
+            } break;
+                
+            case OP_MEM_LD: {
+                
+            } break;
+                
+            case OP_MEM_ST: {
+                
+            } break;
+                
+            case OP_MEM_LDR: {
+                
+            } break;
+                
+            case OP_MEM_STC: {
+                
+            } break;
+                
+            case OP_MEM_AND: {
+                
+                int64_t valB = getGeneralReg( regBIndx );
+                int64_t valA = 0;
+                
+                // ... now fetch the memory data...
+                
+                int64_t valR = 0;
+                
+            } break;
+                
+            case OP_MEM_OR: {
+                
+            } break;
+                
+            case OP_MEM_XOR: {
+                
+            } break;
+                
+            case OP_MEM_ADD: {
+                
+            } break;
+                
+            case OP_MEM_SUB: {
+                
+            } break;
+                
+            case OP_MEM_CMP: {
+                
+            } break;
+                
+            case OP_BR_LDI: {
+                
+            } break;
+                
+            case OP_BR_ADDIL: {
+                
+            } break;
+                
+            case OP_BR_LDO: {
+                
+            } break;
+                
+            case OP_BR_B: {
+                
+            } break;
+                
+            case OP_BR_GATE: {
+                
+            } break;
+                
+            case OP_BR_BR: {
+                
+            } break;
+                
+            case OP_BR_BV: {
+                
+            } break;
+                
+            case OP_BR_CBR: {
+                
+            } break;
+                
+            case OP_BR_TBR: {
+                
+            } break;
+                
+            case OP_BR_MBR: {
+                
+            } break;
+                
+            case OP_SYS_MR: {
+                
+            } break;
+                
+            case OP_SYS_MST: {
+                
+            } break;
+                
+            case OP_SYS_LPA: {
+                
+            } break;
+                
+            case OP_SYS_PRB: {
+                
+            } break;
+                
+            case OP_SYS_ITLB: {
+                
+            } break;
+                
+            case OP_SYS_DTLB: {
+                
+            } break;
+                
+            case OP_SYS_PCA: {
+                
+            } break;
+                
+            case OP_SYS_DIAG: {
+                
+            } break;
+                
+            case OP_SYS_BRK: {
+                
+            } break;
+                
+            case OP_SYS_RFI: {
+                
+            } break;
                 
             default: ;
         }
@@ -572,6 +993,10 @@ void T64Cpu::executeInstr( ) {
     }
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Cpu::step( ) {
     
     try {
@@ -585,9 +1010,30 @@ void T64Cpu::step( ) {
     }
 }
 
-// ------- Main --------------------------------------------------------------------------------------------------------
+//************************************************************************************************************
+//************************************************************************************************************
+//
+// Main
+//
+//************************************************************************************************************
+//************************************************************************************************************
 
-int main(int argc, const char * argv[]) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseParameters( int argc, const char * argv[] ) {
+    
+    
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+int main( int argc, const char * argv[] ) {
+    
+    parseParameters( argc, argv );
     
     T64PhysMem  *mem = new T64PhysMem( 2040 );
     T64IoMem    *io  = new T64IoMem( 2048 );
@@ -595,7 +1041,6 @@ int main(int argc, const char * argv[]) {
     T64Cpu      *cpu = new T64Cpu( mem, io, tlb );
     
     cpu -> reset( );
-    
     
     return 0;
 }
