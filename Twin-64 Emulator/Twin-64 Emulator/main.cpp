@@ -37,7 +37,7 @@
 // opCode [ .<opt> ] Rr, ( Rb )
 // opCode [ .<opt> ] Rr, <ofs> ( Rb )
 // opCode [ .<opt> ] Rr, Ra ( Rb )
-// opCode [ .<opt> ] <ofs> [, Rr ]
+// opCode [ .<opt> ] <target> [, Rr ]
 //
 // -> very few different formats
 //
@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -70,7 +71,6 @@ enum TrapCode : int {
     IO_MEM_ADR_TRAP     = 2,
     MEM_ADR_ALIGN_TRAP  = 3,
     OVERFLOW_TRAP       = 4,
-   
     
 };
 
@@ -78,7 +78,7 @@ enum TrapCode : int {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-enum OpCodes : int {
+enum OpCodes : uint8_t {
     
     OP_GRP_ALU      = 0x00,
     OP_GRP_MEM      = 0x10,
@@ -101,6 +101,7 @@ enum OpCodes : int {
     OP_MEM_ST       = OP_GRP_MEM | 0x01,
     OP_MEM_LDR      = OP_GRP_MEM | 0x02,
     OP_MEM_STC      = OP_GRP_MEM | 0x03,
+    
     OP_MEM_AND      = OP_GRP_MEM | 0x04,
     OP_MEM_OR       = OP_GRP_MEM | 0x05,
     OP_MEM_XOR      = OP_GRP_MEM | 0x06,
@@ -135,6 +136,91 @@ enum OpCodes : int {
 //
 //
 //------------------------------------------------------------------------------------------------------------
+const struct {
+    
+    uint8_t op;
+    char    name[ 6 ];
+    
+} opCodeTab[ ] = {
+    
+    { .op = OP_ALU_NOP,     .name = "NOP"   },
+    { .op = OP_ALU_AND,     .name = "AND"   },
+    { .op = OP_ALU_OR,      .name = "OR"    },
+    { .op = OP_ALU_XOR,     .name = "XOR"   },
+    { .op = OP_ALU_ADD,     .name = "ADD"   },
+    { .op = OP_ALU_SUB,     .name = "SUB"   },
+    { .op = OP_ALU_CMP,     .name = "CMP"   },
+    { .op = OP_ALU_EXTR,    .name = "EXTR"  },
+    { .op = OP_ALU_DEP,     .name = "DEP"   },
+    { .op = OP_ALU_DSR,     .name = "DSR"   },
+    { .op = OP_ALU_CHK,     .name = "CHK"   },
+    
+    { .op = OP_MEM_LD,      .name = "LD"    },
+    { .op = OP_MEM_ST,      .name = "ST"    },
+    { .op = OP_MEM_LDR,     .name = "LDR"   },
+    { .op = OP_MEM_STC,     .name = "STC"   },
+    
+    { .op = OP_MEM_AND,     .name = "AND"   },
+    { .op = OP_MEM_OR,      .name = "OR"    },
+    { .op = OP_MEM_XOR,     .name = "XOR"   },
+    { .op = OP_MEM_ADD,     .name = "ADD"   },
+    { .op = OP_MEM_SUB,     .name = "SUB"   },
+    { .op = OP_MEM_CMP,     .name = "CMP"   },
+    
+    { .op = OP_BR_LDI,      .name = "LDI"   },
+    { .op = OP_BR_ADDIL,    .name = "ADDIL" },
+    { .op = OP_BR_LDO,      .name = "LDO"   },
+    { .op = OP_BR_B,        .name = "B"     },
+    { .op = OP_BR_GATE ,    .name = "GATE"  },
+    { .op = OP_BR_BR,       .name = "BR"    },
+    { .op = OP_BR_BV,       .name = "BV"    },
+    { .op = OP_BR_CBR,      .name = "CBR"   },
+    { .op = OP_BR_TBR,      .name = "TBR"   },
+    { .op = OP_BR_MBR,      .name = "MBR"   },
+    
+    { .op = OP_SYS_MR,      .name = "MR"    },
+    { .op = OP_SYS_MST,     .name = "MST"   },
+    { .op = OP_SYS_LPA,     .name = "LPA"   },
+    { .op = OP_SYS_PRB,     .name = "PRB"   },
+    { .op = OP_SYS_ITLB,    .name = "ITLB"  },
+    { .op = OP_SYS_DTLB,    .name = "DTLB"  },
+    { .op = OP_SYS_PCA,     .name = "PCA"   },
+    { .op = OP_SYS_DIAG,    .name = "DIAG"  },
+    { .op = OP_SYS_BRK,     .name = "BRK"   },
+    { .op = OP_SYS_RFI,     .name = "RFI"   }
+};
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+const char *opCodeToStr( uint8_t opCode ) {
+    
+    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
+    
+    for ( int i = 0; i < entries; i++ ) {
+        
+        if ( opCodeTab[ i ].op == opCode ) return((char *) &opCodeTab[ i ].name );
+    }
+                                                  
+    return((char*) &"***" );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint8_t strToOpCode( char *opStr ) {
+    
+    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
+    
+    for ( int i = 0; i < entries; i++ ) {
+       
+        if ( strcmp( opStr, opCodeTab[ i ].name ) == 0 ) return ( opCodeTab[ i ].op );
+    }
+                                                  
+    return( 0 );
+}
 
 //************************************************************************************************************
 //************************************************************************************************************
@@ -305,6 +391,28 @@ private:
 //
 //
 //------------------------------------------------------------------------------------------------------------
+struct T64CacheLine {
+    
+public:
+    
+};
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+struct T64Cache {
+    
+public:
+    
+private:
+    
+};
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 struct T64TlbEntry {
     
 public:
@@ -376,10 +484,11 @@ private:
     
 private:
     
-    int64_t         cRegs[ MAX_CREGS ];
-    int64_t         gRegs[ MAX_GREGS ];
-    int64_t         psw;
-    int64_t         instr;
+    int64_t         ctlRegFile[ MAX_CREGS ];
+    int64_t         genRegFile[ MAX_GREGS ];
+    int64_t         pswReg;
+    int64_t         instrReg;
+    int64_t         resvReg;
     
     T64PhysMem      *mem    = nullptr;
     T64IoMem        *io     = nullptr;
@@ -618,10 +727,11 @@ T64Cpu::T64Cpu( T64PhysMem *mem, T64IoMem *io, T64Tlb *tlb ) {
 //------------------------------------------------------------------------------------------------------------
 void T64Cpu::reset( ) {
     
-    for ( int i = 0; i < MAX_CREGS; i++ ) cRegs[ i ] = 0;
-    for ( int i = 0; i < MAX_GREGS; i++ ) gRegs[ i ] = 0;
-    psw     = 0;
-    instr   = 0;
+    for ( int i = 0; i < MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
+    for ( int i = 0; i < MAX_GREGS; i++ ) genRegFile[ i ] = 0;
+    pswReg     = 0;
+    instrReg   = 0;
+    resvReg    = 0;
     
     tlb -> reset( );
 }
@@ -633,12 +743,12 @@ void T64Cpu::reset( ) {
 uint64_t T64Cpu::getGeneralReg( int index ) {
     
     if ( index == 0 )   return( 0 );
-    else                return( gRegs[ index % MAX_GREGS ] );
+    else                return( genRegFile[ index % MAX_GREGS ] );
 }
 
 void T64Cpu::setGeneralReg( int index, int64_t val ) {
     
-    if ( index != 0 ) gRegs[ index % MAX_GREGS ] = val;
+    if ( index != 0 ) genRegFile[ index % MAX_GREGS ] = val;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -647,12 +757,12 @@ void T64Cpu::setGeneralReg( int index, int64_t val ) {
 //------------------------------------------------------------------------------------------------------------
 uint64_t T64Cpu::getControlReg( int index ) {
     
-    return( cRegs[ index % MAX_CREGS ] );
+    return( ctlRegFile[ index % MAX_CREGS ] );
 }
 
 void T64Cpu::setControlReg( int index, int64_t val ) {
     
-    cRegs[ index % MAX_CREGS ] = val;
+    ctlRegFile[ index % MAX_CREGS ] = val;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -661,12 +771,12 @@ void T64Cpu::setControlReg( int index, int64_t val ) {
 //------------------------------------------------------------------------------------------------------------
 uint64_t T64Cpu::getPswReg( ) {
     
-    return( psw );
+    return( pswReg );
 }
 
 void T64Cpu::setPswReg( int64_t val ) {
     
-    psw = val;
+    pswReg = val;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -736,10 +846,10 @@ void T64Cpu::executeInstr( ) {
     
     try {
         
-        int opCode      = (int) extractField( instr, 26, 6 );
-        int regRIndx    = (int) extractField( instr, 22, 4 );
-        int regBIndx    = (int) extractField( instr, 15, 4 );
-        int regAIndx    = (int) extractField( instr, 9, 4 );
+        int opCode      = (int) extractField( instrReg, 26, 6 );
+        int regRIndx    = (int) extractField( instrReg, 22, 4 );
+        int regBIndx    = (int) extractField( instrReg, 15, 4 );
+        int regAIndx    = (int) extractField( instrReg, 9, 4 );
         
         switch ( opCode ) {
                 
@@ -752,14 +862,14 @@ void T64Cpu::executeInstr( ) {
                 int64_t valB = getGeneralReg( regBIndx );
                 int64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
-                if ( extractBit( instr, 20 ))   valA = ~ valA;
+                if ( extractBit( instrReg, 20 ))   valA = ~ valA;
                 
                 int64_t valR = valB | valA;
                 
-                if ( extractBit( instr, 21 )) valR = ~ valR;
+                if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
             } break;
@@ -769,12 +879,12 @@ void T64Cpu::executeInstr( ) {
                 int64_t valB = getGeneralReg( regBIndx );
                 int64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
                 int64_t valR = valB | valA;
                 
-                if ( extractBit( instr, 21 )) valR = ~ valR;
+                if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
             } break;
@@ -784,12 +894,12 @@ void T64Cpu::executeInstr( ) {
                 int64_t valB = getGeneralReg( regBIndx );
                 int64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
                 int64_t valR = valB ^ valA;
                 
-                if ( extractBit( instr, 21 )) valR = ~ valR;
+                if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
             } break;
@@ -799,7 +909,7 @@ void T64Cpu::executeInstr( ) {
                 uint64_t valB = getGeneralReg( regBIndx );
                 uint64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
                 if ( ! willAddOverflow( valB, valA )) {
@@ -816,7 +926,7 @@ void T64Cpu::executeInstr( ) {
                 int64_t valB = getGeneralReg( regBIndx );
                 int64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
                 if ( ! willSubOverflow( valB, valA )) {
@@ -833,7 +943,7 @@ void T64Cpu::executeInstr( ) {
                 int64_t valB = getGeneralReg( regBIndx );
                 int64_t valA = 0;
                 
-                if ( extractBit( instr, 19 ))   valA = extractSignedField( instr, 0, 19 );
+                if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
                 // ....
@@ -866,9 +976,15 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_MEM_LDR: {
                 
+                // translate address
+                // set reserved Reg: bit 63 -> true, rest physical address ( of cache line ? )
+                
             } break;
                 
             case OP_MEM_STC: {
+                
+                // translatre address
+                // check resvered flag. if set store val, reset reserved reg. return 0. else return 1.
                 
             } break;
                 
@@ -1041,6 +1157,10 @@ int main( int argc, const char * argv[] ) {
     T64Cpu      *cpu = new T64Cpu( mem, io, tlb );
     
     cpu -> reset( );
+    
+    printf( "OP: %s\n", opCodeToStr( OP_ALU_CMP ));
+    
+    printf( "OP: 0x%x\n", strToOpCode(( char*) "OR" ));
     
     return 0;
 }
