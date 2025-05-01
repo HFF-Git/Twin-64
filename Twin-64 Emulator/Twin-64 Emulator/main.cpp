@@ -44,6 +44,7 @@
 // ( <instr1> : <instr2> )      -> parallel
 // ( <instr1> :: <instr2> )     -> serialized
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -190,38 +191,6 @@ const struct {
     { .op = OP_SYS_RFI,     .name = "RFI"   }
 };
 
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-const char *opCodeToStr( uint8_t opCode ) {
-    
-    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
-    
-    for ( int i = 0; i < entries; i++ ) {
-        
-        if ( opCodeTab[ i ].op == opCode ) return((char *) &opCodeTab[ i ].name );
-    }
-                                                  
-    return((char*) &"***" );
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-uint8_t strToOpCode( char *opStr ) {
-    
-    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
-    
-    for ( int i = 0; i < entries; i++ ) {
-       
-        if ( strcmp( opStr, opCodeTab[ i ].name ) == 0 ) return ( opCodeTab[ i ].op );
-    }
-                                                  
-    return( 0 );
-}
-
 //************************************************************************************************************
 //************************************************************************************************************
 //
@@ -237,6 +206,11 @@ static inline bool isAligned( int64_t adr, int align ) {
 static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
     
     return(( adr >= low ) && ( adr <= high ));
+}
+
+static inline int64_t roundup( uint64_t arg ) {
+    
+    return( arg ); // for now ...
 }
 
 static inline int64_t extractBit( int64_t arg, int bitpos ) {
@@ -289,6 +263,40 @@ bool willShiftLftOverflow( int64_t a, int shift ) {
     return (( a > max ) || ( a < min ));
 }
 
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+const char *opCodeToStr( uint8_t opCode ) {
+    
+    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
+    
+    for ( int i = 0; i < entries; i++ ) {
+        
+        if ( opCodeTab[ i ].op == opCode ) return((char *) &opCodeTab[ i ].name );
+    }
+                                                  
+    return((char*) &"***" );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint8_t strToOpCode( char *opStr ) {
+    
+    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
+    
+    for ( int i = 0; i < entries; i++ ) {
+       
+        if ( strcmp( opStr, opCodeTab[ i ].name ) == 0 ) return ( opCodeTab[ i ].op );
+    }
+                                                  
+    return( 0 );
+}
+
+
 //************************************************************************************************************
 //************************************************************************************************************
 //
@@ -332,10 +340,13 @@ struct T64PhysMem {
     
 public:
     
-    T64PhysMem( uint64_t size );
+    T64PhysMem( int64_t size );
     
     void        reset( );
-    
+    uint64_t    readMem( int64_t adr, int len, bool signExtend = false );
+    void        writeMem( int64_t adr, uint64_t arg, int len );
+   
+    // ??? goes away....
     int8_t      getMem8( int64_t adr );
     void        setMem8( int64_t adr, int8_t arg );
     
@@ -347,6 +358,8 @@ public:
     
     int64_t     getMem64( int64_t adr );
     void        setMem64( int64_t adr, int64_t arg );
+    
+   
     
 private:
     
@@ -366,18 +379,8 @@ public:
     T64IoMem( int64_t size );
     
     void        reset( );
-    
-    int8_t      getMem8( int64_t adr );
-    void        setMem8( int64_t adr, int8_t arg );
-    
-    int16_t     getMem16( int64_t adr );
-    void        setMem16( int64_t adr, int16_t arg );
-    
-    int32_t     getMem32( int64_t adr );
-    void        setMem32( int64_t adr, int32_t arg );
-    
-    int64_t     getMem64( int64_t adr );
-    void        setMem64( int64_t adr, int64_t arg );
+    uint64_t    readMem( int64_t adr, int len, bool signExtend = false );
+    void        writeMem( int64_t adr, uint64_t arg, int len );
     
 private:
     
@@ -389,29 +392,7 @@ private:
 
 //------------------------------------------------------------------------------------------------------------
 //
-//
-//------------------------------------------------------------------------------------------------------------
-struct T64CacheLine {
-    
-public:
-    
-};
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-struct T64Cache {
-    
-public:
-    
-private:
-    
-};
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
+// ??? how to best store the field data ?
 //------------------------------------------------------------------------------------------------------------
 struct T64TlbEntry {
     
@@ -419,6 +400,12 @@ public:
     
     T64TlbEntry( );
     void            reset( );
+ 
+    bool            valid;
+    uint8_t         accessId;
+    uint32_t        protectId;
+    int64_t         vAdr;
+    int64_t         pAdr;
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -433,8 +420,8 @@ public:
     
     void            reset( );
     
-    void            lookupTlb( int64_t adr, T64TlbEntry *entry );
-    void            purgeTlb( int64_t adr, T64TlbEntry *entry );
+    T64TlbEntry     *lookupTlb( int64_t vAdr );
+    void            purgeTlb( int64_t vAdr );
     
     T64TlbEntry     *getTlbEntry( int index );
     void            setTlbEntry( int index, T64TlbEntry *entry );
@@ -443,7 +430,6 @@ private:
     
     int             size = 0;
     T64TlbEntry     *map = nullptr;
-    
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -477,11 +463,10 @@ private:
     
     void            fetchInstr( );
     void            executeInstr( );
-    bool            accessCheck( );
-    bool            protectionCheck( );
-    int64_t         virtToPhys( int64_t vAdr );
-    void            updateState( );
-    
+    void            translateAdr( int64_t vAdr, int64_t *pAdr );
+    int64_t         dataRead( int64_t vAdr, int len  );
+    void            dataWrite( int64_t vAdr, int64_t val, int len );
+   
 private:
     
     int64_t         ctlRegFile[ MAX_CREGS ];
@@ -505,14 +490,128 @@ private:
 //
 //************************************************************************************************************
 //************************************************************************************************************
-T64PhysMem::T64PhysMem( uint64_t size ) {
-    
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+T64PhysMem::T64PhysMem( int64_t size ) {
+ 
+    this -> size = roundup( size );
+    this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
 }
 
 void T64PhysMem::reset( ) {
     
+    if ( mem != nullptr ) free( mem );
+    this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
+    
+    if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
+    
+    if ( len == 8 ) {
+        
+        uint64_t val= mem[ adr ];
+        if ( signExtend ) val = extractSignedField( val, 63, 8 );
+        return( val );
+    }
+    else if ( len == 16 ) {
+        
+        if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        uint64_t val = 0;
+        val |= (int16_t) mem[ adr ] << 8;
+        val |= (int16_t) mem[ adr + 1 ];
+        if ( signExtend ) val = extractSignedField( val, 63, 16 );
+        return( val );
+    }
+    else if ( len == 32 ) {
+        
+        if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        uint64_t val = 0;
+        val |= (int32_t) mem[ adr]     << 24;
+        val |= (int32_t) mem[ adr + 1 ] << 16;
+        val |= (int32_t) mem[ adr + 2 ] << 8;
+        val |= (int32_t) mem[ adr + 3 ];
+        if ( signExtend ) val = extractSignedField( val, 63, 32 );
+        return( val );
+        
+    }
+    else if ( len == 64 ) {
+        
+        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        int64_t val = 0;
+        val |= (int64_t) mem[ adr ]     << 56;
+        val |= (int64_t) mem[ adr + 1 ] << 48;
+        val |= (int64_t) mem[ adr + 2 ] << 40;
+        val |= (int64_t) mem[ adr + 3 ] << 32;
+        val |= (int64_t) mem[ adr + 4 ] << 24;
+        val |= (int64_t) mem[ adr + 5 ] << 16;
+        val |= (int64_t) mem[ adr + 6 ] << 8;
+        val |= (int64_t) mem[ adr + 7 ];
+        return ( val );
+    }
+    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void T64PhysMem::writeMem( int64_t adr, uint64_t arg, int len ) {
+    
+    if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
+    
+    if ( len == 8 ) {
+        
+        mem[ adr ] = arg & 0xFF;
+    }
+    else if ( len == 16 ) {
+        
+        if ( ! isAligned( adr, 2 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        mem[ adr ]      = ( arg >> 8  ) & 0xFF;
+        mem[ adr + 1 ]  = ( arg       ) & 0xFF;
+    }
+    else if ( len == 32 ) {
+        
+        if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        mem[ adr ]     = ( arg >> 24 ) & 0xFF;
+        mem[ adr + 1 ] = ( arg >> 16 ) & 0xFF;
+        mem[ adr + 2 ] = ( arg >> 8  ) & 0xFF;
+        mem[ adr + 3 ] = ( arg       ) & 0xFF;
+        
+    }
+    else if ( len == 64 ) {
+        
+        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+        mem[ adr]     = ( arg >> 56 ) & 0xFF;
+        mem[ adr + 1] = ( arg >> 48 ) & 0xFF;
+        mem[ adr + 2] = ( arg >> 40 ) & 0xFF;
+        mem[ adr + 3] = ( arg >> 32 ) & 0xFF;
+        mem[ adr + 4] = ( arg >> 24 ) & 0xFF;
+        mem[ adr + 5] = ( arg >> 16 ) & 0xFF;
+        mem[ adr + 6] = ( arg >> 8  ) & 0xFF;
+        mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
+    }
+    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+//
+// ??? may go away...
+//------------------------------------------------------------------------------------------------------------
 int8_t T64PhysMem::getMem8( int64_t adr ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
@@ -616,54 +715,63 @@ void T64IoMem::reset( ) {
     
 }
 
-int8_t T64IoMem::getMem8( int64_t adr ) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+uint64_t T64IoMem::readMem( int64_t adr, int len, bool signExtend ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    return 0;
+    
+    if ( len == 8 ) {
+        
+        return ( 0 );
+    }
+    else if ( len == 16 ) {
+        
+        if ( ! isAligned( adr, 2 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        return ( 0 );
+    }
+    else if ( len == 32 ) {
+        
+        if ( ! isAligned( adr, 3 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        return ( 0 );
+    }
+    else if ( len == 64 ) {
+
+        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        return ( 0 );
+    }
+    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
 
-void T64IoMem::setMem8( int64_t adr, int8_t arg ) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void T64IoMem::writeMem( int64_t adr, uint64_t arg, int len ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-}
-
-int16_t T64IoMem::getMem16( int64_t adr ) {
     
-    if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    return 0;
-}
+    if ( len == 8 ) {
+        
+    }
+    else if ( len == 16 ) {
+        
+        if ( ! isAligned( adr, 2 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+    }
+    else if ( len == 32 ) {
+        
+        if ( ! isAligned( adr, 3 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+       
+    }
+    else if ( len == 64 ) {
 
-void T64IoMem::setMem16( int64_t adr, int16_t arg ) {
-    
-    if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-}
-
-int32_t T64IoMem::getMem32( int64_t adr ) {
-    
-    if ( ! isInRange( adr + 3, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    return 0;
-}
-
-void T64IoMem::setMem32( int64_t adr, int32_t arg ) {
-    
-    if ( ! isInRange( adr + 3, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-}
-
-int64_t T64IoMem::getMem64( int64_t adr ) {
-    
-    if ( ! isInRange( adr + 7, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    return 0;
-}
-
-void T64IoMem::setMem64( int64_t adr, int64_t arg ) {
-    
-    if ( ! isInRange( adr + 1, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        
+    }
+    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
 
 //************************************************************************************************************
@@ -681,6 +789,8 @@ void T64TlbEntry::reset( ) {
     
 }
 
+
+
 //************************************************************************************************************
 //************************************************************************************************************
 //
@@ -692,13 +802,53 @@ T64Tlb::T64Tlb( ) {
     
 }
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void T64Tlb::reset( ) {
     
-    for ( uint32_t i = 0; i < size; i++ ) {
+    for ( int i = 0; i < size; i++ ) {
         
         map[ i ].reset( );
     }
 }
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+T64TlbEntry *T64Tlb::lookupTlb( int64_t vAdr ) {
+    
+    for ( int i = 0; i < size; i++ ) {
+        
+        T64TlbEntry *ptr = &map[ i ];
+        
+        if (( ptr -> valid ) && ( ptr -> vAdr == vAdr )) return( ptr );
+    }
+    
+    return( nullptr );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void T64Tlb::purgeTlb( int64_t vAdr ) {
+    
+    for ( int i = 0; i < size; i++ ) {
+        
+        T64TlbEntry *ptr = &map[ i ];
+        
+        if (( ptr -> valid ) && ( ptr -> vAdr == vAdr )) ptr -> valid = false;
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+
 
 //************************************************************************************************************
 //************************************************************************************************************
@@ -783,52 +933,84 @@ void T64Cpu::setPswReg( int64_t val ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-bool T64Cpu::accessCheck( ) {
+void T64Cpu::translateAdr( int64_t vAdr, int64_t *pAdr ) {
     
-    return ( true );
+    if ( extractField( vAdr, 32, 20 ) == 0 ) {  // physical address range ?
+        
+        if ( ! extractBit( pswReg, 0 )) { // privileged mode ?
+            
+            throw T64Trap( 0 ); // priv violation
+        }
+        
+        *pAdr = vAdr;
+    }
+    else {
+        
+        T64TlbEntry *tlbPtr = tlb -> lookupTlb( vAdr );
+        
+        if ( tlbPtr == nullptr ) {
+            
+            throw T64Trap( 0 ); // dara tlb trap
+        }
+        
+        // ??? access check .....
+        
+        // protection check ...
+        
+        if ( extractBit( pswReg, 0 )) {
+            
+            uint32_t pId = tlbPtr -> protectId;
+            
+            if ( ! (( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ) ||
+                    ( extractField( ctlRegFile[ 0 ], 0, 32 ) == pId ))) {
+                
+                throw T64Trap( 0 ); // dara protection trap
+            }
+        }
+        
+        // ??? what else to check ?
+        
+        *pAdr = tlbPtr -> pAdr;
+    }
 }
+
 
 //------------------------------------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------------------------------------
-bool T64Cpu::protectionCheck( ) {
-    
-    return ( true );
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-int64_t T64Cpu::virtToPhys( int64_t vAdr ) {
-    
-    return ( 0 );
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-void T64Cpu::updateState( ) {
-    
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-void T64Cpu::fetchInstr ( ) {
+int64_t T64Cpu::dataRead( int64_t vAdr, int len ) {
     
     try {
         
-        // lookup tlb
-        // access check
-        // protection check
+        int64_t pAdr = 0;
         
-        // set instr
-        
+        translateAdr( vAdr , &pAdr );
+        return ( mem -> readMem( pAdr, len ));
     }
+    catch ( const T64Trap t ) {
+        
+        // can do someting before reraising ....
+        throw;
+    }
+}
+
+void T64Cpu::dataWrite( int64_t vAdr, int64_t val, int len ) {
+    
+    try {
+        
+        int64_t pAdr = 0;
+        
+        translateAdr( vAdr , &pAdr );
+        mem -> writeMem( pAdr, val, len );
+    }
+    
     catch ( const T64Trap t ) {
         
         // can do someting before reraising ....
@@ -839,6 +1021,24 @@ void T64Cpu::fetchInstr ( ) {
 //------------------------------------------------------------------------------------------------------------
 //
 //
+//------------------------------------------------------------------------------------------------------------
+void T64Cpu::fetchInstr( ) {
+    
+    try {
+        
+        int64_t pAdr = 0;
+        
+        translateAdr( extractField( pswReg, 63, 52 ) , &pAdr );
+        instrReg = mem -> readMem( pAdr, 32 );
+    }
+    catch ( const T64Trap t ) {
+        
+        // can do someting before reraising ....
+        throw;
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------------------------------------
