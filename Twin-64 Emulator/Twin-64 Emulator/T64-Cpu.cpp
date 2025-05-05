@@ -554,10 +554,6 @@ void T64Cpu::executeInstr( ) {
                 
             } break;
                 
-            case OP_BR_GATE: {
-                
-            } break;
-                
             case OP_BR_BR: {
                 
             } break;

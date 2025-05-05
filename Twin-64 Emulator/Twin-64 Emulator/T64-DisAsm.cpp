@@ -142,6 +142,66 @@ uint8_t strToOpCode( char *opStr ) {
 
 
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+// Format hex with '_' every 4, 8, 12, or 16 digits, no "0x", left-padded with zeros if desired
+void format_hex64( int64_t value, char *buf, int digits = 16 ) {
+    
+    if ( digits < 1 ) digits    = 1;
+    if ( digits > 16 ) digits   = 16;
+    
+    int     shiftAmount     = 16 - digits;
+    int     tmpBufIndex     = 0;
+    char    tmpBuf[ 20 ];
+    
+    for ( int i = shiftAmount; i < 16; i++ ) {
+        
+        int digit = ( value >> ( i * 4 )) & 0xF;
+        tmpBuf[ tmpBufIndex++ ] = "0123456789abcdef"[ digit ];
+    }
+    
+    int out = 0;
+    
+    for ( int i = 0; i < tmpBufIndex; ++i) {
+        
+        if (( i > 0 ) && ( i % 4 == 0 )) buf[ out++ ] = '_';
+        buf[ out++ ] = tmpBuf[ i ];
+    }
+    
+    buf[ out ] = '\0';
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+// Format decimal with '_' every 3 digits (from right to left)
+void format_dec64( int64_t value, char *buf ) {
+    char temp[32]; // enough to hold 20-digit uint64 + separators
+    int len = 0;
+    
+    // Build reversed string with separators
+    do {
+        if (len > 0 && len % 3 == 0) {
+            temp[len++] = '_';
+        }
+        temp[len++] = '0' + (value % 10);
+        value /= 10;
+    } while (value > 0);
+    
+    // Reverse to get final string
+    for (int i = 0; i < len; ++i) {
+        buf[i] = temp[len - 1 - i];
+    }
+    buf[len] = '\0';
+}
+
+
+
+
+
 // ??? see what we keep...
 
 //------------------------------------------------------------------------------------------------------------
