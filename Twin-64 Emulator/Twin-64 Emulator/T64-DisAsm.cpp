@@ -33,6 +33,65 @@
 
 #include "T64-Types.h"
 
+
+/*
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+const struct {
+    
+    uint8_t op;
+    char    name[ 6 ];
+    
+} opCodeTab[ ] = {
+    
+    { .op = OP_ALU_NOP,     .name = "NOP"   },
+    { .op = OP_ALU_AND,     .name = "AND"   },
+    { .op = OP_ALU_OR,      .name = "OR"    },
+    { .op = OP_ALU_XOR,     .name = "XOR"   },
+    { .op = OP_ALU_ADD,     .name = "ADD"   },
+    { .op = OP_ALU_SUB,     .name = "SUB"   },
+    { .op = OP_ALU_CMP,     .name = "CMP"   },
+    { .op = OP_ALU_EXTR,    .name = "EXTR"  },
+    { .op = OP_ALU_DEP,     .name = "DEP"   },
+    { .op = OP_ALU_DSR,     .name = "DSR"   },
+    { .op = OP_ALU_CHK,     .name = "CHK"   },
+    
+    { .op = OP_MEM_LD,      .name = "LD"    },
+    { .op = OP_MEM_ST,      .name = "ST"    },
+    { .op = OP_MEM_LDR,     .name = "LDR"   },
+    { .op = OP_MEM_STC,     .name = "STC"   },
+    { .op = OP_MEM_AND,     .name = "AND"   },
+    { .op = OP_MEM_OR,      .name = "OR"    },
+    { .op = OP_MEM_XOR,     .name = "XOR"   },
+    { .op = OP_MEM_ADD,     .name = "ADD"   },
+    { .op = OP_MEM_SUB,     .name = "SUB"   },
+    { .op = OP_MEM_CMP,     .name = "CMP"   },
+    
+    { .op = OP_BR_LDI,      .name = "LDI"   },
+    { .op = OP_BR_ADDIL,    .name = "ADDIL" },
+    { .op = OP_BR_LDO,      .name = "LDO"   },
+    { .op = OP_BR_B,        .name = "B"     },
+    { .op = OP_BR_BR,       .name = "BR"    },
+    { .op = OP_BR_BV,       .name = "BV"    },
+    { .op = OP_BR_CBR,      .name = "CBR"   },
+    { .op = OP_BR_TBR,      .name = "TBR"   },
+    { .op = OP_BR_MBR,      .name = "MBR"   },
+    
+    { .op = OP_SYS_MR,      .name = "MR"    },
+    { .op = OP_SYS_MST,     .name = "MST"   },
+    { .op = OP_SYS_LPA,     .name = "LPA"   },
+    { .op = OP_SYS_PRB,     .name = "PRB"   },
+    { .op = OP_SYS_ITLB,    .name = "ITLB"  },
+    { .op = OP_SYS_DTLB,    .name = "DTLB"  },
+    { .op = OP_SYS_PCA,     .name = "PCA"   },
+    { .op = OP_SYS_DIAG,    .name = "DIAG"  },
+    { .op = OP_SYS_BRK,     .name = "BRK"   },
+    { .op = OP_SYS_RFI,     .name = "RFI"   }
+};
+*/
+
 //------------------------------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
 //

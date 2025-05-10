@@ -31,68 +31,68 @@
 //------------------------------------------------------------------------------------------------------------
 namespace {
     
-    static inline bool isAligned( int64_t adr, int align ) {
+    static inline bool isAligned( T64Word adr, int align ) {
         
         return (( adr & ( align - 1 )) == 0 );
     }
 
-    static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
+    static inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
         
         return (( adr >= low ) && ( adr <= high ));
     }
 
-    static inline int64_t roundup( uint64_t arg, int round ) {
+    static inline T64Word roundup( T64Word arg, int round ) {
         
         if ( round == 0 ) return ( arg );
         return ((( arg + round - 1 ) / round ) * round );
     }
 
-    static inline int64_t extractBit( int64_t arg, int bitpos ) {
+    static inline T64Word extractBit( T64Word arg, int bitpos ) {
         
         return ( arg >> bitpos ) & 1;
     }
 
-    static inline int64_t extractField( int64_t arg, int bitpos, int len) {
+    static inline T64Word extractField( T64Word arg, int bitpos, int len) {
         
         return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
     }
 
-    static inline int64_t extractSignedField( int64_t arg, int bitpos, int len ) {
+    static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
         
-        int64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+        T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
         
         if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
         else             return ( field );
         
     }
 
-    static inline int64_t depositField( int64_t word, int bitpos, int len, int64_t value) {
+    static inline T64Word depositField( T64Word word, int bitpos, int len, T64Word value) {
         
-        int64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
+        T64Word mask = (( 1ULL << len ) - 1 ) << bitpos;
         return ( word & ~mask ) | (( value << bitpos ) & mask );
     }
 
-    bool willAddOverflow( int64_t a, int64_t b ) {
+    bool willAddOverflow( T64Word a, T64Word b ) {
         
         if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
         if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
         return false;
     }
 
-    bool willSubOverflow( int64_t a, int64_t b ) {
+    bool willSubOverflow( T64Word a, T64Word b ) {
         
         if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
         if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
         return false;
     }
 
-    bool willShiftLftOverflow( int64_t a, int shift ) {
+    bool willShiftLftOverflow( T64Word a, int shift ) {
         
         if (( shift < 0 ) || ( shift >= 64 )) return true;
         if ( a == 0 ) return false;
         
-        int64_t max = INT64_MAX >> shift;
-        int64_t min = INT64_MIN >> shift;
+        T64Word max = INT64_MAX >> shift;
+        T64Word min = INT64_MIN >> shift;
         
         return (( a > max ) || ( a < min ));
     }
@@ -125,7 +125,7 @@ void T64Tlb::reset( ) {
     }
 }
 
-T64TlbEntry *T64Tlb::lookupTlb( int64_t vAdr ) {
+T64TlbEntry *T64Tlb::lookupTlb( T64Word vAdr ) {
     
     for ( int i = 0; i < size; i++ ) {
         
@@ -137,7 +137,7 @@ T64TlbEntry *T64Tlb::lookupTlb( int64_t vAdr ) {
     return( nullptr );
 }
 
-void T64Tlb::purgeTlb( int64_t vAdr ) {
+void T64Tlb::purgeTlb( T64Word vAdr ) {
     
     for ( int i = 0; i < size; i++ ) {
         
@@ -198,33 +198,33 @@ void T64Cpu::reset( ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-uint64_t T64Cpu::getGeneralReg( int index ) {
+T64Word T64Cpu::getGeneralReg( int index ) {
     
     if ( index == 0 )   return( 0 );
     else                return( genRegFile[ index % MAX_GREGS ] );
 }
 
-void T64Cpu::setGeneralReg( int index, int64_t val ) {
+void T64Cpu::setGeneralReg( int index, T64Word val ) {
     
     if ( index != 0 ) genRegFile[ index % MAX_GREGS ] = val;
 }
 
-uint64_t T64Cpu::getControlReg( int index ) {
+T64Word T64Cpu::getControlReg( int index ) {
     
     return( ctlRegFile[ index % MAX_CREGS ] );
 }
 
-void T64Cpu::setControlReg( int index, int64_t val ) {
+void T64Cpu::setControlReg( int index, T64Word val ) {
     
     ctlRegFile[ index % MAX_CREGS ] = val;
 }
 
-uint64_t T64Cpu::getPswReg( ) {
+T64Word T64Cpu::getPswReg( ) {
     
     return( pswReg );
 }
 
-void T64Cpu::setPswReg( int64_t val ) {
+void T64Cpu::setPswReg( T64Word val ) {
     
     pswReg = val;
 }
@@ -233,7 +233,7 @@ void T64Cpu::setPswReg( int64_t val ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-void T64Cpu::translateAdr( int64_t vAdr, int64_t *pAdr ) {
+void T64Cpu::translateAdr( T64Word vAdr, T64Word *pAdr ) {
     
     if ( extractField( vAdr, 32, 20 ) == 0 ) {  // physical address range ?
         
@@ -284,11 +284,11 @@ void T64Cpu::translateAdr( int64_t vAdr, int64_t *pAdr ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-int64_t T64Cpu::dataRead( int64_t vAdr, int len ) {
+T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
    
     try {
         
-        int64_t pAdr = 0;
+        T64Word pAdr = 0;
         
         translateAdr( vAdr , &pAdr );
         
@@ -308,13 +308,13 @@ int64_t T64Cpu::dataRead( int64_t vAdr, int len ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-void T64Cpu::dataWrite( int64_t vAdr, int64_t val, int len ) {
+void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
     
     // ??? How to distinguish between meem and io ?
     
     try {
         
-        int64_t pAdr = 0;
+        T64Word pAdr = 0;
         
         translateAdr( vAdr , &pAdr );
         
@@ -336,7 +336,7 @@ void T64Cpu::fetchInstr( ) {
     
     try {
         
-        int64_t pAdr = 0;
+        T64Word pAdr = 0;
         
         translateAdr( extractField( pswReg, 63, 52 ) , &pAdr );
         
@@ -373,15 +373,15 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_AND: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                               valA = getGeneralReg( regAIndx );
                 
                 if ( extractBit( instrReg, 20 ))   valA = ~ valA;
                 
-                int64_t valR = valB | valA;
+                T64Word valR = valB | valA;
                 if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
@@ -389,13 +389,13 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_OR: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                            valA = getGeneralReg( regAIndx );
                 
-                int64_t valR = valB | valA;
+                T64Word valR = valB | valA;
                 if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
@@ -403,13 +403,13 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_XOR: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                               valA = getGeneralReg( regAIndx );
                 
-                int64_t valR = valB ^ valA;
+                T64Word valR = valB ^ valA;
                 if ( extractBit( instrReg, 21 )) valR = ~ valR;
                 setGeneralReg( regRIndx, valR );
                 
@@ -417,8 +417,8 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_ADD: {
                 
-                uint64_t valB = getGeneralReg( regBIndx );
-                uint64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                               valA = getGeneralReg( regAIndx );
@@ -430,8 +430,8 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_SUB: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                               valA = getGeneralReg( regAIndx );
@@ -443,8 +443,8 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_CMP: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 if ( extractBit( instrReg, 19 ))   valA = extractSignedField( instrReg, 0, 19 );
                 else                               valA = getGeneralReg( regAIndx );
@@ -457,7 +457,7 @@ void T64Cpu::executeInstr( ) {
                 
                 int     pos  = 0;
                 int     len  = 0;
-                int64_t valB = getGeneralReg( regBIndx );
+                T64Word valB = getGeneralReg( regBIndx );
                 
                 // ??? check for amt ...
                 // ??? get signe extension bit ...
@@ -467,21 +467,21 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_ALU_DEP: {
                 
-                int64_t valA = getGeneralReg( regAIndx );
-                int64_t valB = getGeneralReg( regBIndx );
+                T64Word valA = getGeneralReg( regAIndx );
+                T64Word valB = getGeneralReg( regBIndx );
                 
             } break;
                 
             case OP_ALU_DSR: {
                 
-                int64_t valA = getGeneralReg( regAIndx );
-                int64_t valB = getGeneralReg( regBIndx );
+                T64Word valA = getGeneralReg( regAIndx );
+                T64Word valB = getGeneralReg( regBIndx );
                 
             } break;
                 
             case OP_ALU_CHK: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
+                T64Word valB = getGeneralReg( regBIndx );
                 
             } break;
                 
@@ -509,12 +509,12 @@ void T64Cpu::executeInstr( ) {
                 
             case OP_MEM_AND: {
                 
-                int64_t valB = getGeneralReg( regBIndx );
-                int64_t valA = 0;
+                T64Word valB = getGeneralReg( regBIndx );
+                T64Word valA = 0;
                 
                 // ... now fetch the memory data...
                 
-                int64_t valR = 0;
+                T64Word valR = 0;
                 
             } break;
                 
