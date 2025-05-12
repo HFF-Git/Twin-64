@@ -95,6 +95,10 @@ enum ErrId : uint16_t {
     ERR_EXPECTED_INSTR_OPT          = 409,
     ERR_INVALID_INSTR_OPT           = 410,
     ERR_INVALID_OP_CODE             = 411,
+    ERR_EXPECTED_GENERAL_REG        = 412,
+    ERR_IMM_VAL_RANGE               = 413,
+    ERR_EXPECTED_LOGICAL_ADR        = 414,
+    ERR_INVALID_INSTR_MODE          = 415,
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -175,9 +179,9 @@ enum TokId : uint16_t {
     // Synthetic OP Code Tokens.
     //
     //--------------------------------------------------------------------------------------------------------
-    OP_CODE_S_NOP           = 400,      OP_CODE_S_SHL           = 401,      OP_CODE_S_SHR           = 402,
-    OP_CODE_S_ASL           = 403,      OP_CODE_S_ASR           = 404,      OP_CODE_S_ROR           = 405,
-    OP_CODE_S_ROL           = 406,
+    OP_SHL                  = 401,      OP_SHR                  = 402,
+    OP_ASL                  = 403,      OP_ASR                  = 404,
+    OP_ROR                  = 405,      OP_ROL                  = 406,
     
     //--------------------------------------------------------------------------------------------------------
     // The last token ID. This ID is used to terminate a token table list.
@@ -218,22 +222,22 @@ const SimToken asmTokTab[ ] = {
     // General registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "R0",             .typ = TYP_GREG,            .tid = GR_0,                .val = 0        },
-    { .name = "R1",             .typ = TYP_GREG,            .tid = GR_1,                .val = 1        },
-    { .name = "R2",             .typ = TYP_GREG,            .tid = GR_2,                .val = 2        },
-    { .name = "R3",             .typ = TYP_GREG,            .tid = GR_3,                .val = 3        },
-    { .name = "R4",             .typ = TYP_GREG,            .tid = GR_4,                .val = 4        },
-    { .name = "R5",             .typ = TYP_GREG,            .tid = GR_5,                .val = 5        },
-    { .name = "R6",             .typ = TYP_GREG,            .tid = GR_6,                .val = 6        },
-    { .name = "R7",             .typ = TYP_GREG,            .tid = GR_7,                .val = 7        },
-    { .name = "R8",             .typ = TYP_GREG,            .tid = GR_8,                .val = 8        },
-    { .name = "R9",             .typ = TYP_GREG,            .tid = GR_9,                .val = 9        },
-    { .name = "R10",            .typ = TYP_GREG,            .tid = GR_10,               .val = 10       },
-    { .name = "R11",            .typ = TYP_GREG,            .tid = GR_11,               .val = 11       },
-    { .name = "R12",            .typ = TYP_GREG,            .tid = GR_12,               .val = 12       },
-    { .name = "R13",            .typ = TYP_GREG,            .tid = GR_13,               .val = 13       },
-    { .name = "R14",            .typ = TYP_GREG,            .tid = GR_14,               .val = 14       },
-    { .name = "R15",            .typ = TYP_GREG,            .tid = GR_15,               .val = 15       },
+    { .name = "R0",             .typ = TYP_GREG,            .tid = GR_0,                .val = 0            },
+    { .name = "R1",             .typ = TYP_GREG,            .tid = GR_1,                .val = 1            },
+    { .name = "R2",             .typ = TYP_GREG,            .tid = GR_2,                .val = 2            },
+    { .name = "R3",             .typ = TYP_GREG,            .tid = GR_3,                .val = 3            },
+    { .name = "R4",             .typ = TYP_GREG,            .tid = GR_4,                .val = 4            },
+    { .name = "R5",             .typ = TYP_GREG,            .tid = GR_5,                .val = 5            },
+    { .name = "R6",             .typ = TYP_GREG,            .tid = GR_6,                .val = 6            },
+    { .name = "R7",             .typ = TYP_GREG,            .tid = GR_7,                .val = 7            },
+    { .name = "R8",             .typ = TYP_GREG,            .tid = GR_8,                .val = 8            },
+    { .name = "R9",             .typ = TYP_GREG,            .tid = GR_9,                .val = 9            },
+    { .name = "R10",            .typ = TYP_GREG,            .tid = GR_10,               .val = 10           },
+    { .name = "R11",            .typ = TYP_GREG,            .tid = GR_11,               .val = 11           },
+    { .name = "R12",            .typ = TYP_GREG,            .tid = GR_12,               .val = 12           },
+    { .name = "R13",            .typ = TYP_GREG,            .tid = GR_13,               .val = 13           },
+    { .name = "R14",            .typ = TYP_GREG,            .tid = GR_14,               .val = 14           },
+    { .name = "R15",            .typ = TYP_GREG,            .tid = GR_15,               .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
     // Control registers.
@@ -260,27 +264,27 @@ const SimToken asmTokTab[ ] = {
     // Runtime architcture register names for general registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "T0",             .typ = TYP_GREG,            .tid = GR_1,                .val =  1       },
-    { .name = "T1",             .typ = TYP_GREG,            .tid = GR_2,                .val =  2       },
-    { .name = "T2",             .typ = TYP_GREG,            .tid = GR_3,                .val =  3       },
-    { .name = "T3",             .typ = TYP_GREG,            .tid = GR_4,                .val =  4       },
-    { .name = "T4",             .typ = TYP_GREG,            .tid = GR_5,                .val =  5       },
-    { .name = "T5",             .typ = TYP_GREG,            .tid = GR_6,                .val =  6       },
-    { .name = "T6",             .typ = TYP_GREG,            .tid = GR_7,                .val =  7       },
+    { .name = "T0",             .typ = TYP_GREG,            .tid = GR_1,                .val =  1           },
+    { .name = "T1",             .typ = TYP_GREG,            .tid = GR_2,                .val =  2           },
+    { .name = "T2",             .typ = TYP_GREG,            .tid = GR_3,                .val =  3           },
+    { .name = "T3",             .typ = TYP_GREG,            .tid = GR_4,                .val =  4           },
+    { .name = "T4",             .typ = TYP_GREG,            .tid = GR_5,                .val =  5           },
+    { .name = "T5",             .typ = TYP_GREG,            .tid = GR_6,                .val =  6           },
+    { .name = "T6",             .typ = TYP_GREG,            .tid = GR_7,                .val =  7           },
     
-    { .name = "ARG3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8       },
-    { .name = "ARG2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9       },
-    { .name = "ARG1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10      },
-    { .name = "ARG0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11      },
+    { .name = "ARG3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8           },
+    { .name = "ARG2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9           },
+    { .name = "ARG1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10          },
+    { .name = "ARG0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11          },
     
-    { .name = "RET3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8       },
-    { .name = "RET2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9       },
-    { .name = "RET1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10      },
-    { .name = "RET0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11      },
+    { .name = "RET3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8           },
+    { .name = "RET2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9           },
+    { .name = "RET1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10          },
+    { .name = "RET0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11          },
     
-    { .name = "DP",             .typ = TYP_GREG,            .tid = GR_13,               .val =  13      },
-    { .name = "RL",             .typ = TYP_GREG,            .tid = GR_14,               .val =  14      },
-    { .name = "SP",             .typ = TYP_GREG,            .tid = GR_15,               .val =  15      },
+    { .name = "DP",             .typ = TYP_GREG,            .tid = GR_13,               .val =  13          },
+    { .name = "RL",             .typ = TYP_GREG,            .tid = GR_14,               .val =  14          },
+    { .name = "SP",             .typ = TYP_GREG,            .tid = GR_15,               .val =  15          },
     
     //--------------------------------------------------------------------------------------------------------
     // Assembler mnemonics.
@@ -327,12 +331,12 @@ const SimToken asmTokTab[ ] = {
     // Synthetic instruction mnemonics.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "SHL",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_SHL,       .val =  0           },
-    { .name = "SHR",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_SHR,       .val =  0           },
-    { .name = "ASL",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_ASL,       .val =  0           },
-    { .name = "ASR",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_ASR,       .val =  0           },
-    { .name = "ROR",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_ROR,       .val =  0           },
-    { .name = "ROL",            .typ = TYP_OP_CODE,         .tid = OP_CODE_S_ROL,       .val =  0           }
+    { .name = "SHL",            .typ = TYP_OP_CODE,         .tid = OP_SHL,              .val =  0           },
+    { .name = "SHR",            .typ = TYP_OP_CODE,         .tid = OP_SHR,              .val =  0           },
+    { .name = "ASL",            .typ = TYP_OP_CODE,         .tid = OP_ASL,              .val =  0           },
+    { .name = "ASR",            .typ = TYP_OP_CODE,         .tid = OP_ASR,              .val =  0           },
+    { .name = "ROR",            .typ = TYP_OP_CODE,         .tid = OP_ROR,              .val =  0           },
+    { .name = "ROL",            .typ = TYP_OP_CODE,         .tid = OP_ROL,              .val =  0           }
     
 };
 
@@ -349,55 +353,34 @@ enum InstrFlags : uint32_t {
     IF_BYTE_INSTR           = ( 1U << 0 ),
     IF_HALF_INSTR           = ( 1U << 1 ),
     IF_WORD_INSTR           = ( 1U << 2 ),
-    IF_INDEXED_INSTR        = ( 1U << 3 ),
-    IF_REG_INDEXED_INSTR    = ( 1U << 4 ),
-    IF_ADR_UPDATE           = ( 1U << 5 ),
-    IF_USE_SHAMT_REG        = ( 1U << 6 ),
-    IF_USE_IMM_VALUE        = ( 1U << 7 ),
-    IF_USE_IMM_LEFT         = ( 1U << 8 ),
-    IF_USE_IMM_RIGHT        = ( 1U << 9 ),
-    IF_USE_IMM_UPPER        = ( 1U << 10 ),
-    IF_REG_COMPLEMENT       = ( 1U << 11 ),
-    IF_REG_ZERO_BEFORE      = ( 1U << 12 ),
-    IF_RES_SIGN_EXT         = ( 1U << 13 ),
-    IF_RES_NEGATE           = ( 1U << 14 ),
-    IF_MOV_TO               = ( 1U << 15 ),
-    IF_MOV_FROM             = ( 1U << 16 ),
-    IF_READ_ACCESS          = ( 1U << 17 ),
-    IF_WRITE_ACCESS         = ( 1U << 18 ),
-    IF_EXEC_ACCESS          = ( 1U << 19 ),
-    IF_CODE_TLB             = ( 1U << 20 ),
-    IF_DATA_TLB             = ( 1U << 21 ),
-    IF_INSERT_OP            = ( 1U << 22 ),
+    IF_DOUBLE_INSTR         = ( 1U << 3 ),
+    IF_ADR_UPDATE           = ( 1U << 4 ),
+    IF_USE_SHAMT_REG        = ( 1U << 5 ),
+    IF_USE_IMM_VALUE        = ( 1U << 6 ),
+    IF_USE_IMM_LEFT         = ( 1U << 7 ),
+    IF_USE_IMM_RIGHT        = ( 1U << 8 ),
+    IF_USE_IMM_UPPER        = ( 1U << 9 ),
+    IF_REG_COMPLEMENT       = ( 1U << 10 ),
+    IF_REG_ZERO_BEFORE      = ( 1U << 11 ),
+    IF_RES_SIGN_EXT         = ( 1U << 12 ),
+    IF_RES_NEGATE           = ( 1U << 13 ),
+    IF_MOV_TO               = ( 1U << 14 ),
+    IF_MOV_FROM             = ( 1U << 15 ),
+    IF_READ_ACCESS          = ( 1U << 16 ),
+    IF_WRITE_ACCESS         = ( 1U << 17 ),
+    IF_EXEC_ACCESS          = ( 1U << 18 ),
+    IF_CODE_TLB             = ( 1U << 19 ),
+    IF_DATA_TLB             = ( 1U << 20 ),
+    IF_INSERT_OP            = ( 1U << 21 ),
     IF_PURGE_OP             = ( 1U << 22 ),
     IF_FLUSH_OP             = ( 1U << 23 ),
-};
-
-// ??? can be combined ?
-// ??? never and always useful ? NO
-
-enum CompareOptions : uint8_t {
     
-    CMP_NEVER   = 0,
-    CMP_EQ      = 1,
-    CMP_LT      = 2,
-    CMP_OD      = 3,
-    CMP_ALWAYS  = 4,
-    CMP_NE      = 5,
-    CMP_LE      = 6,
-    CMP_EV      = 7
-};
-
-enum TestOptions : uint8_t {
-    
-    TST_NEVER   = 0,
-    TST_EQ      = 1,
-    TST_LT      = 2,
-    TST_OD      = 3,
-    TST_ALWAYS  = 4,
-    TST_NE      = 5,
-    TST_LE      = 6,
-    TST_EV      = 7
+    IF_CMP_EQ               = ( 1U << 24 ),
+    IF_CMP_NE               = ( 1U << 25 ),
+    IF_CMP_LT               = ( 1U << 26 ),
+    IF_CMP_LE               = ( 1U << 27 ),
+    IF_CMP_OD               = ( 1U << 28 ),
+    IF_CMP_EV               = ( 1U << 29 ),
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -434,11 +417,9 @@ SimToken    currentToken;
 // Global variables, Assembled instruction.
 //
 //------------------------------------------------------------------------------------------------------------
+uint32_t    instrWord;
 uint32_t    instrOpCode;
 uint32_t    instrFlags;
-uint32_t    instrArg1;
-uint32_t    instrArg2;
-uint32_t    instrArg3;
 
 //------------------------------------------------------------------------------------------------------------
 // "parseExpr" needs to be declared forward.
@@ -456,83 +437,40 @@ static inline bool isAligned( int64_t adr, int align ) {
     return (( adr & ( align - 1 )) == 0 );
 }
 
-static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
+static inline bool isInRange2( int64_t adr, int64_t low, int64_t high ) {
     
     return (( adr >= low ) && ( adr <= high ));
 }
 
 
-bool isInRangeForBitField( int32_t val, uint8_t bitLen ) {
+bool isInRangeForBitField( int64_t val, int bitLen ) {
     
-    int min = - ( 1 << (( bitLen - 1 ) % 32 ));
-    int max = ( 1 << (( bitLen - 1 ) % 32 )) - 1;
+    int min = - ( 1 << (( bitLen - 1 ) % 64 ));
+    int max = ( 1 << (( bitLen - 1 ) % 64 )) - 1;
     return (( val <= max ) && ( val >= min ));
 }
 
-bool isInRangeForBitFieldU( uint32_t val, uint8_t bitLen ) {
+bool isInRangeForBitFieldU( uint64_t val, int bitLen ) {
     
-    int max = (( 1 << ( bitLen % 32 )) - 1 );
+    int max = (( 1 << ( bitLen % 64 )) - 1 );
     return ( val <= max );
 }
 
-static inline int64_t roundup( uint64_t arg ) {
+static inline int64_t roundup( int64_t arg ) {
     
     return ( arg ); // for now ...
 }
 
-static inline int64_t extractBit( int64_t arg, int bitpos ) {
+static inline void setInstrBit( int32_t *word, int bitpos, bool value ) {
     
-    return (( arg >> bitpos ) & 1 );
+    uint32_t mask = 1 << bitpos;
+    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-static inline int64_t extractField( int64_t arg, int bitpos, int len) {
+static inline void setInstrField( uint32_t *word, int bitpos, int len, int64_t value ) {
     
-    return (( arg >> bitpos ) & (( 1LL << len ) - 1 ));
-}
-
-static inline int64_t extractSignedField( int64_t arg, int bitpos, int len ) {
-    
-    int64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-    
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-    else             return ( field );
-}
-
-static inline int64_t depositBit( int64_t word, int bitpos, int64_t value ) {
-    
-    int64_t mask = 1 << bitpos;
-    return (( word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
-static inline int64_t depositField( int64_t word, int bitpos, int len, int64_t value ) {
-    
-    int64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
-    return (( word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
-bool willAddOverflow( int64_t a, int64_t b ) {
-    
-    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
-    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
-    return false;
-}
-
-bool willSubOverflow( int64_t a, int64_t b ) {
-    
-    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
-    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
-    return false;
-}
-
-bool willShiftLeftOverflow( int64_t a, int shift ) {
-    
-    if (( shift < 0 ) || ( shift >= 64 )) return true;
-    if ( a == 0 ) return false;
-    
-    int64_t max = INT64_MAX >> shift;
-    int64_t min = INT64_MIN >> shift;
-    
-    return (( a > max ) || ( a < min ));
+    uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
+    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
 void upshiftStr( char *str ) {
@@ -1056,7 +994,9 @@ void parseInstrOptions( ) {
     
     if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
     
-    char *optBuf = currentToken.str;
+    char    *optBuf     = currentToken.str;
+    int     dwCount     = 0;
+    int     cmpCount    = 0;
     
     switch( instrOpCode ) {
             
@@ -1235,6 +1175,8 @@ void parseInstrOptions( ) {
         default: throw ( ERR_INVALID_INSTR_OPT );
     }
     
+    // ??? test for data width and cmpCode setings...
+    
     nextToken( );
 }
 
@@ -1312,26 +1254,43 @@ void parseLoadStoreOperand( uint32_t *instr, uint32_t flags ) {
     else throw ( ERR_EXPECTED_LOGICAL_ADR );
 }
 
+#endif
+
+void instrDepositCmpCode( uint32_t *instr ) {
+    
+    
+}
+
+void instrDepositDataWidth( uint32_t *instr ) {
+    
+    
+}
+
 //------------------------------------------------------------------------------------------------------------
-// "parseModeTypeInstr" parses all instructions that have an "operand" encoding. The syntax is as follows:
+// "parseModeTypeInstr" parses all instructions that have several types of "operand" encoding. The syntax is
+// as follows:
 //
-//      opCode [ "." <opt> ] <targetReg> "," <num>                                - mode 0
-//      opCode [ "." <opt> ] <targetReg> "," <num> "(" <baseReg> ")"              - mode 3
-//      opCode [ "." <opt> ] <targetReg> "," <sourceReg>                          - mode 1
-//      opCode [ "." <opt> ] <targetReg> "," <sourceRegA> "," "<sourceRegB>       - mode 1
-//      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"         - mode 2
+//      opCode [ "." <opt> ] <targetReg> "," <num>                              -> Instruction group ALU
+//      opCode [ "." <opt> ] <targetReg> "," <num> "(" <baseReg> ")"            -> Instruction group MEM
+//      opCode [ "." <opt> ] <targetReg> "," <sourceReg>                        -> Instruction group ALU
+//      opCode [ "." <opt> ] <targetReg> "," <sourceRegA> "," "<sourceRegB>     -> Instruction group ALU
+//      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"       -> Instruction group MEM
+//
+// The instruction options have already been parsed and are available in the instrFlags variable.
 //
 //------------------------------------------------------------------------------------------------------------
-void parseModeTypeInstr( uint32_t *instr, uint32_t flags ) {
+void parseModeTypeInstr( uint32_t *instr ) {
     
     uint8_t     targetRegId = 0;
     SimExpr     rExpr;
     
-    if ( tok -> isTokenTyp( TYP_GREG )) {
+    setInstrField( instr, 26, 4, instrOpCode );
+    
+    if ( isTokenTyp( TYP_GREG )) {
         
-        targetRegId = tok -> tokVal( );
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
+        targetRegId = currentToken.val;
+        setInstrField( instr, 22, 4, targetRegId );
+        nextToken( );
     }
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
@@ -1340,80 +1299,91 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t flags ) {
     
     if ( rExpr.typ == TYP_NUM ) {
         
-        if ( tok -> isToken( TOK_EOS )) {
+        if ( isToken( TOK_EOS )) {
             
-            if ( isInRangeForBitField( rExpr.numVal, 18 )) setBitField( instr, 31, 18, rExpr.numVal );
+            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            
+            if ( isInRangeForBitField( rExpr.numVal, 18 )) setInstrField( instr, 31, 18, rExpr.numVal );
             else throw ( ERR_IMM_VAL_RANGE );
         }
         else {
             
-            if ( isInRangeForBitField( rExpr.numVal, 12 )) setBitField( instr, 27, 12, rExpr.numVal );
+            if ( isInRangeForBitField( rExpr.numVal, 12 )) setInstrField( instr, 27, 12, rExpr.numVal );
             else throw ( ERR_IMM_VAL_RANGE );
             
             parseExpr( &rExpr );
             
             if ( rExpr.typ == TYP_ADR ) {
                 
-                setBitField( instr, 13, 2, 3 );
-                setBitField( instr, 31, 4, rExpr.numVal );
+                setInstrField( instr, 13, 2, 3 );
+                setInstrField( instr, 31, 4, rExpr.numVal );
             }
             else throw ( ERR_EXPECTED_LOGICAL_ADR );
             
-            if      ( flags & TF_BYTE_INSTR ) setBitField( instr, 15, 2, 0 );
-            else if ( flags & TF_HALF_INSTR ) setBitField( instr, 15, 2, 1 );
-            else if ( flags & TF_WORD_INSTR ) setBitField( instr, 15, 2, 2 );
+            if      ( instrFlags & IF_BYTE_INSTR   ) setInstrField( instr, 2, 0, 0 );
+            else if ( instrFlags & IF_HALF_INSTR   ) setInstrField( instr, 15, 2, 1 );
+            else if ( instrFlags & IF_WORD_INSTR   ) setInstrField( instr, 15, 2, 2 );
+            else if ( instrFlags & IF_DOUBLE_INSTR ) setInstrField( instr, 15, 2, 2 );
         }
     }
     else if ( rExpr.typ == TYP_GREG ) {
         
-        if ( tok -> isToken( TOK_EOS )) {
+        if ( isToken( TOK_EOS )) {
             
-            setBitField( instr, 13, 2, 1 );
-            setBitField( instr, 27, 4, targetRegId );
-            setBitField( instr, 31, 4, rExpr.numVal );
+            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            
+            setInstrField( instr, 13, 2, 1 );
+            setInstrField( instr, 27, 4, targetRegId );
+            setInstrField( instr, 31, 4, rExpr.numVal );
         }
-        else if ( tok -> isToken( TOK_COMMA )) {
+        else if ( isToken( TOK_COMMA )) {
             
-            setBitField( instr, 13, 2, 1 );
-            setBitField( instr, 27, 4, rExpr.numVal );
+            setInstrField( instr, 13, 2, 1 );
+            setInstrField( instr, 27, 4, rExpr.numVal );
             
-            tok -> nextToken( );
-            if ( tok -> isTokenTyp( TYP_GREG )) {
-                
-                setBitField( instr, 13, 2, 1 );
-                setBitField( instr, 27, 4, rExpr.numVal );
-                setBitField( instr, 31, 4, tok -> tokVal( ));
-                tok -> nextToken( );
+            nextToken( );
+            if ( isTokenTyp( TYP_GREG )) {
+               
+                setInstrField( instr, 13, 2, 1 );
+                setInstrField( instr, 27, 4, rExpr.numVal );
+                setInstrField( instr, 31, 4, currentToken.val );
+                nextToken( );
             }
             else throw ( ERR_EXPECTED_GENERAL_REG );
-        }
-        else if ( tok -> isToken( TOK_LPAREN )) {
             
-            setBitField( instr, 27, 4, rExpr.numVal );
+            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            
+            if (( instrFlags & IF_BYTE_INSTR ) || ( instrFlags & IF_HALF_INSTR ) || ( instrFlags & IF_WORD_INSTR )) {
+                
+                // ??? invalid option for not MEM type...
+            }
+        }
+        else if ( isToken( TOK_LPAREN )) {
+            
+            setInstrField( instr, 27, 4, (uint32_t) rExpr.numVal );
             
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_ADR ) {
                 
-                setBitField( instr, 13, 2, 2 );
-                setBitField( instr, 31, 4, rExpr.numVal );
+                setInstrField( instr, 13, 2, 2 );
+                setInstrField( instr, 31, 4, (uint32_t) rExpr.numVal );
             }
             else throw ( ERR_EXPECTED_LOGICAL_ADR );
             
-            if      ( flags & TF_BYTE_INSTR ) setBitField( instr, 15, 2, 0 );
-            else if ( flags & TF_HALF_INSTR ) setBitField( instr, 15, 2, 1 );
-            else if ( flags & TF_WORD_INSTR ) setBitField( instr, 15, 2, 2 );
+            setInstrField( instr, 30, 2, OP_GRP_MEM );
+            
+            if      ( instrFlags & IF_BYTE_INSTR    ) setInstrField( instr, 15, 2, 0 );
+            else if ( instrFlags & IF_HALF_INSTR    ) setInstrField( instr, 15, 2, 1 );
+            else if ( instrFlags & IF_WORD_INSTR    ) setInstrField( instr, 15, 2, 2 );
+            else if ( instrFlags & IF_DOUBLE_INSTR  ) setInstrField( instr, 15, 2, 2 );
         }
     }
     else throw ( ERR_INVALID_INSTR_MODE );
     
-    if (  getBitField( *instr, 13, 2 ) < 2 ) {
-        
-        if (( flags & TF_BYTE_INSTR ) || ( flags & TF_HALF_INSTR ))
-            throw ( ERR_INSTR_MODE_OPT_COMBO );
-    }
-    
     checkEOS( );
 }
+
+#if 0
 
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrDEP" parses the deposit instruction. The instruction has three basic formats.
@@ -2365,9 +2335,11 @@ void parseInstrBRK( uint32_t *instr, uint32_t flags ) {
 //      NOP
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrNop( ) {
+void parseInstrNop( uint32_t *instr ) {
     
     // ??? complete current instruction... what to do ?
+    
+    *instr = 0;
     
     nextToken( );
     checkEOS( );
@@ -2401,13 +2373,9 @@ void parseLine( char *inputStr, uint32_t *instr ) {
     currentCharIndex        = 0;
     currentTokCharIndex     = 0;
     currentChar             = ' ';
-    
     instrOpCode             = OP_NOP;
     instrFlags              = IF_NIL;
-    instrArg1               = 0;
-    instrArg2               = 0;
-    instrArg3               = 0;
-    
+   
     nextToken( );
     
     if ( isTokenTyp( TYP_OP_CODE )) {
@@ -2423,20 +2391,14 @@ void parseLine( char *inputStr, uint32_t *instr ) {
         
         switch( instrOpCode ) {
                 
-            case OP_NOP: parseInstrNop( ); break;
+            case OP_NOP: parseInstrNop( instr ); break;
              
-                // ??? still do opcode name extension e.g. ADDH ?
-                
             case OP_ADD:
             case OP_SUB:
             case OP_AND:
             case OP_OR:
             case OP_XOR:
-            case OP_CMP: {
-                
-                // return( parseModeTypeInstr( instr, flags | TF_WORD_INSTR ));
-                
-            } break;
+            case OP_CMP: parseModeTypeInstr( instr ); break;
                 
                 
                 
