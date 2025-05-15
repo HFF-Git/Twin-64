@@ -881,6 +881,15 @@ void parseFactor( SimExpr *rExpr ) {
     else if ( isToken( TOK_LPAREN )) {
         
         nextToken( );
+        
+#if 0   // more consistent, removes ambiguity in expression analysis.
+        parseExpr( rExpr );
+        if ( rExp -> typ == TYP_GREG ) {
+            
+            rExpr -> typ    = TYP_ADR;
+            rExpr -> numVal = currentToken.val;
+        }
+#else
         if ( isTokenTyp( TYP_GREG )) {
             
             rExpr -> typ    = TYP_ADR;
@@ -888,6 +897,7 @@ void parseFactor( SimExpr *rExpr ) {
             nextToken( );
         }
         else parseExpr( rExpr );
+#endif
         
         acceptRparen( );
     }
@@ -988,7 +998,9 @@ void parseExpr( SimExpr *rExpr ) {
 //
 
 // ??? maybe a different approach. Just accumulate the flags and then syntax check...
-
+//
+// ??? we should first just parse all options we can find. Then we check using the instruction at hand.
+//
 //------------------------------------------------------------------------------------------------------------
 void parseInstrOptions( ) {
     
@@ -997,6 +1009,35 @@ void parseInstrOptions( ) {
     char    *optBuf     = currentToken.str;
     int     dwCount     = 0;
     int     cmpCount    = 0;
+    
+    if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
+    else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
+    else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
+    else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
+    else {
+        
+        // ??? some characters may have more than one meaning ?
+        // ??? if so, just report the character and interpretation is done in the check ?
+        
+        for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            
+            if      ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
+            if      ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+            else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
+            else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+            else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_RES_SIGN_EXT;
+            else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
+            else if ( optBuf[ i ] == 'Z' ) instrFlags |= IF_REG_ZERO_BEFORE;
+            else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+            else if ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
+            else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
+            
+            
+            else throw ( ERR_INVALID_INSTR_OPT );
+        }
+    }
+    
+    // ??? part two check that thej flags are defined for the instruction ...
     
     switch( instrOpCode ) {
             
