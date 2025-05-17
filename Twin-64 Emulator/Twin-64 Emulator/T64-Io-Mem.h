@@ -18,15 +18,15 @@ struct T64IoMem {
     
 public:
     
-    T64IoMem( int64_t size );
+    T64IoMem( T64Word size );
     
     void        reset( );
-    int64_t     readMem( int64_t adr, int len, bool signExtend = false );
-    void        writeMem( int64_t adr, int64_t arg, int len );
+    T64Word     readMem( T64Word adr, int len, bool signExtend = false );
+    void        writeMem( T64Word adr, T64Word arg, int len );
     
 private:
     
-    int64_t    size = 0;
+    T64Word    size = 0;
     
     // how to structure this space...
     

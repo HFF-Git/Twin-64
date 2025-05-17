@@ -18,15 +18,15 @@ struct T64PhysMem {
     
 public:
     
-    T64PhysMem( int64_t size );
+    T64PhysMem( T64Word size );
     
     void        reset( );
-    uint64_t    readMem( int64_t adr, int len, bool signExtend = false );
-    void        writeMem( int64_t adr, uint64_t arg, int len );
+    T64Word     readMem( T64Word adr, int len, bool signExtend = false );
+    void        writeMem( T64Word adr, T64Word arg, int len );
    
 private:
     
-    int64_t    size = 0;
+    T64Word    size = 0;
     uint8_t    *mem = nullptr;
     
 };

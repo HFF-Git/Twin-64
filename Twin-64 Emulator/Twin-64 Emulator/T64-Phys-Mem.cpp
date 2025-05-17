@@ -35,67 +35,67 @@
 namespace {
     
     
-    static inline bool isAligned( int64_t adr, int align ) {
+    static inline bool isAligned( T64Word adr, int align ) {
         
         return (( adr & ( align - 1 )) == 0 );
     }
 
-    static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
+    static inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
         
         return(( adr >= low ) && ( adr <= high ));
     }
 
-    static inline int64_t roundup( uint64_t arg ) {
+    static inline T64Word roundup( T64Word arg ) {
         
         return( arg ); // for now ...
     }
 
-    static inline int64_t extractBit( int64_t arg, int bitpos ) {
+    static inline T64Word extractBit( T64Word arg, int bitpos ) {
         
         return ( arg >> bitpos ) & 1;
     }
 
-    static inline int64_t extractField( int64_t arg, int bitpos, int len) {
+    static inline T64Word extractField( T64Word arg, int bitpos, int len) {
         
         return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
     }
 
-    static inline int64_t extractSignedField( int64_t arg, int bitpos, int len ) {
+    static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
         
-        int64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+        T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
         
         if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
         else             return ( field );
         
     }
 
-    static inline int64_t depositField( int64_t word, int bitpos, int len, int64_t value) {
+    static inline T64Word depositField( T64Word word, int bitpos, int len, T64Word value) {
         
-        int64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
+        T64Word mask = (( 1ULL << len ) - 1 ) << bitpos;
         return ( word & ~mask ) | (( value << bitpos ) & mask );
     }
 
-    bool willAddOverflow( int64_t a, int64_t b ) {
+    bool willAddOverflow( T64Word a, T64Word b ) {
         
         if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
         if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
         return false;
     }
 
-    bool willSubOverflow( int64_t a, int64_t b ) {
+    bool willSubOverflow( T64Word a, T64Word b ) {
         
         if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
         if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
         return false;
     }
 
-    bool willShiftLftOverflow( int64_t a, int shift ) {
+    bool willShiftLftOverflow( T64Word a, int shift ) {
         
         if (( shift < 0 ) || ( shift >= 64 )) return true;
         if ( a == 0 ) return false;
         
-        int64_t max = INT64_MAX >> shift;
-        int64_t min = INT64_MIN >> shift;
+        T64Word max = INT64_MAX >> shift;
+        T64Word min = INT64_MIN >> shift;
         
         return (( a > max ) || ( a < min ));
     }
@@ -114,7 +114,7 @@ namespace {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-T64PhysMem::T64PhysMem( int64_t size ) {
+T64PhysMem::T64PhysMem( T64Word size ) {
  
     this -> size = roundup( size );
     this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
@@ -130,13 +130,13 @@ void T64PhysMem::reset( ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
+T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     
     if ( len == 8 ) {
         
-        uint64_t val= mem[ adr ];
+        T64Word val= mem[ adr ];
         if ( signExtend ) val = extractSignedField( val, 63, 8 );
         return( val );
     }
@@ -144,7 +144,7 @@ uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
         
         if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
-        uint64_t val = 0;
+        T64Word val = 0;
         val |= (int16_t) mem[ adr ] << 8;
         val |= (int16_t) mem[ adr + 1 ];
         if ( signExtend ) val = extractSignedField( val, 63, 16 );
@@ -154,7 +154,7 @@ uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
         
         if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
-        uint64_t val = 0;
+        T64Word val = 0;
         val |= (int32_t) mem[ adr]     << 24;
         val |= (int32_t) mem[ adr + 1 ] << 16;
         val |= (int32_t) mem[ adr + 2 ] << 8;
@@ -167,15 +167,15 @@ uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
         
         if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
-        int64_t val = 0;
-        val |= (int64_t) mem[ adr ]     << 56;
-        val |= (int64_t) mem[ adr + 1 ] << 48;
-        val |= (int64_t) mem[ adr + 2 ] << 40;
-        val |= (int64_t) mem[ adr + 3 ] << 32;
-        val |= (int64_t) mem[ adr + 4 ] << 24;
-        val |= (int64_t) mem[ adr + 5 ] << 16;
-        val |= (int64_t) mem[ adr + 6 ] << 8;
-        val |= (int64_t) mem[ adr + 7 ];
+        T64Word val = 0;
+        val |= (T64Word) mem[ adr ]     << 56;
+        val |= (T64Word) mem[ adr + 1 ] << 48;
+        val |= (T64Word) mem[ adr + 2 ] << 40;
+        val |= (T64Word) mem[ adr + 3 ] << 32;
+        val |= (T64Word) mem[ adr + 4 ] << 24;
+        val |= (T64Word) mem[ adr + 5 ] << 16;
+        val |= (T64Word) mem[ adr + 6 ] << 8;
+        val |= (T64Word) mem[ adr + 7 ];
         return ( val );
     }
     else throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -185,7 +185,7 @@ uint64_t T64PhysMem::readMem( int64_t adr, int len, bool signExtend ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
-void T64PhysMem::writeMem( int64_t adr, uint64_t arg, int len ) {
+void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     
@@ -231,19 +231,19 @@ void T64PhysMem::writeMem( int64_t adr, uint64_t arg, int len ) {
 //
 // ??? may go away...
 //------------------------------------------------------------------------------------------------------------
-int8_t T64PhysMem::getMem8( int64_t adr ) {
+int8_t T64PhysMem::getMem8( T64Word adr ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     return mem[ adr ];
 }
 
-void T64PhysMem::setMem8( int64_t adr, int8_t arg ) {
+void T64PhysMem::setMem8( T64Word adr, int8_t arg ) {
     
     if (adr >= size) throw T64Trap( PHYS_MEM_ADR_TRAP );
     mem[ adr ] = arg;
 }
 
-int16_t T64PhysMem::getMem16( int64_t adr ) {
+int16_t T64PhysMem::getMem16( T64Word adr ) {
     
     if ( adr + 1 >= size )      throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -254,7 +254,7 @@ int16_t T64PhysMem::getMem16( int64_t adr ) {
     return val;
 }
 
-void T64PhysMem::setMem16( int64_t adr, int16_t arg ) {
+void T64PhysMem::setMem16( T64Word adr, int16_t arg ) {
     
     if ( adr + 1 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -263,7 +263,7 @@ void T64PhysMem::setMem16( int64_t adr, int16_t arg ) {
     mem[ adr + 1 ]  = ( arg       ) & 0xFF;
 }
 
-int32_t T64PhysMem::getMem32( int64_t adr ) {
+int32_t T64PhysMem::getMem32( T64Word adr ) {
     
     if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -276,7 +276,7 @@ int32_t T64PhysMem::getMem32( int64_t adr ) {
     return val;
 }
 
-void T64PhysMem::setMem32( int64_t adr, int32_t arg ) {
+void T64PhysMem::setMem32( T64Word adr, int32_t arg ) {
     
     if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
@@ -287,24 +287,24 @@ void T64PhysMem::setMem32( int64_t adr, int32_t arg ) {
     mem[ adr + 3 ] = ( arg       ) & 0xFF;
 }
 
-int64_t T64PhysMem::getMem64( int64_t adr ) {
+T64Word T64PhysMem::getMem64( T64Word adr ) {
     
     if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
     
-    int64_t val = 0;
-    val |= (int64_t) mem[ adr ]     << 56;
-    val |= (int64_t) mem[ adr + 1 ] << 48;
-    val |= (int64_t) mem[ adr + 2 ] << 40;
-    val |= (int64_t) mem[ adr + 3 ] << 32;
-    val |= (int64_t) mem[ adr + 4 ] << 24;
-    val |= (int64_t) mem[ adr + 5 ] << 16;
-    val |= (int64_t) mem[ adr + 6 ] << 8;
-    val |= (int64_t) mem[ adr + 7 ];
+    T64Word val = 0;
+    val |= (T64Word) mem[ adr ]     << 56;
+    val |= (T64Word) mem[ adr + 1 ] << 48;
+    val |= (T64Word) mem[ adr + 2 ] << 40;
+    val |= (T64Word) mem[ adr + 3 ] << 32;
+    val |= (T64Word) mem[ adr + 4 ] << 24;
+    val |= (T64Word) mem[ adr + 5 ] << 16;
+    val |= (T64Word) mem[ adr + 6 ] << 8;
+    val |= (T64Word) mem[ adr + 7 ];
     return val;
 }
 
-void T64PhysMem::setMem64( int64_t adr, int64_t arg ) {
+void T64PhysMem::setMem64( T64Word adr, T64Word arg ) {
     
     if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );

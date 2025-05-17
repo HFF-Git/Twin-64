@@ -168,12 +168,15 @@ enum TokId : uint16_t {
     OP_ST                   = 316,      OP_STC                  = 317,
     
     OP_B                    = 318,      OP_BR                   = 319,      OP_BV                   = 320,
-    OP_CBR                  = 321,      OP_TBR                  = 322,      OP_MBR                  = 323,
+    OP_CBR                  = 321,      OP_MBR                  = 322,
     
-    OP_MR                   = 324,      OP_MST                  = 325,      OP_DS                   = 326,
-    OP_LDPA                 = 327,      OP_PRB                  = 328,      OP_ITLB                 = 329,
-    OP_PTLB                 = 330,      OP_PCA                  = 331,      OP_DIAG                 = 332,
-    OP_RFI                  = 333,      OP_BRK                  = 334,
+    OP_MFCR                 = 324,      OP_MTCR                 = 325,
+    OP_RSM                  = 326,      OP_SSM                  = 327,
+    OP_LDPA                 = 328,      OP_PRB                  = 329,
+    OP_ITLB                 = 330,      OP_PTLB                 = 331,
+    OP_PCA                  = 332,      OP_FCA                  = 333,
+    
+    OP_RFI                  = 335,      OP_BRK                  = 336,      OP_DIAG                 = 337,
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -196,17 +199,16 @@ enum TokId : uint16_t {
 // types are numeric, virtual address and string.
 //
 //------------------------------------------------------------------------------------------------------------
-struct SimToken {
+struct Token {
     
-    char            name[ MAX_TOKEN_NAME_SIZE ] = { };
-    TokTypeId    typ                         = TYP_NIL;
-    TokId        tid                         = TOK_NIL;
+    char        name[ MAX_TOKEN_NAME_SIZE ] = { };
+    TokTypeId   typ                         = TYP_NIL;
+    TokId       tid                         = TOK_NIL;
     
     union {
         
-        struct {    int64_t val;                    };
-        struct {    uint32_t seg;   uint32_t ofs;   }; // phase out...
-        struct {    char str[ TOK_STR_SIZE ];       };
+        struct { T64Word val;               };
+        struct { char str[ TOK_STR_SIZE ];  };
     };
 };
 
@@ -216,7 +218,7 @@ struct SimToken {
 // token. The value allows for a constant token. The parser can directly use the value in expressions.
 //
 //------------------------------------------------------------------------------------------------------------
-const SimToken asmTokTab[ ] = {
+const Token asmTokTab[ ] = {
     
     //--------------------------------------------------------------------------------------------------------
     // General registers.
@@ -289,7 +291,7 @@ const SimToken asmTokTab[ ] = {
     //--------------------------------------------------------------------------------------------------------
     // Assembler mnemonics.
     //
-    // ??? add opcode which makes sense as words instead of options ?
+    // ??? what do we do about Opcodes sharing the same id ?
     //--------------------------------------------------------------------------------------------------------
     { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = OP_NOP,              .val = 0x00000000   },
     { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = OP_ADD,              .val = 0x00000000   },
@@ -313,19 +315,18 @@ const SimToken asmTokTab[ ] = {
     { .name = "BR",             .typ = TYP_OP_CODE,         .tid = OP_BR,               .val = 0x00000000   },
     { .name = "BV",             .typ = TYP_OP_CODE,         .tid = OP_BV,               .val = 0x00000000   },
     { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = OP_CBR,              .val = 0x00000000   },
-    { .name = "TBR",            .typ = TYP_OP_CODE,         .tid = OP_TBR,              .val = 0x00000000   },
     { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = OP_MBR,              .val = 0x00000000   },
-    { .name = "MR",             .typ = TYP_OP_CODE,         .tid = OP_MR,               .val = 0x00000000   },
-    { .name = "MST",            .typ = TYP_OP_CODE,         .tid = OP_MST,              .val = 0x00000000   },
-    { .name = "DS",             .typ = TYP_OP_CODE,         .tid = OP_DS,               .val = 0x00000000   },
+    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = OP_MFCR,             .val = 0x00000000   },
+    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = OP_MTCR,             .val = 0x00000000   },
     { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = OP_LDPA,             .val = 0x00000000   },
     { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = OP_PRB,              .val = 0x00000000   },
     { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = OP_ITLB,             .val = 0x00000000   },
     { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = OP_PTLB,             .val = 0x00000000   },
     { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = OP_PCA,              .val = 0x00000000   },
-    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,             .val = 0x00000000   },
+    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = OP_FCA,              .val = 0x00000000   },
     { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = OP_RFI,              .val = 0x00000000   },
     { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = OP_BRK,              .val = 0x00000000   },
+    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,             .val = 0x00000000   },
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic instruction mnemonics.
@@ -340,7 +341,7 @@ const SimToken asmTokTab[ ] = {
     
 };
 
-const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( SimToken );
+const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( Token );
 
 //------------------------------------------------------------------------------------------------------------
 // Instruction flags. They are used to keep track of instruction attributes used in assembling the final
@@ -350,30 +351,30 @@ const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( SimToken );
 enum InstrFlags : uint32_t {
     
     IF_NIL                  = 0,
-    IF_BYTE_INSTR           = ( 1U << 0 ),
-    IF_HALF_INSTR           = ( 1U << 1 ),
-    IF_WORD_INSTR           = ( 1U << 2 ),
-    IF_DOUBLE_INSTR         = ( 1U << 3 ),
+   
     IF_ADR_UPDATE           = ( 1U << 4 ),
-    IF_USE_SHAMT_REG        = ( 1U << 5 ),
-    IF_USE_IMM_VALUE        = ( 1U << 6 ),
-    IF_USE_IMM_LEFT         = ( 1U << 7 ),
-    IF_USE_IMM_RIGHT        = ( 1U << 8 ),
-    IF_USE_IMM_UPPER        = ( 1U << 9 ),
-    IF_REG_COMPLEMENT       = ( 1U << 10 ),
-    IF_REG_ZERO_BEFORE      = ( 1U << 11 ),
-    IF_RES_SIGN_EXT         = ( 1U << 12 ),
-    IF_RES_NEGATE           = ( 1U << 13 ),
-    IF_MOV_TO               = ( 1U << 14 ),
-    IF_MOV_FROM             = ( 1U << 15 ),
-    IF_READ_ACCESS          = ( 1U << 16 ),
-    IF_WRITE_ACCESS         = ( 1U << 17 ),
-    IF_EXEC_ACCESS          = ( 1U << 18 ),
-    IF_CODE_TLB             = ( 1U << 19 ),
-    IF_DATA_TLB             = ( 1U << 20 ),
-    IF_INSERT_OP            = ( 1U << 21 ),
-    IF_PURGE_OP             = ( 1U << 22 ),
-    IF_FLUSH_OP             = ( 1U << 23 ),
+    IF_USE_SHAMT_REG        = ( 1U << 5  ),
+    IF_USE_IMM_LEFT         = ( 1U << 6  ),
+    IF_USE_IMM_RIGHT        = ( 1U << 7  ),
+    IF_USE_IMM_UPPER        = ( 1U << 8  ),
+    IF_REG_COMPLEMENT       = ( 1U << 9  ),
+    IF_REG_ZERO_BEFORE      = ( 1U << 10 ),
+    IF_RES_SIGN_EXT         = ( 1U << 11 ),
+    IF_RES_NEGATE           = ( 1U << 12 ),
+    
+    IF_READ_ACCESS          = ( 1U << 13 ),
+    IF_WRITE_ACCESS         = ( 1U << 14 ),
+    IF_EXEC_ACCESS          = ( 1U << 15 ),
+    
+    IF_USE_IMM_VALUE        = ( 1U << 16 ),
+    IF_USE_IMM_VAL_1        = ( 1U << 17 ),
+    IF_USE_IMM_VAL_2        = ( 1U << 18 ),
+    IF_USE_IMM_VAL_3        = ( 1U << 19 ),
+    
+    IF_BYTE_INSTR           = ( 1U << 20 ),
+    IF_HALF_INSTR           = ( 1U << 21 ),
+    IF_WORD_INSTR           = ( 1U << 22 ),
+    IF_DOUBLE_INSTR         = ( 1U << 23 ),
     
     IF_CMP_EQ               = ( 1U << 24 ),
     IF_CMP_NE               = ( 1U << 25 ),
@@ -381,6 +382,8 @@ enum InstrFlags : uint32_t {
     IF_CMP_LE               = ( 1U << 27 ),
     IF_CMP_OD               = ( 1U << 28 ),
     IF_CMP_EV               = ( 1U << 29 ),
+    IF_RV_30                = ( 1U << 30 ),
+    IF_RV_31                = ( 1U << 30 )
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -388,91 +391,40 @@ enum InstrFlags : uint32_t {
 // values are simple scalar values or a structured value, such as a register pair or virtual address.
 //
 //------------------------------------------------------------------------------------------------------------
-struct SimExpr {
+struct Expr {
     
     TokTypeId typ;
     
     union {
         
-        struct {    TokId       tokId;                      };
-        struct {    bool        bVal;                       };
-        struct {    int64_t     numVal;                     };
-        struct {    int64_t     adr;                        };
-        struct {    char        strVal[ TOK_STR_SIZE ];     };
+        struct {    TokId       tokId;                  };
+        struct {    T64Word     numVal;                 };
+        struct {    T64Word     adr;                    };
+        struct {    char        strVal[ TOK_STR_SIZE ]; };
     };
 };
 
 //------------------------------------------------------------------------------------------------------------
-// Global variables, Assembler.
+// Global variables for the tokenizer.
 //
 //------------------------------------------------------------------------------------------------------------
-char        tokenLine[ MAX_INPUT_LINE_SIZE ]    = { 0 };
-int         currentLineLen                      = 0;
-int         currentCharIndex                    = 0;
-int         currentTokCharIndex                 = 0;
-char        currentChar                         = ' ';
-SimToken    currentToken;
+char    tokenLine[ MAX_INPUT_LINE_SIZE ]    = { 0 };
+int     currentLineLen                      = 0;
+int     currentCharIndex                    = 0;
+int     currentTokCharIndex                 = 0;
+char    currentChar                         = ' ';
+Token   currentToken;
 
 //------------------------------------------------------------------------------------------------------------
-// Global variables, Assembled instruction.
+// Forward declrations.
 //
 //------------------------------------------------------------------------------------------------------------
-uint32_t    instrWord;
-uint32_t    instrOpCode;
-uint32_t    instrFlags;
+void parseExpr( Expr *rExpr );
 
 //------------------------------------------------------------------------------------------------------------
-// "parseExpr" needs to be declared forward.
+// Helper functions for the tokenizer.
 //
 //------------------------------------------------------------------------------------------------------------
-void parseExpr( SimExpr *rExpr );
-
-//------------------------------------------------------------------------------------------------------------
-// Helper functions.
-//
-// ??? which ones are really needd...
-//------------------------------------------------------------------------------------------------------------
-static inline bool isAligned( int64_t adr, int align ) {
-    
-    return (( adr & ( align - 1 )) == 0 );
-}
-
-static inline bool isInRange2( int64_t adr, int64_t low, int64_t high ) {
-    
-    return (( adr >= low ) && ( adr <= high ));
-}
-
-
-bool isInRangeForBitField( int64_t val, int bitLen ) {
-    
-    int min = - ( 1 << (( bitLen - 1 ) % 64 ));
-    int max = ( 1 << (( bitLen - 1 ) % 64 )) - 1;
-    return (( val <= max ) && ( val >= min ));
-}
-
-bool isInRangeForBitFieldU( uint64_t val, int bitLen ) {
-    
-    int max = (( 1 << ( bitLen % 64 )) - 1 );
-    return ( val <= max );
-}
-
-static inline int64_t roundup( int64_t arg ) {
-    
-    return ( arg ); // for now ...
-}
-
-static inline void setInstrBit( int32_t *word, int bitpos, bool value ) {
-    
-    uint32_t mask = 1 << bitpos;
-    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
-static inline void setInstrField( uint32_t *word, int bitpos, int len, int64_t value ) {
-    
-    uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
-    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
 void upshiftStr( char *str ) {
     
     size_t len = strlen( str );
@@ -495,10 +447,10 @@ void addChar( char *buf, int size, char ch ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// The lookup function. We just do a linear search for now.
+// The token lookup function. We just do a linear search.
 //
 //------------------------------------------------------------------------------------------------------------
-int lookupToken( char *inputStr, const SimToken *tokTab ) {
+int lookupToken( char *inputStr, const Token *tokTab ) {
     
     if (( strlen( inputStr ) == 0 ) || ( strlen ( inputStr ) > MAX_TOKEN_NAME_SIZE )) return( -1 );
     
@@ -666,9 +618,7 @@ void parseIdent( ) {
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
         }
     }
-    
-    // ??? other constant options ?
-    
+  
     while (( isalnum( currentChar )) || ( currentChar == '_' )) {
         
         addChar( identBuf, sizeof( identBuf ), currentChar );
@@ -679,7 +629,7 @@ void parseIdent( ) {
     
     int index = lookupToken( identBuf, asmTokTab );
     
-    if ( index == -1 ) {
+    if ( index == - 1 ) {
         
         currentToken.typ = TYP_IDENT;
         currentToken.tid = TOK_IDENT;
@@ -806,35 +756,35 @@ void nextToken( ) {
 // Parser helper functions.
 //
 //------------------------------------------------------------------------------------------------------------
-void checkEOS( ) {
+static inline void checkEOS( ) {
     
     if ( currentToken.tid != TOK_EOS ) throw( ERR_EXTRA_TOKEN_IN_STR );
 }
 
-void acceptComma( ) {
+static inline void acceptComma( ) {
     
     if ( currentToken.tid == TOK_COMMA ) nextToken( );
     else throw( ERR_EXPECTED_COMMA );
 }
 
-void acceptLparen( ) {
+static inline void acceptLparen( ) {
     
     if ( currentToken.tid == TOK_LPAREN ) nextToken( );
     else throw( ERR_EXPECTED_LPAREN );
 }
 
-void acceptRparen( ) {
+static inline void acceptRparen( ) {
     
     if ( currentToken.tid == TOK_RPAREN ) nextToken( );
     else throw( ERR_EXPECTED_RPAREN );
 }
 
-bool isToken( TokId tid ) {
+static inline bool isToken( TokId tid ) {
     
     return( currentToken.tid == tid );
 }
 
-bool isTokenTyp( TokTypeId typ ) {
+static inline bool isTokenTyp( TokTypeId typ ) {
     
     return( currentToken.typ = typ );
 }
@@ -850,7 +800,7 @@ bool isTokenTyp( TokTypeId typ ) {
 //                  "(" <expr> ")"
 //
 //------------------------------------------------------------------------------------------------------------
-void parseFactor( SimExpr *rExpr ) {
+void parseFactor( Expr *rExpr ) {
     
     rExpr -> typ  = TYP_NIL;
     rExpr -> numVal = 0;
@@ -881,23 +831,12 @@ void parseFactor( SimExpr *rExpr ) {
     else if ( isToken( TOK_LPAREN )) {
         
         nextToken( );
-        
-#if 0   // more consistent, removes ambiguity in expression analysis.
         parseExpr( rExpr );
-        if ( rExp -> typ == TYP_GREG ) {
+        if ( rExpr -> typ == TYP_GREG ) {
             
             rExpr -> typ    = TYP_ADR;
             rExpr -> numVal = currentToken.val;
         }
-#else
-        if ( isTokenTyp( TYP_GREG )) {
-            
-            rExpr -> typ    = TYP_ADR;
-            rExpr -> numVal = currentToken.val;
-            nextToken( );
-        }
-        else parseExpr( rExpr );
-#endif
         
         acceptRparen( );
     }
@@ -911,9 +850,9 @@ void parseFactor( SimExpr *rExpr ) {
 //      <termOp>    ->  "*" | "/" | "%" | "&"
 //
 //------------------------------------------------------------------------------------------------------------
-void parseTerm( SimExpr *rExpr ) {
+void parseTerm( Expr *rExpr ) {
     
-    SimExpr lExpr;
+    Expr lExpr;
     
     parseFactor( rExpr );
     
@@ -947,9 +886,9 @@ void parseTerm( SimExpr *rExpr ) {
 //      <exprOp>    ->  "+" | "-" | "|" | "^"
 //
 //------------------------------------------------------------------------------------------------------------
-void parseExpr( SimExpr *rExpr ) {
+void parseExpr( Expr *rExpr ) {
     
-    SimExpr lExpr;
+    Expr lExpr;
     
     if ( isToken( TOK_PLUS )) {
         
@@ -991,54 +930,73 @@ void parseExpr( SimExpr *rExpr ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrOptions" will analyze the opCode option string. An opCode string is a sequence of characters.
-// We will look at each character in the "name" and set the options for the particular instruction. There are
-// also cases where the only option is a multi-character sequence. We detect invalid options but not when
-// the same option is repeated. E.g. a "LOL" will result in "L" and "O" set.
-//
-
-// ??? maybe a different approach. Just accumulate the flags and then syntax check...
-//
-// ??? we should first just parse all options we can find. Then we check using the instruction at hand.
+// Helper functions for instruction fields.
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrOptions( ) {
+static inline bool isAligned( T64Word adr, int align ) {
+    
+    return (( adr & ( align - 1 )) == 0 );
+}
+
+static inline bool isInRangeForBitField( T64Word val, int bitLen ) {
+    
+    int min = - ( 1 << (( bitLen - 1 ) % 64 ));
+    int max = ( 1 << (( bitLen - 1 ) % 64 )) - 1;
+    return (( val <= max ) && ( val >= min ));
+}
+
+static inline bool isInRangeForBitFieldU( T64Word val, int bitLen ) {
+    
+    int max = (( 1 << ( bitLen % 64 )) - 1 );
+    return ( val <= max );
+}
+
+static inline void setBitField( uint32_t *word, int bitpos, int len, T64Word value ) {
+    
+    uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
+    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
+}
+
+static inline void setInstrBit( int32_t *word, int bitpos, bool value ) {
+    
+    uint32_t mask = 1 << bitpos;
+    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
+}
+
+static inline void setInstrField( uint32_t *instr, int bitpos, int len, T64Word value ) {
+    
+    if ( isInRangeForBitField( value, len )) setBitField( instr, bitpos, len, value );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
+static inline void setInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word value ) {
+    
+    if ( isInRangeForBitField( value, len )) setBitField( instr, bitpos, len, value );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
+static inline void setInstrOpCode( uint32_t *instr, int opCodeGrp, int opCode ) {
+    
+    setInstrField( instr, 30, 2, opCodeGrp );
+    setInstrField( instr, 26, 4, opCode );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseInstrOptions" will analyze the opCode option string. An opCode string is a sequence of characters.
+// We will look at each character in the "name" and set the options for the particular instruction. There are
+// also cases where the only option is a multi-character sequence. They cannot be in the same ".xxx" group.
+// Currently only the CMP instruction is such a case. The assembler can handle multile ".xxx" sequences.
+// Once we have all options seen, we check that there are no conflicting options where only one out of a
+// flag group can be set.
+//
+//------------------------------------------------------------------------------------------------------------
+uint32_t parseInstrOptions( uint32_t instrOpCode ) {
     
     if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
     
+    uint32_t instrFlags = IF_NIL;
     char    *optBuf     = currentToken.str;
-    int     dwCount     = 0;
-    int     cmpCount    = 0;
-    
-    if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
-    else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
-    else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
-    else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
-    else {
-        
-        // ??? some characters may have more than one meaning ?
-        // ??? if so, just report the character and interpretation is done in the check ?
-        
-        for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-            
-            if      ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
-            if      ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
-            else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
-            else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
-            else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_RES_SIGN_EXT;
-            else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
-            else if ( optBuf[ i ] == 'Z' ) instrFlags |= IF_REG_ZERO_BEFORE;
-            else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
-            else if ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
-            else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
-            
-            
-            else throw ( ERR_INVALID_INSTR_OPT );
-        }
-    }
-    
-    // ??? part two check that thej flags are defined for the instruction ...
-    
+  
     switch( instrOpCode ) {
             
         case OP_LD:
@@ -1046,25 +1004,26 @@ void parseInstrOptions( ) {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                else if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             
         } break;
-            
-        case OP_ADD:
-        case OP_SUB: {
-            
-            throw ( ERR_INVALID_INSTR_OPT );
-            
-        } break;
-            
+       
         case OP_AND:
         case OP_OR: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if      ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
                 else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
@@ -1075,7 +1034,11 @@ void parseInstrOptions( ) {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             
@@ -1083,29 +1046,36 @@ void parseInstrOptions( ) {
             
         case OP_CMP: {
             
-            /*
-             // ??? this becomes ugly, as we have also the data width options...
-             
-             if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) setBitField( instr, 11, 2, 0 );
-             else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) setBitField( instr, 11, 2, 1 );
-             else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) setBitField( instr, 11, 2, 2 );
-             else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) setBitField( instr, 11, 2, 3 );
-             else throw ( ERR_INVALID_INSTR_OPT );
-             */
+            if ( strlen( optBuf ) == 1 ) {
+                
+                if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
+                else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_HALF_INSTR;
+                else if ( optBuf[ 0 ] == 'W' ) instrFlags |= IF_WORD_INSTR;
+                else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                else throw ( ERR_INVALID_INSTR_OPT );
+            }
+            else {
+                
+                if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
+                else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
+                else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
+                else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
+                else if ( strcmp( optBuf, ((char *) "OD" )) == 0 ) instrFlags |= IF_CMP_OD;
+                else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrFlags |= IF_CMP_EV;
+                else throw ( ERR_INVALID_INSTR_OPT );
+            }
             
         } break;
             
         case OP_CBR: {
             
-            /*
-             // ??? this becomes ugly, as we have also the data width options...
-             
-             if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) setBitField( instr, 11, 2, 0 );
-             else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) setBitField( instr, 11, 2, 1 );
-             else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) setBitField( instr, 11, 2, 2 );
-             else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) setBitField( instr, 11, 2, 3 );
-             else throw ( ERR_INVALID_INSTR_OPT );
-             */
+            if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
+            else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
+            else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
+            else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
+            else if ( strcmp( optBuf, ((char *) "OD" )) == 0 ) instrFlags |= IF_CMP_OD;
+            else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrFlags |= IF_CMP_EV;
+            else throw ( ERR_INVALID_INSTR_OPT );
             
         } break;
             
@@ -1147,30 +1117,14 @@ void parseInstrOptions( ) {
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
                 if      ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                else if ( optBuf[ i ] == '1' ) instrFlags |= IF_USE_IMM_VAL_1;
+                else if ( optBuf[ i ] == '2' ) instrFlags |= IF_USE_IMM_VAL_2;
+                else if ( optBuf[ i ] == '3' ) instrFlags |= IF_USE_IMM_VAL_3;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             
         } break;
-            
-        case OP_MR: {
-            
-            throw ( ERR_INVALID_INSTR_OPT );
-            
-        } break;
-            
-        case OP_MST: {
-            
-            /*
-             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-             
-             if      ( optBuf[ i ] == 'S' ) setBitField( instr, 11, 2, 1 );
-             else if ( optBuf[ i ] == 'C' ) setBitField( instr, 11, 2, 2 );
-             else throw ( ERR_INVALID_INSTR_OPT );
-             }
-             */
-            
-        } break;
-            
+       
         case OP_PRB: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
@@ -1182,50 +1136,80 @@ void parseInstrOptions( ) {
             
         } break;
             
-        case OP_ITLB: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-                
-                if ( optBuf[ 0 ] == 'T' ) instrFlags |= IF_CODE_TLB; // ???
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case OP_PTLB: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-                
-                if ( optBuf[ 0 ] == 'T' ) instrFlags |= IF_CODE_TLB; // ???
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case OP_PCA: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-                
-                if      ( optBuf[ 0 ] == 'T' ) instrFlags |= IF_CODE_TLB; // ???
-                else if ( optBuf[ i ] == 'F' ) instrFlags |= IF_FLUSH_OP;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
         default: throw ( ERR_INVALID_INSTR_OPT );
     }
     
-    // ??? test for data width and cmpCode setings...
+    int dwCount = 0;
+    if ( instrFlags & IF_BYTE_INSTR     ) dwCount ++;
+    if ( instrFlags & IF_HALF_INSTR     ) dwCount ++;
+    if ( instrFlags & IF_WORD_INSTR     ) dwCount ++;
+    if ( instrFlags & IF_DOUBLE_INSTR   ) dwCount ++;
+    if ( dwCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
+    
+    int cmpCount    = 0;
+    if ( instrFlags & IF_CMP_EQ ) cmpCount ++;
+    if ( instrFlags & IF_CMP_LT ) cmpCount ++;
+    if ( instrFlags & IF_CMP_NE ) cmpCount ++;
+    if ( instrFlags & IF_CMP_LE ) cmpCount ++;
+    if ( instrFlags & IF_CMP_OD ) cmpCount ++;
+    if ( instrFlags & IF_CMP_EV ) cmpCount ++;
+    if ( cmpCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
     
     nextToken( );
+    
+    return( instrFlags );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+T64Word parseRegR( uint32_t *instr ) {
+    
+    T64Word targetRegId = 0;
+    
+    if ( isTokenTyp( TYP_GREG )) {
+        
+        targetRegId = currentToken.val;
+        setInstrField( instr, 22, 4, targetRegId );
+        nextToken( );
+    }
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    return ( targetRegId );
+}
+
+
+void instrSetCmpCode( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+    
+    int fieldPos = 0; // ??? always the same position ?
+    
+    if      ( instrFlags & IF_CMP_EQ )  setInstrField( instr, fieldPos, 3, IF_CMP_EQ );
+    else if ( instrFlags & IF_CMP_LT )  setInstrField( instr, fieldPos, 3, IF_CMP_LT );
+    else if ( instrFlags & IF_CMP_NE )  setInstrField( instr, fieldPos, 3, IF_CMP_NE );
+    else if ( instrFlags & IF_CMP_LE )  setInstrField( instr, fieldPos, 3, IF_CMP_LE );
+    else if ( instrFlags & IF_CMP_OD )  setInstrField( instr, fieldPos, 3, IF_CMP_OD );
+    else if ( instrFlags & IF_CMP_EV )  setInstrField( instr, fieldPos, 3, IF_CMP_EV );
+    else throw( ERR_EXPECTED_INSTR_OPT );
+}
+
+void instrSetDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+    
+    int fieldPos = 0;
+    
+    // ??? different places for some intstruction...
+    
+    if      ( instrFlags & IF_BYTE_INSTR )   setInstrField( instr, fieldPos, 2, 0 );
+    else if ( instrFlags & IF_HALF_INSTR )   setInstrField( instr, fieldPos, 2, 1 );
+    else if ( instrFlags & IF_WORD_INSTR )   setInstrField( instr, fieldPos, 2, 2 );
+    else if ( instrFlags & IF_DOUBLE_INSTR ) setInstrField( instr, fieldPos, 2, 3 );
+    else throw( ERR_EXPECTED_INSTR_OPT );
 }
 
 
 #if 0
 
-
-
+// ??? needed ?
 //------------------------------------------------------------------------------------------------------------
 // "parseLogicalAdr" analyzes a logical address, which is used by several instruction with a "seg" field.
 //
@@ -1250,9 +1234,7 @@ void parseLogicalAdr( uint32_t *instr, uint32_t flags ) {
 // the source location for the load type instruction and the target for the store type instruction. The syntax
 // for the <operand> portion is either a
 //
-//      <ofs> "(" SR "," GR ")"
 //      <ofs> "(" GR ")"
-//      <GR>  "(" SR "," GR ")"
 //      <GR>  "(" GR ")"
 //
 // <loadInstr>  [ "." <opt> ] <targetReg>       "," <sourceOperand>
@@ -1262,10 +1244,7 @@ void parseLogicalAdr( uint32_t *instr, uint32_t flags ) {
 void parseLoadStoreOperand( uint32_t *instr, uint32_t flags ) {
     
     SimExpr  rExpr;
-    
-    if      ( flags & TF_BYTE_INSTR ) setBitField( instr, 15, 2, 0 );
-    else if ( flags & TF_HALF_INSTR ) setBitField( instr, 15, 2, 1 );
-    else if ( flags & TF_WORD_INSTR ) setBitField( instr, 15, 2, 2 );
+  
     
     parseExpr( &rExpr );
     
@@ -1297,15 +1276,6 @@ void parseLoadStoreOperand( uint32_t *instr, uint32_t flags ) {
 
 #endif
 
-void instrDepositCmpCode( uint32_t *instr ) {
-    
-    
-}
-
-void instrDepositDataWidth( uint32_t *instr ) {
-    
-    
-}
 
 //------------------------------------------------------------------------------------------------------------
 // "parseModeTypeInstr" parses all instructions that have several types of "operand" encoding. The syntax is
@@ -1320,21 +1290,13 @@ void instrDepositDataWidth( uint32_t *instr ) {
 // The instruction options have already been parsed and are available in the instrFlags variable.
 //
 //------------------------------------------------------------------------------------------------------------
-void parseModeTypeInstr( uint32_t *instr ) {
+void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
-    uint8_t     targetRegId = 0;
-    SimExpr     rExpr;
-    
-    setInstrField( instr, 26, 4, instrOpCode );
-    
-    if ( isTokenTyp( TYP_GREG )) {
-        
-        targetRegId = currentToken.val;
-        setInstrField( instr, 22, 4, targetRegId );
-        nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    uint8_t  targetRegId = 0;
+    Expr     rExpr;
+  
+    targetRegId = parseRegR( instr );
+   
     acceptComma( );
     parseExpr( &rExpr );
     
@@ -1342,12 +1304,14 @@ void parseModeTypeInstr( uint32_t *instr ) {
         
         if ( isToken( TOK_EOS )) {
             
-            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             
             if ( isInRangeForBitField( rExpr.numVal, 18 )) setInstrField( instr, 31, 18, rExpr.numVal );
             else throw ( ERR_IMM_VAL_RANGE );
         }
         else {
+            
+            setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
             
             if ( isInRangeForBitField( rExpr.numVal, 12 )) setInstrField( instr, 27, 12, rExpr.numVal );
             else throw ( ERR_IMM_VAL_RANGE );
@@ -1371,7 +1335,7 @@ void parseModeTypeInstr( uint32_t *instr ) {
         
         if ( isToken( TOK_EOS )) {
             
-            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             
             setInstrField( instr, 13, 2, 1 );
             setInstrField( instr, 27, 4, targetRegId );
@@ -1392,7 +1356,7 @@ void parseModeTypeInstr( uint32_t *instr ) {
             }
             else throw ( ERR_EXPECTED_GENERAL_REG );
             
-            setInstrField( instr, 30, 2, OP_GRP_ALU );
+            setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             
             if (( instrFlags & IF_BYTE_INSTR ) || ( instrFlags & IF_HALF_INSTR ) || ( instrFlags & IF_WORD_INSTR )) {
                 
@@ -1411,7 +1375,7 @@ void parseModeTypeInstr( uint32_t *instr ) {
             }
             else throw ( ERR_EXPECTED_LOGICAL_ADR );
             
-            setInstrField( instr, 30, 2, OP_GRP_MEM );
+            setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
             
             if      ( instrFlags & IF_BYTE_INSTR    ) setInstrField( instr, 15, 2, 0 );
             else if ( instrFlags & IF_HALF_INSTR    ) setInstrField( instr, 15, 2, 1 );
@@ -1473,7 +1437,6 @@ void parseInstrDEP( uint32_t *instr, uint32_t flags ) {
             
             acceptComma( );
             parseExpr( &rExpr );
-            
             
             if ( rExpr.typ == TYP_NUM ) {
                 
@@ -1983,25 +1946,53 @@ void parseInstrCBR( uint32_t *instr, uint32_t flags ) {
     checkEOS( );
 }
 
+#endif
+
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrLoad" will parse the load instructions family. The workhorse is the "parseLoadStoreOperand"
-// routine, which parses the operand. General form:
+// "parseInstrLoadAndStore" will parse the load instructions family.
 //
-//      <opCode>.<opt> <targetReg>, <sourceOperand>
+// <loadInstr>  [ "." <opt> ] <targetReg>   "," <sourceOperand>
+// <storeInstr> [ "." <opt> ] <sourceReg>   "," <targetOperand>
+//
+// The syntax for the <operand> portion is either a
+//
+//      <ofs> "(" GR ")"
+//      <GR>  "(" GR ")"
+//
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrLoadAndStore( uint32_t *instr, uint32_t flags ) {
+void parseInstrLoadAndStore( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    Expr rExpr;
     
+    parseRegR( instr );
     acceptComma( );
-    parseLoadStoreOperand( instr, flags );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
+        
+        setInstrField( instr, 0, 15, rExpr.numVal );
+        parseExpr( &rExpr );
+    }
+    else if ( rExpr.typ == TYP_GREG ) {
+        
+        if (( instrOpCode == OP_LDR ) || ( instrOpCode == OP_STC )) throw ( ERR_INVALID_INSTR_MODE );
+        
+        //  setBit( instr, 10 );
+        //   setBitField( instr, 27, 4, rExpr.numVal );
+        
+        parseExpr( &rExpr );
+    }
+    
+    if ( rExpr.typ == TYP_ADR ) {
+        
+        // setBitField( instr, 13, 2, 0 );
+        // setBitField( instr, 31, 4, rExpr.numVal );
+    }
+    else throw ( ERR_EXPECTED_LOGICAL_ADR );
 }
+
+#if 0
 
 //------------------------------------------------------------------------------------------------------------
 // The "MR" instruction is a move register instruction. We parse valid combination and assemble the
@@ -2376,7 +2367,7 @@ void parseInstrBRK( uint32_t *instr, uint32_t flags ) {
 //      NOP
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrNop( uint32_t *instr ) {
+void parseInstrNop( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
     // ??? complete current instruction... what to do ?
     
@@ -2405,7 +2396,7 @@ void parseInstrNop( uint32_t *instr ) {
 // ??? put in a try catch clause ?
 
 //------------------------------------------------------------------------------------------------------------
-void parseLine( char *inputStr, uint32_t *instr ) {
+void setupTokenizer( char *inputStr ) {
     
     strcpy( tokenLine, inputStr );
     upshiftStr( tokenLine );
@@ -2414,11 +2405,17 @@ void parseLine( char *inputStr, uint32_t *instr ) {
     currentCharIndex        = 0;
     currentTokCharIndex     = 0;
     currentChar             = ' ';
-    instrOpCode             = OP_NOP;
-    instrFlags              = IF_NIL;
-   
-    nextToken( );
     
+    nextToken( );
+}
+
+void parseLine( char *inputStr, uint32_t *instr ) {
+    
+    uint32_t instrOpCode    = OP_NOP;
+    uint32_t instrFlags     = IF_NIL;
+    
+    setupTokenizer( inputStr );
+   
     if ( isTokenTyp( TYP_OP_CODE )) {
         
         instrOpCode = currentToken.tid;
@@ -2427,19 +2424,19 @@ void parseLine( char *inputStr, uint32_t *instr ) {
         while ( isToken( TOK_PERIOD )) {
             
             nextToken( );
-            parseInstrOptions( );
+            parseInstrOptions( instrOpCode );
         }
-        
+    
         switch( instrOpCode ) {
                 
-            case OP_NOP: parseInstrNop( instr ); break;
-             
+            case OP_NOP: parseInstrNop( instr, instrOpCode, instrFlags ); break;
+           
             case OP_ADD:
             case OP_SUB:
             case OP_AND:
             case OP_OR:
             case OP_XOR:
-            case OP_CMP: parseModeTypeInstr( instr ); break;
+            case OP_CMP: parseModeTypeInstr( instr, instrOpCode, instrFlags ); break;
                 
                 
                 

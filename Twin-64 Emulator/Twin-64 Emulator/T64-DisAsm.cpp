@@ -100,67 +100,67 @@ namespace {
 
 
 
-static inline bool isAligned( int64_t adr, int align ) {
+static inline bool isAligned( T64Word adr, int align ) {
     
     return (( adr & ( align - 1 )) == 0 );
 }
 
-static inline bool isInRange( int64_t adr, int64_t low, int64_t high ) {
+static inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
     
     return(( adr >= low ) && ( adr <= high ));
 }
 
-static inline int64_t roundup( uint64_t arg ) {
+static inline T64Word roundup( uT64Word arg ) {
     
     return( arg ); // for now ...
 }
 
-static inline int64_t extractBit( int64_t arg, int bitpos ) {
+static inline T64Word extractBit( T64Word arg, int bitpos ) {
     
     return ( arg >> bitpos ) & 1;
 }
 
-static inline int64_t extractField( int64_t arg, int bitpos, int len) {
+static inline T64Word extractField( T64Word arg, int bitpos, int len) {
     
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-static inline int64_t extractSignedField( int64_t arg, int bitpos, int len ) {
+static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
     
-    int64_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
     if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
     else             return ( field );
     
 }
 
-static inline int64_t depositField( int64_t word, int bitpos, int len, int64_t value) {
+static inline T64Word depositField( T64Word word, int bitpos, int len, T64Word value) {
     
-    int64_t mask = (( 1ULL << len ) - 1 ) << bitpos;
+    T64Word mask = (( 1ULL << len ) - 1 ) << bitpos;
     return ( word & ~mask ) | (( value << bitpos ) & mask );
 }
 
-bool willAddOverflow( int64_t a, int64_t b ) {
+bool willAddOverflow( T64Word a, T64Word b ) {
     
     if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
     if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
     return false;
 }
 
-bool willSubOverflow( int64_t a, int64_t b ) {
+bool willSubOverflow( T64Word a, T64Word b ) {
     
     if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
     if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
     return false;
 }
 
-bool willShiftLftOverflow( int64_t a, int shift ) {
+bool willShiftLftOverflow( T64Word a, int shift ) {
     
     if (( shift < 0 ) || ( shift >= 64 )) return true;
     if ( a == 0 ) return false;
     
-    int64_t max = INT64_MAX >> shift;
-    int64_t min = INT64_MIN >> shift;
+    T64Word max = INT64_MAX >> shift;
+    T64Word min = INT64_MIN >> shift;
     
     return (( a > max ) || ( a < min ));
 }
@@ -206,7 +206,7 @@ uint8_t strToOpCode( char *opStr ) {
 //
 //------------------------------------------------------------------------------------------------------------
 // Format hex with '_' every 4, 8, 12, or 16 digits, no "0x", left-padded with zeros if desired
-void format_hex64( int64_t value, char *buf, int digits = 16 ) {
+void format_hex64( T64Word value, char *buf, int digits = 16 ) {
     
     if ( digits < 1 ) digits    = 1;
     if ( digits > 16 ) digits   = 16;
@@ -237,7 +237,7 @@ void format_hex64( int64_t value, char *buf, int digits = 16 ) {
 //
 //------------------------------------------------------------------------------------------------------------
 // Format decimal with '_' every 3 digits (from right to left)
-void format_dec64( int64_t value, char *buf ) {
+void format_dec64( T64Word value, char *buf ) {
     char temp[32]; // enough to hold 20-digit uint64 + separators
     int len = 0;
     
