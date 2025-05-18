@@ -35,10 +35,6 @@
 #include <ctype.h>
 #include "T64-Types.h"
 
-//
-// 52 bit virtual address: 20bit segment, 32 offset. => 4 Exabytes
-// 4Gb Segments, 1Mio Segments
-//
 
 // Assembler notes:
 //
@@ -97,8 +93,9 @@ enum ErrId : uint16_t {
     ERR_INVALID_OP_CODE             = 411,
     ERR_EXPECTED_GENERAL_REG        = 412,
     ERR_IMM_VAL_RANGE               = 413,
-    ERR_EXPECTED_LOGICAL_ADR        = 414,
+    ERR_EXPECTED_ADR                = 414,
     ERR_INVALID_INSTR_MODE          = 415,
+    ERR_REG_VAL_RANGE               = 416
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -163,7 +160,7 @@ enum TokId : uint16_t {
     OP_EXTR                 = 307,      OP_DEP                  = 308,      OP_DSR                  = 309,
     OP_SHLA                 = 310,
     
-    OP_LDIL                 = 311,      OP_ADDIL                = 312,      OP_LDO                  = 313,
+    OP_LDI                  = 311,      OP_ADDIL                = 312,      OP_LDO                  = 313,
     OP_LD                   = 314,      OP_LDR                  = 315,
     OP_ST                   = 316,      OP_STC                  = 317,
     
@@ -176,7 +173,8 @@ enum TokId : uint16_t {
     OP_ITLB                 = 330,      OP_PTLB                 = 331,
     OP_PCA                  = 332,      OP_FCA                  = 333,
     
-    OP_RFI                  = 335,      OP_BRK                  = 336,      OP_DIAG                 = 337,
+    OP_RFI                  = 335,      OP_BRK                  = 336,      OP_CHK                  = 337,
+    OP_DIAG                 = 338,
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -304,7 +302,7 @@ const Token asmTokTab[ ] = {
     { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = OP_DEP,              .val = 0x00000000   },
     { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = OP_DSR,              .val = 0x00000000   },
     { .name = "SHLA",           .typ = TYP_OP_CODE,         .tid = OP_SHLA,             .val = 0x00000000   },
-    { .name = "LDIL",           .typ = TYP_OP_CODE,         .tid = OP_LDIL,             .val = 0x00000000   },
+    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = OP_LDI,             .val = 0x00000000   },
     { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = OP_ADDIL,            .val = 0x00000000   },
     { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = OP_LDO,              .val = 0x00000000   },
     { .name = "LD",             .typ = TYP_OP_CODE,         .tid = OP_LD,               .val = 0x00000000   },
@@ -324,7 +322,10 @@ const Token asmTokTab[ ] = {
     { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = OP_PTLB,             .val = 0x00000000   },
     { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = OP_PCA,              .val = 0x00000000   },
     { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = OP_FCA,              .val = 0x00000000   },
+    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = OP_RSM,              .val = 0x00000000   },
+    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = OP_SSM,              .val = 0x00000000   },
     { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = OP_RFI,              .val = 0x00000000   },
+    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = OP_CHK,              .val = 0x00000000   },
     { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = OP_BRK,              .val = 0x00000000   },
     { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,             .val = 0x00000000   },
     
@@ -352,29 +353,29 @@ enum InstrFlags : uint32_t {
     
     IF_NIL                  = 0,
    
-    IF_ADR_UPDATE           = ( 1U << 4 ),
+    IF_REG_COMPLEMENT       = ( 1U << 1  ),
+    IF_RES_NEGATE           = ( 1U << 2  ),
+    IF_REG_ZERO_BEFORE      = ( 1U << 3  ),
+    IF_RES_SIGN_EXT         = ( 1U << 4  ),
     IF_USE_SHAMT_REG        = ( 1U << 5  ),
-    IF_USE_IMM_LEFT         = ( 1U << 6  ),
-    IF_USE_IMM_RIGHT        = ( 1U << 7  ),
-    IF_USE_IMM_UPPER        = ( 1U << 8  ),
-    IF_REG_COMPLEMENT       = ( 1U << 9  ),
-    IF_REG_ZERO_BEFORE      = ( 1U << 10 ),
-    IF_RES_SIGN_EXT         = ( 1U << 11 ),
-    IF_RES_NEGATE           = ( 1U << 12 ),
+    IF_ADR_UPDATE           = ( 1U << 6  ),
     
-    IF_READ_ACCESS          = ( 1U << 13 ),
-    IF_WRITE_ACCESS         = ( 1U << 14 ),
-    IF_EXEC_ACCESS          = ( 1U << 15 ),
+    IF_READ_ACCESS          = ( 1U << 10 ),
+    IF_WRITE_ACCESS         = ( 1U << 11 ),
+    IF_EXEC_ACCESS          = ( 1U << 12 ),
     
-    IF_USE_IMM_VALUE        = ( 1U << 16 ),
+    IF_USE_IMM_VALUE        = ( 1U << 13 ),
+    IF_USE_IMM_VAL_L         = ( 1U << 14 ),
+    IF_USE_IMM_VAL_S        = ( 1U << 15 ),
+    IF_USE_IMM_VAL_U        = ( 1U << 16 ),
     IF_USE_IMM_VAL_1        = ( 1U << 17 ),
     IF_USE_IMM_VAL_2        = ( 1U << 18 ),
     IF_USE_IMM_VAL_3        = ( 1U << 19 ),
     
-    IF_BYTE_INSTR           = ( 1U << 20 ),
-    IF_HALF_INSTR           = ( 1U << 21 ),
-    IF_WORD_INSTR           = ( 1U << 22 ),
-    IF_DOUBLE_INSTR         = ( 1U << 23 ),
+    IF_DW_BYTE              = ( 1U << 20 ),
+    IF_DW_HALF              = ( 1U << 21 ),
+    IF_DW_WORD              = ( 1U << 22 ),
+    IF_DW_DOUBLE            = ( 1U << 23 ),
     
     IF_CMP_EQ               = ( 1U << 24 ),
     IF_CMP_NE               = ( 1U << 25 ),
@@ -397,7 +398,6 @@ struct Expr {
     
     union {
         
-        struct {    TokId       tokId;                  };
         struct {    T64Word     numVal;                 };
         struct {    T64Word     adr;                    };
         struct {    char        strVal[ TOK_STR_SIZE ]; };
@@ -981,6 +981,42 @@ static inline void setInstrOpCode( uint32_t *instr, int opCodeGrp, int opCode ) 
     setInstrField( instr, 26, 4, opCode );
 }
 
+static inline void setInstrRegR( uint32_t *instr, T64Word regId ) {
+    
+    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 22, 4, regId );
+    else throw( ERR_REG_VAL_RANGE );
+}
+
+static inline void setInstrRegB( uint32_t *instr, T64Word regId ) {
+    
+    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 15, 4, regId );
+    else throw( ERR_REG_VAL_RANGE );
+}
+
+static inline void setInstrRegA( uint32_t *instr, T64Word regId ) {
+    
+    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 9, 4, regId );
+    else throw( ERR_REG_VAL_RANGE );
+}
+
+static inline void setInstrImm19( uint32_t *instr, T64Word val ) {
+    
+    if ( isInRangeForBitField( val, 4 )) setBitField( instr, 0, 19, val );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
+static inline void setInstrImm15( uint32_t *instr, T64Word val ) {
+    
+    if ( isInRangeForBitField( val, 4 )) setBitField( instr, 0, 19, val );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
+static inline void setInstrImm13( uint32_t *instr, T64Word val ) {
+    
+    if ( isInRangeForBitField( val, 4 )) setBitField( instr, 0, 19, val );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrOptions" will analyze the opCode option string. An opCode string is a sequence of characters.
 // We will look at each character in the "name" and set the options for the particular instruction. There are
@@ -999,30 +1035,15 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
   
     switch( instrOpCode ) {
             
-        case OP_LD:
-        case OP_ST: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
-                
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
-                else if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-       
         case OP_AND:
         case OP_OR: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
                 else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
                 else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
                 else throw ( ERR_INVALID_INSTR_OPT );
@@ -1034,10 +1055,10 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_HALF_INSTR;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WORD_INSTR;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
                 else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
@@ -1048,10 +1069,10 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
             if ( strlen( optBuf ) == 1 ) {
                 
-                if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_BYTE_INSTR;
-                else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_HALF_INSTR;
-                else if ( optBuf[ 0 ] == 'W' ) instrFlags |= IF_WORD_INSTR;
-                else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DOUBLE_INSTR;
+                if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_DW_HALF;
+                else if ( optBuf[ 0 ] == 'W' ) instrFlags |= IF_DW_WORD;
+                else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             else {
@@ -1064,18 +1085,6 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
                 else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrFlags |= IF_CMP_EV;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
-            
-        } break;
-            
-        case OP_CBR: {
-            
-            if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
-            else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
-            else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
-            else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
-            else if ( strcmp( optBuf, ((char *) "OD" )) == 0 ) instrFlags |= IF_CMP_OD;
-            else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrFlags |= IF_CMP_EV;
-            else throw ( ERR_INVALID_INSTR_OPT );
             
         } break;
             
@@ -1124,13 +1133,68 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             }
             
         } break;
+            
+        case OP_LDI: {
+            
+            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                
+                if      ( optBuf[ i ] == 'L' ) instrFlags |= IF_USE_IMM_VAL_L;
+                else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_USE_IMM_VAL_S;
+                else if ( optBuf[ i ] == 'U' ) instrFlags |= IF_USE_IMM_VAL_U;
+                else throw ( ERR_INVALID_INSTR_OPT );
+            }
+            
+        } break;
+            
+        case OP_LD:
+        case OP_ST: {
+            
+            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                else if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
+                else throw ( ERR_INVALID_INSTR_OPT );
+            }
+            
+        } break;
        
+        case OP_CBR:
+        case OP_MBR: {
+            
+            if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
+            else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
+            else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
+            else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
+            else if ( strcmp( optBuf, ((char *) "OD" )) == 0 ) instrFlags |= IF_CMP_OD;
+            else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrFlags |= IF_CMP_EV;
+            else throw ( ERR_INVALID_INSTR_OPT );
+            
+        } break;
+            
         case OP_PRB: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
-                if      ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS; // ???
+                if      ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
+                else if ( optBuf[ i ] == 'X' ) instrFlags |= IF_EXEC_ACCESS;
                 else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                else throw ( ERR_INVALID_INSTR_OPT );
+            }
+            
+        } break;
+            
+        case OP_CHK: {
+            
+            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                
+                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             
@@ -1140,10 +1204,10 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
     }
     
     int dwCount = 0;
-    if ( instrFlags & IF_BYTE_INSTR     ) dwCount ++;
-    if ( instrFlags & IF_HALF_INSTR     ) dwCount ++;
-    if ( instrFlags & IF_WORD_INSTR     ) dwCount ++;
-    if ( instrFlags & IF_DOUBLE_INSTR   ) dwCount ++;
+    if ( instrFlags & IF_DW_BYTE     ) dwCount ++;
+    if ( instrFlags & IF_DW_HALF     ) dwCount ++;
+    if ( instrFlags & IF_DW_WORD     ) dwCount ++;
+    if ( instrFlags & IF_DW_DOUBLE   ) dwCount ++;
     if ( dwCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
     
     int cmpCount    = 0;
@@ -1161,7 +1225,8 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-//
+// Most instruction have the result register as an instruction field. We set the field and also return the
+// register number.
 //
 //------------------------------------------------------------------------------------------------------------
 T64Word parseRegR( uint32_t *instr ) {
@@ -1179,7 +1244,10 @@ T64Word parseRegR( uint32_t *instr ) {
     return ( targetRegId );
 }
 
-
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 void instrSetCmpCode( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
     int fieldPos = 0; // ??? always the same position ?
@@ -1193,16 +1261,30 @@ void instrSetCmpCode( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags
     else throw( ERR_EXPECTED_INSTR_OPT );
 }
 
-void instrSetDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
     int fieldPos = 0;
     
-    // ??? different places for some intstruction...
-    
-    if      ( instrFlags & IF_BYTE_INSTR )   setInstrField( instr, fieldPos, 2, 0 );
-    else if ( instrFlags & IF_HALF_INSTR )   setInstrField( instr, fieldPos, 2, 1 );
-    else if ( instrFlags & IF_WORD_INSTR )   setInstrField( instr, fieldPos, 2, 2 );
-    else if ( instrFlags & IF_DOUBLE_INSTR ) setInstrField( instr, fieldPos, 2, 3 );
+    if (( instrOpCode == OP_ADD ) || ( instrOpCode == OP_SUB ) || ( instrOpCode == OP_CMP ) ||
+        ( instrOpCode == OP_AND ) || ( instrOpCode == OP_OR )  || ( instrOpCode == OP_XOR )) {
+        
+        fieldPos = 13;
+    }
+    else if (( instrOpCode == OP_LD) || ( instrOpCode == OP_ST ) || ( instrOpCode == OP_CHK )) {
+        
+        fieldPos = 20;
+        
+    }
+    else ;
+   
+    if      ( instrFlags & IF_DW_BYTE   )   setInstrField( instr, fieldPos, 2, 0 );
+    else if ( instrFlags & IF_DW_HALF   )   setInstrField( instr, fieldPos, 2, 1 );
+    else if ( instrFlags & IF_DW_WORD   )   setInstrField( instr, fieldPos, 2, 2 );
+    else if ( instrFlags & IF_DW_DOUBLE )   setInstrField( instr, fieldPos, 2, 3 );
     else throw( ERR_EXPECTED_INSTR_OPT );
 }
 
@@ -1229,50 +1311,6 @@ void parseLogicalAdr( uint32_t *instr, uint32_t flags ) {
     else throw ( ERR_EXPECTED_LOGICAL_ADR );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseLoadStoreOperand" parses the operand portion of the load and store instruction family. It represents
-// the source location for the load type instruction and the target for the store type instruction. The syntax
-// for the <operand> portion is either a
-//
-//      <ofs> "(" GR ")"
-//      <GR>  "(" GR ")"
-//
-// <loadInstr>  [ "." <opt> ] <targetReg>       "," <sourceOperand>
-// <storeInstr> [ "." <opt> ] <targetOperand>   "," <sourceReg>
-//
-//------------------------------------------------------------------------------------------------------------
-void parseLoadStoreOperand( uint32_t *instr, uint32_t flags ) {
-    
-    SimExpr  rExpr;
-  
-    
-    parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( isInRangeForBitField( rExpr.numVal, 12 )) setBitField( instr, 27, 12, rExpr.numVal );
-        else throw ( ERR_IMM_VAL_RANGE );
-        
-        parseExpr( &rExpr );
-    }
-    else if ( rExpr.typ == TYP_GREG ) {
-        
-        if (( getBitField( *instr, 5, 6 ) == OP_LDR ) || ( getBitField( *instr, 5, 6 ) == OP_STC ))
-            throw ( ERR_INVALID_INSTR_MODE );
-        
-        setBit( instr, 10 );
-        setBitField( instr, 27, 4, rExpr.numVal );
-        
-        parseExpr( &rExpr );
-    }
-    
-    if ( rExpr.typ == TYP_ADR ) {
-        
-        setBitField( instr, 13, 2, 0 );
-        setBitField( instr, 31, 4, rExpr.numVal );
-    }
-    else throw ( ERR_EXPECTED_LOGICAL_ADR );
-}
 
 #endif
 
@@ -1305,30 +1343,19 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
         if ( isToken( TOK_EOS )) {
             
             setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
+            setInstrImm19( instr, rExpr.numVal );
             
-            if ( isInRangeForBitField( rExpr.numVal, 18 )) setInstrField( instr, 31, 18, rExpr.numVal );
-            else throw ( ERR_IMM_VAL_RANGE );
+            // ??? check for DW bit setting ?
         }
         else {
             
             setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
-            
-            if ( isInRangeForBitField( rExpr.numVal, 12 )) setInstrField( instr, 27, 12, rExpr.numVal );
-            else throw ( ERR_IMM_VAL_RANGE );
-            
+            setInstrDataWidth( instr, instrOpCode, instrFlags );
+            setInstrImm13( instr, rExpr.numVal );
+         
             parseExpr( &rExpr );
-            
-            if ( rExpr.typ == TYP_ADR ) {
-                
-                setInstrField( instr, 13, 2, 3 );
-                setInstrField( instr, 31, 4, rExpr.numVal );
-            }
-            else throw ( ERR_EXPECTED_LOGICAL_ADR );
-            
-            if      ( instrFlags & IF_BYTE_INSTR   ) setInstrField( instr, 2, 0, 0 );
-            else if ( instrFlags & IF_HALF_INSTR   ) setInstrField( instr, 15, 2, 1 );
-            else if ( instrFlags & IF_WORD_INSTR   ) setInstrField( instr, 15, 2, 2 );
-            else if ( instrFlags & IF_DOUBLE_INSTR ) setInstrField( instr, 15, 2, 2 );
+            if ( rExpr.typ == TYP_ADR ) setInstrRegB( instr, rExpr.numVal );
+            else throw ( ERR_EXPECTED_ADR );
         }
     }
     else if ( rExpr.typ == TYP_GREG ) {
@@ -1336,51 +1363,41 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
         if ( isToken( TOK_EOS )) {
             
             setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
-            
-            setInstrField( instr, 13, 2, 1 );
-            setInstrField( instr, 27, 4, targetRegId );
-            setInstrField( instr, 31, 4, rExpr.numVal );
+            setInstrRegA( instr, targetRegId );
+            setInstrRegB( instr, rExpr.numVal );
         }
         else if ( isToken( TOK_COMMA )) {
             
-            setInstrField( instr, 13, 2, 1 );
-            setInstrField( instr, 27, 4, rExpr.numVal );
+            setInstrRegB( instr, rExpr.numVal );
             
             nextToken( );
             if ( isTokenTyp( TYP_GREG )) {
                
-                setInstrField( instr, 13, 2, 1 );
-                setInstrField( instr, 27, 4, rExpr.numVal );
-                setInstrField( instr, 31, 4, currentToken.val );
+                setInstrRegA( instr, rExpr.numVal );
                 nextToken( );
             }
             else throw ( ERR_EXPECTED_GENERAL_REG );
             
             setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             
-            if (( instrFlags & IF_BYTE_INSTR ) || ( instrFlags & IF_HALF_INSTR ) || ( instrFlags & IF_WORD_INSTR )) {
+            
+            
+            if (( instrFlags & IF_DW_BYTE ) || ( instrFlags & IF_DW_HALF ) ||
+                ( instrFlags & IF_DW_WORD ) || ( instrFlags & IF_DW_DOUBLE )) {
                 
                 // ??? invalid option for not MEM type...
             }
         }
         else if ( isToken( TOK_LPAREN )) {
             
-            setInstrField( instr, 27, 4, (uint32_t) rExpr.numVal );
+            setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
+            setInstrDataWidth( instr, instrOpCode, instrFlags );
+            
+            setInstrField( instr, 27, 4, rExpr.numVal ); // ???
             
             parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_ADR ) {
-                
-                setInstrField( instr, 13, 2, 2 );
-                setInstrField( instr, 31, 4, (uint32_t) rExpr.numVal );
-            }
-            else throw ( ERR_EXPECTED_LOGICAL_ADR );
-            
-            setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
-            
-            if      ( instrFlags & IF_BYTE_INSTR    ) setInstrField( instr, 15, 2, 0 );
-            else if ( instrFlags & IF_HALF_INSTR    ) setInstrField( instr, 15, 2, 1 );
-            else if ( instrFlags & IF_WORD_INSTR    ) setInstrField( instr, 15, 2, 2 );
-            else if ( instrFlags & IF_DOUBLE_INSTR  ) setInstrField( instr, 15, 2, 2 );
+            if ( rExpr.typ == TYP_ADR )  setInstrRegB( instr, rExpr.numVal );
+            else throw ( ERR_EXPECTED_ADR );
         }
     }
     else throw ( ERR_INVALID_INSTR_MODE );
@@ -1989,7 +2006,7 @@ void parseInstrLoadAndStore( uint32_t *instr, uint32_t instrOpCode, uint32_t ins
         // setBitField( instr, 13, 2, 0 );
         // setBitField( instr, 31, 4, rExpr.numVal );
     }
-    else throw ( ERR_EXPECTED_LOGICAL_ADR );
+    else throw ( ERR_EXPECTED_ADR );
 }
 
 #if 0
