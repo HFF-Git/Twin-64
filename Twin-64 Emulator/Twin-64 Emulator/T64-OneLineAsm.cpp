@@ -618,6 +618,8 @@ void parseIdent( ) {
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
         }
     }
+    
+    // ??? U and S ?
   
     while (( isalnum( currentChar )) || ( currentChar == '_' )) {
         
@@ -957,7 +959,7 @@ static inline void setBitField( uint32_t *word, int bitpos, int len, T64Word val
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-static inline void setInstrBit( int32_t *word, int bitpos, bool value ) {
+static inline void setInstrBit( uint32_t *word, int bitpos, bool value ) {
     
     uint32_t mask = 1 << bitpos;
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
@@ -1015,6 +1017,12 @@ static inline void setInstrImm13( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitField( val, 4 )) setBitField( instr, 0, 19, val );
     else throw( ERR_IMM_VAL_RANGE );
+}
+
+bool hasDataWidthFlags( uint32_t instrFlags ) {
+    
+    return(( instrFlags & IF_DW_BYTE ) || ( instrFlags & IF_DW_HALF ) ||
+           ( instrFlags & IF_DW_WORD ) || ( instrFlags & IF_DW_DOUBLE ));
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1288,33 +1296,6 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFla
     else throw( ERR_EXPECTED_INSTR_OPT );
 }
 
-
-#if 0
-
-// ??? needed ?
-//------------------------------------------------------------------------------------------------------------
-// "parseLogicalAdr" analyzes a logical address, which is used by several instruction with a "seg" field.
-//
-//      "(" <ofsReg> ")"
-//
-//------------------------------------------------------------------------------------------------------------
-void parseLogicalAdr( uint32_t *instr, uint32_t flags ) {
-    
-    SimExpr rExpr;
-    
-    parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_ADR ) {
-        
-        setBitField( instr, 31, 4, rExpr.adr );
-    }
-    else throw ( ERR_EXPECTED_LOGICAL_ADR );
-}
-
-
-#endif
-
-
 //------------------------------------------------------------------------------------------------------------
 // "parseModeTypeInstr" parses all instructions that have several types of "operand" encoding. The syntax is
 // as follows:
@@ -1345,7 +1326,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
             setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             setInstrImm19( instr, rExpr.numVal );
             
-            // ??? check for DW bit setting ?
+            if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_OPT );
         }
         else {
             
@@ -1365,9 +1346,12 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
             setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             setInstrRegA( instr, targetRegId );
             setInstrRegB( instr, rExpr.numVal );
+            
+            if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_OPT );
         }
         else if ( isToken( TOK_COMMA )) {
             
+            setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
             setInstrRegB( instr, rExpr.numVal );
             
             nextToken( );
@@ -1378,22 +1362,12 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
             }
             else throw ( ERR_EXPECTED_GENERAL_REG );
             
-            setInstrOpCode( instr, OP_GRP_ALU, instrOpCode );
-            
-            
-            
-            if (( instrFlags & IF_DW_BYTE ) || ( instrFlags & IF_DW_HALF ) ||
-                ( instrFlags & IF_DW_WORD ) || ( instrFlags & IF_DW_DOUBLE )) {
-                
-                // ??? invalid option for not MEM type...
-            }
+            if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_OPT );
         }
         else if ( isToken( TOK_LPAREN )) {
             
             setInstrOpCode( instr, OP_GRP_MEM, instrOpCode );
             setInstrDataWidth( instr, instrOpCode, instrFlags );
-            
-            setInstrField( instr, 27, 4, rExpr.numVal ); // ???
             
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_ADR )  setInstrRegB( instr, rExpr.numVal );
@@ -1402,10 +1376,63 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
     }
     else throw ( ERR_INVALID_INSTR_MODE );
     
+    if ( instrOpCode == OP_AND ) {
+        
+        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
+        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
+    }
+    else if (( instrOpCode == OP_OR ) || ( instrOpCode == OP_XOR )) {
+        
+        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
+    }
+    else if ( instrOpCode == OP_CMP ) {
+        
+        instrSetCmpCode( instr, instrOpCode, instrFlags );
+    }
+             
     checkEOS( );
 }
 
-#if 0
+//------------------------------------------------------------------------------------------------------------
+// "parseInstrEXTR" parses the extract instruction. The instruction has two basic formats. When the "A" bit
+// is set, the position will be obtained from the shift amount control register. Otherwise it is encoded in
+// the instruction.
+//
+//      EXTR [ ".“ <opt> ]      <targetReg> "," <sourceReg> "," <pos> "," <len"
+//      EXTR "." "A" [ <opt> ]  <targetReg> "," <sourceReg> ", <len"
+//
+// ??? the "pos" is variable !!!!
+//------------------------------------------------------------------------------------------------------------
+void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+    *instr = 0;
+    
+    setInstrOpCode( instr, OP_GRP_ALU, OP_EXTR );
+    parseRegR( instr );
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    parseExpr( &rExpr );
+    
+    if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 6, 6, rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
+    if ( ! ( instrFlags & IF_USE_SHAMT_REG )) {
+    
+        acceptComma( );
+        parseExpr( &rExpr );
+        
+        if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 0, 6, rExpr.numVal );
+        else throw ( ERR_EXPECTED_NUMERIC );
+    }
+    
+    checkEOS( );
+}
 
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrDEP" parses the deposit instruction. The instruction has three basic formats.
@@ -1418,28 +1445,26 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
 //      DEP [ "." "AI" <opt> ]  <targetReg> "," <val> "," <len>
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrDEP( uint32_t *instr, uint32_t flags ) {
+void parseInstrDEP( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
-    SimExpr rExpr;
+    Expr rExpr;
     
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    *instr = 0;
     
+    setInstrOpCode( instr, OP_GRP_ALU, OP_DEP );
+    parseRegR( instr );
     acceptComma( );
-    parseExpr( &rExpr );
     
+    parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        setBitField( instr, 31, 4, tok -> tokVal( ));
-        
+        setInstrRegB( instr, rExpr.numVal );
         acceptComma( );
         parseExpr( &rExpr );
         
         if ( rExpr.typ == TYP_NUM ) {
+            
+            setInstrField( instr, 6, 6, rExpr.numVal );
             
             if ( isInRangeForBitFieldU( tok -> tokVal( ), 5 )) {
                 
@@ -1497,6 +1522,10 @@ void parseInstrDEP( uint32_t *instr, uint32_t flags ) {
     
     checkEOS( );
 }
+
+
+#if 0
+
 
 //------------------------------------------------------------------------------------------------------------
 // The DS instruction parses the divide step instruction.
@@ -1587,67 +1616,6 @@ void parseInstrDSR( uint32_t *instr, uint32_t flags ) {
     checkEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrEXTR" parses the extract instruction. The instruction has two basic formats. When the "A" bit
-// is set, the position will be obtained from the shift amount control register. Otherwise it is encoded in
-// the instruction.
-//
-//      EXTR [ ".“ <opt> ]      <targetReg> "," <sourceReg> "," <pos> "," <len"
-//      EXTR "." "A" [ <opt> ]  <targetReg> "," <sourceReg> ", <len"
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrEXTR( uint32_t *instr, uint32_t flags ) {
-    
-    SimExpr rExpr;
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 31, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( isInRangeForBitFieldU( tok -> tokVal( ), 5 )) {
-            
-            if ( getBit( *instr, 11 ))  setBitField( instr, 21, 5, rExpr.numVal );
-            else                        setBitField( instr, 27, 5, rExpr.numVal );
-        }
-        else throw ( ERR_IMM_VAL_RANGE );
-    }
-    else throw ( ERR_EXPECTED_NUMERIC );
-    
-    if ( ! getBit( *instr, 11 )) {
-        
-        acceptComma( );
-        parseExpr( &rExpr );
-        
-        if ( rExpr.typ == TYP_NUM ) {
-            
-            if ( isInRangeForBitFieldU( rExpr.numVal, 5 )) {
-                
-                setBitField( instr, 21, 5, rExpr.numVal );
-            }
-            else throw ( ERR_IMM_VAL_RANGE );
-        }
-        else throw ( ERR_EXPECTED_NUMERIC );
-    }
-    
-    checkEOS( );
-}
 
 //------------------------------------------------------------------------------------------------------------
 // The SHLA instruction performs a shift left of "B" by "sa" and adds the "A" register to it.
@@ -2432,6 +2400,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
     uint32_t instrFlags     = IF_NIL;
     
     setupTokenizer( inputStr );
+    *instr = 0;
    
     if ( isTokenTyp( TYP_OP_CODE )) {
         
@@ -2446,16 +2415,17 @@ void parseLine( char *inputStr, uint32_t *instr ) {
     
         switch( instrOpCode ) {
                 
-            case OP_NOP: parseInstrNop( instr, instrOpCode, instrFlags ); break;
+            case OP_NOP:    parseInstrNop( instr, instrOpCode, instrFlags );        break;
            
             case OP_ADD:
             case OP_SUB:
             case OP_AND:
             case OP_OR:
             case OP_XOR:
-            case OP_CMP: parseModeTypeInstr( instr, instrOpCode, instrFlags ); break;
+            case OP_CMP:    parseModeTypeInstr( instr, instrOpCode, instrFlags );   break;
                 
-                
+            case OP_EXTR:   parseInstrEXTR( instr, instrOpCode, instrFlags );       break;
+            case OP_DEP:    parseInstrDEP( instr, instrOpCode, instrFlags );        break;
                 
                 /*
                  
@@ -2476,8 +2446,8 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  }
                  
                  case OP_CODE_LSID:      return( parseInstrLSID( instr, flags ));
-                 case OP_CODE_EXTR:      return( parseInstrEXTR( instr, flags ));
-                 case OP_CODE_DEP:       return( parseInstrDEP( instr, flags ));
+                 
+                
                  
                  case OP_CODE_DS:        return( parseInstrDS( instr, flags ));
                  
