@@ -63,65 +63,183 @@ enum ControlRegId : int {
     CTL_REG_PID3    = 7,
     CTL_REG_IVA     = 8,
     
-    
-    
 };
 
+
 //------------------------------------------------------------------------------------------------------------
+// Instrction Opcodes are composed of group, family and a couple of bits in the respective instruction field.
+// We logically OR them togther to form the unique instruction OpCode.
 //
-//
+// ??? this is the central table ....
 //------------------------------------------------------------------------------------------------------------
-enum OpCodes : uint8_t {
+enum OpCodeMasks : uint32_t {
     
-    OP_GRP_ALU      = 0x00,
-    OP_GRP_MEM      = 0x10,
-    OP_GRP_BR       = 0x20,
-    OP_GRP_SYS      = 0x30,
+    OP_CODE_GRP_ALU     = ( 0U << 30 ),
+    OP_CODE_GRP_MEM     = ( 1U << 30 ),
+    OP_CODE_GRP_BR      = ( 2U << 30 ),
+    OP_CODE_GRP_SYS     = ( 3U << 30 ),
     
-    OP_ALU_NOP      = OP_GRP_ALU | 0x00,
-    OP_ALU_AND      = OP_GRP_ALU | 0x01,
-    OP_ALU_OR       = OP_GRP_ALU | 0x02,
-    OP_ALU_XOR      = OP_GRP_ALU | 0x03,
-    OP_ALU_ADD      = OP_GRP_ALU | 0x04,
-    OP_ALU_SUB      = OP_GRP_ALU | 0x05,
-    OP_ALU_CMP      = OP_GRP_ALU | 0x06,
-    OP_ALU_EXTR     = OP_GRP_ALU | 0x07,
-    OP_ALU_DEP      = OP_GRP_ALU | 0x08,
-    OP_ALU_DSR      = OP_GRP_ALU | 0x09,
-    OP_ALU_CHK      = OP_GRP_ALU | 0x0A,
+    OP_CODE_FAM_NOP     = ( 0U  << 26 ),
+    OP_CODE_FAM_AND     = ( 1U  << 26 ),
+    OP_CODE_FAM_OR      = ( 2U  << 26 ),
+    OP_CODE_FAM_XOR     = ( 3U  << 26 ),
+    OP_CODE_FAM_ADD     = ( 4U  << 26 ),
+    OP_CODE_FAM_SUB     = ( 5U  << 26 ),
+    OP_CODE_FAM_CMP     = ( 6U  << 26 ),
+    OP_CODE_FAM_EXTR    = ( 7U  << 26 ),
+    OP_CODE_FAM_DEP     = ( 8U  << 26 ),
+    OP_CODE_FAM_DSR     = ( 9U  << 26 ),
+    OP_CODE_FAM_CHK     = ( 10U << 26 ),
     
-    OP_MEM_LD       = OP_GRP_MEM | 0x00,
-    OP_MEM_ST       = OP_GRP_MEM | 0x01,
-    OP_MEM_LDR      = OP_GRP_MEM | 0x02,
-    OP_MEM_STC      = OP_GRP_MEM | 0x03,
+    OP_CODE_FAM_LD      = ( 7U  << 26 ),
+    OP_CODE_FAM_ST      = ( 8U  << 26 ),
+    OP_CODE_FAM_LDR     = ( 9U  << 26 ),
+    OP_CODE_FAM_STC     = ( 10U << 26 ),
     
-    OP_MEM_AND      = OP_GRP_MEM | 0x04,
-    OP_MEM_OR       = OP_GRP_MEM | 0x05,
-    OP_MEM_XOR      = OP_GRP_MEM | 0x06,
-    OP_MEM_ADD      = OP_GRP_MEM | 0x07,
-    OP_MEM_SUB      = OP_GRP_MEM | 0x08,
-    OP_MEM_CMP      = OP_GRP_MEM | 0x09,
+    OP_CODE_FAM_LDI     = ( 0U  << 26 ),
+    OP_CODE_FAM_ADDIL   = ( 1U  << 26 ),
+    OP_CODE_FAM_LDO     = ( 2U  << 26 ),
+    OP_CODE_FAM_B       = ( 3U  << 26 ),
+    OP_CODE_FAM_BR      = ( 4U  << 26 ),
+    OP_CODE_FAM_BV      = ( 5U  << 26 ),
+    OP_CODE_FAM_CBR     = ( 6U  << 26 ),
+    OP_CODE_FAM_MBR     = ( 7U  << 26 ),
     
-    OP_BR_LDI       = OP_GRP_BR  | 0x00,
-    OP_BR_ADDIL     = OP_GRP_BR  | 0x01,
-    OP_BR_LDO       = OP_GRP_BR  | 0x02,
-    OP_BR_B         = OP_GRP_BR  | 0x03,
-    OP_BR_BR        = OP_GRP_BR  | 0x04,
-    OP_BR_BV        = OP_GRP_BR  | 0x05,
-    OP_BR_CBR       = OP_GRP_BR  | 0x06,
-    OP_BR_TBR       = OP_GRP_BR  | 0x07,
-    OP_BR_MBR       = OP_GRP_BR  | 0x08,
+    OP_CODE_FAM_MR      = ( 0U  << 26 ),
+    OP_CODE_FAM_MST     = ( 1U  << 26 ),
+    OP_CODE_FAM_RFI     = ( 2U  << 26 ),
+    OP_CODE_FAM_LPA     = ( 3U  << 26 ),
+    OP_CODE_FAM_PRB     = ( 4U  << 26 ),
+    OP_CODE_FAM_TLB_OP  = ( 5U  << 26 ),
+    OP_CODE_FAM_CA_OP   = ( 6U  << 26 ),
+    OP_CODE_FAM_BRK     = ( 7U  << 26 ),
+    OP_CODE_FAM_DIAG    = ( 8U  << 26 ),
     
-    OP_SYS_MR       = OP_GRP_SYS | 0x00,
-    OP_SYS_MST      = OP_GRP_SYS | 0x01,
-    OP_SYS_LPA      = OP_GRP_SYS | 0x02,
-    OP_SYS_PRB      = OP_GRP_SYS | 0x03,
-    OP_SYS_ITLB     = OP_GRP_SYS | 0x04,
-    OP_SYS_DTLB     = OP_GRP_SYS | 0x05,
-    OP_SYS_PCA      = OP_GRP_SYS | 0x06,
-    OP_SYS_DIAG     = OP_GRP_SYS | 0x07,
-    OP_SYS_BRK      = OP_GRP_SYS | 0x08,
-    OP_SYS_RFI      = OP_GRP_SYS | 0x09,
+    OP_CODE_BIT13       = ( 1U  << 13 ),
+    OP_CODE_BIT14       = ( 1U  << 14 ),
+    OP_CODE_BIT19       = ( 1U  << 19 ),
+    OP_CODE_BIT20       = ( 1U  << 20 ),
+    OP_CODE_BIT21       = ( 1U  << 21 ),
+    
+    // ??? have fields, easier to use...
+    
+    OP_CODE_FLD_DW2_B   = ( 0U << 13 ),
+    OP_CODE_FLD_DW2_H   = ( 1U << 13 ),
+    OP_CODE_FLD_DW2_W   = ( 2U << 13 ),
+    OP_CODE_FLD_DW2_D   = ( 3U << 13 ),
+    
+    OP_CODE_FLD_EQ      = ( 0U << 19 ),
+    OP_CODE_FLD_LT      = ( 1U << 19 ),
+    OP_CODE_FLD_NE      = ( 2U << 19 ),
+    OP_CODE_FLD_LE      = ( 3U << 19 ),
+    OP_CODE_FLD_EV      = ( 4U << 19 ),
+    OP_CODE_FLD_OD      = ( 5U << 19 ),
+    
+    
+    OP_CODE_NOP         = OP_CODE_GRP_ALU | OP_CODE_FAM_NOP,
+    
+    OP_CODE_ADD         = OP_CODE_GRP_ALU | OP_CODE_FAM_ADD,
+    OP_CODE_ADDB        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_B,
+    OP_CODE_ADDH        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_H,
+    OP_CODE_ADDW        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_W,
+    OP_CODE_ADDD        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_SUB         = OP_CODE_GRP_ALU | OP_CODE_FAM_SUB,
+    OP_CODE_SUBB        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_B,
+    OP_CODE_SUBH        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_H,
+    OP_CODE_SUBW        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_W,
+    OP_CODE_SUBD        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_AND         = OP_CODE_GRP_ALU | OP_CODE_FAM_AND,
+    OP_CODE_ANDB        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_B,
+    OP_CODE_ANDH        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_H,
+    OP_CODE_ANDW        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_W,
+    OP_CODE_ANDD        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_ANDC        = OP_CODE_GRP_ALU | OP_CODE_FAM_AND | OP_CODE_BIT20,
+    OP_CODE_ANDBC       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT20 | OP_CODE_FLD_DW2_B,
+    OP_CODE_ANDHC       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT20 | OP_CODE_FLD_DW2_H,
+    OP_CODE_ANDWC       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT20 | OP_CODE_FLD_DW2_W,
+    OP_CODE_ANDDC       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT20 | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_NAND        = OP_CODE_GRP_ALU | OP_CODE_FAM_AND | OP_CODE_BIT21,
+    OP_CODE_NANDB       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_FLD_DW2_B,
+    OP_CODE_NANDH       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_FLD_DW2_H,
+    OP_CODE_NANDW       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_FLD_DW2_W,
+    OP_CODE_NANDD       = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_NANDC       = OP_CODE_GRP_ALU | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_BIT20,
+    OP_CODE_NANDBC      = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_BIT20 | OP_CODE_FLD_DW2_B,
+    OP_CODE_NANDHC      = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_BIT20 | OP_CODE_FLD_DW2_H,
+    OP_CODE_NANDWC      = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_BIT20 | OP_CODE_FLD_DW2_W,
+    OP_CODE_NANDDC      = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_BIT21 | OP_CODE_BIT20 | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_OR          = OP_CODE_GRP_ALU | OP_CODE_FAM_OR,
+    OP_CODE_ORB         = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_FLD_DW2_B,
+    OP_CODE_ORH         = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_FLD_DW2_H,
+    OP_CODE_ORW         = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_FLD_DW2_W,
+    OP_CODE_ORD         = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_NOR         = OP_CODE_GRP_ALU | OP_CODE_FAM_OR,
+    OP_CODE_NORB        = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_B,
+    OP_CODE_NORH        = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_H,
+    OP_CODE_NORW        = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_W,
+    OP_CODE_NORD        = OP_CODE_GRP_MEM | OP_CODE_FAM_OR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_XOR         = OP_CODE_GRP_ALU | OP_CODE_FAM_XOR,
+    OP_CODE_XORB        = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_FLD_DW2_B,
+    OP_CODE_XORH        = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_FLD_DW2_H,
+    OP_CODE_XORW        = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_FLD_DW2_W,
+    OP_CODE_XORD        = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_XNOR        = OP_CODE_GRP_ALU | OP_CODE_FAM_XOR | OP_CODE_BIT21,
+    OP_CODE_XNORB       = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_B,
+    OP_CODE_XNORH       = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_H,
+    OP_CODE_XNORW       = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_W,
+    OP_CODE_XNORD       = OP_CODE_GRP_MEM | OP_CODE_FAM_XOR | OP_CODE_BIT21 | OP_CODE_FLD_DW2_D,
+
+    OP_CODE_CMPEQ       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EQ,
+    OP_CODE_CMPLT       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LT,
+    OP_CODE_CMPNE       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_NE,
+    OP_CODE_CMPLE       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LE,
+    OP_CODE_CMPEV       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EV,
+    OP_CODE_CMPOD       = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_OD,
+    
+    OP_CODE_CMPBEQ      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EQ | OP_CODE_FLD_DW2_B,
+    OP_CODE_CMPBLT      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LT | OP_CODE_FLD_DW2_B,
+    OP_CODE_CMPBNE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_NE | OP_CODE_FLD_DW2_B,
+    OP_CODE_CMPBLE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LE | OP_CODE_FLD_DW2_B,
+    OP_CODE_CMPBEV      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EV | OP_CODE_FLD_DW2_B,
+    OP_CODE_CMPBOD      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_OD | OP_CODE_FLD_DW2_B,
+    
+    OP_CODE_CMPHEQ      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EQ | OP_CODE_FLD_DW2_H,
+    OP_CODE_CMPHLT      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LT | OP_CODE_FLD_DW2_H,
+    OP_CODE_CMPHNE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_NE | OP_CODE_FLD_DW2_H,
+    OP_CODE_CMPHLE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LE | OP_CODE_FLD_DW2_H,
+    OP_CODE_CMPHEV      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EV | OP_CODE_FLD_DW2_H,
+    OP_CODE_CMPHOD      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_OD | OP_CODE_FLD_DW2_H,
+    
+    OP_CODE_CMPWEQ      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EQ | OP_CODE_FLD_DW2_W,
+    OP_CODE_CMPWLT      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LT | OP_CODE_FLD_DW2_W,
+    OP_CODE_CMPWNE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_NE | OP_CODE_FLD_DW2_W,
+    OP_CODE_CMPWLE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LE | OP_CODE_FLD_DW2_W,
+    OP_CODE_CMPWEV      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EV | OP_CODE_FLD_DW2_W,
+    OP_CODE_CMPWOD      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_OD | OP_CODE_FLD_DW2_W,
+    
+    OP_CODE_CMPDEQ      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EQ | OP_CODE_FLD_DW2_D,
+    OP_CODE_CMPDLT      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LT | OP_CODE_FLD_DW2_D,
+    OP_CODE_CMPDNE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_NE | OP_CODE_FLD_DW2_D,
+    OP_CODE_CMPDLE      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_LE | OP_CODE_FLD_DW2_D,
+    OP_CODE_CMPDEV      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_EV | OP_CODE_FLD_DW2_D,
+    OP_CODE_CMPDOD      = OP_CODE_GRP_ALU | OP_CODE_FAM_CMP | OP_CODE_FLD_OD | OP_CODE_FLD_DW2_D,
+    
+    OP_CODE_EXTR        = OP_CODE_GRP_ALU | OP_CODE_FAM_EXTR,
+    OP_CODE_EXTRS       = OP_CODE_GRP_ALU | OP_CODE_FAM_EXTR | OP_CODE_BIT21,
+    
+    OP_CODE_VEXTR        = OP_CODE_GRP_ALU | OP_CODE_FAM_EXTR | OP_CODE_BIT20,
+    OP_CODE_VEXTRS       = OP_CODE_GRP_ALU | OP_CODE_FAM_EXTR | OP_CODE_BIT21 | OP_CODE_BIT21,
+   
+    
 };
 
 #endif

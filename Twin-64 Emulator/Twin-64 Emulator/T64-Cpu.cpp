@@ -357,6 +357,7 @@ void T64Cpu::fetchInstr( ) {
 //
 //------------------------------------------------------------------------------------------------------------
 void T64Cpu::executeInstr( ) {
+#if 0
     
     try {
         
@@ -367,11 +368,11 @@ void T64Cpu::executeInstr( ) {
         
         switch ( opCode ) {
                 
-            case OP_ALU_NOP: {
+            case OP_NOP: {
                 
             } break;
                 
-            case OP_ALU_AND: {
+            case OP_AND: {
                 
                 T64Word valB = getGeneralReg( regBIndx );
                 T64Word valA = 0;
@@ -387,7 +388,7 @@ void T64Cpu::executeInstr( ) {
                 
             } break;
                 
-            case OP_ALU_OR: {
+            case OP_OR: {
                 
                 T64Word valB = getGeneralReg( regBIndx );
                 T64Word valA = 0;
@@ -401,7 +402,7 @@ void T64Cpu::executeInstr( ) {
                 
             } break;
                 
-            case OP_ALU_XOR: {
+            case OP_XOR: {
                 
                 T64Word valB = getGeneralReg( regBIndx );
                 T64Word valA = 0;
@@ -415,7 +416,7 @@ void T64Cpu::executeInstr( ) {
                 
             } break;
                 
-            case OP_ALU_ADD: {
+            case OP_ADD: {
                 
                 T64Word valB = getGeneralReg( regBIndx );
                 T64Word valA = 0;
@@ -622,6 +623,7 @@ void T64Cpu::executeInstr( ) {
         // can do someting before reraising ....
         throw;
     }
+#endif
 }
 
 //------------------------------------------------------------------------------------------------------------

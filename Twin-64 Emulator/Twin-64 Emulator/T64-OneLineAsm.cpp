@@ -210,6 +210,15 @@ struct Token {
     };
 };
 
+enum InstrTemplate : uint32_t {
+    
+    IM_NOP = 0x00000000,
+    
+    
+    
+    
+};
+
 //------------------------------------------------------------------------------------------------------------
 // The global token table or the one line assembler. All reserved words are allocated in this table. Each
 // entry has the token name, the token id, the token type id, i.e. its type, and a value associated with the
@@ -222,112 +231,113 @@ const Token asmTokTab[ ] = {
     // General registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "R0",             .typ = TYP_GREG,            .tid = GR_0,                .val = 0            },
-    { .name = "R1",             .typ = TYP_GREG,            .tid = GR_1,                .val = 1            },
-    { .name = "R2",             .typ = TYP_GREG,            .tid = GR_2,                .val = 2            },
-    { .name = "R3",             .typ = TYP_GREG,            .tid = GR_3,                .val = 3            },
-    { .name = "R4",             .typ = TYP_GREG,            .tid = GR_4,                .val = 4            },
-    { .name = "R5",             .typ = TYP_GREG,            .tid = GR_5,                .val = 5            },
-    { .name = "R6",             .typ = TYP_GREG,            .tid = GR_6,                .val = 6            },
-    { .name = "R7",             .typ = TYP_GREG,            .tid = GR_7,                .val = 7            },
-    { .name = "R8",             .typ = TYP_GREG,            .tid = GR_8,                .val = 8            },
-    { .name = "R9",             .typ = TYP_GREG,            .tid = GR_9,                .val = 9            },
-    { .name = "R10",            .typ = TYP_GREG,            .tid = GR_10,               .val = 10           },
-    { .name = "R11",            .typ = TYP_GREG,            .tid = GR_11,               .val = 11           },
-    { .name = "R12",            .typ = TYP_GREG,            .tid = GR_12,               .val = 12           },
-    { .name = "R13",            .typ = TYP_GREG,            .tid = GR_13,               .val = 13           },
-    { .name = "R14",            .typ = TYP_GREG,            .tid = GR_14,               .val = 14           },
-    { .name = "R15",            .typ = TYP_GREG,            .tid = GR_15,               .val = 15           },
+    { .name = "R0",             .typ = TYP_GREG,            .tid = GR_0,            .val = 0            },
+    { .name = "R1",             .typ = TYP_GREG,            .tid = GR_1,            .val = 1            },
+    { .name = "R2",             .typ = TYP_GREG,            .tid = GR_2,            .val = 2            },
+    { .name = "R3",             .typ = TYP_GREG,            .tid = GR_3,            .val = 3            },
+    { .name = "R4",             .typ = TYP_GREG,            .tid = GR_4,            .val = 4            },
+    { .name = "R5",             .typ = TYP_GREG,            .tid = GR_5,            .val = 5            },
+    { .name = "R6",             .typ = TYP_GREG,            .tid = GR_6,            .val = 6            },
+    { .name = "R7",             .typ = TYP_GREG,            .tid = GR_7,            .val = 7            },
+    { .name = "R8",             .typ = TYP_GREG,            .tid = GR_8,            .val = 8            },
+    { .name = "R9",             .typ = TYP_GREG,            .tid = GR_9,            .val = 9            },
+    { .name = "R10",            .typ = TYP_GREG,            .tid = GR_10,           .val = 10           },
+    { .name = "R11",            .typ = TYP_GREG,            .tid = GR_11,           .val = 11           },
+    { .name = "R12",            .typ = TYP_GREG,            .tid = GR_12,           .val = 12           },
+    { .name = "R13",            .typ = TYP_GREG,            .tid = GR_13,           .val = 13           },
+    { .name = "R14",            .typ = TYP_GREG,            .tid = GR_14,           .val = 14           },
+    { .name = "R15",            .typ = TYP_GREG,            .tid = GR_15,           .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
     // Control registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "C0",             .typ = TYP_CREG,            .tid = CR_0,                .val = 0            },
-    { .name = "C1",             .typ = TYP_CREG,            .tid = CR_1,                .val = 1            },
-    { .name = "C2",             .typ = TYP_CREG,            .tid = CR_2,                .val = 2            },
-    { .name = "C3",             .typ = TYP_CREG,            .tid = CR_3,                .val = 3            },
-    { .name = "C4",             .typ = TYP_CREG,            .tid = CR_4,                .val = 4            },
-    { .name = "C5",             .typ = TYP_CREG,            .tid = CR_5,                .val = 5            },
-    { .name = "C6",             .typ = TYP_CREG,            .tid = CR_6,                .val = 6            },
-    { .name = "C7",             .typ = TYP_CREG,            .tid = CR_7,                .val = 7            },
-    { .name = "C8",             .typ = TYP_CREG,            .tid = CR_8,                .val = 8            },
-    { .name = "C9",             .typ = TYP_CREG,            .tid = CR_9,                .val = 9            },
-    { .name = "C10",            .typ = TYP_CREG,            .tid = CR_10,               .val = 10           },
-    { .name = "C11",            .typ = TYP_CREG,            .tid = CR_11,               .val = 11           },
-    { .name = "C12",            .typ = TYP_CREG,            .tid = CR_12,               .val = 12           },
-    { .name = "C13",            .typ = TYP_CREG,            .tid = CR_13,               .val = 13           },
-    { .name = "C14",            .typ = TYP_CREG,            .tid = CR_14,               .val = 14           },
-    { .name = "C15",            .typ = TYP_CREG,            .tid = CR_15,               .val = 15           },
+    { .name = "C0",             .typ = TYP_CREG,            .tid = CR_0,            .val = 0            },
+    { .name = "C1",             .typ = TYP_CREG,            .tid = CR_1,            .val = 1            },
+    { .name = "C2",             .typ = TYP_CREG,            .tid = CR_2,            .val = 2            },
+    { .name = "C3",             .typ = TYP_CREG,            .tid = CR_3,            .val = 3            },
+    { .name = "C4",             .typ = TYP_CREG,            .tid = CR_4,            .val = 4            },
+    { .name = "C5",             .typ = TYP_CREG,            .tid = CR_5,            .val = 5            },
+    { .name = "C6",             .typ = TYP_CREG,            .tid = CR_6,            .val = 6            },
+    { .name = "C7",             .typ = TYP_CREG,            .tid = CR_7,            .val = 7            },
+    { .name = "C8",             .typ = TYP_CREG,            .tid = CR_8,            .val = 8            },
+    { .name = "C9",             .typ = TYP_CREG,            .tid = CR_9,            .val = 9            },
+    { .name = "C10",            .typ = TYP_CREG,            .tid = CR_10,           .val = 10           },
+    { .name = "C11",            .typ = TYP_CREG,            .tid = CR_11,           .val = 11           },
+    { .name = "C12",            .typ = TYP_CREG,            .tid = CR_12,           .val = 12           },
+    { .name = "C13",            .typ = TYP_CREG,            .tid = CR_13,           .val = 13           },
+    { .name = "C14",            .typ = TYP_CREG,            .tid = CR_14,           .val = 14           },
+    { .name = "C15",            .typ = TYP_CREG,            .tid = CR_15,           .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
     // Runtime architcture register names for general registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "T0",             .typ = TYP_GREG,            .tid = GR_1,                .val =  1           },
-    { .name = "T1",             .typ = TYP_GREG,            .tid = GR_2,                .val =  2           },
-    { .name = "T2",             .typ = TYP_GREG,            .tid = GR_3,                .val =  3           },
-    { .name = "T3",             .typ = TYP_GREG,            .tid = GR_4,                .val =  4           },
-    { .name = "T4",             .typ = TYP_GREG,            .tid = GR_5,                .val =  5           },
-    { .name = "T5",             .typ = TYP_GREG,            .tid = GR_6,                .val =  6           },
-    { .name = "T6",             .typ = TYP_GREG,            .tid = GR_7,                .val =  7           },
+    { .name = "T0",             .typ = TYP_GREG,            .tid = GR_1,            .val =  1           },
+    { .name = "T1",             .typ = TYP_GREG,            .tid = GR_2,            .val =  2           },
+    { .name = "T2",             .typ = TYP_GREG,            .tid = GR_3,            .val =  3           },
+    { .name = "T3",             .typ = TYP_GREG,            .tid = GR_4,            .val =  4           },
+    { .name = "T4",             .typ = TYP_GREG,            .tid = GR_5,            .val =  5           },
+    { .name = "T5",             .typ = TYP_GREG,            .tid = GR_6,            .val =  6           },
+    { .name = "T6",             .typ = TYP_GREG,            .tid = GR_7,            .val =  7           },
     
-    { .name = "ARG3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8           },
-    { .name = "ARG2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9           },
-    { .name = "ARG1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10          },
-    { .name = "ARG0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11          },
+    { .name = "ARG3",           .typ = TYP_GREG,            .tid = GR_8,            .val =  8           },
+    { .name = "ARG2",           .typ = TYP_GREG,            .tid = GR_9,            .val =  9           },
+    { .name = "ARG1",           .typ = TYP_GREG,            .tid = GR_10,           .val =  10          },
+    { .name = "ARG0",           .typ = TYP_GREG,            .tid = GR_11,           .val =  11          },
     
-    { .name = "RET3",           .typ = TYP_GREG,            .tid = GR_8,                .val =  8           },
-    { .name = "RET2",           .typ = TYP_GREG,            .tid = GR_9,                .val =  9           },
-    { .name = "RET1",           .typ = TYP_GREG,            .tid = GR_10,               .val =  10          },
-    { .name = "RET0",           .typ = TYP_GREG,            .tid = GR_11,               .val =  11          },
+    { .name = "RET3",           .typ = TYP_GREG,            .tid = GR_8,            .val =  8           },
+    { .name = "RET2",           .typ = TYP_GREG,            .tid = GR_9,            .val =  9           },
+    { .name = "RET1",           .typ = TYP_GREG,            .tid = GR_10,           .val =  10          },
+    { .name = "RET0",           .typ = TYP_GREG,            .tid = GR_11,           .val =  11          },
     
-    { .name = "DP",             .typ = TYP_GREG,            .tid = GR_13,               .val =  13          },
-    { .name = "RL",             .typ = TYP_GREG,            .tid = GR_14,               .val =  14          },
-    { .name = "SP",             .typ = TYP_GREG,            .tid = GR_15,               .val =  15          },
+    { .name = "DP",             .typ = TYP_GREG,            .tid = GR_13,           .val =  13          },
+    { .name = "RL",             .typ = TYP_GREG,            .tid = GR_14,           .val =  14          },
+    { .name = "SP",             .typ = TYP_GREG,            .tid = GR_15,           .val =  15          },
     
     //--------------------------------------------------------------------------------------------------------
     // Assembler mnemonics.
     //
-    // ??? what do we do about Opcodes sharing the same id ?
+    //
+    // ??? need all combinations in this table... the .val field has the filled in mask.
     //--------------------------------------------------------------------------------------------------------
-    { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = OP_NOP,              .val = 0x00000000   },
-    { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = OP_ADD,              .val = 0x00000000   },
-    { .name = "SUB",            .typ = TYP_OP_CODE,         .tid = OP_SUB,              .val = 0x00000000   },
-    { .name = "AND",            .typ = TYP_OP_CODE,         .tid = OP_AND,              .val = 0x00000000   },
-    { .name = "OR" ,            .typ = TYP_OP_CODE,         .tid = OP_OR,               .val = 0x00000000   },
-    { .name = "XOR" ,           .typ = TYP_OP_CODE,         .tid = OP_XOR,              .val = 0x00000000   },
-    { .name = "CMP" ,           .typ = TYP_OP_CODE,         .tid = OP_CMP,              .val = 0x00000000   },
-    { .name = "EXTR",           .typ = TYP_OP_CODE,         .tid = OP_EXTR,             .val = 0x00000000   },
-    { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = OP_DEP,              .val = 0x00000000   },
-    { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = OP_DSR,              .val = 0x00000000   },
-    { .name = "SHLA",           .typ = TYP_OP_CODE,         .tid = OP_SHLA,             .val = 0x00000000   },
-    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = OP_LDI,             .val = 0x00000000   },
-    { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = OP_ADDIL,            .val = 0x00000000   },
-    { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = OP_LDO,              .val = 0x00000000   },
-    { .name = "LD",             .typ = TYP_OP_CODE,         .tid = OP_LD,               .val = 0x00000000   },
-    { .name = "LDR",            .typ = TYP_OP_CODE,         .tid = OP_LDR,              .val = 0x00000000   },
-    { .name = "ST",             .typ = TYP_OP_CODE,         .tid = OP_ST,               .val = 0x00000000   },
-    { .name = "STC",            .typ = TYP_OP_CODE,         .tid = OP_STC,              .val = 0x00000000   },
-    { .name = "B",              .typ = TYP_OP_CODE,         .tid = OP_B,                .val = 0x00000000   },
-    { .name = "BR",             .typ = TYP_OP_CODE,         .tid = OP_BR,               .val = 0x00000000   },
-    { .name = "BV",             .typ = TYP_OP_CODE,         .tid = OP_BV,               .val = 0x00000000   },
-    { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = OP_CBR,              .val = 0x00000000   },
-    { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = OP_MBR,              .val = 0x00000000   },
-    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = OP_MFCR,             .val = 0x00000000   },
-    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = OP_MTCR,             .val = 0x00000000   },
-    { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = OP_LDPA,             .val = 0x00000000   },
-    { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = OP_PRB,              .val = 0x00000000   },
-    { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = OP_ITLB,             .val = 0x00000000   },
-    { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = OP_PTLB,             .val = 0x00000000   },
-    { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = OP_PCA,              .val = 0x00000000   },
-    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = OP_FCA,              .val = 0x00000000   },
-    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = OP_RSM,              .val = 0x00000000   },
-    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = OP_SSM,              .val = 0x00000000   },
-    { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = OP_RFI,              .val = 0x00000000   },
-    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = OP_CHK,              .val = 0x00000000   },
-    { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = OP_BRK,              .val = 0x00000000   },
-    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,             .val = 0x00000000   },
+    { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = OP_NOP,          .val = IM_NOP       },
+    { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = OP_ADD,          .val = 0x00000000   },
+    { .name = "SUB",            .typ = TYP_OP_CODE,         .tid = OP_SUB,          .val = 0x00000000   },
+    { .name = "AND",            .typ = TYP_OP_CODE,         .tid = OP_AND,          .val = 0x00000000   },
+    { .name = "OR" ,            .typ = TYP_OP_CODE,         .tid = OP_OR,           .val = 0x00000000   },
+    { .name = "XOR" ,           .typ = TYP_OP_CODE,         .tid = OP_XOR,          .val = 0x00000000   },
+    { .name = "CMP" ,           .typ = TYP_OP_CODE,         .tid = OP_CMP,          .val = 0x00000000   },
+    { .name = "EXTR",           .typ = TYP_OP_CODE,         .tid = OP_EXTR,         .val = 0x00000000   },
+    { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = OP_DEP,          .val = 0x00000000   },
+    { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = OP_DSR,          .val = 0x00000000   },
+    { .name = "SHLA",           .typ = TYP_OP_CODE,         .tid = OP_SHLA,         .val = 0x00000000   },
+    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = OP_LDI,          .val = 0x00000000   },
+    { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = OP_ADDIL,        .val = 0x00000000   },
+    { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = OP_LDO,          .val = 0x00000000   },
+    { .name = "LD",             .typ = TYP_OP_CODE,         .tid = OP_LD,           .val = 0x00000000   },
+    { .name = "LDR",            .typ = TYP_OP_CODE,         .tid = OP_LDR,          .val = 0x00000000   },
+    { .name = "ST",             .typ = TYP_OP_CODE,         .tid = OP_ST,           .val = 0x00000000   },
+    { .name = "STC",            .typ = TYP_OP_CODE,         .tid = OP_STC,          .val = 0x00000000   },
+    { .name = "B",              .typ = TYP_OP_CODE,         .tid = OP_B,            .val = 0x00000000   },
+    { .name = "BR",             .typ = TYP_OP_CODE,         .tid = OP_BR,           .val = 0x00000000   },
+    { .name = "BV",             .typ = TYP_OP_CODE,         .tid = OP_BV,           .val = 0x00000000   },
+    { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = OP_CBR,          .val = 0x00000000   },
+    { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = OP_MBR,          .val = 0x00000000   },
+    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = OP_MFCR,         .val = 0x00000000   },
+    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = OP_MTCR,         .val = 0x00000000   },
+    { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = OP_LDPA,         .val = 0x00000000   },
+    { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = OP_PRB,          .val = 0x00000000   },
+    { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = OP_ITLB,         .val = 0x00000000   },
+    { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = OP_PTLB,         .val = 0x00000000   },
+    { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = OP_PCA,          .val = 0x00000000   },
+    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = OP_FCA,          .val = 0x00000000   },
+    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = OP_RSM,          .val = 0x00000000   },
+    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = OP_SSM,          .val = 0x00000000   },
+    { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = OP_RFI,          .val = 0x00000000   },
+    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = OP_CHK,          .val = 0x00000000   },
+    { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = OP_BRK,          .val = 0x00000000   },
+    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,         .val = 0x00000000   },
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic instruction mnemonics.
@@ -1311,6 +1321,8 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFla
 //------------------------------------------------------------------------------------------------------------
 void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
+#if 0
+    
     uint8_t  targetRegId = 0;
     Expr     rExpr;
   
@@ -1391,6 +1403,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
     }
              
     checkEOS( );
+#endif
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1405,6 +1418,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
 //------------------------------------------------------------------------------------------------------------
 void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
+#if 0
     Expr rExpr;
     *instr = 0;
     
@@ -1432,6 +1446,7 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags 
     }
     
     checkEOS( );
+#endif
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1448,13 +1463,15 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags 
 void parseInstrDEP( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
     
     Expr rExpr;
-    
+   
+#if 0
     *instr = 0;
     
     setInstrOpCode( instr, OP_GRP_ALU, OP_DEP );
     parseRegR( instr );
     acceptComma( );
     
+
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
@@ -1519,6 +1536,7 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags )
         else throw ( ERR_EXPECTED_NUMERIC );
     }
     else throw ( ERR_EXPECTED_NUMERIC );
+#endif
     
     checkEOS( );
 }

@@ -11,9 +11,7 @@
 #include "T64-Cpu.h"
 #include "T64-Io-Mem.h"
 
-
 namespace {
-    
     
     static inline bool isAligned( T64Word adr, int align ) {
         
