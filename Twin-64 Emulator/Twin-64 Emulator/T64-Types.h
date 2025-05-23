@@ -17,7 +17,7 @@
 //
 //
 //------------------------------------------------------------------------------------------------------------
-typedef int64_t T64Word ;
+typedef int64_t T64Word;
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -65,13 +65,23 @@ enum ControlRegId : int {
     
 };
 
+enum OpCodeGroup : int {
+    
+    OP_CODE_GRP_ALU = 0,
+    OP_CODE_GRP_MEM = 1,
+    OP_CODE_GRP_BR  = 2,
+    OP_CODE_GRP_SYS = 3
+};
 
+
+
+#if 0
 //------------------------------------------------------------------------------------------------------------
-// Instrction Opcodes are composed of group, family and a couple of bits in the respective instruction field.
+// Instruction Opcodes are composed of group, family and a couple of bits in the respective instruction field.
 // We logically OR them togther to form the unique instruction OpCode.
 //
 // ??? this is the central table ....
-//------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 enum OpCodeMasks : uint32_t {
     
     OP_CODE_GRP_ALU     = ( 0U << 30 ),
@@ -132,13 +142,14 @@ enum OpCodeMasks : uint32_t {
     OP_CODE_FLD_LT      = ( 1U << 19 ),
     OP_CODE_FLD_NE      = ( 2U << 19 ),
     OP_CODE_FLD_LE      = ( 3U << 19 ),
-    OP_CODE_FLD_EV      = ( 4U << 19 ),
-    OP_CODE_FLD_OD      = ( 5U << 19 ),
     
     
     OP_CODE_NOP         = OP_CODE_GRP_ALU | OP_CODE_FAM_NOP,
     
     OP_CODE_ADD         = OP_CODE_GRP_ALU | OP_CODE_FAM_ADD,
+    
+    
+    
     OP_CODE_ADDB        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_B,
     OP_CODE_ADDH        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_H,
     OP_CODE_ADDW        = OP_CODE_GRP_MEM | OP_CODE_FAM_ADD | OP_CODE_FLD_DW2_W,
@@ -150,7 +161,13 @@ enum OpCodeMasks : uint32_t {
     OP_CODE_SUBW        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_W,
     OP_CODE_SUBD        = OP_CODE_GRP_MEM | OP_CODE_FAM_SUB | OP_CODE_FLD_DW2_D,
     
-    OP_CODE_AND         = OP_CODE_GRP_ALU | OP_CODE_FAM_AND,
+    
+    // ??? all we need to set initial instruction ?
+    OP_CODE_AND_I       = OP_CODE_GRP_ALU | OP_CODE_FAM_AND | OP_CODE_BIT20,
+    OP_CODE_AND_ALU     = OP_CODE_GRP_ALU | OP_CODE_FAM_AND,
+    OP_CODE_AND_MEM     = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_D,
+    
+    
     OP_CODE_ANDB        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_B,
     OP_CODE_ANDH        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_H,
     OP_CODE_ANDW        = OP_CODE_GRP_MEM | OP_CODE_FAM_AND | OP_CODE_FLD_DW2_W,
@@ -241,6 +258,7 @@ enum OpCodeMasks : uint32_t {
    
     
 };
+#endif
 
 #endif
 
