@@ -1321,7 +1321,7 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFla
 // "parseModeTypeInstr" parses all instructions that have several types of "operand" encoding. The syntax is
 // as follows:
 //
-//      opCode [ "." <opt> ] <targetReg> "," <num>                              -> Instruction group ALU
+//      opCode [ "." <opt> ] <targetReg> "," <sourceReg>, <num>                 -> Instruction group ALU
 //      opCode [ "." <opt> ] <targetReg> "," <num> "(" <baseReg> ")"            -> Instruction group MEM
 //      opCode [ "." <opt> ] <targetReg> "," "(" <baseReg> ")"                  -> Instruction group MEM
 //      opCode [ "." <opt> ] <targetReg> "," <sourceRegB>                       -> Instruction group ALU
@@ -1342,6 +1342,8 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
+    
+    // ??? does not match immediate mode anymore !!!
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
