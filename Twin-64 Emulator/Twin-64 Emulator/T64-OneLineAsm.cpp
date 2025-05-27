@@ -106,9 +106,9 @@ enum TokTypeId : uint16_t {
     
     TYP_NIL                 = 0,
     TYP_SYM                 = 1,        TYP_IDENT               = 2,        TYP_PREDEFINED_FUNC     = 3,
-    TYP_NUM                 = 4,        TYP_STR                 = 5,        TYP_BOOL                = 6,
-    TYP_ADR                 = 7,        TYP_OP_CODE             = 8,        TYP_GREG                = 9,
-    TYP_CREG                = 10,       TYP_PSW_PREG            = 11,
+    TYP_NUM                 = 4,        TYP_STR                 = 5,        TYP_ADR                 = 7,
+    TYP_OP_CODE             = 8,        TYP_GREG                = 9,        TYP_CREG                = 10,
+    TYP_PSW_PREG            = 11,
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -136,52 +136,52 @@ enum TokId : uint16_t {
     //--------------------------------------------------------------------------------------------------------
     REG_SET                 = 100,
     
-    GR_0                    = 101,      GR_1                    = 102,      GR_2                    = 103,
-    GR_3                    = 104,      GR_4                    = 105,      GR_5                    = 106,
-    GR_6                    = 107,      GR_7                    = 108,      GR_8                    = 109,
-    GR_9                    = 110,      GR_10                   = 111,      GR_11                   = 112,
-    GR_12                   = 113,      GR_13                   = 114,      GR_14                   = 115,
-    GR_15                   = 116,
+    TOK_GR_0                = 101,      TOK_GR_1                = 102,      TOK_GR_2                = 103,
+    TOK_GR_3                = 104,      TOK_GR_4                = 105,      TOK_GR_5                = 106,
+    TOK_GR_6                = 107,      TOK_GR_7                = 108,      TOK_GR_8                = 109,
+    TOK_GR_9                = 110,      TOK_GR_10               = 111,      TOK_GR_11               = 112,
+    TOK_GR_12               = 113,      TOK_GR_13               = 114,      TOK_GR_14               = 115,
+    TOK_GR_15               = 116,
     
-    CR_0                    = 121,      CR_1                    = 122,      CR_2                    = 123,
-    CR_3                    = 124,      CR_4                    = 125,      CR_5                    = 126,
-    CR_6                    = 127,      CR_7                    = 128,      CR_8                    = 129,
-    CR_9                    = 130,      CR_10                   = 131,      CR_11                   = 132,
-    CR_12                   = 133,      CR_13                   = 134,      CR_14                   = 136,
-    CR_15                   = 137,
+    TOK_CR_0                = 121,      TOK_CR_1                = 122,      TOK_CR_2                = 123,
+    TOK_CR_3                = 124,      TOK_CR_4                = 125,      TOK_CR_5                = 126,
+    TOK_CR_6                = 127,      TOK_CR_7                = 128,      TOK_CR_8                = 129,
+    TOK_CR_9                = 130,      TOK_CR_10               = 131,      TOK_CR_11               = 132,
+    TOK_CR_12               = 133,      TOK_CR_13               = 134,      TOK_CR_14               = 136,
+    TOK_CR_15               = 137,
     
     //--------------------------------------------------------------------------------------------------------
     // OP Code Tokens.
     //
     //--------------------------------------------------------------------------------------------------------
-    OP_NOP                  = 300,
+    TOK_OP_NOP              = 300,
     
-    OP_AND                  = 301,      OP_NAND                 = 501,
-    OP_OR                   = 302,      OP_NOR                  = 502,
-    OP_XOR                  = 303,      OP_XNOR                 = 503,
+    TOK_OP_AND              = 301,      TOK_OP_AND_I            = 311,      TOK_OP_AND_M            = 321,
+    TOK_OP_OR               = 302,      TOK_OP_OR_I             = 312,      TOK_OP_OR_M             = 322,
+    TOK_OP_XOR              = 303,      TOK_OP_XOR_I            = 313,      TOK_OP_XOR_M            = 323,
+    TOK_OP_ADD              = 304,      TOK_OP_ADD_I            = 314,      TOK_OP_ADD_M            = 324,
+    TOK_OP_SUB              = 305,      TOK_OP_SUB_I            = 315,      TOK_OP_SUB_M            = 325,
+    TOK_OP_CMP              = 306,      TOK_OP_CMP_I            = 316,      TOK_OP_CMP_M            = 326,
     
-    OP_ADD                  = 304,
-    OP_SUB                  = 305,
-    OP_CMP                  = 306,
+    TOK_OP_EXTR             = 331,      TOK_OP_DEP              = 332,      TOK_OP_DSR              = 333,
+    TOK_OP_SHL1A            = 334,      TOK_OP_SHL2A            = 335,      TOK_OP_SHL3A            = 336,
     
-    OP_EXTR                 = 307,      OP_DEP                  = 308,      OP_DSR                  = 309,
-    OP_SHLA                 = 310,
+    TOK_OP_LDI              = 341,      TOK_OP_ADDIL            = 342,      TOK_OP_LDO              = 343,
+    TOK_OP_LD               = 345,      TOK_OP_LDR              = 346,
+    TOK_OP_ST               = 347,      TOK_OP_STC              = 348,
     
-    OP_LDI                  = 311,      OP_ADDIL                = 312,      OP_LDO                  = 313,
-    OP_LD                   = 314,      OP_LDR                  = 315,
-    OP_ST                   = 316,      OP_STC                  = 317,
+    TOK_OP_B                = 351,      TOK_OP_BR               = 352,      TOK_OP_BV               = 353,
+    TOK_OP_BB               = 355,      TOK_OP_CBR              = 356,      TOK_OP_MBR              = 357,
     
-    OP_B                    = 318,      OP_BR                   = 319,      OP_BV                   = 320,
-    OP_CBR                  = 321,      OP_MBR                  = 322,
+    TOK_OP_MFCR             = 361,      TOK_OP_MTCR             = 362,
+    TOK_OP_RSM              = 363,      TOK_OP_SSM              = 364,
+    TOK_OP_LDPA             = 365,      TOK_OP_PRB              = 366,
+    TOK_OP_ITLB             = 371,      TOK_OP_PTLB             = 372,
+    TOK_OP_PCA              = 373,      TOK_OP_FCA              = 374,
     
-    OP_MFCR                 = 324,      OP_MTCR                 = 325,
-    OP_RSM                  = 326,      OP_SSM                  = 327,
-    OP_LDPA                 = 328,      OP_PRB                  = 329,
-    OP_ITLB                 = 330,      OP_PTLB                 = 331,
-    OP_PCA                  = 332,      OP_FCA                  = 333,
+    TOK_OP_RFI              = 381,      TOK_OP_DIAG             = 382,
+    TOK_OP_BRK              = 383,      TOK_OP_CHK              = 384,
     
-    OP_RFI                  = 335,      OP_BRK                  = 336,      OP_CHK                  = 337,
-    OP_DIAG                 = 338,
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -189,13 +189,7 @@ enum TokId : uint16_t {
     //--------------------------------------------------------------------------------------------------------
     OP_SHL                  = 401,      OP_SHR                  = 402,
     OP_ASL                  = 403,      OP_ASR                  = 404,
-    OP_ROR                  = 405,      OP_ROL                  = 406,
-    
-    //--------------------------------------------------------------------------------------------------------
-    // The last token ID. This ID is used to terminate a token table list.
-    //
-    //--------------------------------------------------------------------------------------------------------
-    TOK_LAST                = 9999
+    OP_ROR                  = 405,      OP_ROL                  = 406
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -238,124 +232,154 @@ const Token asmTokTab[ ] = {
     // General registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "R0",             .typ = TYP_GREG,            .tid = GR_0,            .val = 0            },
-    { .name = "R1",             .typ = TYP_GREG,            .tid = GR_1,            .val = 1            },
-    { .name = "R2",             .typ = TYP_GREG,            .tid = GR_2,            .val = 2            },
-    { .name = "R3",             .typ = TYP_GREG,            .tid = GR_3,            .val = 3            },
-    { .name = "R4",             .typ = TYP_GREG,            .tid = GR_4,            .val = 4            },
-    { .name = "R5",             .typ = TYP_GREG,            .tid = GR_5,            .val = 5            },
-    { .name = "R6",             .typ = TYP_GREG,            .tid = GR_6,            .val = 6            },
-    { .name = "R7",             .typ = TYP_GREG,            .tid = GR_7,            .val = 7            },
-    { .name = "R8",             .typ = TYP_GREG,            .tid = GR_8,            .val = 8            },
-    { .name = "R9",             .typ = TYP_GREG,            .tid = GR_9,            .val = 9            },
-    { .name = "R10",            .typ = TYP_GREG,            .tid = GR_10,           .val = 10           },
-    { .name = "R11",            .typ = TYP_GREG,            .tid = GR_11,           .val = 11           },
-    { .name = "R12",            .typ = TYP_GREG,            .tid = GR_12,           .val = 12           },
-    { .name = "R13",            .typ = TYP_GREG,            .tid = GR_13,           .val = 13           },
-    { .name = "R14",            .typ = TYP_GREG,            .tid = GR_14,           .val = 14           },
-    { .name = "R15",            .typ = TYP_GREG,            .tid = GR_15,           .val = 15           },
+    { .name = "R0",             .typ = TYP_GREG,            .tid = TOK_GR_0,        .val = 0            },
+    { .name = "R1",             .typ = TYP_GREG,            .tid = TOK_GR_1,        .val = 1            },
+    { .name = "R2",             .typ = TYP_GREG,            .tid = TOK_GR_2,        .val = 2            },
+    { .name = "R3",             .typ = TYP_GREG,            .tid = TOK_GR_3,        .val = 3            },
+    { .name = "R4",             .typ = TYP_GREG,            .tid = TOK_GR_4,        .val = 4            },
+    { .name = "R5",             .typ = TYP_GREG,            .tid = TOK_GR_5,        .val = 5            },
+    { .name = "R6",             .typ = TYP_GREG,            .tid = TOK_GR_6,        .val = 6            },
+    { .name = "R7",             .typ = TYP_GREG,            .tid = TOK_GR_7,        .val = 7            },
+    { .name = "R8",             .typ = TYP_GREG,            .tid = TOK_GR_8,        .val = 8            },
+    { .name = "R9",             .typ = TYP_GREG,            .tid = TOK_GR_9,        .val = 9            },
+    { .name = "R10",            .typ = TYP_GREG,            .tid = TOK_GR_10,       .val = 10           },
+    { .name = "R11",            .typ = TYP_GREG,            .tid = TOK_GR_11,       .val = 11           },
+    { .name = "R12",            .typ = TYP_GREG,            .tid = TOK_GR_12,       .val = 12           },
+    { .name = "R13",            .typ = TYP_GREG,            .tid = TOK_GR_13,       .val = 13           },
+    { .name = "R14",            .typ = TYP_GREG,            .tid = TOK_GR_14,       .val = 14           },
+    { .name = "R15",            .typ = TYP_GREG,            .tid = TOK_GR_15,       .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
     // Control registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "C0",             .typ = TYP_CREG,            .tid = CR_0,            .val = 0            },
-    { .name = "C1",             .typ = TYP_CREG,            .tid = CR_1,            .val = 1            },
-    { .name = "C2",             .typ = TYP_CREG,            .tid = CR_2,            .val = 2            },
-    { .name = "C3",             .typ = TYP_CREG,            .tid = CR_3,            .val = 3            },
-    { .name = "C4",             .typ = TYP_CREG,            .tid = CR_4,            .val = 4            },
-    { .name = "C5",             .typ = TYP_CREG,            .tid = CR_5,            .val = 5            },
-    { .name = "C6",             .typ = TYP_CREG,            .tid = CR_6,            .val = 6            },
-    { .name = "C7",             .typ = TYP_CREG,            .tid = CR_7,            .val = 7            },
-    { .name = "C8",             .typ = TYP_CREG,            .tid = CR_8,            .val = 8            },
-    { .name = "C9",             .typ = TYP_CREG,            .tid = CR_9,            .val = 9            },
-    { .name = "C10",            .typ = TYP_CREG,            .tid = CR_10,           .val = 10           },
-    { .name = "C11",            .typ = TYP_CREG,            .tid = CR_11,           .val = 11           },
-    { .name = "C12",            .typ = TYP_CREG,            .tid = CR_12,           .val = 12           },
-    { .name = "C13",            .typ = TYP_CREG,            .tid = CR_13,           .val = 13           },
-    { .name = "C14",            .typ = TYP_CREG,            .tid = CR_14,           .val = 14           },
-    { .name = "C15",            .typ = TYP_CREG,            .tid = CR_15,           .val = 15           },
+    { .name = "C0",             .typ = TYP_CREG,            .tid = TOK_CR_0,        .val = 0            },
+    { .name = "C1",             .typ = TYP_CREG,            .tid = TOK_CR_1,        .val = 1            },
+    { .name = "C2",             .typ = TYP_CREG,            .tid = TOK_CR_2,        .val = 2            },
+    { .name = "C3",             .typ = TYP_CREG,            .tid = TOK_CR_3,        .val = 3            },
+    { .name = "C4",             .typ = TYP_CREG,            .tid = TOK_CR_4,        .val = 4            },
+    { .name = "C5",             .typ = TYP_CREG,            .tid = TOK_CR_5,        .val = 5            },
+    { .name = "C6",             .typ = TYP_CREG,            .tid = TOK_CR_6,        .val = 6            },
+    { .name = "C7",             .typ = TYP_CREG,            .tid = TOK_CR_7,        .val = 7            },
+    { .name = "C8",             .typ = TYP_CREG,            .tid = TOK_CR_8,        .val = 8            },
+    { .name = "C9",             .typ = TYP_CREG,            .tid = TOK_CR_9,        .val = 9            },
+    { .name = "C10",            .typ = TYP_CREG,            .tid = TOK_CR_10,       .val = 10           },
+    { .name = "C11",            .typ = TYP_CREG,            .tid = TOK_CR_11,       .val = 11           },
+    { .name = "C12",            .typ = TYP_CREG,            .tid = TOK_CR_12,       .val = 12           },
+    { .name = "C13",            .typ = TYP_CREG,            .tid = TOK_CR_13,       .val = 13           },
+    { .name = "C14",            .typ = TYP_CREG,            .tid = TOK_CR_14,       .val = 14           },
+    { .name = "C15",            .typ = TYP_CREG,            .tid = TOK_CR_15,       .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
     // Runtime architcture register names for general registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "T0",             .typ = TYP_GREG,            .tid = GR_1,            .val =  1           },
-    { .name = "T1",             .typ = TYP_GREG,            .tid = GR_2,            .val =  2           },
-    { .name = "T2",             .typ = TYP_GREG,            .tid = GR_3,            .val =  3           },
-    { .name = "T3",             .typ = TYP_GREG,            .tid = GR_4,            .val =  4           },
-    { .name = "T4",             .typ = TYP_GREG,            .tid = GR_5,            .val =  5           },
-    { .name = "T5",             .typ = TYP_GREG,            .tid = GR_6,            .val =  6           },
-    { .name = "T6",             .typ = TYP_GREG,            .tid = GR_7,            .val =  7           },
+    { .name = "T0",             .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1           },
+    { .name = "T1",             .typ = TYP_GREG,            .tid = TOK_GR_2,        .val =  2           },
+    { .name = "T2",             .typ = TYP_GREG,            .tid = TOK_GR_3,        .val =  3           },
+    { .name = "T3",             .typ = TYP_GREG,            .tid = TOK_GR_4,        .val =  4           },
+    { .name = "T4",             .typ = TYP_GREG,            .tid = TOK_GR_5,        .val =  5           },
+    { .name = "T5",             .typ = TYP_GREG,            .tid = TOK_GR_6,        .val =  6           },
+    { .name = "T6",             .typ = TYP_GREG,            .tid = TOK_GR_7,        .val =  7           },
     
-    { .name = "ARG3",           .typ = TYP_GREG,            .tid = GR_8,            .val =  8           },
-    { .name = "ARG2",           .typ = TYP_GREG,            .tid = GR_9,            .val =  9           },
-    { .name = "ARG1",           .typ = TYP_GREG,            .tid = GR_10,           .val =  10          },
-    { .name = "ARG0",           .typ = TYP_GREG,            .tid = GR_11,           .val =  11          },
+    { .name = "ARG3",           .typ = TYP_GREG,            .tid = TOK_GR_8,        .val =  8           },
+    { .name = "ARG2",           .typ = TYP_GREG,            .tid = TOK_GR_9,        .val =  9           },
+    { .name = "ARG1",           .typ = TYP_GREG,            .tid = TOK_GR_10,       .val =  10          },
+    { .name = "ARG0",           .typ = TYP_GREG,            .tid = TOK_GR_11,       .val =  11          },
     
-    { .name = "RET3",           .typ = TYP_GREG,            .tid = GR_8,            .val =  8           },
-    { .name = "RET2",           .typ = TYP_GREG,            .tid = GR_9,            .val =  9           },
-    { .name = "RET1",           .typ = TYP_GREG,            .tid = GR_10,           .val =  10          },
-    { .name = "RET0",           .typ = TYP_GREG,            .tid = GR_11,           .val =  11          },
+    { .name = "RET3",           .typ = TYP_GREG,            .tid = TOK_GR_8,        .val =  8           },
+    { .name = "RET2",           .typ = TYP_GREG,            .tid = TOK_GR_9,        .val =  9           },
+    { .name = "RET1",           .typ = TYP_GREG,            .tid = TOK_GR_10,       .val =  10          },
+    { .name = "RET0",           .typ = TYP_GREG,            .tid = TOK_GR_11,       .val =  11          },
     
-    { .name = "DP",             .typ = TYP_GREG,            .tid = GR_13,           .val =  13          },
-    { .name = "RL",             .typ = TYP_GREG,            .tid = GR_14,           .val =  14          },
-    { .name = "SP",             .typ = TYP_GREG,            .tid = GR_15,           .val =  15          },
+    { .name = "DP",             .typ = TYP_GREG,            .tid = TOK_GR_13,       .val =  13          },
+    { .name = "RL",             .typ = TYP_GREG,            .tid = TOK_GR_14,       .val =  14          },
+    { .name = "SP",             .typ = TYP_GREG,            .tid = TOK_GR_15,       .val =  15          },
+    
+    { .name = "SAR",            .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1           },
     
     //--------------------------------------------------------------------------------------------------------
     // Assembler mnemonics.
     //
-    //
-    // ??? need all combinations in this table... the .val field has the filled in mask.
+    // ??? should the .val field serve as group / op family ?
+    // ??? would need a way to easily specify the bits to set ... group, family, bitsXX
     //--------------------------------------------------------------------------------------------------------
-    { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = OP_NOP,          .val = IM_NOP       },
-    { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = OP_ADD,          .val = 0x00000000   },
-    { .name = "SUB",            .typ = TYP_OP_CODE,         .tid = OP_SUB,          .val = 0x00000000   },
-    { .name = "AND",            .typ = TYP_OP_CODE,         .tid = OP_AND,          .val = 0x00000000   },
-    { .name = "OR" ,            .typ = TYP_OP_CODE,         .tid = OP_OR,           .val = 0x00000000   },
-    { .name = "XOR" ,           .typ = TYP_OP_CODE,         .tid = OP_XOR,          .val = 0x00000000   },
-    { .name = "CMP" ,           .typ = TYP_OP_CODE,         .tid = OP_CMP,          .val = 0x00000000   },
-    { .name = "EXTR",           .typ = TYP_OP_CODE,         .tid = OP_EXTR,         .val = 0x00000000   },
-    { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = OP_DEP,          .val = 0x00000000   },
-    { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = OP_DSR,          .val = 0x00000000   },
-    { .name = "SHLA",           .typ = TYP_OP_CODE,         .tid = OP_SHLA,         .val = 0x00000000   },
-    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = OP_LDI,          .val = 0x00000000   },
-    { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = OP_ADDIL,        .val = 0x00000000   },
-    { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = OP_LDO,          .val = 0x00000000   },
-    { .name = "LD",             .typ = TYP_OP_CODE,         .tid = OP_LD,           .val = 0x00000000   },
-    { .name = "LDR",            .typ = TYP_OP_CODE,         .tid = OP_LDR,          .val = 0x00000000   },
-    { .name = "ST",             .typ = TYP_OP_CODE,         .tid = OP_ST,           .val = 0x00000000   },
-    { .name = "STC",            .typ = TYP_OP_CODE,         .tid = OP_STC,          .val = 0x00000000   },
-    { .name = "B",              .typ = TYP_OP_CODE,         .tid = OP_B,            .val = 0x00000000   },
-    { .name = "BR",             .typ = TYP_OP_CODE,         .tid = OP_BR,           .val = 0x00000000   },
-    { .name = "BV",             .typ = TYP_OP_CODE,         .tid = OP_BV,           .val = 0x00000000   },
-    { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = OP_CBR,          .val = 0x00000000   },
-    { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = OP_MBR,          .val = 0x00000000   },
-    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = OP_MFCR,         .val = 0x00000000   },
-    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = OP_MTCR,         .val = 0x00000000   },
-    { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = OP_LDPA,         .val = 0x00000000   },
-    { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = OP_PRB,          .val = 0x00000000   },
-    { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = OP_ITLB,         .val = 0x00000000   },
-    { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = OP_PTLB,         .val = 0x00000000   },
-    { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = OP_PCA,          .val = 0x00000000   },
-    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = OP_FCA,          .val = 0x00000000   },
-    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = OP_RSM,          .val = 0x00000000   },
-    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = OP_SSM,          .val = 0x00000000   },
-    { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = OP_RFI,          .val = 0x00000000   },
-    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = OP_CHK,          .val = 0x00000000   },
-    { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = OP_BRK,          .val = 0x00000000   },
-    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = OP_DIAG,         .val = 0x00000000   },
+    { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_NOP,      .val = IM_NOP       },
+    
+    { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD,      .val = 0x00000000   },
+    { .name = "ADDI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD_I,    .val = 0x00000000   },
+    { .name = "ADDM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD_M,    .val = 0x00000000   },
+    
+    { .name = "SUB",            .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB,      .val = 0x00000000   },
+    { .name = "SUBI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB_I,    .val = 0x00000000   },
+    { .name = "SUBM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB_M,    .val = 0x00000000   },
+    
+    { .name = "AND",            .typ = TYP_OP_CODE,         .tid = TOK_OP_AND,      .val = 0x00000000   },
+    { .name = "ANDI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_AND_I,    .val = 0x00000000   },
+    { .name = "ANDM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_AND_M,    .val = 0x00000000   },
+    
+    { .name = "OR" ,            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR,       .val = 0x00000000   },
+    { .name = "ORI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR_I,     .val = 0x00000000   },
+    { .name = "ORM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR_M,     .val = 0x00000000   },
+    
+    { .name = "XOR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR,      .val = 0x00000000   },
+    { .name = "XORI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR_I,    .val = 0x00000000   },
+    { .name = "XORM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR_M,    .val = 0x00000000   },
+    
+    { .name = "CMP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP,      .val = 0x00000000   },
+    { .name = "CMPI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP_I,    .val = 0x00000000   },
+    { .name = "CMPM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP_M,    .val = 0x00000000   },
+    
+    { .name = "EXTR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_EXTR,     .val = 0x00000000   },
+    { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_DEP,      .val = 0x00000000   },
+    { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_DSR,      .val = 0x00000000   },
+    
+    { .name = "SHL1A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL1A,    .val = 0x00000000   },
+    { .name = "SHL2A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL2A,    .val = 0x00000000   },
+    { .name = "SHL3A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL3A,    .val = 0x00000000   },
+    
+    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDI,      .val = 0x00000000   },
+    { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = TOK_OP_ADDIL,    .val = 0x00000000   },
+    { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDO,      .val = 0x00000000   },
+    
+    { .name = "LD",             .typ = TYP_OP_CODE,         .tid = TOK_OP_LD,       .val = 0x00000000   },
+    { .name = "LDR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDR,      .val = 0x00000000   },
+    { .name = "ST",             .typ = TYP_OP_CODE,         .tid = TOK_OP_ST,       .val = 0x00000000   },
+    { .name = "STC",            .typ = TYP_OP_CODE,         .tid = TOK_OP_STC,      .val = 0x00000000   },
+   
+    { .name = "B",              .typ = TYP_OP_CODE,         .tid = TOK_OP_B,        .val = 0x00000000   },
+    { .name = "BR",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BR,       .val = 0x00000000   },
+    { .name = "BV",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BV,       .val = 0x00000000   },
+    { .name = "BB",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BB,       .val = 0x00000000   },
+    { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CBR,      .val = 0x00000000   },
+    { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_MBR,      .val = 0x00000000   },
+    
+    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_MFCR,     .val = 0x00000000   },
+    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_MTCR,     .val = 0x00000000   },
+    
+    { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = TOK_OP_LDPA,     .val = 0x00000000   },
+    { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = TOK_OP_PRB,      .val = 0x00000000   },
+
+    { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ITLB,     .val = 0x00000000   },
+    { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = TOK_OP_PTLB,     .val = 0x00000000   },
+
+    { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = TOK_OP_PCA,      .val = 0x00000000   },
+    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = TOK_OP_FCA,      .val = 0x00000000   },
+
+    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_RSM,      .val = 0x00000000   },
+    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_SSM,      .val = 0x00000000   },
+    
+    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CHK,      .val = 0x00000000   },
+    { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = TOK_OP_BRK,      .val = 0x00000000   },
+
+    { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_RFI,      .val = 0x00000000   },
+    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = TOK_OP_DIAG,     .val = 0x00000000   },
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic instruction mnemonics.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "SHL",            .typ = TYP_OP_CODE,         .tid = OP_SHL,              .val =  0           },
-    { .name = "SHR",            .typ = TYP_OP_CODE,         .tid = OP_SHR,              .val =  0           },
-    { .name = "ASL",            .typ = TYP_OP_CODE,         .tid = OP_ASL,              .val =  0           },
-    { .name = "ASR",            .typ = TYP_OP_CODE,         .tid = OP_ASR,              .val =  0           },
-    { .name = "ROR",            .typ = TYP_OP_CODE,         .tid = OP_ROR,              .val =  0           },
-    { .name = "ROL",            .typ = TYP_OP_CODE,         .tid = OP_ROL,              .val =  0           }
+    // ??? tbd
     
 };
 
@@ -382,7 +406,7 @@ enum InstrFlags : uint32_t {
     IF_EXEC_ACCESS          = ( 1U << 12 ),
     
     IF_USE_IMM_VALUE        = ( 1U << 13 ),
-    IF_USE_IMM_VAL_L         = ( 1U << 14 ),
+    IF_USE_IMM_VAL_L        = ( 1U << 14 ),
     IF_USE_IMM_VAL_S        = ( 1U << 15 ),
     IF_USE_IMM_VAL_U        = ( 1U << 16 ),
     IF_USE_IMM_VAL_1        = ( 1U << 17 ),
@@ -608,7 +632,7 @@ void parseIdent( ) {
             if ( isdigit( currentChar )) {
                 
                 parseNum( );
-                currentToken.val &= 0xFFFFFC00;
+                currentToken.val &= 0x00000000FFFFFC00;
                 return;
             }
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
@@ -627,15 +651,51 @@ void parseIdent( ) {
             if ( isdigit( currentChar )) {
                 
                 parseNum( );
-                currentToken.val &= 0x3FF;
+                currentToken.val &= 0x00000000000003FF;
                 return;
             }
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
         }
     }
-    
-    // ??? U and S ?
-  
+    else if (( currentChar == 'S' ) || ( currentChar == 's' )) {
+        
+        addChar( identBuf, sizeof( identBuf ), currentChar );
+        nextChar( );
+        
+        if ( currentChar == '%' ) {
+            
+            addChar( identBuf, sizeof( identBuf ), currentChar );
+            nextChar( );
+            
+            if ( isdigit( currentChar )) {
+                
+                parseNum( );
+                currentToken.val &= 0xFFFFF00000000;
+                return;
+            }
+            else throw ( ERR_INVALID_CHAR_IN_IDENT );
+        }
+    }
+    else if (( currentChar == 'U' ) || ( currentChar == 'u' )) {
+        
+        addChar( identBuf, sizeof( identBuf ), currentChar );
+        nextChar( );
+        
+        if ( currentChar == '%' ) {
+            
+            addChar( identBuf, sizeof( identBuf ), currentChar );
+            nextChar( );
+            
+            if ( isdigit( currentChar )) {
+                
+                parseNum( );
+                currentToken.val &= 0xFFF0000000000000;
+                return;
+            }
+            else throw ( ERR_INVALID_CHAR_IN_IDENT );
+        }
+    }
+   
     while (( isalnum( currentChar )) || ( currentChar == '_' )) {
         
         addChar( identBuf, sizeof( identBuf ), currentChar );
@@ -997,13 +1057,6 @@ static inline void setInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrOpCode( uint32_t *instr, int opCodeGrp, int opCode ) {
-    
-    *instr = 0;
-    setInstrField( instr, 30, 2, opCodeGrp );
-    setInstrField( instr, 26, 4, opCode );
-}
-
 static inline void setInstrRegR( uint32_t *instr, T64Word regId ) {
     
     if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 22, 4, regId );
@@ -1040,39 +1093,61 @@ static inline void setInstrImm13( uint32_t *instr, T64Word val ) {
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-bool hasDataWidthFlags( uint32_t instrFlags ) {
+static inline bool hasDataWidthFlags( uint32_t instrFlags ) {
     
     return (( instrFlags & IF_DW_BYTE ) || ( instrFlags & IF_DW_HALF ) ||
             ( instrFlags & IF_DW_WORD ) || ( instrFlags & IF_DW_DOUBLE ));
 }
 
-T64Word getInstrGroup( uint32_t instr ) {
+static inline T64Word getInstrGroup( uint32_t instr ) {
     
     return ( extractField( instr, 30, 2 ));
 }
 
+static inline T64Word getInstrOp( uint32_t instr ) {
+    
+    return ( extractField( instr, 26, 4 ));
+}
+
+
+static inline void setInstrOpCode( uint32_t *instr, int instrOpToken ) {
+    
+    *instr = 0;
+    
+    switch ( instrOpToken ) {
+            
+            
+    }
+    
+    // setInstrField( instr, 30, 2, opCodeGrp );
+    // setInstrField( instr, 26, 4, opCode );
+}
+
+
+
+
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrOptions" will analyze the opCode option string. An opCode string is a sequence of characters.
-// We will look at each character in the "name" and set the options for the particular instruction. There are
-// also cases where the only option is a multi-character sequence. They cannot be in the same ".xxx" group.
-// Currently only the CMP instruction is such a case. The assembler can handle multile ".xxx" sequences.
-// Once we have all options seen, we check that there are no conflicting options where only one out of a
-// flag group can be set.
+// "parseInstrOptions" will analyze the opCode option string. An opCode option string is a sequence of
+// characters after the ".". We will look at each character in the "name" and set the options for the
+// particular instruction. There are also options where the only option is a multi-character sequence. They
+// cannot be in the same ".xxx" group. Currently only the CMP instruction is such a case. The assembler can
+// handle multile ".xxx" sequences. Once we have all options seen, we check that there are no conflicting
+// options where only one option out of an option group can be set.
 //
 //------------------------------------------------------------------------------------------------------------
-uint32_t parseInstrOptions( uint32_t instrOpCode ) {
+uint32_t parseInstrOptions( uint32_t instrOpToken ) {
     
     if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
     
-    uint32_t instrFlags = IF_NIL;
-    char    *optBuf     = currentToken.str;
+    uint32_t    instrFlags  = IF_NIL;
+    char        *optBuf     = currentToken.str;
+    int         optStrLen   = (int) strlen( optBuf );
   
-    switch( instrOpCode ) {
+    switch( instrOpToken ) {
             
-        case OP_AND:
-        case OP_OR: {
+        case TOK_OP_AND:    case TOK_OP_AND_I:  case TOK_OP_AND_M: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
                 else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
@@ -1084,10 +1159,11 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             }
             
         } break;
+         
+        case TOK_OP_OR:     case TOK_OP_OR_I:   case TOK_OP_OR_M:
+        case TOK_OP_XOR:    case TOK_OP_XOR_I:  case TOK_OP_XOR_M: {
             
-        case OP_XOR: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
                 else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
@@ -1099,9 +1175,9 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_CMP: {
+        case TOK_OP_CMP:    case TOK_OP_CMP_I:   case TOK_OP_CMP_M: {
             
-            if ( strlen( optBuf ) == 1 ) {
+            if ( optStrLen == 1 ) {
                 
                 if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_DW_BYTE;
                 else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_DW_HALF;
@@ -1109,7 +1185,7 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
                 else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
-            else {
+            else  if ( optStrLen == 2 ) {
                 
                 if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
                 else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
@@ -1117,12 +1193,13 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
                 else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
+            else throw ( ERR_INVALID_INSTR_OPT );
             
         } break;
             
-        case OP_EXTR: {
+        case TOK_OP_EXTR: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'S' ) instrFlags |= IF_RES_SIGN_EXT;
                 else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
@@ -1131,9 +1208,9 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_DEP: {
+        case TOK_OP_DEP: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'Z' ) instrFlags |= IF_REG_ZERO_BEFORE;
                 else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
@@ -1143,9 +1220,9 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_DSR: {
+        case TOK_OP_DSR: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
                 else throw ( ERR_INVALID_INSTR_OPT );
@@ -1153,22 +1230,19 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_SHLA: {
+        case TOK_OP_SHL1A:  case TOK_OP_SHL2A:  case TOK_OP_SHL3A: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
-                else if ( optBuf[ i ] == '1' ) instrFlags |= IF_USE_IMM_VAL_1;
-                else if ( optBuf[ i ] == '2' ) instrFlags |= IF_USE_IMM_VAL_2;
-                else if ( optBuf[ i ] == '3' ) instrFlags |= IF_USE_IMM_VAL_3;
                 else throw ( ERR_INVALID_INSTR_OPT );
             }
             
         } break;
             
-        case OP_LDI: {
+        case TOK_OP_LDI: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'L' ) instrFlags |= IF_USE_IMM_VAL_L;
                 else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_USE_IMM_VAL_S;
@@ -1178,10 +1252,10 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_LD:
-        case OP_ST: {
+        case TOK_OP_LD:
+        case TOK_OP_ST: {
             
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            for ( int i = 0; i < optStrLen; i ++ ) {
                 
                 if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
                 else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
@@ -1193,8 +1267,8 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
        
-        case OP_CBR:
-        case OP_MBR: {
+        case TOK_OP_CBR:
+        case TOK_OP_MBR: {
             
             if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
             else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
@@ -1204,7 +1278,7 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_PRB: {
+        case TOK_OP_PRB: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
@@ -1217,7 +1291,7 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
             
         } break;
             
-        case OP_CHK: {
+        case TOK_OP_CHK: {
             
             for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                 
@@ -1234,10 +1308,10 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
     }
     
     int dwCount = 0;
-    if ( instrFlags & IF_DW_BYTE     ) dwCount ++;
-    if ( instrFlags & IF_DW_HALF     ) dwCount ++;
-    if ( instrFlags & IF_DW_WORD     ) dwCount ++;
-    if ( instrFlags & IF_DW_DOUBLE   ) dwCount ++;
+    if ( instrFlags & IF_DW_BYTE    ) dwCount ++;
+    if ( instrFlags & IF_DW_HALF    ) dwCount ++;
+    if ( instrFlags & IF_DW_WORD    ) dwCount ++;
+    if ( instrFlags & IF_DW_DOUBLE  ) dwCount ++;
     if ( dwCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
     
     int cmpCount    = 0;
@@ -1253,62 +1327,27 @@ uint32_t parseInstrOptions( uint32_t instrOpCode ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// Most instruction have the result register as an instruction field. We set the field and also return the
-// register number.
+// Set the codition field for compare type instructions.
 //
 //------------------------------------------------------------------------------------------------------------
-T64Word parseRegR( uint32_t *instr ) {
+void instrSetCmpCode( uint32_t *instr, uint32_t instrFlags ) {
     
-    T64Word targetRegId = 0;
+    int fieldPos = 20;
     
-    if ( isTokenTyp( TYP_GREG )) {
-        
-        targetRegId = currentToken.val;
-        setInstrField( instr, 22, 4, targetRegId );
-        nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    return ( targetRegId );
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-void instrSetCmpCode( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
-    
-    int fieldPos = 0; // ??? always the same position ?
-    
-    if      ( instrFlags & IF_CMP_EQ )  setInstrField( instr, fieldPos, 2, IF_CMP_EQ );
-    else if ( instrFlags & IF_CMP_LT )  setInstrField( instr, fieldPos, 2, IF_CMP_LT );
-    else if ( instrFlags & IF_CMP_NE )  setInstrField( instr, fieldPos, 2, IF_CMP_NE );
-    else if ( instrFlags & IF_CMP_LE )  setInstrField( instr, fieldPos, 2, IF_CMP_LE );
+    if      ( instrFlags & IF_CMP_EQ )  setInstrField( instr, fieldPos, 2, 0 );
+    else if ( instrFlags & IF_CMP_LT )  setInstrField( instr, fieldPos, 2, 1 );
+    else if ( instrFlags & IF_CMP_NE )  setInstrField( instr, fieldPos, 2, 2 );
+    else if ( instrFlags & IF_CMP_LE )  setInstrField( instr, fieldPos, 2, 3 );
     else throw( ERR_EXPECTED_INSTR_OPT );
 }
 
 //------------------------------------------------------------------------------------------------------------
-//
+// Set the data width field for memory access type instructions.
 //
 //------------------------------------------------------------------------------------------------------------
-void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+void setInstrDataWidth( uint32_t *instr, uint32_t instrFlags ) {
     
-    int fieldPos = 0;
-    
-    if (( instrOpCode == OP_ADD ) || ( instrOpCode == OP_SUB )  ||
-        ( instrOpCode == OP_AND ) || ( instrOpCode == OP_NAND ) ||
-        ( instrOpCode == OP_OR )  || ( instrOpCode == OP_NOR )  ||
-        ( instrOpCode == OP_XOR ) || ( instrOpCode == OP_XNOR ) ||
-        ( instrOpCode == OP_CMP )) {
-        
-        fieldPos = 13;
-    }
-    else if (( instrOpCode == OP_LD) || ( instrOpCode == OP_ST ) || ( instrOpCode == OP_CHK )) {
-        
-        fieldPos = 20;
-        
-    }
-    else ;
+    int fieldPos = 13;
    
     if      ( instrFlags & IF_DW_BYTE   )   setInstrField( instr, fieldPos, 2, 0 );
     else if ( instrFlags & IF_DW_HALF   )   setInstrField( instr, fieldPos, 2, 1 );
@@ -1318,106 +1357,149 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFla
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseModeTypeInstr" parses all instructions that have several types of "operand" encoding. The syntax is
-// as follows:
+// "parseImmModeInstr" parses all instructions that have the immediate operand encoding. The instruction
+// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
 //
-//      opCode [ "." <opt> ] <targetReg> "," <sourceReg>, <num>                 -> Instruction group ALU
-//      opCode [ "." <opt> ] <targetReg> "," <num> "(" <baseReg> ")"            -> Instruction group MEM
-//      opCode [ "." <opt> ] <targetReg> "," "(" <baseReg> ")"                  -> Instruction group MEM
-//      opCode [ "." <opt> ] <targetReg> "," <sourceRegB>                       -> Instruction group ALU
-//      opCode [ "." <opt> ] <targetReg> "," <sourceRegA> "," "<sourceRegB>     -> Instruction group ALU
-//      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"       -> Instruction group MEM
-//
-// The instruction options have already been parsed and are available in the instrFlags variable. This is
-// perhaps the most coplex parsing analysis. Mode type instructions offer many forms.
+//      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <num>  -> Instruction group ALU
 //
 //-----------------------------------------------------------------------------------------------------------
-void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
-
-    Expr    rExpr;
-    uint8_t targetRegId;
+void parseImmModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+    
+    setInstrOpCode( instr, instrOpToken );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) targetRegId = rExpr.numVal;
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
-    // ??? does not match immediate mode anymore !!!
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( isToken( TOK_EOS )) {
-            
-            setInstrOpCode( instr, OP_CODE_GRP_ALU, instrOpCode );
-            setInstrRegR( instr, targetRegId );
-            setInstrImm19( instr, rExpr.numVal );
-        }
-        else {
-           
-            setInstrOpCode( instr, OP_CODE_GRP_MEM, instrOpCode );
-            setInstrDataWidth( instr, instrOpCode, instrFlags );
-            setInstrImm13( instr, rExpr.numVal );
-            
-            parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_ADR ) setInstrRegB( instr, rExpr.numVal );
-            else throw ( ERR_EXPECTED_ADR );
-        }
-    }
-    else if ( rExpr.typ == TYP_ADR ) {
-        
-        setInstrOpCode( instr, OP_CODE_GRP_MEM, instrOpCode );
-        setInstrRegR( instr, targetRegId );
-        setInstrDataWidth( instr, instrOpCode, instrFlags );
-    }
-    else if ( rExpr.typ == TYP_GREG ) {
-        
-        if ( isToken( TOK_EOS )) {
-           
-            setInstrOpCode( instr, OP_CODE_GRP_ALU, instrOpCode );
-            setInstrRegR( instr, targetRegId );
-            setInstrRegA( instr, targetRegId );
-            setInstrRegB( instr, rExpr.numVal );
-        }
-        else if ( isToken( TOK_COMMA )) {
-            
-            setInstrOpCode( instr, OP_CODE_GRP_ALU, instrOpCode );
-            setInstrRegR( instr, targetRegId );
-            setInstrRegB( instr, rExpr.numVal );
-            
-            parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_GREG ) setInstrRegA( instr, rExpr.numVal );
-            else throw ( ERR_EXPECTED_GENERAL_REG );
-        }
-        else if ( isToken( TOK_LPAREN )) {
-            
-            setInstrOpCode( instr, OP_CODE_GRP_MEM, instrOpCode );
-            setInstrRegR( instr, targetRegId );
-            setInstrDataWidth( instr, instrOpCode, instrFlags );
-            
-            parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_ADR )  setInstrRegB( instr, rExpr.numVal );
-            else throw ( ERR_EXPECTED_ADR );
-        }
-    }
-    else throw ( ERR_INVALID_INSTR_MODE );
+    if ( rExpr.typ == TYP_NUM ) setInstrImm19( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
     
-    if (( getInstrGroup( *instr ) == OP_CODE_GRP_ALU ) &&
-        ( hasDataWidthFlags( instrFlags ))) throw ( ERR_INVALID_INSTR_OPT );
-    
-    if ( instrOpCode == OP_AND ) {
+    if ( instrOpToken == TOK_OP_AND_I ) {
         
         if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
         if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
     }
-    else if (( instrOpCode == OP_OR ) || ( instrOpCode == OP_XOR )) {
+    else if (( instrOpToken == TOK_OP_OR_I ) || ( instrOpToken == TOK_OP_XOR_I )) {
         
         if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
     }
-    else if ( instrOpCode == OP_CMP ) {
+    else if ( instrOpToken == TOK_OP_CMP_I ) {
         
-        instrSetCmpCode( instr, instrOpCode, instrFlags );
+        instrSetCmpCode( instr, instrFlags );
+    }
+    
+    checkEOS( );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseRegModeInstr" parses all instructions that have the register operand encoding. The instruction
+// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
+//
+//      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <sourceRegB>  -> Instruction group ALU
+//
+//-----------------------------------------------------------------------------------------------------------
+void parseRegModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+    
+    setInstrOpCode( instr, instrOpToken );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegA( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    if ( instrOpToken == TOK_OP_AND_I ) {
+        
+        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
+        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
+    }
+    else if (( instrOpToken == TOK_OP_OR_I ) || ( instrOpToken == TOK_OP_XOR_I )) {
+        
+        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
+    }
+    else if ( instrOpToken == TOK_OP_CMP_I ) {
+        
+        instrSetCmpCode( instr, instrFlags );
+    }
+    
+    checkEOS( );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseAdrModeInstr" parses all instructions that have the memory address operand encoding. The instruction
+// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
+//
+//      opCode [ "." <opt> ] <targetReg> "," [ <num> ]  "(" <baseReg> ")"     -> Instruction group MEM
+//      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"    -> Instruction group MEM
+//
+//-----------------------------------------------------------------------------------------------------------
+void parseAdrModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+  
+    setInstrOpCode( instr, instrOpToken );
+    setInstrDataWidth( instr, instrFlags );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
+    
+        setInstrImm13( instr, rExpr.numVal );
+        parseExpr( &rExpr );
+    }
+    else if ( rExpr.typ == TYP_GREG ) {
+        
+        setInstrRegA( instr, rExpr.numVal );
+        parseExpr( &rExpr );
+    }
+    
+    if ( rExpr.typ == TYP_ADR ) {
+        
+        if ( rExpr.typ == TYP_ADR ) setInstrRegB( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_ADR );
+    }
+    else throw ( ERR_EXPECTED_ADR );
+ 
+    if ( instrOpToken == TOK_OP_AND_M ) {
+        
+        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
+        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
+    }
+    else if (( instrOpToken == TOK_OP_OR_M ) || ( instrOpToken == TOK_OP_XOR_M )) {
+        
+        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
+    }
+    else if ( instrOpToken == TOK_OP_CMP_M ) {
+        
+        instrSetCmpCode( instr, instrFlags );
     }
              
     checkEOS( );
@@ -1431,13 +1513,12 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFl
 //      EXTR [ ".S“ ]  <targetReg> "," <sourceReg> "," <pos> "," <len"
 //      EXTR [ ".S" ]  <targetReg> "," <sourceReg> ", "SAR", <len"
 //
-// ??? the "pos" is variable !!!!
 //------------------------------------------------------------------------------------------------------------
-void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+void parseExtrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
     
     Expr rExpr;
    
-    setInstrOpCode( instr, OP_CODE_GRP_ALU, OP_EXTR );
+    setInstrOpCode( instr, instrOpToken );
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1452,15 +1533,61 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags 
     acceptComma( );
     parseExpr( &rExpr );
     
-    // check for GREG or SAR...
-    
     if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 6, 6, rExpr.numVal );
+    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
     else throw ( ERR_EXPECTED_NUMERIC );
    
-    // len 
     acceptComma( );
     parseExpr( &rExpr );
         
+    if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 0, 6, rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
+    if ( instrFlags & IF_RES_SIGN_EXT ) setInstrBit( instr, 12, true );
+    
+    checkEOS( );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseInstrDEP" parses the deposit instruction. The instruction has zwo basic formats. When the "I" option
+// is set, the value to deposti is an immediate value, else the data comes from a general register. When the
+// "SAR" is specified instead of a bit position, the "A" bit is encoded in the instruction.
+//
+//      DEP [ ".“ Z/I ] <targetReg> "," <sourceReg> "," <pos> "," <len>"
+//      DEP [ ".“ Z/I ] <targetReg> "," <sourceReg> "," "SAR" "," <len>"
+//      DEP [ ".“ Z/I ] <targetReg> "," <val>,      "," <pos> "," <len>
+//      DEP [ ".“ Z/I ] <targetReg> "," <val>       "," "SAR" "," <len>
+//
+//------------------------------------------------------------------------------------------------------------
+void parseDepInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+       
+    setInstrOpCode( instr, instrOpToken );
+    
+    if ( instrFlags & IF_REG_ZERO_BEFORE ) setInstrBit( instr, 12, true );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if      ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
+    else if ( rExpr.typ == TYP_NUM )    setInstrField( instr, 15, 4, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if      (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
+    else if ( rExpr.typ == TYP_NUM )                             setInstrField( instr, 6, 6, rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 0, 6, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
@@ -1468,248 +1595,88 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags 
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrDEP" parses the deposit instruction. The instruction has three basic formats.
-// When the "A" bit is set, the position will be obtained from the shift amount control register. Otherwise
-// it is encoded in the instruction.
+// The DSR instruction parses the double shift instruction. There are two flavors. If the "length operand is
+// the "SAR" register, the "A" bit is encoded in teh instruction, other wise the instruction "len" field.
 //
-//      DEP [ ".“ <opt> ]       <targetReg> "," <sourceReg> "," <pos> "," <len>"
-//      DEP [ "." "A" <opt> ]   <targetReg> "," <sourceReg> ", <len>"
-//      DEP [ "." "I" <opt> ]   <targetReg> "," <val>, <pos> "," <len>
-//      DEP [ "." "AI" <opt> ]  <targetReg> "," <val> "," <len>
+//      DSR <targetReg> "," <sourceRegA> "," <sourceRegB> "," <len>
+//      DSR <targetReg> "," <sourceRegA> "," <sourceRegB> "," SAR
 //
 //------------------------------------------------------------------------------------------------------------
-void parseInstrDEP( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
+void parseDsrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
     
     Expr rExpr;
-   
-#if 0
-    *instr = 0;
     
-    setInstrOpCode( instr, OP_GRP_ALU, OP_DEP );
-    parseRegR( instr );
+    setInstrOpCode( instr, instrOpToken );
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
     acceptComma( );
     
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG )   setInstrRegA( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if      (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
+    else if ( rExpr.typ == TYP_NUM )                             setInstrField( instr, 6, 6, rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
+    checkEOS( );
+}
 
+//------------------------------------------------------------------------------------------------------------
+// The SHLA instruction performs a shift left of "B" by the instruction encided shift amount and adds the
+// "A" register to it. If the ".I" optin is set, the RegA field is interpreted as a number.
+//
+//      SHLxA       <targetReg> "," <sourceRegB> "," <sourceRegA>
+//      SHLxA ".I"  <targetReg> "," <sourceRegA> "," <val>
+//
+//------------------------------------------------------------------------------------------------------------
+void parseInstrSHLA( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+    
+    Expr rExpr;
+    
+    setInstrOpCode( instr, instrOpToken );
+    
+    // ??? set shamt...
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
+    acceptComma( );
+    
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        setInstrRegB( instr, rExpr.numVal );
-        acceptComma( );
-        parseExpr( &rExpr );
-        
-        if ( rExpr.typ == TYP_NUM ) {
-            
-            setInstrField( instr, 6, 6, rExpr.numVal );
-            
-            if ( isInRangeForBitFieldU( tok -> tokVal( ), 5 )) {
-                
-                if ( getBit( *instr, 11 ))  setBitField( instr, 21, 5, rExpr.numVal );
-                else                        setBitField( instr, 27, 5, rExpr.numVal );
-            }
-            else throw ( ERR_IMM_VAL_RANGE );
-        }
-        else throw ( ERR_EXPECTED_NUMERIC );
-        
-        if ( ! getBit( *instr, 11 )) {
-            
-            acceptComma( );
-            parseExpr( &rExpr );
-            
-            if ( rExpr.typ == TYP_NUM ) {
-                
-                if ( isInRangeForBitFieldU( rExpr.numVal, 5 )) setBitField( instr, 21, 5, rExpr.numVal );
-                else throw ( ERR_IMM_VAL_RANGE );
-            }
-            else throw ( ERR_EXPECTED_NUMERIC );
-        }
+    
     }
     else if ( rExpr.typ == TYP_NUM ) {
         
-        if ( getBit( *instr, 12 )) {
-            
-            if ( isInRangeForBitField( rExpr.numVal, 4 )) setBitField( instr, 31, 4, rExpr.numVal );
-            else throw ( ERR_IMM_VAL_RANGE );
-            
-            acceptComma( );
-            
-            if ( ! getBit( *instr, 11 )) {
-                
-                if ( isInRangeForBitFieldU( tok -> tokVal( ), 5 )) setBitField( instr, 27, 5, tok -> tokVal( ));
-                else throw ( ERR_POS_VAL_RANGE );
-                
-                tok -> nextToken( );
-                if ( tok -> isToken( TOK_COMMA )) tok -> nextToken( );
-                else throw ( ERR_EXPECTED_COMMA );
-            }
-            
-            parseExpr( &rExpr );
-            
-            if ( rExpr.typ == TYP_NUM ) {
-                
-                if ( isInRangeForBitFieldU( rExpr.numVal, 5 )) setBitField( instr, 21, 5, rExpr.numVal );
-                else throw ( ERR_LEN_VAL_RANGE );
-            }
-            else throw ( ERR_EXPECTED_NUMERIC );
-        }
-        else throw ( ERR_EXPECTED_NUMERIC );
     }
     else throw ( ERR_EXPECTED_NUMERIC );
-#endif
     
     checkEOS( );
 }
 
 
 #if 0
-
-
-//------------------------------------------------------------------------------------------------------------
-// The DS instruction parses the divide step instruction.
-//
-//      DS <targetReg> "," <sourceRegA> "," <sourceRegB>
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrDS( uint32_t *instr, uint32_t flags ) {
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 27, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 31, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    checkEOS( );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// The DSR instruction parses the double shift instruction. There are two flavors. If the "A" bit is set, the
-// shift amount is taken from the shift amount control register, else from the instruction "len" field.
-//
-//      DSR [ ".“ <opt> ] <targetReg> "," <sourceRegA> "," <sourceRegB> "," <len"
-//      DSR [ ".“ "A"   ] <targetReg> "," <sourceRegA> "," <sourceRegB>
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrDSR( uint32_t *instr, uint32_t flags ) {
-    
-    SimExpr rExpr;
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 27, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 31, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    if ( ! getBit( *instr, 11 )) {
-        
-        acceptComma( );
-        parseExpr( &rExpr );
-        
-        if ( rExpr.typ == TYP_NUM ) {
-            
-            if ( isInRangeForBitFieldU( rExpr.numVal, 5 )) setBitField( instr, 21, 5, rExpr.numVal );
-            else throw ( ERR_IMM_VAL_RANGE );
-        }
-        else throw ( ERR_EXPECTED_NUMERIC );
-    }
-    
-    checkEOS( );
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-// The SHLA instruction performs a shift left of "B" by "sa" and adds the "A" register to it.
-//
-//      SHLA [ "." <opt> ] <targetReg> "," <sourceRegA> "," <sourceRegB> "," <amt>
-//      SHLA ".I" <targetReg> "," <sourceRegA> "," <val> "," <amt>
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrSHLA( uint32_t *instr, uint32_t flags ) {
-    
-    SimExpr rExpr;
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 27, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_GREG ) {
-        
-        if ( getBit( *instr, 10 )) throw ( ERR_INSTR_MODE_OPT_COMBO );
-        else setBitField( instr, 31, 4, tok -> tokVal( ));
-    }
-    else if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( getBit( *instr, 11 )) {
-            
-            if ( ! isInRangeForBitFieldU( rExpr.numVal, 4 )) throw ( ERR_IMM_VAL_RANGE );
-        }
-        
-        setBitField( instr, 31, 4, rExpr.numVal );
-    }
-    else throw ( ERR_EXPECTED_NUMERIC );
-    
-    acceptComma( );
-    parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( isInRangeForBitFieldU( rExpr.numVal, 2 )) setBitField( instr, 21, 2, rExpr.numVal );
-        else throw ( ERR_IMM_VAL_RANGE );
-    }
-    else throw ( ERR_EXPECTED_NUMERIC );
-    
-    checkEOS( );
-}
 
 //------------------------------------------------------------------------------------------------------------
 // The CMR instruction tests register "B" for a condition and if true copies the "A" value to "R".
@@ -1967,8 +1934,6 @@ void parseInstrCBR( uint32_t *instr, uint32_t flags ) {
     checkEOS( );
 }
 
-#endif
-
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrLoadAndStore" will parse the load instructions family.
 //
@@ -2012,6 +1977,10 @@ void parseInstrLoadAndStore( uint32_t *instr, uint32_t instrOpCode, uint32_t ins
     }
     else throw ( ERR_EXPECTED_ADR );
 }
+
+
+#endif
+
 
 #if 0
 
@@ -2432,7 +2401,7 @@ void setupTokenizer( char *inputStr ) {
 
 void parseLine( char *inputStr, uint32_t *instr ) {
     
-    uint32_t instrOpCode    = OP_NOP;
+    uint32_t instrOpToken   = TOK_NIL;
     uint32_t instrFlags     = IF_NIL;
     
     setupTokenizer( inputStr );
@@ -2440,28 +2409,43 @@ void parseLine( char *inputStr, uint32_t *instr ) {
    
     if ( isTokenTyp( TYP_OP_CODE )) {
         
-        instrOpCode = currentToken.tid;
+        instrOpToken = currentToken.tid;
         
         nextToken( );
         while ( isToken( TOK_PERIOD )) {
             
             nextToken( );
-            parseInstrOptions( instrOpCode );
+            parseInstrOptions( instrOpToken );
         }
-    
-        switch( instrOpCode ) {
+       
+        switch( instrOpToken ) {
                 
-            case OP_NOP:    parseInstrNop( instr, instrOpCode, instrFlags );        break;
+            case TOK_OP_NOP:    parseInstrNop( instr, instrOpToken, instrFlags );           break;
+                
+            case TOK_OP_ADD:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_SUB:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_AND:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_OR:     parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_XOR:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_CMP:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
            
-            case OP_ADD:
-            case OP_SUB:
-            case OP_AND:
-            case OP_OR:
-            case OP_XOR:
-            case OP_CMP:    parseModeTypeInstr( instr, instrOpCode, instrFlags );   break;
+            case TOK_OP_ADD_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_SUB_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_CMP_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_AND_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_OR_I:   parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_XOR_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
                 
-            case OP_EXTR:   parseInstrEXTR( instr, instrOpCode, instrFlags );       break;
-            case OP_DEP:    parseInstrDEP( instr, instrOpCode, instrFlags );        break;
+            case TOK_OP_ADD_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_SUB_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_CMP_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_AND_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_OR_M:   parseAdrModeInstr( instr, instrOpToken,  instrFlags );      break;
+            case TOK_OP_XOR_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+                
+            case TOK_OP_EXTR:   parseExtrInstr( instr, instrOpToken, instrFlags );          break;
+            case TOK_OP_DEP:    parseDepInstr( instr, instrOpToken, instrFlags );           break;
+            case TOK_OP_DSR:    parseDsrInstr( instr, instrOpToken, instrFlags );           break;
                 
                 /*
                  
@@ -2471,23 +2455,9 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  return( parseInstrLoadAndStore( instr, flags | TF_WORD_INSTR ));
                  }
                  
-                 case OP_CODE_STB:   case OP_CODE_LDB: {
-                 
-                 return( parseInstrLoadAndStore( instr, flags | TF_BYTE_INSTR ));
-                 }
-                 
-                 case OP_CODE_LDH:   case OP_CODE_STH: {
-                 
-                 return( parseInstrLoadAndStore( instr, flags | TF_HALF_INSTR ));
-                 }
-                 
-                 case OP_CODE_LSID:      return( parseInstrLSID( instr, flags ));
-                 
                 
-                 
-                 case OP_CODE_DS:        return( parseInstrDS( instr, flags ));
-                 
-                 case OP_CODE_DSR:       return( parseInstrDSR( instr, flags ));
+            
+    
                  case OP_CODE_SHLA:      return( parseInstrSHLA( instr, flags ));
                  case OP_CODE_CMR:       return( parseInstrCMR( instr, flags ));
                  
@@ -2497,8 +2467,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  
                  case OP_CODE_LDO:       return( parseInstrLDO( instr, flags ));
                  
-                 case OP_CODE_B:
-                 case OP_CODE_GATE:      return( parseInstrBandGATE( instr, flags ));
+                 case OP_CODE_B: return( parseInstrBandGATE( instr, flags ));
                  
                  case OP_CODE_BR:        return( parseInstrBR( instr, flags ));
                  case OP_CODE_BV:        return( parseInstrBV( instr, flags ));
@@ -2506,7 +2475,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  case OP_CODE_BVE:       return( parseInstrBVE( instr, flags ));
                  
                  case OP_CODE_CBR:
-                 case OP_CODE_CBRU:      return( parseInstrCBRandCBRU( instr, flags ));
+                    return( parseInstrCBRandCBRU( instr, flags ));
                  
                  case OP_CODE_MR:        return( parseInstrMR( instr, flags ));
                  case OP_CODE_MST:       return( parseInstrMST( instr, flags ));
