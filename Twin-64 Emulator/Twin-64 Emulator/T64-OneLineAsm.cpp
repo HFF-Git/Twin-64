@@ -175,7 +175,8 @@ enum TokId : uint16_t {
     
     TOK_OP_MFCR             = 361,      TOK_OP_MTCR             = 362,
     TOK_OP_RSM              = 363,      TOK_OP_SSM              = 364,
-    TOK_OP_LDPA             = 365,      TOK_OP_PRB              = 366,
+    TOK_OP_LPA              = 365,      TOK_LPAX                = 366,
+    TOK_OP_PRB              = 367,
     TOK_OP_ITLB             = 371,      TOK_OP_PTLB             = 372,
     TOK_OP_PCA              = 373,      TOK_OP_FCA              = 374,
     
@@ -211,13 +212,101 @@ struct Token {
     };
 };
 
+//------------------------------------------------------------------------------------------------------------
+// An instruction template consists of the instruction group bits ( 31,30 ), the op code family bits ( 29,
+// 28, 27, 26 ) and the option or mode bits ( 21, 20, 19 ). The mode bits are for some instruction the
+// default and could be changed during instruction parsing. From the defined constants we will build the
+// instruction template which is stored for the opcode mnemoic in the token value field.
+//
+//------------------------------------------------------------------------------------------------------------
 enum InstrTemplate : uint32_t {
     
-    IM_NOP = 0x00000000,
+    OPG_ALU         = ( 0U  << 30 ),
+    OPG_MEM         = ( 1U  << 30 ),
+    OPG_BR          = ( 2U  << 30 ),
+    OPG_SYS         = ( 3U  << 30 ),
     
+    OPF_ADD_OP      = ( 1U  << 26 ),
+    OPF_SUB_OP      = ( 2U  << 26 ),
+    OPF_AND_OP      = ( 3U  << 26 ),
+    OPF_OR_OP       = ( 4U  << 26 ),
+    OPF_XOR_OP      = ( 5U  << 26 ),
+    OPF_CMP_OP      = ( 6U  << 26 ),
+    OPF_BIT_OP      = ( 7U  << 26 ),
+    OPF_SHA_OP      = ( 8U  << 26 ),
+    OPF_IMM_OP      = ( 9U  << 26 ),
+    OPF_LDO_OP      = ( 10U << 26 ),
     
+    OPF_LD_OP       = ( 8U  << 26 ),
+    OPF_ST_OP       = ( 9U  << 26 ),
+    OPF_LDR_OP      = ( 10U << 26 ),
+    OPF_STC_OP      = ( 11U << 26 ),
     
+    OPF_B_OP        = ( 1U  << 26 ),
+    OPF_BR_OP       = ( 2U  << 26 ),
+    OPF_BB_OP       = ( 3U  << 26 ),
+    OPF_CBR_OP      = ( 4U  << 26 ),
+    OPF_MBR_OP      = ( 5U  << 26 ),
     
+    OPF_MR_OP       = ( 1U  << 26 ),
+    OPF_LPA_OP      = ( 2U  << 26 ),
+    OPF_PRB_OP      = ( 3U  << 26 ),
+    OPF_TLB_OP      = ( 4U  << 26 ),
+    OPF_CA_OP       = ( 5U  << 26 ),
+    OPF_MST_OP      = ( 6U  << 26 ),
+    OPF_RFI_OP      = ( 7U  << 26 ),
+    OPF_TRAP_OP     = ( 8U  << 26 ),
+    OPF_DIAG_OP     = ( 8U  << 26 ),
+    
+    OPM_FLD_0       = ( 0U  << 19 ),
+    OPM_FLD_1       = ( 1U  << 19 ),
+    OPM_FLD_2       = ( 2U  << 19 ),
+    OPM_FLD_3       = ( 3U  << 19 ),
+    OPM_FLD_4       = ( 4U  << 19 ),
+    OPM_FLD_5       = ( 5U  << 19 ),
+    OPM_FLD_6       = ( 6U  << 19 ),
+    OPM_FLD_7       = ( 7U  << 19 )
+};
+
+//------------------------------------------------------------------------------------------------------------
+// Instruction flags. They are used to keep track of instruction attributes used in assembling the final
+// word. Examples are the data width encoded in the opCode and the instruction mask.
+//
+//------------------------------------------------------------------------------------------------------------
+enum InstrFlags : uint32_t {
+    
+    IF_NIL                  = 0,
+   
+    IF_REG_COMPLEMENT       = ( 1U << 1  ),
+    IF_RES_NEGATE           = ( 1U << 2  ),
+    IF_REG_ZERO_BEFORE      = ( 1U << 3  ),
+    IF_RES_SIGN_EXT         = ( 1U << 4  ),
+    IF_USE_SHAMT_REG        = ( 1U << 5  ),
+    IF_ADR_UPDATE           = ( 1U << 6  ),
+    
+    IF_READ_ACCESS          = ( 1U << 10 ),
+    IF_WRITE_ACCESS         = ( 1U << 11 ),
+    IF_EXEC_ACCESS          = ( 1U << 12 ),
+    
+    IF_USE_IMM_VALUE        = ( 1U << 13 ),
+    IF_USE_IMM_VAL_L        = ( 1U << 14 ),
+    IF_USE_IMM_VAL_S        = ( 1U << 15 ),
+    IF_USE_IMM_VAL_U        = ( 1U << 16 ),
+    IF_USE_IMM_VAL_1        = ( 1U << 17 ),
+    IF_USE_IMM_VAL_2        = ( 1U << 18 ),
+    IF_USE_IMM_VAL_3        = ( 1U << 19 ),
+    
+    IF_DW_BYTE              = ( 1U << 20 ),
+    IF_DW_HALF              = ( 1U << 21 ),
+    IF_DW_WORD              = ( 1U << 22 ),
+    IF_DW_DOUBLE            = ( 1U << 23 ),
+    
+    IF_CMP_EQ               = ( 1U << 24 ),
+    IF_CMP_NE               = ( 1U << 25 ),
+    IF_CMP_LT               = ( 1U << 26 ),
+    IF_CMP_LE               = ( 1U << 27 ),
+    IF_RV_30                = ( 1U << 30 ),
+    IF_RV_31                = ( 1U << 31 )
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -299,81 +388,87 @@ const Token asmTokTab[ ] = {
     { .name = "SAR",            .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1           },
     
     //--------------------------------------------------------------------------------------------------------
-    // Assembler mnemonics.
+    // Assembler mnemonics. Like all other tokens, we habe the name, the type and the token Id. In addition,
+    // the ".val" field contains the initial instriuction mask with opCode group, opCode family and the
+    // bits set in the first opütion field to further qualify the instruction.
     //
-    // ??? should the .val field serve as group / op family ?
-    // ??? would need a way to easily specify the bits to set ... group, family, bitsXX
     //--------------------------------------------------------------------------------------------------------
-    { .name = "NOP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_NOP,      .val = IM_NOP       },
+    { .name = "ADD",   .typ = TYP_OP_CODE, .tid = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_0 ) },
+    { .name = "ADDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_I, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_1 ) },
+    { .name = "ADDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_M, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_0 ) },
     
-    { .name = "ADD",            .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD,      .val = 0x00000000   },
-    { .name = "ADDI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD_I,    .val = 0x00000000   },
-    { .name = "ADDM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ADD_M,    .val = 0x00000000   },
+    { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_0 ) },
+    { .name = "SUBI",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_I, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_1 ) },
+    { .name = "SUBM",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_M, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_0 ) },
     
-    { .name = "SUB",            .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB,      .val = 0x00000000   },
-    { .name = "SUBI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB_I,    .val = 0x00000000   },
-    { .name = "SUBM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_SUB_M,    .val = 0x00000000   },
+    { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_0 ) },
+    { .name = "ANDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_I, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_1 ) },
+    { .name = "ANDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_M, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_0 ) },
     
-    { .name = "AND",            .typ = TYP_OP_CODE,         .tid = TOK_OP_AND,      .val = 0x00000000   },
-    { .name = "ANDI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_AND_I,    .val = 0x00000000   },
-    { .name = "ANDM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_AND_M,    .val = 0x00000000   },
+    { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_0 ) },
+    { .name = "ORI",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_I,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_1 ) },
+    { .name = "ORM",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_M,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_0 ) },
     
-    { .name = "OR" ,            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR,       .val = 0x00000000   },
-    { .name = "ORI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR_I,     .val = 0x00000000   },
-    { .name = "ORM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_OR_M,     .val = 0x00000000   },
+    { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_0 ) },
+    { .name = "XORI",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_I, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_1 ) },
+    { .name = "XORM",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_M, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_0 ) },
     
-    { .name = "XOR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR,      .val = 0x00000000   },
-    { .name = "XORI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR_I,    .val = 0x00000000   },
-    { .name = "XORM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_XOR_M,    .val = 0x00000000   },
+    { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_0 ) },
+    { .name = "CMPI",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_I, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_1 ) },
+    { .name = "CMPM",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_M, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_0 ) },
     
-    { .name = "CMP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP,      .val = 0x00000000   },
-    { .name = "CMPI",           .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP_I,    .val = 0x00000000   },
-    { .name = "CMPM",           .typ = TYP_OP_CODE,         .tid = TOK_OP_CMP_M,    .val = 0x00000000   },
+    { .name = "EXTR",  .typ = TYP_OP_CODE, .tid = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_0 ) },
+    { .name = "DEP",   .typ = TYP_OP_CODE, .tid = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_1 ) },
+    { .name = "DSR",   .typ = TYP_OP_CODE, .tid = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_2 ) },
     
-    { .name = "EXTR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_EXTR,     .val = 0x00000000   },
-    { .name = "DEP",            .typ = TYP_OP_CODE,         .tid = TOK_OP_DEP,      .val = 0x00000000   },
-    { .name = "DSR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_DSR,      .val = 0x00000000   },
+    { .name = "SHL1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_0 ) },
+    { .name = "SHL2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_0 ) },
+    { .name = "SHL3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL3A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_0 ) },
     
-    { .name = "SHL1A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL1A,    .val = 0x00000000   },
-    { .name = "SHL2A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL2A,    .val = 0x00000000   },
-    { .name = "SHL3A",          .typ = TYP_OP_CODE,         .tid = TOK_OP_SHL3A,    .val = 0x00000000   },
+    { .name = "SHR1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_1 ) },
+    { .name = "SHR2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_1 ) },
+    { .name = "SHR3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL3A, .val = ( OPG_ALU | OPF_SHA_OP  | OPM_FLD_1 ) },
     
-    { .name = "LDI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDI,      .val = 0x00000000   },
-    { .name = "ADDIL",          .typ = TYP_OP_CODE,         .tid = TOK_OP_ADDIL,    .val = 0x00000000   },
-    { .name = "LDO",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDO,      .val = 0x00000000   },
+    { .name = "LDI",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMM_OP  | OPM_FLD_0 ) },
+    { .name = "ADDIL", .typ = TYP_OP_CODE, .tid = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_IMM_OP  | OPM_FLD_0 ) },
+    { .name = "LDO",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO_OP  | OPM_FLD_0 ) },
     
-    { .name = "LD",             .typ = TYP_OP_CODE,         .tid = TOK_OP_LD,       .val = 0x00000000   },
-    { .name = "LDR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_LDR,      .val = 0x00000000   },
-    { .name = "ST",             .typ = TYP_OP_CODE,         .tid = TOK_OP_ST,       .val = 0x00000000   },
-    { .name = "STC",            .typ = TYP_OP_CODE,         .tid = TOK_OP_STC,      .val = 0x00000000   },
+    { .name = "LD",    .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD_OP   | OPM_FLD_0 ) },
+    { .name = "LDX",   .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD_OP   | OPM_FLD_1 ) },
+    { .name = "LDR",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR_OP  | OPM_FLD_0 ) },
+    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST_OP   | OPM_FLD_0 ) },
+    { .name = "STX",   .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST_OP   | OPM_FLD_1 ) },
+    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC_OP  | OPM_FLD_0 ) },
    
-    { .name = "B",              .typ = TYP_OP_CODE,         .tid = TOK_OP_B,        .val = 0x00000000   },
-    { .name = "BR",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BR,       .val = 0x00000000   },
-    { .name = "BV",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BV,       .val = 0x00000000   },
-    { .name = "BB",             .typ = TYP_OP_CODE,         .tid = TOK_OP_BB,       .val = 0x00000000   },
-    { .name = "CBR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CBR,      .val = 0x00000000   },
-    { .name = "MBR",            .typ = TYP_OP_CODE,         .tid = TOK_OP_MBR,      .val = 0x00000000   },
+    { .name = "B",     .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_B_OP    | OPM_FLD_0 ) },
+    { .name = "BR",    .typ = TYP_OP_CODE, .tid = TOK_OP_BR,    .val = ( OPG_BR  | OPF_BR_OP   | OPM_FLD_0 ) },
+    { .name = "BV",    .typ = TYP_OP_CODE, .tid = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BR_OP   | OPM_FLD_1 ) },
+    { .name = "BB",    .typ = TYP_OP_CODE, .tid = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB_OP   | OPM_FLD_0 ) },
+    { .name = "CBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_CBR_OP  | OPM_FLD_0 ) },
+    { .name = "MBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR_OP  | OPM_FLD_0 ) },
+    { .name = "MFCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR_OP   | OPM_FLD_0 ) },
+    { .name = "MTCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR_OP   | OPM_FLD_1 ) },
     
-    { .name = "MFCR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_MFCR,     .val = 0x00000000   },
-    { .name = "MTCR",           .typ = TYP_OP_CODE,         .tid = TOK_OP_MTCR,     .val = 0x00000000   },
+    { .name = "LPA",   .typ = TYP_OP_CODE, .tid = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA_OP  | OPM_FLD_0 ) },
+    { .name = "LPAX",  .typ = TYP_OP_CODE, .tid = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA_OP  | OPM_FLD_1 ) },
     
-    { .name = "LDPA",           .typ = TYP_OP_CODE,         .tid = TOK_OP_LDPA,     .val = 0x00000000   },
-    { .name = "PRB",            .typ = TYP_OP_CODE,         .tid = TOK_OP_PRB,      .val = 0x00000000   },
+    { .name = "PRBR",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB_OP  | OPM_FLD_0 ) },
+    { .name = "PRBW",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB_OP  | OPM_FLD_1 ) },
 
-    { .name = "ITLB",           .typ = TYP_OP_CODE,         .tid = TOK_OP_ITLB,     .val = 0x00000000   },
-    { .name = "PTLB",           .typ = TYP_OP_CODE,         .tid = TOK_OP_PTLB,     .val = 0x00000000   },
+    { .name = "ITLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_TLB_OP  | OPM_FLD_0 ) },
+    { .name = "PTLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_TLB_OP  | OPM_FLD_1 ) },
 
-    { .name = "PCA",            .typ = TYP_OP_CODE,         .tid = TOK_OP_PCA,      .val = 0x00000000   },
-    { .name = "FCA",            .typ = TYP_OP_CODE,         .tid = TOK_OP_FCA,      .val = 0x00000000   },
-
-    { .name = "RSM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_RSM,      .val = 0x00000000   },
-    { .name = "SSM",            .typ = TYP_OP_CODE,         .tid = TOK_OP_SSM,      .val = 0x00000000   },
+    { .name = "PCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_CA_OP   | OPM_FLD_0 ) },
+    { .name = "FCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_CA_OP   | OPM_FLD_1 ) },
+        
+    { .name = "RSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST_OP  | OPM_FLD_0 ) },
+    { .name = "SSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST_OP  | OPM_FLD_1 ) },
     
-    { .name = "CHK",            .typ = TYP_OP_CODE,         .tid = TOK_OP_CHK,      .val = 0x00000000   },
-    { .name = "BRK",            .typ = TYP_OP_CODE,         .tid = TOK_OP_BRK,      .val = 0x00000000   },
+    { .name = "CHK",   .typ = TYP_OP_CODE, .tid = TOK_OP_CHK,   .val = ( OPG_SYS | OPF_TRAP_OP | OPM_FLD_1 ) },
+    { .name = "BRK",   .typ = TYP_OP_CODE, .tid = TOK_OP_BRK,   .val = ( OPG_SYS | OPF_TRAP_OP | OPM_FLD_1 ) },
 
-    { .name = "RFI",            .typ = TYP_OP_CODE,         .tid = TOK_OP_RFI,      .val = 0x00000000   },
-    { .name = "DIAG",           .typ = TYP_OP_CODE,         .tid = TOK_OP_DIAG,     .val = 0x00000000   },
+    { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI_OP  | OPM_FLD_0 ) },
+    { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG_OP | OPM_FLD_0 ) },
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic instruction mnemonics.
@@ -385,46 +480,6 @@ const Token asmTokTab[ ] = {
 
 const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( Token );
 
-//------------------------------------------------------------------------------------------------------------
-// Instruction flags. They are used to keep track of instruction attributes used in assembling the final
-// word. Examples are the data width encoded in the opCode and the instruction mask.
-//
-//------------------------------------------------------------------------------------------------------------
-enum InstrFlags : uint32_t {
-    
-    IF_NIL                  = 0,
-   
-    IF_REG_COMPLEMENT       = ( 1U << 1  ),
-    IF_RES_NEGATE           = ( 1U << 2  ),
-    IF_REG_ZERO_BEFORE      = ( 1U << 3  ),
-    IF_RES_SIGN_EXT         = ( 1U << 4  ),
-    IF_USE_SHAMT_REG        = ( 1U << 5  ),
-    IF_ADR_UPDATE           = ( 1U << 6  ),
-    
-    IF_READ_ACCESS          = ( 1U << 10 ),
-    IF_WRITE_ACCESS         = ( 1U << 11 ),
-    IF_EXEC_ACCESS          = ( 1U << 12 ),
-    
-    IF_USE_IMM_VALUE        = ( 1U << 13 ),
-    IF_USE_IMM_VAL_L        = ( 1U << 14 ),
-    IF_USE_IMM_VAL_S        = ( 1U << 15 ),
-    IF_USE_IMM_VAL_U        = ( 1U << 16 ),
-    IF_USE_IMM_VAL_1        = ( 1U << 17 ),
-    IF_USE_IMM_VAL_2        = ( 1U << 18 ),
-    IF_USE_IMM_VAL_3        = ( 1U << 19 ),
-    
-    IF_DW_BYTE              = ( 1U << 20 ),
-    IF_DW_HALF              = ( 1U << 21 ),
-    IF_DW_WORD              = ( 1U << 22 ),
-    IF_DW_DOUBLE            = ( 1U << 23 ),
-    
-    IF_CMP_EQ               = ( 1U << 24 ),
-    IF_CMP_NE               = ( 1U << 25 ),
-    IF_CMP_LT               = ( 1U << 26 ),
-    IF_CMP_LE               = ( 1U << 27 ),
-    IF_RV_30                = ( 1U << 30 ),
-    IF_RV_31                = ( 1U << 31 )
-};
 
 //------------------------------------------------------------------------------------------------------------
 // Expression value. The analysis of an expression results in a value. Depending on the expression type, the
@@ -1137,191 +1192,196 @@ static inline void setInstrOpCode( uint32_t *instr, int instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 uint32_t parseInstrOptions( uint32_t instrOpToken ) {
     
-    if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
+    uint32_t instrFlags  = IF_NIL;
     
-    uint32_t    instrFlags  = IF_NIL;
-    char        *optBuf     = currentToken.str;
-    int         optStrLen   = (int) strlen( optBuf );
-  
-    switch( instrOpToken ) {
-            
-        case TOK_OP_AND:    case TOK_OP_AND_I:  case TOK_OP_AND_M: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+    while ( isToken( TOK_PERIOD )) {
+        
+        nextToken( );
+        if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
+        
+        char        *optBuf     = currentToken.str;
+        int         optStrLen   = (int) strlen( optBuf );
+        
+        switch( instrOpToken ) {
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
-                else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
-                else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-         
-        case TOK_OP_OR:     case TOK_OP_OR_I:   case TOK_OP_OR_M:
-        case TOK_OP_XOR:    case TOK_OP_XOR_I:  case TOK_OP_XOR_M: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+            case TOK_OP_AND:    case TOK_OP_AND_I:  case TOK_OP_AND_M: {
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
-                else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_CMP:    case TOK_OP_CMP_I:   case TOK_OP_CMP_M: {
-            
-            if ( optStrLen == 1 ) {
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                    else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                    else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                    else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+                    else if ( optBuf[ i ] == 'C' ) instrFlags |= IF_REG_COMPLEMENT;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
                 
-                if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_DW_BYTE;
-                else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_DW_HALF;
-                else if ( optBuf[ 0 ] == 'W' ) instrFlags |= IF_DW_WORD;
-                else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+            } break;
+                
+            case TOK_OP_OR:     case TOK_OP_OR_I:   case TOK_OP_OR_M:
+            case TOK_OP_XOR:    case TOK_OP_XOR_I:  case TOK_OP_XOR_M: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                    else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                    else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                    else if ( optBuf[ i ] == 'N' ) instrFlags |= IF_RES_NEGATE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_CMP:    case TOK_OP_CMP_I:   case TOK_OP_CMP_M: {
+                
+                if ( optStrLen == 1 ) {
+                    
+                    if      ( optBuf[ 0 ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                    else if ( optBuf[ 0 ] == 'H' ) instrFlags |= IF_DW_HALF;
+                    else if ( optBuf[ 0 ] == 'W' ) instrFlags |= IF_DW_WORD;
+                    else if ( optBuf[ 0 ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                else  if ( optStrLen == 2 ) {
+                    
+                    if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
+                    else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
+                    else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
+                    else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
                 else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            else  if ( optStrLen == 2 ) {
+                
+            } break;
+                
+            case TOK_OP_EXTR: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'S' ) instrFlags |= IF_RES_SIGN_EXT;
+                    else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_DEP: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'Z' ) instrFlags |= IF_REG_ZERO_BEFORE;
+                    else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
+                    else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_DSR: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_SHL1A:  case TOK_OP_SHL2A:  case TOK_OP_SHL3A: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_LDI: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'L' ) instrFlags |= IF_USE_IMM_VAL_L;
+                    else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_USE_IMM_VAL_S;
+                    else if ( optBuf[ i ] == 'U' ) instrFlags |= IF_USE_IMM_VAL_U;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_LD:
+            case TOK_OP_ST: {
+                
+                for ( int i = 0; i < optStrLen; i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                    else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                    else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                    else if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
+                
+            } break;
+                
+            case TOK_OP_CBR:
+            case TOK_OP_MBR: {
                 
                 if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
                 else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
                 else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
                 else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
                 else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            else throw ( ERR_INVALID_INSTR_OPT );
-            
-        } break;
-            
-        case TOK_OP_EXTR: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
                 
-                if      ( optBuf[ i ] == 'S' ) instrFlags |= IF_RES_SIGN_EXT;
-                else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_DEP: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+            } break;
                 
-                if      ( optBuf[ i ] == 'Z' ) instrFlags |= IF_REG_ZERO_BEFORE;
-                else if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
-                else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_DSR: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+            case TOK_OP_PRB: {
                 
-                if ( optBuf[ i ] == 'A' ) instrFlags |= IF_USE_SHAMT_REG;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_SHL1A:  case TOK_OP_SHL2A:  case TOK_OP_SHL3A: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+                for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
+                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
+                    else if ( optBuf[ i ] == 'X' ) instrFlags |= IF_EXEC_ACCESS;
+                    else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
                 
-                if      ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_LDI: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+            } break;
                 
-                if      ( optBuf[ i ] == 'L' ) instrFlags |= IF_USE_IMM_VAL_L;
-                else if ( optBuf[ i ] == 'S' ) instrFlags |= IF_USE_IMM_VAL_S;
-                else if ( optBuf[ i ] == 'U' ) instrFlags |= IF_USE_IMM_VAL_U;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_LD:
-        case TOK_OP_ST: {
-            
-            for ( int i = 0; i < optStrLen; i ++ ) {
+            case TOK_OP_CHK: {
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
-                else if ( optBuf[ i ] == 'M' ) instrFlags |= IF_ADR_UPDATE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-       
-        case TOK_OP_CBR:
-        case TOK_OP_MBR: {
-            
-            if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrFlags |= IF_CMP_EQ;
-            else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrFlags |= IF_CMP_LT;
-            else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrFlags |= IF_CMP_NE;
-            else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrFlags |= IF_CMP_LE;
-            else throw ( ERR_INVALID_INSTR_OPT );
-            
-        } break;
-            
-        case TOK_OP_PRB: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+                    
+                    if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
+                    else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
+                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
+                    else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
+                    else throw ( ERR_INVALID_INSTR_OPT );
+                }
                 
-                if      ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
-                else if ( optBuf[ i ] == 'X' ) instrFlags |= IF_EXEC_ACCESS;
-                else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        case TOK_OP_CHK: {
-            
-            for ( int i = 0; i < strlen( optBuf ); i ++ ) {
+            } break;
                 
-                if      ( optBuf[ i ] == 'B' ) instrFlags |= IF_DW_BYTE;
-                else if ( optBuf[ i ] == 'H' ) instrFlags |= IF_DW_HALF;
-                else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_DW_WORD;
-                else if ( optBuf[ i ] == 'D' ) instrFlags |= IF_DW_DOUBLE;
-                else throw ( ERR_INVALID_INSTR_OPT );
-            }
-            
-        } break;
-            
-        default: throw ( ERR_INVALID_INSTR_OPT );
+            default: throw ( ERR_INVALID_INSTR_OPT );
+        }
+        
+        int dwCount = 0;
+        if ( instrFlags & IF_DW_BYTE    ) dwCount ++;
+        if ( instrFlags & IF_DW_HALF    ) dwCount ++;
+        if ( instrFlags & IF_DW_WORD    ) dwCount ++;
+        if ( instrFlags & IF_DW_DOUBLE  ) dwCount ++;
+        if ( dwCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
+        
+        int cmpCount    = 0;
+        if ( instrFlags & IF_CMP_EQ ) cmpCount ++;
+        if ( instrFlags & IF_CMP_LT ) cmpCount ++;
+        if ( instrFlags & IF_CMP_NE ) cmpCount ++;
+        if ( instrFlags & IF_CMP_LE ) cmpCount ++;
+        if ( cmpCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
+        
+        nextToken( );
     }
-    
-    int dwCount = 0;
-    if ( instrFlags & IF_DW_BYTE    ) dwCount ++;
-    if ( instrFlags & IF_DW_HALF    ) dwCount ++;
-    if ( instrFlags & IF_DW_WORD    ) dwCount ++;
-    if ( instrFlags & IF_DW_DOUBLE  ) dwCount ++;
-    if ( dwCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
-    
-    int cmpCount    = 0;
-    if ( instrFlags & IF_CMP_EQ ) cmpCount ++;
-    if ( instrFlags & IF_CMP_LT ) cmpCount ++;
-    if ( instrFlags & IF_CMP_NE ) cmpCount ++;
-    if ( instrFlags & IF_CMP_LE ) cmpCount ++;
-    if ( cmpCount > 1 ) throw ( ERR_INVALID_INSTR_OPT );
-    
-    nextToken( );
     
     return( instrFlags );
 }
@@ -1357,17 +1417,31 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrFlags ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
+// The "NOP" synthetic instruction emits the "BRK 0,0" instruction. Easy case.
+//
+//      NOP
+//
+//------------------------------------------------------------------------------------------------------------
+void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    nextToken( );
+    checkEOS( );
+}
+
+//------------------------------------------------------------------------------------------------------------
 // "parseImmModeInstr" parses all instructions that have the immediate operand encoding. The instruction
 // options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
 //
 //      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <num>  -> Instruction group ALU
 //
 //-----------------------------------------------------------------------------------------------------------
-void parseImmModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseImmModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
+    Expr        rExpr;
+    uint32_t    instrFlags = IF_NIL;
     
-    setInstrOpCode( instr, instrOpToken );
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1409,11 +1483,13 @@ void parseImmModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFl
 //      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <sourceRegB>  -> Instruction group ALU
 //
 //-----------------------------------------------------------------------------------------------------------
-void parseRegModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseRegModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
+    Expr        rExpr;
+    uint32_t    instrFlags = IF_NIL;
     
-    setInstrOpCode( instr, instrOpToken );
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1456,12 +1532,15 @@ void parseRegModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFl
 //      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"    -> Instruction group MEM
 //
 //-----------------------------------------------------------------------------------------------------------
-void parseAdrModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseAdrModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
+    Expr        rExpr;
+    uint32_t    instrFlags = IF_NIL;
   
-    setInstrOpCode( instr, instrOpToken );
     setInstrDataWidth( instr, instrFlags );
+    
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1514,11 +1593,13 @@ void parseAdrModeInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFl
 //      EXTR [ ".S" ]  <targetReg> "," <sourceReg> ", "SAR", <len"
 //
 //------------------------------------------------------------------------------------------------------------
-void parseExtrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseExtrInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
+    Expr        rExpr;
+    uint32_t    instrFlags = IF_NIL;
    
-    setInstrOpCode( instr, instrOpToken );
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1559,11 +1640,13 @@ void parseExtrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags
 //      DEP [ ".“ Z/I ] <targetReg> "," <val>       "," "SAR" "," <len>
 //
 //------------------------------------------------------------------------------------------------------------
-void parseDepInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseDepInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
-       
-    setInstrOpCode( instr, instrOpToken );
+    Expr        rExpr;
+    uint32_t    instrFlags = IF_NIL;
+    
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
     
     if ( instrFlags & IF_REG_ZERO_BEFORE ) setInstrBit( instr, 12, true );
     
@@ -1602,11 +1685,9 @@ void parseDepInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags 
 //      DSR <targetReg> "," <sourceRegA> "," <sourceRegB> "," SAR
 //
 //------------------------------------------------------------------------------------------------------------
-void parseDsrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
+void parseDsrInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
-    
-    setInstrOpCode( instr, instrOpToken );
+    Expr  rExpr;
     
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
@@ -1645,8 +1726,9 @@ void parseDsrInstr( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags 
 void parseInstrSHLA( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags ) {
     
     Expr rExpr;
-    
-    setInstrOpCode( instr, instrOpToken );
+   
+    nextToken( );
+    if ( isToken( TOK_PERIOD )) parseInstrOptions( instrOpToken );
     
     // ??? set shamt...
     
@@ -1678,48 +1760,14 @@ void parseInstrSHLA( uint32_t *instr, uint32_t instrOpToken, uint32_t instrFlags
 
 #if 0
 
-//------------------------------------------------------------------------------------------------------------
-// The CMR instruction tests register "B" for a condition and if true copies the "A" value to "R".
-//
-//      CMR "." <cond> <targetReg> "," <regA> "," <regB>
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrCMR( uint32_t *instr, uint32_t flags ) {
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 9, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 27, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    if ( tok -> isTokenTyp( TYP_GREG )) {
-        
-        setBitField( instr, 31, 4, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    checkEOS( );
-}
+
 
 //------------------------------------------------------------------------------------------------------------
 // The "LDIL" instruction loads the immediate value encoded in the instruction left shifted into "R". The
 // "ADDIL" instruction will add the value encoded in the instruction left shifted to "R". The result is
 // in R1.
 //
-//      LDIL  <targetReg> "," <val>
+//      LDI   <targetReg> "," <val>
 //      ADDIL <sourceReg> "," <val>
 //
 //------------------------------------------------------------------------------------------------------------
@@ -2351,21 +2399,6 @@ void parseInstrBRK( uint32_t *instr, uint32_t flags ) {
 
 #endif
 
-//------------------------------------------------------------------------------------------------------------
-// The "NOP" synthetic instruction emits the "BRK 0,0" instruction. Easy case.
-//
-//      NOP
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrNop( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
-    
-    // ??? complete current instruction... what to do ?
-    
-    *instr = 0;
-    
-    nextToken( );
-    checkEOS( );
-}
 
 //------------------------------------------------------------------------------------------------------------
 // "parseLine" will take the input string and parse the line for an instruction. In the simplified case, there
@@ -2391,61 +2424,50 @@ void setupTokenizer( char *inputStr ) {
     strcpy( tokenLine, inputStr );
     upshiftStr( tokenLine );
     
-    currentLineLen          = 0;
+    currentLineLen          = (int) strlen( tokenLine);
     currentCharIndex        = 0;
     currentTokCharIndex     = 0;
     currentChar             = ' ';
-    
-    nextToken( );
 }
 
 void parseLine( char *inputStr, uint32_t *instr ) {
     
-    uint32_t instrOpToken   = TOK_NIL;
-    uint32_t instrFlags     = IF_NIL;
-    
     setupTokenizer( inputStr );
-    *instr = 0;
-   
+    nextToken( );
+    
     if ( isTokenTyp( TYP_OP_CODE )) {
         
-        instrOpToken = currentToken.tid;
-        
-        nextToken( );
-        while ( isToken( TOK_PERIOD )) {
-            
-            nextToken( );
-            parseInstrOptions( instrOpToken );
-        }
+        uint32_t instrOpToken   = currentToken.tid;
+        *instr                  = (uint32_t) currentToken.val;
        
         switch( instrOpToken ) {
                 
-            case TOK_OP_NOP:    parseInstrNop( instr, instrOpToken, instrFlags );           break;
+            case TOK_OP_NOP:    parseNopInstr( instr, instrOpToken );           break;
                 
-            case TOK_OP_ADD:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_SUB:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_AND:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_OR:     parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_XOR:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_CMP:    parseRegModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_ADD:    parseRegModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_SUB:    parseRegModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_AND:    parseRegModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_OR:     parseRegModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_XOR:    parseRegModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_CMP:    parseRegModeInstr( instr, instrOpToken );       break;
            
-            case TOK_OP_ADD_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_SUB_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_CMP_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_AND_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_OR_I:   parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_XOR_I:  parseImmModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_ADD_I:  parseImmModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_SUB_I:  parseImmModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_CMP_I:  parseImmModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_AND_I:  parseImmModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_OR_I:   parseImmModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_XOR_I:  parseImmModeInstr( instr, instrOpToken );       break;
                 
-            case TOK_OP_ADD_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_SUB_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_CMP_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_AND_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
-            case TOK_OP_OR_M:   parseAdrModeInstr( instr, instrOpToken,  instrFlags );      break;
-            case TOK_OP_XOR_M:  parseAdrModeInstr( instr, instrOpToken, instrFlags );       break;
+            case TOK_OP_ADD_M:  parseAdrModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_SUB_M:  parseAdrModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_CMP_M:  parseAdrModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_AND_M:  parseAdrModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_OR_M:   parseAdrModeInstr( instr, instrOpToken );       break;
+            case TOK_OP_XOR_M:  parseAdrModeInstr( instr, instrOpToken );       break;
                 
-            case TOK_OP_EXTR:   parseExtrInstr( instr, instrOpToken, instrFlags );          break;
-            case TOK_OP_DEP:    parseDepInstr( instr, instrOpToken, instrFlags );           break;
-            case TOK_OP_DSR:    parseDsrInstr( instr, instrOpToken, instrFlags );           break;
+            case TOK_OP_EXTR:   parseExtrInstr( instr, instrOpToken );          break;
+            case TOK_OP_DEP:    parseDepInstr( instr, instrOpToken );           break;
+            case TOK_OP_DSR:    parseDsrInstr( instr, instrOpToken );           break;
                 
                 /*
                  
@@ -2456,8 +2478,6 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  }
                  
                 
-            
-    
                  case OP_CODE_SHLA:      return( parseInstrSHLA( instr, flags ));
                  case OP_CODE_CMR:       return( parseInstrCMR( instr, flags ));
                  
@@ -2472,8 +2492,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                  case OP_CODE_BR:        return( parseInstrBR( instr, flags ));
                  case OP_CODE_BV:        return( parseInstrBV( instr, flags ));
                  case OP_CODE_BE:        return( parseInstrBE( instr, flags ));
-                 case OP_CODE_BVE:       return( parseInstrBVE( instr, flags ));
-                 
+                
                  case OP_CODE_CBR:
                     return( parseInstrCBRandCBRU( instr, flags ));
                  
@@ -2510,10 +2529,7 @@ ErrId parseAsmLine( char *inputStr, uint32_t *instr ) {
     
     try {
         
-        char tmpBuf[ MAX_INPUT_LINE_SIZE ];
-        strcpy( tmpBuf, inputStr );
-        upshiftStr( tmpBuf );
-        parseLine( tmpBuf, instr );
+        parseLine( inputStr, instr );
         return( NO_ERR );
     }
     catch ( ErrId errNum ) {
@@ -2521,4 +2537,10 @@ ErrId parseAsmLine( char *inputStr, uint32_t *instr ) {
         *instr = 0;
         return( errNum );
     }
+}
+
+void testAsm( char *inputStr ) {
+    
+    uint32_t instr;
+    parseAsmLine( inputStr, &instr );
 }

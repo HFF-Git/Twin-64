@@ -25,6 +25,8 @@
 #include "T64-Phys-Mem.h"
 #include "T64-Io-Mem.h"
 
+extern void testAsm( char *buf );
+
 //------------------------------------------------------------------------------------------------------------
 //
 //
@@ -47,5 +49,8 @@ int main( int argc, const char * argv[] ) {
     T64Cpu      *cpu = new T64Cpu( mem, io );
     
     cpu -> reset( );
+    
+    testAsm((char *) "ADD r1, r2, r3" );
+    
     return 0;
 }

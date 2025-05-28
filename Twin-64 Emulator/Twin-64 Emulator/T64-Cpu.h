@@ -101,7 +101,7 @@ public:
     
     T64TlbEntry     *getTlbEntry( int index );
     void            setTlbEntry( int index );
-    
+            
 private:
     
     void            fetchInstr( );
