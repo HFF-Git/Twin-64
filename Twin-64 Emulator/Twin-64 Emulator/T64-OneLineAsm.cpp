@@ -35,24 +35,6 @@
 #include <ctype.h>
 #include "T64-Types.h"
 
-
-// Assembler notes:
-//
-// opCode [ .<opt> ] Rr, <imm>
-// opCode [ .<opt> ] Rr, Ra
-// opCode [ .<opt> ] Rr, Ra, Rb
-// opCode [ .<opt> ] Rr, ( Rb )
-// opCode [ .<opt> ] Rr, <ofs> ( Rb )
-// opCode [ .<opt> ] Rr, Ra ( Rb )
-// opCode [ .<opt> ] <target> [, Rr ]
-//
-// -> very few different formats
-//
-// ( <instr1> : <instr2> )      -> parallel
-// ( <instr1> :: <instr2> )     -> serialized
-
-
-
 //------------------------------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
 //
@@ -156,6 +138,10 @@ enum TokId : uint16_t {
     //--------------------------------------------------------------------------------------------------------
     TOK_OP_NOP              = 300,
     
+    
+    // ??? sort by major OpCode and synthetc Ops.
+    
+    
     TOK_OP_AND              = 301,      TOK_OP_AND_I            = 311,      TOK_OP_AND_M            = 321,
     TOK_OP_OR               = 302,      TOK_OP_OR_I             = 312,      TOK_OP_OR_M             = 322,
     TOK_OP_XOR              = 303,      TOK_OP_XOR_I            = 313,      TOK_OP_XOR_M            = 323,
@@ -183,7 +169,7 @@ enum TokId : uint16_t {
     
     TOK_OP_RFI              = 381,      TOK_OP_DIAG             = 382,
     TOK_OP_BRK              = 383,      TOK_OP_CHK              = 384,
-    
+  
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -390,34 +376,17 @@ const Token asmTokTab[ ] = {
     
     //--------------------------------------------------------------------------------------------------------
     // Assembler mnemonics. Like all other tokens, we habe the name, the type and the token Id. In addition,
-    // the ".val" field contains the initial instriuction mask with opCode group, opCode family and the
-    // bits set in the first opütion field to further qualify the instruction.
+    // the ".val" field contains the initial instruction mask with opCode group, opCode family and the
+    // bits set in the first option field to further qualify the instruction.
     //
     //--------------------------------------------------------------------------------------------------------
     { .name = "ADD",   .typ = TYP_OP_CODE, .tid = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_0 ) },
-    { .name = "ADDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_I, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_1 ) },
-    { .name = "ADDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_M, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_0 ) },
-    
     { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_0 ) },
-    { .name = "SUBI",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_I, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_1 ) },
-    { .name = "SUBM",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_M, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_0 ) },
-    
     { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_0 ) },
-    { .name = "ANDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_I, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_1 ) },
-    { .name = "ANDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_M, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_0 ) },
-    
     { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_0 ) },
-    { .name = "ORI",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_I,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_1 ) },
-    { .name = "ORM",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_M,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_0 ) },
-    
     { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_0 ) },
-    { .name = "XORI",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_I, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_1 ) },
-    { .name = "XORM",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_M, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_0 ) },
-    
     { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_0 ) },
-    { .name = "CMPI",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_I, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_1 ) },
-    { .name = "CMPM",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_M, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_0 ) },
-    
+
     { .name = "EXTR",  .typ = TYP_OP_CODE, .tid = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_0 ) },
     { .name = "DEP",   .typ = TYP_OP_CODE, .tid = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_1 ) },
     { .name = "DSR",   .typ = TYP_OP_CODE, .tid = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BIT_OP  | OPM_FLD_2 ) },
@@ -435,11 +404,9 @@ const Token asmTokTab[ ] = {
     { .name = "LDO",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO_OP  | OPM_FLD_0 ) },
     
     { .name = "LD",    .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD_OP   | OPM_FLD_0 ) },
-    { .name = "LDX",   .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD_OP   | OPM_FLD_1 ) },
     { .name = "LDR",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR_OP  | OPM_FLD_0 ) },
-    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST_OP   | OPM_FLD_0 ) },
-    { .name = "STX",   .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST_OP   | OPM_FLD_1 ) },
-    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC_OP  | OPM_FLD_0 ) },
+    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST_OP   | OPM_FLD_1 ) },
+    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC_OP  | OPM_FLD_1 ) },
    
     { .name = "B",     .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_B_OP    | OPM_FLD_0 ) },
     { .name = "BR",    .typ = TYP_OP_CODE, .tid = TOK_OP_BR,    .val = ( OPG_BR  | OPF_BR_OP   | OPM_FLD_0 ) },
@@ -447,14 +414,12 @@ const Token asmTokTab[ ] = {
     { .name = "BB",    .typ = TYP_OP_CODE, .tid = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB_OP   | OPM_FLD_0 ) },
     
     { .name = "CBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_CBR_OP  | OPM_FLD_0 ) },
-    
     { .name = "MBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR_OP  | OPM_FLD_0 ) },
     
     { .name = "MFCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR_OP   | OPM_FLD_0 ) },
     { .name = "MTCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR_OP   | OPM_FLD_1 ) },
     
     { .name = "LPA",   .typ = TYP_OP_CODE, .tid = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA_OP  | OPM_FLD_0 ) },
-    { .name = "LPAX",  .typ = TYP_OP_CODE, .tid = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA_OP  | OPM_FLD_1 ) },
     
     { .name = "PRBR",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB_OP  | OPM_FLD_0 ) },
     { .name = "PRBW",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB_OP  | OPM_FLD_1 ) },
@@ -475,15 +440,38 @@ const Token asmTokTab[ ] = {
     { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG_OP | OPM_FLD_0 ) },
     
     //--------------------------------------------------------------------------------------------------------
-    // Synthetic instruction mnemonics.
+    // Assembler synthetioc mnemonics. They ar like the assembler mnemonics, except that they pre decode some
+    // bits settings in the option fields and reduce the ".<opt>" notation settings through meaningful
+    // instruction mnemonics.
     //
+    // ??? under construction ...
     //--------------------------------------------------------------------------------------------------------
-    // ??? tbd
+    
+    { .name = "ADDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_I, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_1 ) },
+    { .name = "ADDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_M, .val = ( OPG_ALU | OPF_ADD_OP  | OPM_FLD_0 ) },
+    
+    { .name = "SUBI",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_I, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_1 ) },
+    { .name = "SUBM",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_M, .val = ( OPG_ALU | OPF_SUB_OP  | OPM_FLD_0 ) },
+    
+    { .name = "ANDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_I, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_1 ) },
+    { .name = "ANDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_M, .val = ( OPG_ALU | OPF_AND_OP  | OPM_FLD_0 ) },
+    
+    { .name = "ORI",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_I,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_1 ) },
+    { .name = "ORM",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_M,  .val = ( OPG_ALU | OPF_OR_OP   | OPM_FLD_0 ) },
+    
+    { .name = "XORI",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_I, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_1 ) },
+    { .name = "XORM",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_M, .val = ( OPG_ALU | OPF_XOR_OP  | OPM_FLD_0 ) },
+    
+    { .name = "CMPI",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_I, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_1 ) },
+    { .name = "CMPM",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_M, .val = ( OPG_ALU | OPF_CMP_OP  | OPM_FLD_0 ) },
+    
+    { .name = "GATE",  .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_B_OP    | OPM_FLD_1 ) },
+    
+    // ??? etc.
     
 };
 
 const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( Token );
-
 
 //------------------------------------------------------------------------------------------------------------
 // Expression value. The analysis of an expression results in a value. Depending on the expression type, the
@@ -1183,9 +1171,9 @@ static inline void replaceInstrGrp( uint32_t *instr, uint32_t instrMask ) {
 // "parseInstrOptions" will analyze the opCode option string. An opCode option string is a sequence of
 // characters after the ".". We will look at each character in the "name" and set the options for the
 // particular instruction. There are also options where the only option is a multi-character sequence. They
-// cannot be in the same ".xxx" group. Currently only the CMP instruction is such a case. The assembler can
-// handle multile ".xxx" sequences. Once we have all options seen, we check that there are no conflicting
-// options where only one option out of an option group can be set.
+// cannot be in the same group with individual characters. Currently only the CMP instruction is such a case.
+// The assembler can handle multile ".xxx" sequences. Once we have all options seen, we check that there are
+// no conflicting options where only one option out of an option group can be set.
 //
 //------------------------------------------------------------------------------------------------------------
 uint32_t parseInstrOptions( uint32_t instrOpToken ) {
@@ -1287,7 +1275,8 @@ uint32_t parseInstrOptions( uint32_t instrOpToken ) {
                 
             } break;
                 
-            case TOK_OP_SHL1A:  case TOK_OP_SHL2A:  case TOK_OP_SHL3A: {
+            case TOK_OP_SHL1A:  case TOK_OP_SHL2A:  case TOK_OP_SHL3A:
+            case TOK_OP_SHR1A:  case TOK_OP_SHR2A:  case TOK_OP_SHR3A: {
                 
                 for ( int i = 0; i < optStrLen; i ++ ) {
                     
@@ -1339,10 +1328,7 @@ uint32_t parseInstrOptions( uint32_t instrOpToken ) {
                 
                 for ( int i = 0; i < strlen( optBuf ); i ++ ) {
                     
-                    if      ( optBuf[ i ] == 'R' ) instrFlags |= IF_READ_ACCESS;
-                    else if ( optBuf[ i ] == 'W' ) instrFlags |= IF_WRITE_ACCESS;
-                    else if ( optBuf[ i ] == 'X' ) instrFlags |= IF_EXEC_ACCESS;
-                    else if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
+                    if ( optBuf[ i ] == 'I' ) instrFlags |= IF_USE_IMM_VALUE;
                     else throw ( ERR_INVALID_INSTR_OPT );
                 }
                 
@@ -1423,162 +1409,6 @@ void setInstrDataWidth( uint32_t *instr, uint32_t instrFlags ) {
 void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
-    checkEOS( );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// "parseImmModeInstr" parses all instructions that have the immediate operand encoding. The instruction
-// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
-//
-//      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <num>  -> Instruction group ALU
-//
-//-----------------------------------------------------------------------------------------------------------
-void parseImmModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr        rExpr;
-    uint32_t    instrFlags = IF_NIL;
-    
-    nextToken( );
-    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) setInstrImm19( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_NUMERIC );
-    
-    if ( instrOpToken == TOK_OP_AND_I ) {
-        
-        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
-        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
-    }
-    else if (( instrOpToken == TOK_OP_OR_I ) || ( instrOpToken == TOK_OP_XOR_I )) {
-        
-        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
-    }
-    else if ( instrOpToken == TOK_OP_CMP_I ) {
-        
-        instrSetCmpCode( instr, instrFlags );
-    }
-    
-    checkEOS( );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// "parseRegModeInstr" parses all instructions that have the register operand encoding. The instruction
-// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
-//
-//      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <sourceRegB>  -> Instruction group ALU
-//
-//-----------------------------------------------------------------------------------------------------------
-void parseRegModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr        rExpr;
-    uint32_t    instrFlags = IF_NIL;
-    
-    nextToken( );
-    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegA( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    if ( instrOpToken == TOK_OP_AND_I ) {
-        
-        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
-        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
-    }
-    else if (( instrOpToken == TOK_OP_OR_I ) || ( instrOpToken == TOK_OP_XOR_I )) {
-        
-        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
-    }
-    else if ( instrOpToken == TOK_OP_CMP_I ) {
-        
-        instrSetCmpCode( instr, instrFlags );
-    }
-    
-    checkEOS( );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// "parseAdrModeInstr" parses all instructions that have the memory address operand encoding. The instruction
-// options have already been parsed and are available in the instrFlags variable. TThe syntax is as follows:
-//
-//      opCode [ "." <opt> ] <targetReg> "," [ <num> ]  "(" <baseReg> ")"     -> Instruction group MEM
-//      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"    -> Instruction group MEM
-//
-//-----------------------------------------------------------------------------------------------------------
-void parseAdrModeInstr( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr        rExpr;
-    uint32_t    instrFlags = IF_NIL;
-  
-    setInstrDataWidth( instr, instrFlags );
-    
-    nextToken( );
-    if ( isToken( TOK_PERIOD )) instrFlags = parseInstrOptions( instrOpToken );
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) {
-    
-        setInstrImm13( instr, rExpr.numVal );
-        parseExpr( &rExpr );
-    }
-    else if ( rExpr.typ == TYP_GREG ) {
-        
-        setInstrRegA( instr, rExpr.numVal );
-        parseExpr( &rExpr );
-    }
-    
-    if ( rExpr.typ == TYP_ADR ) {
-        
-        if ( rExpr.typ == TYP_ADR ) setInstrRegB( instr, rExpr.numVal );
-        else throw ( ERR_EXPECTED_ADR );
-    }
-    else throw ( ERR_EXPECTED_ADR );
- 
-    if ( instrOpToken == TOK_OP_AND_M ) {
-        
-        if ( instrFlags & IF_REG_COMPLEMENT ) setInstrBit( instr, 20, true );
-        if ( instrFlags & IF_RES_NEGATE     ) setInstrBit( instr, 21, true );
-    }
-    else if (( instrOpToken == TOK_OP_OR_M ) || ( instrOpToken == TOK_OP_XOR_M )) {
-        
-        if ( instrFlags & IF_RES_NEGATE ) setInstrBit( instr, 21, true );
-    }
-    else if ( instrOpToken == TOK_OP_CMP_M ) {
-        
-        instrSetCmpCode( instr, instrFlags );
-    }
-             
     checkEOS( );
 }
 
@@ -1945,6 +1775,100 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     checkEOS( );
 }
 
+//------------------------------------------------------------------------------------------------------------
+// "parseMemOp" ...
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    Expr rExpr;
+    
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+        
+    acceptComma( );
+    parseExpr( &rExpr );
+    
+    // ??? to do .....
+    
+    checkEOS( );
+    
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseOpB" ...
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    Expr rExpr;
+   
+    
+    // ??? to do .....
+    
+    checkEOS( );
+    
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseOpBR" ...
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    Expr rExpr;
+   
+    
+    // ??? to do .....
+    
+    checkEOS( );
+    
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseOpBV" ...
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    Expr rExpr;
+   
+    
+    // ??? to do .....
+    
+    checkEOS( );
+    
+}
+
+//------------------------------------------------------------------------------------------------------------
+// "parseOpBB" ...
+//
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    Expr rExpr;
+   
+    
+    // ??? to do .....
+    
+    checkEOS( );
+    
+}
+
+
+
+
 #if 0
 
 //------------------------------------------------------------------------------------------------------------
@@ -2096,51 +2020,6 @@ void parseInstrCBR( uint32_t *instr, uint32_t flags ) {
     
     checkEOS( );
 }
-
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrLoadAndStore" will parse the load instructions family.
-//
-// <loadInstr>  [ "." <opt> ] <targetReg>   "," <sourceOperand>
-// <storeInstr> [ "." <opt> ] <sourceReg>   "," <targetOperand>
-//
-// The syntax for the <operand> portion is either a
-//
-//      <ofs> "(" GR ")"
-//      <GR>  "(" GR ")"
-//
-//
-//------------------------------------------------------------------------------------------------------------
-void parseInstrLoadAndStore( uint32_t *instr, uint32_t instrOpCode, uint32_t instrFlags ) {
-    
-    Expr rExpr;
-    
-    parseRegR( instr );
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        setInstrField( instr, 0, 15, rExpr.numVal );
-        parseExpr( &rExpr );
-    }
-    else if ( rExpr.typ == TYP_GREG ) {
-        
-        if (( instrOpCode == OP_LDR ) || ( instrOpCode == OP_STC )) throw ( ERR_INVALID_INSTR_MODE );
-        
-        //  setBit( instr, 10 );
-        //   setBitField( instr, 27, 4, rExpr.numVal );
-        
-        parseExpr( &rExpr );
-    }
-    
-    if ( rExpr.typ == TYP_ADR ) {
-        
-        // setBitField( instr, 13, 2, 0 );
-        // setBitField( instr, 31, 4, rExpr.numVal );
-    }
-    else throw ( ERR_EXPECTED_ADR );
-}
-
 
 #endif
 
@@ -2514,25 +2393,9 @@ void parseInstrBRK( uint32_t *instr, uint32_t flags ) {
 
 #endif
 
-
 //------------------------------------------------------------------------------------------------------------
-// "parseLine" will take the input string and parse the line for an instruction. In the simplified case, there
-// is only the opCode mnemonic and the argument list. No labels, no comments. For each instruction, there is
-// is a routine that parses the instruction specific input.
+// Get ready to do some work.
 //
-// An instruction starts with the opCode and the optional option qualifiers. For each opCode, the token table
-// has an instruction template and some further information about the instruction, which is used to do further
-// syntax checking.. For example, mapping the "LDx" instruction to "LDW" is already encoded in the template
-// and set in the flags field.
-//
-// The next step for all instructions is to check for options. Finally, a dedicated parsing routine will
-// handle the remainder of the assembly line. As the parsing process comes along the instruction template
-// from the token name table will be augmented with further data. If all is successful, we will have the
-// final instruction bit pattern.
-//
-
-// ??? put in a try catch clause ?
-
 //------------------------------------------------------------------------------------------------------------
 void setupTokenizer( char *inputStr ) {
     
@@ -2545,6 +2408,12 @@ void setupTokenizer( char *inputStr ) {
     currentChar             = ' ';
 }
 
+//------------------------------------------------------------------------------------------------------------
+// "parseLine" will take the input string and parse the line for an instruction. In the one-line case, there
+// is only the opCode mnemonic and the argument list. No labels, no comments. For each instruction group,
+// there is is a routine that parses the instruction specific input.
+//
+//------------------------------------------------------------------------------------------------------------
 void parseLine( char *inputStr, uint32_t *instr ) {
     
     setupTokenizer( inputStr );
@@ -2565,29 +2434,6 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_XOR:
             case TOK_OP_CMP:    parseModeTypeInstr( instr, instrOpToken );      break;
                 
-#if 0
-            case TOK_OP_ADD:    parseRegModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_SUB:    parseRegModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_AND:    parseRegModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_OR:     parseRegModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_XOR:    parseRegModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_CMP:    parseRegModeInstr( instr, instrOpToken );       break;
-           
-            case TOK_OP_ADD_I:  parseImmModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_SUB_I:  parseImmModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_CMP_I:  parseImmModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_AND_I:  parseImmModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_OR_I:   parseImmModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_XOR_I:  parseImmModeInstr( instr, instrOpToken );       break;
-                
-            case TOK_OP_ADD_M:  parseAdrModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_SUB_M:  parseAdrModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_CMP_M:  parseAdrModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_AND_M:  parseAdrModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_OR_M:   parseAdrModeInstr( instr, instrOpToken );       break;
-            case TOK_OP_XOR_M:  parseAdrModeInstr( instr, instrOpToken );       break;
-#endif
-                
             case TOK_OP_EXTR:   parseInstrEXTR( instr, instrOpToken );          break;
             case TOK_OP_DEP:    parseInstrDEP( instr, instrOpToken );           break;
             case TOK_OP_DSR:    parseInstrDSR( instr, instrOpToken );           break;
@@ -2605,50 +2451,37 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                 
             case TOK_OP_LDO:    parseInstrLDO( instr, instrOpToken );           break;
                 
+            case TOK_OP_LD:
+            case TOK_OP_LDR:
+            case TOK_OP_ST:
+            case TOK_OP_STC:    parseMemOp( instr, instrOpToken );              break;
                 
+            case TOK_OP_B:      parseInstrB( instr, instrOpToken );             break;
+            case TOK_OP_BR:     parseInstrBR( instr, instrOpToken );            break;
+            case TOK_OP_BV:     parseInstrBV( instr, instrOpToken );            break;
+            case TOK_OP_BB:     parseInstrBB( instr, instrOpToken );            break;
                 
-                /*
-                 
-                 case OP_CODE_LD:    case OP_CODE_LDW:   case OP_CODE_LDA:   case OP_CODE_LDR:
-                 case OP_CODE_ST:    case OP_CODE_STW:   case OP_CODE_STA:   case OP_CODE_STC: {
-                 
-                 return( parseInstrLoadAndStore( instr, flags | TF_WORD_INSTR ));
-                 }
-                 
+            case TOK_OP_CBR: break;
+            case TOK_OP_MBR: break;
                 
-                 case OP_CODE_SHLA:      return( parseInstrSHLA( instr, flags ));
-                 case OP_CODE_CMR:       return( parseInstrCMR( instr, flags ));
-                 
-                 
-                 case OP_CODE_LDIL:
-                 case OP_CODE_ADDIL:     return( parseInstrLDILandADDIL( instr, flags ));
-                 
-                 case OP_CODE_LDO:       return( parseInstrLDO( instr, flags ));
-                 
-                 case OP_CODE_B: return( parseInstrBandGATE( instr, flags ));
-                 
-                 case OP_CODE_BR:        return( parseInstrBR( instr, flags ));
-                 case OP_CODE_BV:        return( parseInstrBV( instr, flags ));
-                 case OP_CODE_BE:        return( parseInstrBE( instr, flags ));
+            case TOK_OP_MFCR: break;
+            case TOK_OP_MTCR: break;
                 
-                 case OP_CODE_CBR:
-                    return( parseInstrCBRandCBRU( instr, flags ));
-                 
-                 case OP_CODE_MR:        return( parseInstrMR( instr, flags ));
-                 case OP_CODE_MST:       return( parseInstrMST( instr, flags ));
-                 case OP_CODE_LDPA:      return( parseInstrLDPA( instr, flags ));
-                 case OP_CODE_PRB:       return( parseInstrPRB( instr, flags ));
-                 case OP_CODE_ITLB:      return( parseInstrITLB( instr, flags ));
-                 case OP_CODE_PTLB:      return( parseInstrPTLB( instr, flags ));
-                 case OP_CODE_PCA:       return( parseInstrPCA( instr, flags ));
-                 case OP_CODE_DIAG:      return( parseInstrDIAG( instr, flags ));
-                 case OP_CODE_RFI:       return( parseInstrRFI( instr, flags ));
-                 case OP_CODE_BRK:       return( parseInstrBRK( instr, flags ));
-                 
-                 */
+            case TOK_OP_LPA: break;
                 
-                // add pseudo ops too...
+            case TOK_OP_PRB: break;
                 
+            case TOK_OP_ITLB: break;
+            case TOK_OP_PTLB: break;
+                
+            case TOK_OP_PCA:
+            case TOK_OP_FCA: break;
+                
+            case TOK_OP_DIAG: break;
+                
+            case TOK_OP_BRK: break;
+            case TOK_OP_CHK: break;
+            
             default: throw ( ERR_INVALID_OP_CODE );
         }
     }
