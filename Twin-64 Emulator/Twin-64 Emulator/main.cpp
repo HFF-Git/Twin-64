@@ -50,7 +50,9 @@ int main( int argc, const char * argv[] ) {
     
     cpu -> reset( );
     
-    testAsm((char *) "ADD r1, r2, r3" );
+    // testAsm((char *) "ADD r1, r2, r3" );
+    // testAsm((char *) "ADD r1, -100(r2)" );
+    testAsm((char *) "ADD r1, 0x3_9(r2)" );
     
     return 0;
 }
