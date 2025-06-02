@@ -1,9 +1,6 @@
-#if 0
-
-// ??? rework for a T64 one line disassembler
 //------------------------------------------------------------------------------------------------------------
 //
-// VCPU32 - A 32-bit CPU - Disassembler
+// T64 - A 64-bit CPU - DisAssembler
 //
 //------------------------------------------------------------------------------------------------------------
 // The instruction disassemble routine will format an instruction word in human readable form. An instruction
@@ -16,8 +13,8 @@
 //
 //------------------------------------------------------------------------------------------------------------
 //
-// VCPU32 - A 32-bit CPU - Disassembler
-// Copyright (C) 2022 - 2024 Helmut Fieres
+// T64 - A 64-bit CPU - DisAssembler
+// Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU
 // General Public License as published by the Free Software Foundation, either version 3 of the License,
@@ -29,11 +26,241 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //------------------------------------------------------------------------------------------------------------
-
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
 #include "T64-Types.h"
 
+// how to best structure this code ?
+// ??? seems like big case statements with sprintf ... ?
 
+
+namespace {
+
+//------------------------------------------------------------------------------------------------------------
+//
+// ??? where to assemble the pieces...
+//------------------------------------------------------------------------------------------------------------
+char opCodeBuf[ 128 ];
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+static inline uint32_t extractBit( uint32_t arg, int bitpos ) {
+    
+    return ( arg >> bitpos ) & 1;
+}
+
+static inline uint32_t extractField( uint32_t arg, int bitpos, int len) {
+    
+    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
+}
+
+static inline uint32_t extractSignedField( uint32_t arg, int bitpos, int len ) {
+    
+    uint32_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    
+    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
+    else             return ( field );
+    
+}
+
+static inline uint32_t depositField( uint32_t word, int bitpos, int len, T64Word value) {
+    
+    uint32_t mask = (( 1U << len ) - 1 ) << bitpos;
+    return ( word & ~mask ) | (( value << bitpos ) & mask );
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+//
+// ??? idea: sprintf the operanda. Perhaps we have a way to use few foramts for the operands...
+//------------------------------------------------------------------------------------------------------------
+int buildOperandStrALU( char *buf, uint32_t instr, int rdx ) {
+ 
+    return ( 0 );
+}
+
+int buildOperandStrMEM( char *buf,uint32_t instr, int rdx ) {
+ 
+    return ( 0 );
+}
+
+int buildOperandStrBR( char *buf, uint32_t instr, int rdx ) {
+ 
+    return ( 0 );
+}
+
+int buildOperandStrSYS( char *buf, uint32_t instr, int rdx ) {
+ 
+    return ( 0 );
+}
+
+
+int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
+    
+    uint32_t opCodeGrp = extractField( instr, 30, 2 );
+    
+    switch ( opCodeGrp ) {
+            
+        case OPC_GRP_ALU: return( buildOperandStrALU( buf, instr, rdx ));
+        case OPC_GRP_MEM: return( buildOperandStrMEM( buf, instr, rdx ));
+        case OPC_GRP_BR:  return( buildOperandStrBR( buf, instr, rdx ));
+        case OPC_GRP_SYS: return( buildOperandStrSYS( buf, instr, rdx ));
+        default: return( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+// ??? idea: check the FLD bits and sprintf the final opcode. We also need to print the relevangt options.
+//------------------------------------------------------------------------------------------------------------
+int buildOpCodeStrALU( char *buf, uint32_t instr ) {
+    
+    uint32_t opCode = extractField( instr, 26, 4 );
+    
+    switch( opCode ) {
+            
+        case OPC_ADD: break;
+        case OPC_SUB: break;
+        case OPC_AND: break;
+        case OPC_OR: break;
+        case OPC_XOR: break;
+        case OPC_CMP: break;
+        case OPC_BITOP: break;
+        case OPC_SHAOP: break;
+        case OPC_IMMOP: break;
+        case OPC_LDO: break;
+        default: return ( 0 );
+    }
+    
+    return ( 0 );
+}
+
+int buildOpCodeStrMEM( char *buf,uint32_t instr ) {
+    
+    uint32_t opCode = extractField( instr, 26, 4 );
+    
+    switch( opCode ) {
+            
+        case OPC_ADD: break;
+        case OPC_SUB: break;
+        case OPC_AND: break;
+        case OPC_OR: break;
+        case OPC_XOR: break;
+        case OPC_CMP: break;
+        case OPC_LD  : break;
+        case OPC_ST      : break;
+        case OPC_LDR   : break;
+        case OPC_STC    : break;
+        default: return ( 0 );
+    }
+    
+    return ( 0 );
+}
+
+int buildOpCodeStrBR( char *buf, uint32_t instr ) {
+ 
+    uint32_t opCode = extractField( instr, 26, 4 );
+    
+    switch( opCode ) {
+            
+        case OPC_B: break;
+        case OPC_BR: break;
+        case OPC_BB: break;
+        case OPC_BV: break;
+        case OPC_CBR: break;
+        case OPC_MBR: break;
+        default: return ( 0 );
+    }
+    
+    return ( 0 );
+}
+
+int buildOpCodeStrSYS( char *buf, uint32_t instr ) {
+ 
+    uint32_t opCode = extractField( instr, 26, 4 );
+    
+    switch( opCode ) {
+         
+        case OPC_MR: break;
+        case OPC_LDPA: break;
+        case OPC_PRB: break;
+        case OPC_TLB: break;
+        case OPC_CA: break;
+        case OPC_MST: break;
+        case OPC_RFI  : break;
+        case OPC_TRAP      : break;
+        case OPC_DIAG   : break;
+        default: return ( 0 );
+    }
+    
+    return ( 0 );
+}
+
+int buildOpCodeStr( char *buf, uint32_t instr ) {
+    
+    uint32_t opCodeGrp = extractField( instr, 30, 2 );
+    
+    switch ( opCodeGrp ) {
+            
+        case OPC_GRP_ALU: return( buildOpCodeStrALU( buf, instr ));
+        case OPC_GRP_MEM: return( buildOpCodeStrMEM( buf, instr ));
+        case OPC_GRP_BR:  return( buildOpCodeStrBR( buf, instr ));
+        case OPC_GRP_SYS: return( buildOpCodeStrSYS( buf, instr ));
+        default: return( 0 );
+    }
+}
+
+} // namespace
+
+
+//------------------------------------------------------------------------------------------------------------
+// Format an instruction. An instruction has generally three parts. The opCode, the opCode options and the
+// operands. An instruction cna be formatted as a whole string, or as two groups with opcode and operands
+// separated. We need this split for the code window to show the date in two aligned fields.
+//
+//------------------------------------------------------------------------------------------------------------
+int getOpCodeFieldWidth( ) {
+    
+    return( 12 );
+}
+
+int getOperandsFieldWidth( ) {
+    
+    return( 16 );
+}
+
+int formatOpCode( char *buf, int bufLen, uint32_t instr ) {
+    
+    return ( buildOpCodeStr( buf, instr ));
+}
+
+int formatOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
+    
+    // ??? check buf len...
+    
+    return( buildOperandStr( buf, instr, rdx ));
+}
+
+int formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
+    
+    // ??? checkl buf len ...
+    
+    int cursor = 0;
+    
+    cursor += buildOpCodeStr( buf + cursor, instr );
+    cursor += buildOperandStr( buf + cursor, instr, rdx );
+    return( cursor );
+}
+
+
+
+#if 0
 /*
 //------------------------------------------------------------------------------------------------------------
 //
@@ -99,71 +326,6 @@ const struct {
 namespace {
 
 
-
-static inline bool isAligned( T64Word adr, int align ) {
-    
-    return (( adr & ( align - 1 )) == 0 );
-}
-
-static inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
-    
-    return(( adr >= low ) && ( adr <= high ));
-}
-
-static inline T64Word roundup( uT64Word arg ) {
-    
-    return( arg ); // for now ...
-}
-
-static inline T64Word extractBit( T64Word arg, int bitpos ) {
-    
-    return ( arg >> bitpos ) & 1;
-}
-
-static inline T64Word extractField( T64Word arg, int bitpos, int len) {
-    
-    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
-}
-
-static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
-    
-    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-    
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-    else             return ( field );
-    
-}
-
-static inline T64Word depositField( T64Word word, int bitpos, int len, T64Word value) {
-    
-    T64Word mask = (( 1ULL << len ) - 1 ) << bitpos;
-    return ( word & ~mask ) | (( value << bitpos ) & mask );
-}
-
-bool willAddOverflow( T64Word a, T64Word b ) {
-    
-    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
-    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
-    return false;
-}
-
-bool willSubOverflow( T64Word a, T64Word b ) {
-    
-    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
-    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
-    return false;
-}
-
-bool willShiftLftOverflow( T64Word a, int shift ) {
-    
-    if (( shift < 0 ) || ( shift >= 64 )) return true;
-    if ( a == 0 ) return false;
-    
-    T64Word max = INT64_MAX >> shift;
-    T64Word min = INT64_MIN >> shift;
-    
-    return (( a > max ) || ( a < min ));
-}
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -267,12 +429,12 @@ void format_dec64( T64Word value, char *buf ) {
 // Instruction decoding means to get to bits and bit fields. Here is a set of helper functions.
 //
 //------------------------------------------------------------------------------------------------------------
-bool getBit( uint32_t arg, int pos ) {
+bool extractBit( uint32_t arg, int pos ) {
     
     return( arg & ( 1U << ( 31 - ( pos % 32 ))));
 }
 
-uint32_t getBitField( uint32_t arg, int pos, int len, bool sign = false ) {
+uint32_t extractBitField( uint32_t arg, int pos, int len, bool sign = false ) {
     
     pos = pos % 32;
     len = len % 32;
@@ -937,70 +1099,6 @@ int formatOperands( char *buf, uint32_t instr, int rdx = 10 ) {
 
 }; // namespace
 
-
-//************************************************************************************************************
-//
-// Object methods.
-//
-//************************************************************************************************************
-
-//------------------------------------------------------------------------------------------------------------
-// The object constructor.
-//
-//------------------------------------------------------------------------------------------------------------
-SimDisAsm::SimDisAsm( ) { }
-
-//------------------------------------------------------------------------------------------------------------
-// Print an instruction, nicely formatted. An instruction has generally four parts. The opCode, the opCode
-// options, the source and the target. The opCode and options are grouped as are the target and operand.
-//
-//------------------------------------------------------------------------------------------------------------
-int SimDisAsm::formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
-    
-    int cursor = 0;
-    
-    cursor += formatOpCodeAndOptions( buf + cursor, bufLen, instr, rdx );
-    cursor += formatTargetAndOperands( buf + cursor, bufLen, instr );
-    return( cursor );
-}
-
-int SimDisAsm::formatOpCodeAndOptions( char *buf, int bufLen, uint32_t instr, int rdx ) {
-    
-    int cursor = 0;
-   
-    cursor += formatOpCode( buf + cursor, instr );
-    cursor += formatOpCodeOptions( buf + cursor, instr );
-    return( cursor );
-}
-
-int SimDisAsm::formatTargetAndOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
-    
-    int cursor = 0;
-   
-    cursor += formatTarget( buf + cursor, instr, rdx );
-    cursor += formatOperands( buf + cursor, instr, rdx );
-    return( cursor );
-}
-
-int SimDisAsm::displayInstr( uint32_t instr, int rdx ) {
-    
-    int  cursor = 0;
-    char buf[ 128 ];
-    
-    cursor += formatOpCodeAndOptions( buf + cursor, sizeof( buf ), instr );
-    buf[ cursor ] = ' ';
-    cursor += formatTargetAndOperands( buf + cursor, sizeof( buf ), instr, rdx );
-    fprintf( stdout, "%s", buf );
-    return( cursor );
-}
-
-int SimDisAsm::getOpCodeOptionsFieldWidth( ) {
-    
-    return( 12 );
-}
-
-int SimDisAsm::getTargetAndOperandsFieldWidth( ) {
-    
-    return( 16 );
-}
 #endif
+
+

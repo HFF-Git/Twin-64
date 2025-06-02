@@ -134,46 +134,37 @@ enum TokId : uint16_t {
     //--------------------------------------------------------------------------------------------------------
     TOK_OP_NOP              = 300,
     
+    TOK_OP_AND              = 301,      TOK_OP_OR               = 302,      TOK_OP_XOR              = 303,
+    TOK_OP_ADD              = 304,      TOK_OP_SUB              = 305,      TOK_OP_CMP              = 306,
     
-    // ??? sort by major OpCode and synthetc Ops.
+    TOK_OP_EXTR             = 311,      TOK_OP_DEP              = 312,      TOK_OP_DSR              = 313,
+    TOK_OP_SHL1A            = 314,      TOK_OP_SHL2A            = 315,      TOK_OP_SHL3A            = 316,
+    TOK_OP_SHR1A            = 317,      TOK_OP_SHR2A            = 318,      TOK_OP_SHR3A            = 319,
     
+    TOK_OP_LDI              = 331,      TOK_OP_ADDIL            = 332,      TOK_OP_LDO              = 333,
+    TOK_OP_LD               = 334,      TOK_OP_LDR              = 335,
+    TOK_OP_ST               = 337,      TOK_OP_STC              = 338,
     
-    TOK_OP_AND              = 301,      TOK_OP_AND_I            = 311,      TOK_OP_AND_M            = 321,
-    TOK_OP_OR               = 302,      TOK_OP_OR_I             = 312,      TOK_OP_OR_M             = 322,
-    TOK_OP_XOR              = 303,      TOK_OP_XOR_I            = 313,      TOK_OP_XOR_M            = 323,
-    TOK_OP_ADD              = 304,      TOK_OP_ADD_I            = 314,      TOK_OP_ADD_M            = 324,
-    TOK_OP_SUB              = 305,      TOK_OP_SUB_I            = 315,      TOK_OP_SUB_M            = 325,
-    TOK_OP_CMP              = 306,      TOK_OP_CMP_I            = 316,      TOK_OP_CMP_M            = 326,
+    TOK_OP_B                = 341,      TOK_OP_BR               = 342,      TOK_OP_BV               = 343,
+    TOK_OP_BB               = 344,      TOK_OP_CBR              = 345,      TOK_OP_MBR              = 346,
     
-    TOK_OP_EXTR             = 331,      TOK_OP_DEP              = 332,      TOK_OP_DSR              = 333,
-    TOK_OP_SHL1A            = 334,      TOK_OP_SHL2A            = 335,      TOK_OP_SHL3A            = 336,
-    TOK_OP_SHR1A            = 337,      TOK_OP_SHR2A            = 338,      TOK_OP_SHR3A            = 339,
+    TOK_OP_MFCR             = 351,      TOK_OP_MTCR             = 352,
+    TOK_OP_RSM              = 353,      TOK_OP_SSM              = 354,
+    TOK_OP_LDPA             = 355,
+    TOK_OP_PRBR             = 357,      TOK_OP_PRBW             = 358,
     
-    TOK_OP_LDI              = 341,      TOK_OP_ADDIL            = 342,      TOK_OP_LDO              = 343,
-    TOK_OP_LD               = 345,      TOK_OP_LDR              = 346,
-    TOK_OP_ST               = 347,      TOK_OP_STC              = 348,
+    TOK_OP_ITLB             = 361,      TOK_OP_PTLB             = 362,
+    TOK_OP_PCA              = 363,      TOK_OP_FCA              = 364,
     
-    TOK_OP_B                = 351,      TOK_OP_BR               = 352,      TOK_OP_BV               = 353,
-    TOK_OP_BB               = 355,      TOK_OP_CBR              = 356,      TOK_OP_MBR              = 357,
-    
-    TOK_OP_MFCR             = 361,      TOK_OP_MTCR             = 362,
-    TOK_OP_RSM              = 363,      TOK_OP_SSM              = 364,
-    TOK_OP_LDPA             = 365,      TOK_LPAX                = 366,
-    TOK_OP_PRBR             = 367,      TOK_OP_PRBW             = 368,
-    TOK_OP_ITLB             = 371,      TOK_OP_PTLB             = 372,
-    TOK_OP_PCA              = 373,      TOK_OP_FCA              = 374,
-    
-    TOK_OP_RFI              = 381,      TOK_OP_DIAG             = 382,
-    TOK_OP_BRK              = 383,      TOK_OP_CHK              = 384,
-    
+    TOK_OP_RFI              = 371,      TOK_OP_DIAG             = 372,
+    TOK_OP_BRK              = 373,      TOK_OP_CHK              = 374,
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
     //
+    // ??? tdb
     //--------------------------------------------------------------------------------------------------------
-    OP_SHL                  = 401,      OP_SHR                  = 402,
-    OP_ASL                  = 403,      OP_ASR                  = 404,
-    OP_ROR                  = 405,      OP_ROL                  = 406
+   
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -199,58 +190,58 @@ struct Token {
 // An instruction template consists of the instruction group bits ( 31,30 ), the op code family bits ( 29,
 // 28, 27, 26 ) and the option or mode bits ( 21, 20, 19 ). The mode bits are for some instruction the
 // default and could be changed during instruction parsing. From the defined constants we will build the
-// instruction template which is stored for the opcode mnemoic in the token value field.
+// instruction template which is stored for the opcode mnemoic in the token value field. The values for the
+// opcode group and the opcode families are in the "T64-Types" include file.
 //
 //------------------------------------------------------------------------------------------------------------
 enum InstrTemplate : uint32_t {
     
-    OPG_ALU         = ( 0U  << 30 ),
-    OPG_MEM         = ( 1U  << 30 ),
-    OPG_BR          = ( 2U  << 30 ),
-    OPG_SYS         = ( 3U  << 30 ),
+    OPG_ALU      = ( OPC_GRP_ALU  << 30 ),
+    OPG_MEM      = ( OPC_GRP_MEM  << 30 ),
+    OPG_BR       = ( OPC_GRP_BR   << 30 ),
+    OPG_SYS      = ( OPC_GRP_SYS  << 30 ),
+  
+    OPF_ADD      = ( OPC_ADD    << 26 ),
+    OPF_SUB      = ( OPC_SUB    << 26 ),
+    OPF_AND      = ( OPC_AND    << 26 ),
+    OPF_OR       = ( OPC_OR     << 26 ),
+    OPF_XOR      = ( OPC_XOR    << 26 ),
+    OPF_CMP      = ( OPC_CMP    << 26 ),
+    OPF_BITOP    = ( OPC_BITOP  << 26 ),
+    OPF_SHAOP    = ( OPC_SHAOP  << 26 ),
+    OPF_IMMOP    = ( OPC_IMMOP  << 26 ),
+    OPF_LDO      = ( OPC_LDO    << 26 ),
     
-    // ??? rename better names....
+    OPF_LD       = ( OPC_LD     << 26 ),
+    OPF_ST       = ( OPC_ST     << 26 ),
+    OPF_LDR      = ( OPC_LDR    << 26 ),
+    OPF_STC      = ( OPC_STC    << 26 ),
     
-    OPF_OP_ADD      = ( 1U  << 26 ),
-    OPF_OP_SUB      = ( 2U  << 26 ),
-    OPF_OP_AND      = ( 3U  << 26 ),
-    OPF_OP_OR       = ( 4U  << 26 ),
-    OPF_OP_XOR      = ( 5U  << 26 ),
-    OPF_OP_CMP      = ( 6U  << 26 ),
-    OPF_OP_BIT_OP   = ( 7U  << 26 ),
-    OPF_OP_SHA_OP   = ( 8U  << 26 ),
-    OPF_OP_IMM_OP   = ( 9U  << 26 ),
-    OPF_OP_LDO      = ( 10U << 26 ),
+    OPF_B        = ( OPC_B      << 26 ),
+    OPF_BR       = ( OPC_BR     << 26 ),
+    OPF_BV       = ( OPC_BV     << 26 ),
+    OPF_BB       = ( OPC_BB     << 26 ),
+    OPF_CBR      = ( OPC_CBR    << 26 ),
+    OPF_MBR      = ( OPC_MBR    << 26 ),
     
-    OPF_OP_LD       = ( 8U  << 26 ),
-    OPF_OP_ST       = ( 9U  << 26 ),
-    OPF_OP_LDR      = ( 10U << 26 ),
-    OPF_OP_STC      = ( 11U << 26 ),
+    OPF_MR       = ( OPC_MR     << 26 ),
+    OPF_LDPA     = ( OPC_LDPA   << 26 ),
+    OPF_PRB      = ( OPC_PRB    << 26 ),
+    OPF_TLB      = ( OPC_TLB    << 26 ),
+    OPF_CA       = ( OPC_CA     << 26 ),
+    OPF_MST      = ( OPC_MST    << 26 ),
+    OPF_RFI      = ( OPC_RFI    << 26 ),
+    OPF_TRAP     = ( OPC_TRAP   << 26 ),
+    OPF_DIAG     = ( OPC_DIAG   << 26 ),
     
-    OPF_OP_B        = ( 1U  << 26 ),
-    OPF_OP_BR       = ( 2U  << 26 ),
-    OPF_OP_BB       = ( 3U  << 26 ),
-    OPF_OP_CBR      = ( 4U  << 26 ),
-    OPF_OP_MBR      = ( 5U  << 26 ),
-    
-    OPF_OP_MR       = ( 1U  << 26 ),
-    OPF_OP_LDPA     = ( 2U  << 26 ),
-    OPF_OP_PRB      = ( 3U  << 26 ),
-    OPF_OP_TLB      = ( 4U  << 26 ),
-    OPF_OP_CA_OP       = ( 5U  << 26 ),
-    OPF_MST_OP      = ( 6U  << 26 ),
-    OPF_RFI_OP      = ( 7U  << 26 ),
-    OPF_TRAP_OP     = ( 8U  << 26 ),
-    OPF_DIAG_OP     = ( 8U  << 26 ),
-    
-    OPM_FLD_0       = ( 0U  << 19 ),
-    OPM_FLD_1       = ( 1U  << 19 ),
-    OPM_FLD_2       = ( 2U  << 19 ),
-    OPM_FLD_3       = ( 3U  << 19 ),
-    OPM_FLD_4       = ( 4U  << 19 ),
-    OPM_FLD_5       = ( 5U  << 19 ),
-    OPM_FLD_6       = ( 6U  << 19 ),
-    OPM_FLD_7       = ( 7U  << 19 )
+    OPM_FLD_0    = ( 0U  << 19 ),
+    OPM_FLD_1    = ( 1U  << 19 ),
+    OPM_FLD_2    = ( 2U  << 19 ),
+    OPM_FLD_3    = ( 3U  << 19 ),
+    OPM_FLD_4    = ( 4U  << 19 ),
+    OPM_FLD_5    = ( 5U  << 19 ),
+    OPM_FLD_6    = ( 6U  << 19 ),
+    OPM_FLD_7    = ( 7U  << 19 )
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -358,6 +349,71 @@ const Token asmTokTab[ ] = {
     { .name = "C15",            .typ = TYP_CREG,            .tid = TOK_CR_15,       .val = 15           },
     
     //--------------------------------------------------------------------------------------------------------
+    // Assembler mnemonics. Like all other tokens, we habe the name, the type and the token Id. In addition,
+    // the ".val" field contains the initial instruction mask with opCode group, opCode family and the
+    // bits set in the first option field to further qualify the instruction.
+    //
+    //--------------------------------------------------------------------------------------------------------
+    { .name = "ADD",   .typ = TYP_OP_CODE, .tid = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_ADD    | OPM_FLD_0 ) },
+    { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB    | OPM_FLD_0 ) },
+    { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
+    { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
+    { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
+    { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
+    
+    { .name = "EXTR",  .typ = TYP_OP_CODE, .tid = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
+    { .name = "DEP",   .typ = TYP_OP_CODE, .tid = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_1 ) },
+    { .name = "DSR",   .typ = TYP_OP_CODE, .tid = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
+    
+    { .name = "SHL1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
+    { .name = "SHL2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
+    { .name = "SHL3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_6 ) },
+    
+    { .name = "SHR1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
+    { .name = "SHR2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
+    { .name = "SHR3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
+    
+    { .name = "LDI",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+    { .name = "ADDIL", .typ = TYP_OP_CODE, .tid = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+    { .name = "LDO",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
+    
+    { .name = "LD",    .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
+    { .name = "LDR",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
+    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST     | OPM_FLD_1 ) },
+    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC    | OPM_FLD_1 ) },
+    
+    { .name = "B",     .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
+    { .name = "BR",    .typ = TYP_OP_CODE, .tid = TOK_OP_BR,    .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
+    { .name = "BV",    .typ = TYP_OP_CODE, .tid = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
+    { .name = "BB",    .typ = TYP_OP_CODE, .tid = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
+    
+    { .name = "CBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_CBR    | OPM_FLD_0 ) },
+    { .name = "MBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
+    
+    { .name = "MFCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
+    { .name = "MTCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
+    
+    { .name = "LPA",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDPA,   .val = ( OPG_SYS | OPF_LDPA  | OPM_FLD_0 ) },
+    
+    { .name = "PRBR",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRBR,  .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
+    { .name = "PRBW",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRBW,  .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_1 ) },
+    
+    { .name = "ITLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
+    { .name = "PTLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+    
+    { .name = "PCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
+    { .name = "FCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
+    
+    { .name = "RSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
+    { .name = "SSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
+    
+    { .name = "CHK",   .typ = TYP_OP_CODE, .tid = TOK_OP_CHK,   .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
+    { .name = "BRK",   .typ = TYP_OP_CODE, .tid = TOK_OP_BRK,   .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
+    
+    { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
+    { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
+    
+    //--------------------------------------------------------------------------------------------------------
     // Runtime architcture register names for general registers.
     //
     //--------------------------------------------------------------------------------------------------------
@@ -386,100 +442,13 @@ const Token asmTokTab[ ] = {
     { .name = "SAR",            .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1           },
     
     //--------------------------------------------------------------------------------------------------------
-    // Assembler mnemonics. Like all other tokens, we habe the name, the type and the token Id. In addition,
-    // the ".val" field contains the initial instruction mask with opCode group, opCode family and the
-    // bits set in the first option field to further qualify the instruction.
-    //
-    //--------------------------------------------------------------------------------------------------------
-    { .name = "ADD",   .typ = TYP_OP_CODE, .tid = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_OP_ADD  | OPM_FLD_0 ) },
-    { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_OP_SUB  | OPM_FLD_0 ) },
-    { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_OP_AND  | OPM_FLD_0 ) },
-    { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OP_OR   | OPM_FLD_0 ) },
-    { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_OP_XOR  | OPM_FLD_0 ) },
-    { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_OP_CMP  | OPM_FLD_0 ) },
-    
-    { .name = "EXTR",  .typ = TYP_OP_CODE, .tid = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_OP_BIT_OP  | OPM_FLD_0 ) },
-    { .name = "DEP",   .typ = TYP_OP_CODE, .tid = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_OP_BIT_OP  | OPM_FLD_1 ) },
-    { .name = "DSR",   .typ = TYP_OP_CODE, .tid = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_OP_BIT_OP  | OPM_FLD_2 ) },
-    
-    { .name = "SHL1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_2 ) },
-    { .name = "SHL2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_4 ) },
-    { .name = "SHL3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL3A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_6 ) },
-    
-    { .name = "SHR1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_3 ) },
-    { .name = "SHR2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_5 ) },
-    { .name = "SHR3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_OP_SHA_OP  | OPM_FLD_7 ) },
-    
-    { .name = "LDI",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_OP_IMM_OP  | OPM_FLD_0 ) },
-    { .name = "ADDIL", .typ = TYP_OP_CODE, .tid = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_OP_IMM_OP  | OPM_FLD_0 ) },
-    { .name = "LDO",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_OP_LDO  | OPM_FLD_0 ) },
-    
-    { .name = "LD",    .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_OP_LD   | OPM_FLD_0 ) },
-    { .name = "LDR",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_OP_LDR  | OPM_FLD_0 ) },
-    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_OP_ST   | OPM_FLD_1 ) },
-    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_OP_STC  | OPM_FLD_1 ) },
-    
-    { .name = "B",     .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_OP_B    | OPM_FLD_0 ) },
-    { .name = "BR",    .typ = TYP_OP_CODE, .tid = TOK_OP_BR,    .val = ( OPG_BR  | OPF_OP_BR   | OPM_FLD_0 ) },
-    { .name = "BV",    .typ = TYP_OP_CODE, .tid = TOK_OP_BV,    .val = ( OPG_BR  | OPF_OP_BR   | OPM_FLD_1 ) },
-    { .name = "BB",    .typ = TYP_OP_CODE, .tid = TOK_OP_BB,    .val = ( OPG_BR  | OPF_OP_BB   | OPM_FLD_0 ) },
-    
-    { .name = "CBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_OP_CBR  | OPM_FLD_0 ) },
-    { .name = "MBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_OP_MBR  | OPM_FLD_0 ) },
-    
-    { .name = "MFCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_OP_MR   | OPM_FLD_0 ) },
-    { .name = "MTCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_OP_MR   | OPM_FLD_1 ) },
-    
-    { .name = "LPA",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDPA,   .val = ( OPG_SYS | OPF_OP_LDPA  | OPM_FLD_0 ) },
-    
-    { .name = "PRBR",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRBR,  .val = ( OPG_SYS | OPF_OP_PRB  | OPM_FLD_0 ) },
-    { .name = "PRBW",  .typ = TYP_OP_CODE, .tid = TOK_OP_PRBW,  .val = ( OPG_SYS | OPF_OP_PRB  | OPM_FLD_1 ) },
-    
-    { .name = "ITLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_OP_TLB  | OPM_FLD_0 ) },
-    { .name = "PTLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_OP_TLB  | OPM_FLD_1 ) },
-    
-    { .name = "PCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_OP_CA_OP   | OPM_FLD_0 ) },
-    { .name = "FCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_OP_CA_OP   | OPM_FLD_1 ) },
-    
-    { .name = "RSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST_OP  | OPM_FLD_0 ) },
-    { .name = "SSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST_OP  | OPM_FLD_1 ) },
-    
-    { .name = "CHK",   .typ = TYP_OP_CODE, .tid = TOK_OP_CHK,   .val = ( OPG_SYS | OPF_TRAP_OP | OPM_FLD_1 ) },
-    { .name = "BRK",   .typ = TYP_OP_CODE, .tid = TOK_OP_BRK,   .val = ( OPG_SYS | OPF_TRAP_OP | OPM_FLD_1 ) },
-    
-    { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI_OP  | OPM_FLD_0 ) },
-    { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG_OP | OPM_FLD_0 ) },
-    
-    //--------------------------------------------------------------------------------------------------------
     // Assembler synthetioc mnemonics. They ar like the assembler mnemonics, except that they pre decode some
     // bits settings in the option fields and reduce the ".<opt>" notation settings through meaningful
     // instruction mnemonics.
     //
-    // ??? under construction ...
+    // ??? tbd...
     //--------------------------------------------------------------------------------------------------------
-    
-    { .name = "ADDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_I, .val = ( OPG_ALU | OPF_OP_ADD  | OPM_FLD_1 ) },
-    { .name = "ADDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_ADD_M, .val = ( OPG_ALU | OPF_OP_ADD  | OPM_FLD_0 ) },
-    
-    { .name = "SUBI",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_I, .val = ( OPG_ALU | OPF_OP_SUB  | OPM_FLD_1 ) },
-    { .name = "SUBM",  .typ = TYP_OP_CODE, .tid = TOK_OP_SUB_M, .val = ( OPG_ALU | OPF_OP_SUB  | OPM_FLD_0 ) },
-    
-    { .name = "ANDI",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_I, .val = ( OPG_ALU | OPF_OP_AND  | OPM_FLD_1 ) },
-    { .name = "ANDM",  .typ = TYP_OP_CODE, .tid = TOK_OP_AND_M, .val = ( OPG_ALU | OPF_OP_AND  | OPM_FLD_0 ) },
-    
-    { .name = "ORI",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_I,  .val = ( OPG_ALU | OPF_OP_OR   | OPM_FLD_1 ) },
-    { .name = "ORM",   .typ = TYP_OP_CODE, .tid = TOK_OP_OR_M,  .val = ( OPG_ALU | OPF_OP_OR   | OPM_FLD_0 ) },
-    
-    { .name = "XORI",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_I, .val = ( OPG_ALU | OPF_OP_XOR  | OPM_FLD_1 ) },
-    { .name = "XORM",  .typ = TYP_OP_CODE, .tid = TOK_OP_XOR_M, .val = ( OPG_ALU | OPF_OP_XOR  | OPM_FLD_0 ) },
-    
-    { .name = "CMPI",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_I, .val = ( OPG_ALU | OPF_OP_CMP  | OPM_FLD_1 ) },
-    { .name = "CMPM",  .typ = TYP_OP_CODE, .tid = TOK_OP_CMP_M, .val = ( OPG_ALU | OPF_OP_CMP  | OPM_FLD_0 ) },
-    
-    { .name = "GATE",  .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_OP_B    | OPM_FLD_1 ) },
-    
-    // ??? etc.
-    
+   
 };
 
 const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( Token );
@@ -875,6 +844,12 @@ void nextToken( ) {
         currentToken.tid    = TOK_COMMA;
         nextChar( );
     }
+    else if ( currentChar == ';' ) {
+        
+        currentCharIndex    = currentLineLen;
+        currentToken.typ    = TYP_NIL;
+        currentToken.tid    = TOK_EOS;
+    }
     else if ( currentChar == EOS_CHAR ) {
         
         currentToken.typ    = TYP_NIL;
@@ -888,7 +863,7 @@ void nextToken( ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// Get ready to do some work.
+// Initializte the tokenizer and get the first token.
 //
 //------------------------------------------------------------------------------------------------------------
 void setupTokenizer( char *inputStr ) {
@@ -904,34 +879,10 @@ void setupTokenizer( char *inputStr ) {
     nextToken( );
 }
 
-
 //------------------------------------------------------------------------------------------------------------
 // Parser helper functions.
 //
-//-----------------------------------------------------------------------------------------------------------
-static inline void checkEOS( ) {
-    
-    if ( currentToken.tid != TOK_EOS ) throw( ERR_EXTRA_TOKEN_IN_STR );
-}
-
-static inline void acceptComma( ) {
-    
-    if ( currentToken.tid == TOK_COMMA ) nextToken( );
-    else throw( ERR_EXPECTED_COMMA );
-}
-
-static inline void acceptLparen( ) {
-    
-    if ( currentToken.tid == TOK_LPAREN ) nextToken( );
-    else throw( ERR_EXPECTED_LPAREN );
-}
-
-static inline void acceptRparen( ) {
-    
-    if ( currentToken.tid == TOK_RPAREN ) nextToken( );
-    else throw( ERR_EXPECTED_RPAREN );
-}
-
+//------------------------------------------------------------------------------------------------------------
 static inline bool isToken( TokId tid ) {
     
     return( currentToken.tid == tid );
@@ -940,6 +891,29 @@ static inline bool isToken( TokId tid ) {
 static inline bool isTokenTyp( TokTypeId typ ) {
     
     return( currentToken.typ = typ );
+}
+
+static inline void acceptEOS( ) {
+    
+    if ( ! isToken( TOK_EOS )) throw( ERR_EXTRA_TOKEN_IN_STR );
+}
+
+static inline void acceptComma( ) {
+    
+    if ( isToken( TOK_COMMA )) nextToken( );
+    else throw( ERR_EXPECTED_COMMA );
+}
+
+static inline void acceptLparen( ) {
+    
+    if ( isToken( TOK_LPAREN )) nextToken( );
+    else throw( ERR_EXPECTED_LPAREN );
+}
+
+static inline void acceptRparen( ) {
+    
+    if ( isToken( TOK_RPAREN )) nextToken( );
+    else throw( ERR_EXPECTED_RPAREN );
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -1096,108 +1070,149 @@ static inline bool isInRangeForBitFieldU( T64Word val, int bitLen ) {
     return ( val <= max );
 }
 
-static inline void setBitField( uint32_t *word, int bitpos, int len, T64Word value ) {
+static inline void depositBitField( uint32_t *word, int bitpos, int len, T64Word value ) {
     
     uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-static inline T64Word extractField( T64Word arg, int bitpos, int len) {
+static inline T64Word extractBitField( T64Word arg, int bitpos, int len) {
     
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-static inline void setInstrBit( uint32_t *word, int bitpos, bool value ) {
+static inline void depositInstrBit( uint32_t *word, int bitpos, bool value ) {
     
     uint32_t mask = 1 << bitpos;
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-static inline void setInstrField( uint32_t *instr, int bitpos, int len, T64Word value ) {
+static inline void depositInstrField( uint32_t *instr, int bitpos, int len, T64Word value ) {
     
-    if ( isInRangeForBitField( value, len )) setBitField( instr, bitpos, len, value );
+    if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word value ) {
+// ??? used ?
+static inline void depositInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word value ) {
     
-    if ( isInRangeForBitField( value, len )) setBitField( instr, bitpos, len, value );
+    if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrRegR( uint32_t *instr, T64Word regId ) {
+static inline void depositInstrRegR( uint32_t *instr, T64Word regId ) {
     
-    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 22, 4, regId );
+    if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 22, 4, regId );
     else throw( ERR_REG_VAL_RANGE );
 }
 
-static inline void setInstrRegB( uint32_t *instr, T64Word regId ) {
+static inline void depositInstrRegB( uint32_t *instr, T64Word regId ) {
     
-    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 15, 4, regId );
+    if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 15, 4, regId );
     else throw( ERR_REG_VAL_RANGE );
 }
 
-static inline void setInstrRegA( uint32_t *instr, T64Word regId ) {
+static inline void depositInstrRegA( uint32_t *instr, T64Word regId ) {
     
-    if ( isInRangeForBitField( regId, 4 )) setBitField( instr, 9, 4, regId );
+    if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 9, 4, regId );
     else throw( ERR_REG_VAL_RANGE );
 }
 
-static inline void setInstrImm13( uint32_t *instr, T64Word val ) {
+static inline void depositInstrImm9( uint32_t *instr, T64Word val ) {
     
-    if ( isInRangeForBitField( val, 13 )) setBitField( instr, 0, 19, val );
+    if ( isInRangeForBitField( val, 9 )) depositBitField( instr, 0, 9, val );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrImm15( uint32_t *instr, T64Word val ) {
+static inline void depositInstrImm13( uint32_t *instr, T64Word val ) {
     
-    if ( isInRangeForBitField( val, 15 )) setBitField( instr, 0, 19, val );
+    if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrImm19( uint32_t *instr, T64Word val ) {
+static inline void depositInstrImm15( uint32_t *instr, T64Word val ) {
     
-    if ( isInRangeForBitField( val, 19 )) setBitField( instr, 0, 19, val );
+    if ( isInRangeForBitField( val, 15 )) depositBitField( instr, 0, 15, val );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
-static inline void setInstrImm20U( uint32_t *instr, T64Word val ) {
+static inline void depositInstrImm19( uint32_t *instr, T64Word val ) {
     
-    if ( isInRangeForBitFieldU( val, 20 )) setBitField( instr, 0, 20, val );
+    if ( isInRangeForBitField( val, 19 )) depositBitField( instr, 0, 19, val );
+    else throw( ERR_IMM_VAL_RANGE );
+}
+
+static inline void depositInstrImm20U( uint32_t *instr, T64Word val ) {
+    
+    if ( isInRangeForBitFieldU( val, 20 )) depositBitField( instr, 0, 20, val );
     else throw( ERR_IMM_VAL_RANGE );
 }
 
 static inline bool hasDataWidthFlags( uint32_t instrFlags ) {
     
     return (( instrFlags & IF_B ) || ( instrFlags & IF_H ) ||
-            ( instrFlags & IF_W) || ( instrFlags & IF_D ));
+            ( instrFlags & IF_W ) || ( instrFlags & IF_D ));
 }
 
-static inline T64Word getInstrGroup( uint32_t instr ) {
+static inline int extractInstrDwField( uint32_t instr ) {
     
-    return ( extractField( instr, 30, 2 ));
+    return ((int) extractBitField( instr, 13, 2 ));
 }
 
-static inline T64Word getInstrOp( uint32_t instr ) {
+static inline T64Word extractInstrGroupField( uint32_t instr ) {
     
-    return ( extractField( instr, 26, 4 ));
+    return ( extractBitField( instr, 30, 2 ));
 }
 
-static inline void replaceInstrGrp( uint32_t *instr, uint32_t instrMask ) {
+static inline T64Word extractInstrOpField( uint32_t instr ) {
+    
+    return ( extractBitField( instr, 26, 4 ));
+}
+
+static inline void replaceInstrGrpField( uint32_t *instr, uint32_t instrMask ) {
     
     *instr &= 0x3FFFFFFF;
     *instr |= instrMask & 0xC0000000;
 }
 
 //------------------------------------------------------------------------------------------------------------
+// Set the codition field for compare type instructions based on the instruction flags.
+//
+//------------------------------------------------------------------------------------------------------------
+void setInstrCondField( uint32_t *instr, uint32_t instrFlags ) {
+    
+    int fieldPos = 20;
+    
+    if      ( instrFlags & IF_EQ )  depositInstrField( instr, fieldPos, 2, 0 );
+    else if ( instrFlags & IF_LT )  depositInstrField( instr, fieldPos, 2, 1 );
+    else if ( instrFlags & IF_NE )  depositInstrField( instr, fieldPos, 2, 2 );
+    else if ( instrFlags & IF_LE )  depositInstrField( instr, fieldPos, 2, 3 );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Set the data width field for memory access type instructions based on the instruction flags.
+//
+//------------------------------------------------------------------------------------------------------------
+void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
+    
+    int fieldPos = 13;
+    
+    if      ( instrFlags & IF_B )   depositInstrField( instr, fieldPos, 2, 0 );
+    else if ( instrFlags & IF_H )   depositInstrField( instr, fieldPos, 2, 1 );
+    else if ( instrFlags & IF_W )   depositInstrField( instr, fieldPos, 2, 2 );
+    else if ( instrFlags & IF_D )   depositInstrField( instr, fieldPos, 2, 3 );
+}
+
+//------------------------------------------------------------------------------------------------------------
 // "parseInstrOptions" will analyze the opCode option string. An opCode option string is a sequence of
 // characters after the ".". We will look at each character in the "name" and set the options for the
-// particular instruction. There are also options where the only option is a multi-character sequence. They
-// cannot be in the same group with individual characters. Currently only the CMP, CBR and MBR instructions
-// are such a case.
+// particular instruction. There are also options where the option is a multi-character sequence. They cannot
+// be in the same group with a sequence of individual individual characters. Currently only the CMP, CBR and
+// MBR instructions are such cases.
 //
-// The assembler can handle multile ".xxx" sequences. Once we have all options seen, we check that there are
-// no conflicting options where only one option out of an option group can be set.
+// The assembler can handle multile ".xxx" sequences. One could for example put each individual character in
+// a separate ".x" location. Once we have all options seen, we check that there are no conflicting options
+// where only one option out of an option group can be set.
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
@@ -1276,36 +1291,19 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// Set the codition field for compare type instructions.
+// Almost all instruction have the starting form of an ooCode, fillowd by the optional instruction options
+// and the target register. This routine takes care of the target register sequence.
 //
 //------------------------------------------------------------------------------------------------------------
-void instrSetCmpCode( uint32_t *instr, uint32_t instrFlags ) {
+void parseTargetReg( uint32_t *instr ) {
     
-    int fieldPos = 20;
+    Expr rExpr;
     
-    if      ( instrFlags & IF_EQ )  setInstrField( instr, fieldPos, 2, 0 );
-    else if ( instrFlags & IF_LT )  setInstrField( instr, fieldPos, 2, 1 );
-    else if ( instrFlags & IF_NE )  setInstrField( instr, fieldPos, 2, 2 );
-    else if ( instrFlags & IF_LE )  setInstrField( instr, fieldPos, 2, 3 );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// Set the data width field for memory access type instructions.
-//
-//------------------------------------------------------------------------------------------------------------
-void setInstrDataWidth( uint32_t *instr, uint32_t instrFlags ) {
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    int fieldPos = 13;
-    
-    if      ( instrFlags & IF_B )   setInstrField( instr, fieldPos, 2, 0 );
-    else if ( instrFlags & IF_H )   setInstrField( instr, fieldPos, 2, 1 );
-    else if ( instrFlags & IF_W )   setInstrField( instr, fieldPos, 2, 2 );
-    else if ( instrFlags & IF_D )   setInstrField( instr, fieldPos, 2, 3 );
-}
-
-int getInstrDataWidth( uint32_t instr ) {
-    
-    return ((int) extractField( instr, 13, 2 ));
+    acceptComma( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1317,7 +1315,7 @@ int getInstrDataWidth( uint32_t instr ) {
 void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1346,29 +1344,29 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_XOR ) && ( instrFlags & ~IM_XOR_OP )) ||
         (( instrOpToken == TOK_OP_CMP ) && ( instrFlags & IM_CMP_OP ))) throw( ERR_INVALID_INSTR_OPT );
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
+    parseTargetReg( instr );
+  
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-        replaceInstrGrp( instr, OPG_MEM );
-        setInstrDataWidth( instr, instrFlags );
-        setInstrImm13( instr, rExpr.numVal );
+        if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
+        
+        replaceInstrGrpField( instr, OPG_MEM );
+        setInstrDwField( instr, instrFlags );
+        depositInstrImm13( instr, rExpr.numVal );
+        
         acceptLparen( );
         parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
         else throw( ERR_EXPECTED_GENERAL_REG );
-        
-        if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
         acceptRparen( );
-        checkEOS( );
+        acceptEOS( );
     }
     else if ( rExpr.typ == TYP_GREG ) {
         
         if ( isToken( TOK_COMMA )) {
+            
+            if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
             
             int tmpRegId = (int) rExpr.numVal;
             
@@ -1376,45 +1374,46 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_NUM ) {
                 
-                setInstrBit( instr, 19, true );
-                setInstrRegB( instr, tmpRegId );
-                setInstrImm15( instr, rExpr.numVal );
+                depositInstrBit( instr, 19, true );
+                depositInstrRegB( instr, tmpRegId );
+                depositInstrImm15( instr, rExpr.numVal );
             }
             else if ( rExpr.typ == TYP_GREG ) {
                 
-                setInstrRegB( instr, tmpRegId );
-                setInstrRegA( instr, rExpr.numVal );
+                depositInstrRegB( instr, tmpRegId );
+                depositInstrRegA( instr, rExpr.numVal );
             }
             else throw ( ERR_EXPECTED_GENERAL_REG );
-            
-            if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
-            checkEOS( );
+        
+            acceptEOS( );
         }
         else if ( isToken( TOK_LPAREN )) {
             
-            replaceInstrGrp( instr, OPG_MEM );
-            setInstrDataWidth( instr, instrFlags );
-            setInstrRegA( instr, rExpr.numVal );
+            replaceInstrGrpField( instr, OPG_MEM );
+            setInstrDwField( instr, instrFlags );
+            depositInstrRegA( instr, rExpr.numVal );
+            
+            nextToken( );
             parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
+            if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
             acceptRparen( );
-            checkEOS( );
+            acceptEOS( );
         }
         else throw ( ERR_EXPECTED_COMMA );
     }
     
     if ( instrOpToken == TOK_OP_AND ) {
         
-        if ( instrFlags & IF_C ) setInstrBit( instr, 20, true );
-        if ( instrFlags & IF_N ) setInstrBit( instr, 21, true );
+        if ( instrFlags & IF_C ) depositInstrBit( instr, 20, true );
+        if ( instrFlags & IF_N ) depositInstrBit( instr, 21, true );
     }
     else if (( instrOpToken == TOK_OP_OR ) || ( instrOpToken == TOK_OP_XOR )) {
         
-        if ( instrFlags & IF_N ) setInstrBit( instr, 21, true );
+        if ( instrFlags & IF_N ) depositInstrBit( instr, 21, true );
     }
     else if ( instrOpToken == TOK_OP_CMP ) {
         
-        instrSetCmpCode( instr, instrFlags );
+        setInstrCondField( instr, instrFlags );
     }
 }
 
@@ -1436,43 +1435,40 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     parseInstrOptions( &instrFlags, instrOpToken );
     if (( instrOpToken == TOK_OP_EXTR ) && ( instrFlags & ~IM_EXTR_OP )) throw( ERR_INVALID_INSTR_OPT );
     
+    parseTargetReg( instr );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    parseExpr( &rExpr );
-    
-    if      ( rExpr.typ == TYP_NUM )                             setInstrField( instr, 6, 6, rExpr.numVal );
-    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
+    if      ( rExpr.typ == TYP_NUM )                             depositInstrField( instr, 6, 6, rExpr.numVal );
+    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) depositInstrBit( instr, 13, true );
     else                                                         throw ( ERR_EXPECTED_NUMERIC );
     
     acceptComma( );
     parseExpr( &rExpr );
     
-    if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 0, 6, rExpr.numVal );
+    if ( rExpr.typ == TYP_NUM ) depositInstrField( instr, 0, 6, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
-    if ( instrFlags & IF_S ) setInstrBit( instr, 12, true );
+    if ( instrFlags & IF_S ) depositInstrBit( instr, 12, true );
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrDEP" parses the deposit instruction. The instruction has zwo basic formats. When the "I" option
 // is set, the value to deposti is an immediate value, else the data comes from a general register. When the
-// "SAR" is specified instead of a bit position, the "A" bit is encoded in the instruction.
+// "SAR" is specified instead of a bit position, the "A" bit is encoded in the instruction. When the value
+// to deposit is a numeric value, the "I" bit is set.
 //
-//      DEP [ ".“ Z/I ] <targetReg> "," <sourceReg> "," <pos> "," <len>"
-//      DEP [ ".“ Z/I ] <targetReg> "," <sourceReg> "," "SAR" "," <len>"
-//      DEP [ ".“ Z/I ] <targetReg> "," <val>,      "," <pos> "," <len>
-//      DEP [ ".“ Z/I ] <targetReg> "," <val>       "," "SAR" "," <len>
+//      DEP [ ".“ Z ] <targetReg> "," <sourceReg> "," <pos> "," <len>"
+//      DEP [ ".“ Z ] <targetReg> "," <sourceReg> "," "SAR" "," <len>"
+//      DEP [ ".“ Z ] <targetReg> "," <val>,      "," <pos> "," <len>
+//      DEP [ ".“ Z ] <targetReg> "," <val>       "," "SAR" "," <len>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1484,33 +1480,33 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     parseInstrOptions( &instrFlags, instrOpToken );
     if (( instrOpToken == TOK_OP_DEP ) && ( instrFlags & ~IM_DEP_OP )) throw( ERR_INVALID_INSTR_OPT );
     
-    if ( instrFlags & IF_Z ) setInstrBit( instr, 12, true );
+    if ( instrFlags & IF_Z ) depositInstrBit( instr, 12, true );
+    
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    if      ( rExpr.typ == TYP_GREG )   depositInstrRegB( instr, rExpr.numVal );
+    else if ( rExpr.typ == TYP_NUM )    {
+        
+        depositInstrField( instr, 15, 4, rExpr.numVal );
+        depositInstrBit( instr, 11, true );
+    }
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if      ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
-    else if ( rExpr.typ == TYP_NUM )    setInstrField( instr, 15, 4, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if      (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
-    else if ( rExpr.typ == TYP_NUM )                             setInstrField( instr, 6, 6, rExpr.numVal );
+    if      (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) depositInstrBit( instr, 13, true );
+    else if ( rExpr.typ == TYP_NUM )                             depositInstrField( instr, 6, 6, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) setInstrField( instr, 0, 6, rExpr.numVal );
+    if ( rExpr.typ == TYP_NUM ) depositInstrField( instr, 0, 6, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1525,30 +1521,26 @@ void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr  rExpr;
     
+    parseTargetReg( instr );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG )   depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG )   depositInstrRegA( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG )   setInstrRegA( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if      (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) setInstrBit( instr, 13, true );
-    else if ( rExpr.typ == TYP_NUM )                             setInstrField( instr, 6, 6, rExpr.numVal );
+    if      ( rExpr.typ == TYP_NUM )                             depositInstrField( instr, 6, 6, rExpr.numVal );
+    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) depositInstrBit( instr, 13, true );
     else throw ( ERR_EXPECTED_NUMERIC );
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1570,14 +1562,10 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHL2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw( ERR_INVALID_INSTR_OPT );
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG )   setInstrRegB( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG )   depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -1585,17 +1573,17 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        setInstrBit( instr, 13, true );
-        setInstrRegA( instr, rExpr.numVal );
+        depositInstrBit( instr, 13, true );
+        depositInstrRegA( instr, rExpr.numVal );
     }
     else if ( rExpr.typ == TYP_NUM ) {
         
-        setInstrBit( instr,14, true );
-        setInstrImm13( instr, rExpr.numVal );
+        depositInstrBit( instr,14, true );
+        depositInstrImm13( instr, rExpr.numVal );
     }
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1617,14 +1605,10 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHR2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHR3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw( ERR_INVALID_INSTR_OPT );
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -1632,30 +1616,18 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        setInstrBit( instr, 13, true );
-        setInstrRegA( instr, rExpr.numVal );
+        depositInstrBit( instr, 13, true );
+        depositInstrRegA( instr, rExpr.numVal );
     }
     else if ( rExpr.typ == TYP_NUM ) {
         
-        setInstrBit( instr,14, true );
-        setInstrImm13( instr, rExpr.numVal );
+        depositInstrBit( instr,14, true );
+        depositInstrImm13( instr, rExpr.numVal );
     }
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    checkEOS( );
+    acceptEOS( );
 }
-
-void parseTargetReg( uint32_t *instr ) {
-    
-    Expr rExpr;
-    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-}
-
 
 //------------------------------------------------------------------------------------------------------------
 // The IMM-OP instruction group deals with the loading of immediate subfield and the addition of the ADDIL
@@ -1676,17 +1648,13 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_LDI    ) && ( instrFlags & ~IM_LDI_OP  )) throw( ERR_INVALID_INSTR_OPT );
     if (( instrOpToken == TOK_OP_ADDIL  ) && ( instrFlags & ~IM_NIL     )) throw( ERR_INVALID_INSTR_OPT );
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    parseTargetReg( instr );
     
-    acceptComma( );
     parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) setInstrImm20U( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm20U( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1699,37 +1667,35 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
+    parseTargetReg( instr );
     parseExpr( &rExpr );
     
-    if ( rExpr.typ == TYP_NUM ) setInstrImm15( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm15( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_NUMERIC );
     
     acceptLparen( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) setInstrRegB( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
     else throw( ERR_EXPECTED_GENERAL_REG );
    
     acceptRparen( );
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseMemOp" parses the load and store instructions.
+// "parseMemOp" parses the load and store instruction family. The LD and ST family can have an option for
+// specifying the data width. The LDR and STC instruction do not have an option. However we set the dataWidth
+// field for them to "D".
 //
-//       LD     <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
-//       LD     <targetReg> "," [ <indexReg> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       ST     <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
-//       ST     <sourceReg> "," [ <indexReg> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D ] <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       LDR    <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
-//       STC    <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       LDR             <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       STC             <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
 //------------------------------------------------------------------------------------------------------------
 void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1743,31 +1709,22 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_LDR ) && ( instrFlags & ~IM_NIL   ))  ||
         (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw( ERR_INVALID_INSTR_OPT );
     
-    setInstrDataWidth( instr, instrFlags );
+    if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) instrFlags |= IF_D;
     
-    if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) {
-        
-        if ( getInstrDataWidth( *instr ) != 3 ) throw( ERR_INVALID_INSTR_OPT );
-    }
-     
+    setInstrDwField( instr, instrFlags );
+    
+    parseTargetReg( instr );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    acceptComma( );
-    parseExpr( &rExpr );
-    
     if ( rExpr.typ == TYP_NUM ) {
         
-        setInstrDataWidth( instr, instrFlags );
-        setInstrImm13( instr, rExpr.numVal );
+        setInstrDwField( instr, instrFlags );
+        depositInstrImm13( instr, rExpr.numVal );
         
         acceptLparen( );
-        
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
-        
         acceptRparen( );
     }
     else if ( rExpr.typ == TYP_GREG) {
@@ -1777,26 +1734,24 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
             throw( ERR_INVALID_INSTR_MODE );
         }
         
-        setInstrDataWidth( instr, instrFlags );
-        setInstrRegA( instr, rExpr.numVal );
+        setInstrDwField( instr, instrFlags );
+        depositInstrRegA( instr, rExpr.numVal );
         
         acceptLparen( );
-        
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
-        
         acceptRparen( );
     }
     else throw( ERR_EXPECTED_NUMERIC );
   
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseOpB" ...
+// "parseOpB" parses the branch instruction. The branch instruction may have the "gate" option.
 //
-//
+//      B [ .G ] <ofs> [ "," <Reg R> ]
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1808,24 +1763,26 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) throw( ERR_INVALID_INSTR_OPT );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) setInstrImm19( instr, rExpr.numVal );
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
     else throw( ERR_INVALID_NUM );
     
-    acceptComma( );
+    if ( isToken( TOK_COMMA )) {
+        
+        nextToken( );
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+    }
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-  // ???  if ( instrFlags & IF_GATE ) setInstrBit( instr, 19, true );
-    checkEOS( );
+    if ( instrFlags & IF_G ) depositInstrBit( instr, 19, true );
+    acceptEOS( );
     
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseOpBR" ...
+// "parseOpBR" is the IA-relative branch adding RegB to IA. Optional, we specify a return link register.
 //
-//      BR <regB> [ , <regR> ]
+//      BR <regB> [ "," <regR> ]
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1833,22 +1790,25 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
     Expr rExpr;
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    acceptComma( );
+    if ( isToken( TOK_COMMA )) {
+        
+        nextToken( );
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+    }
     
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseOpBV" ...
+// "parseOpBV" is the vectored branch. We add RegB and Regx, which form the target offset. Optionally, the
+// return link is returned.
 //
-//      BV <regB> [ , <regR> ]
+//      BV <regB>, <RegX> [ "," <regR> ]
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1856,24 +1816,33 @@ void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
     Expr rExpr;
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegA( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    checkEOS( );
+    if ( isToken( TOK_COMMA )) {
+        
+        nextToken( );
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+    }
+    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseOpBB" ...
+// "parseOpBB" is the branch on bit instruction.
 //
-//      BB <regB> "," <pos> "," <val>
-//      BB <regB> "," "SAR" "," <val>
+//      BB ".T/F" <regB> "," <pos>
+//      BB ".T/F" <regB> "," "SAR"
 //
+// ??? fix positions....
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1882,24 +1851,27 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseInstrOptions( &instrFlags, instrOpToken );
     if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) throw( ERR_INVALID_INSTR_OPT );
-  
+    
+    if ( instrFlags & IF_T ) depositInstrBit( instr, 19, true );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM )                                  depositInstrField( instr, 0, 6, rExpr.numVal );
+    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.numVal == 1 )) depositInstrBit( instr, 20, true );
+    else throw ( ERR_EXPECTED_NUMERIC );
+   
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseOpCBR" ...
+// "parseOpCBR" performa a copare and a branch based in the condition being true.
 //
-//
-//
+//      CBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1911,23 +1883,32 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw( ERR_INVALID_INSTR_OPT );
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
-    // ??? to do ...
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    checkEOS( );
+    acceptComma( );
     
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
+    else throw( ERR_EXPECTED_NUMERIC );
+    
+    setInstrCondField( instr, instrFlags );
+   
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrMBR" ...
+// "parseInstrMBR" move the siource reg to teh target reg and vranches on teh condition specified.
 //
+//      MBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
 //
-//
-//
+// ??? same conditions that CMP ?
 //------------------------------------------------------------------------------------------------------------
 void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1938,47 +1919,54 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw( ERR_INVALID_INSTR_OPT );
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
-    // ??? to do ...
+    parseExpr( &rExpr );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    checkEOS( );
+    acceptComma( );
     
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
+    else throw( ERR_EXPECTED_NUMERIC );
+    
+    setInstrCondField( instr, instrFlags );
+   
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrMxCR" ...
+// "parseInstrMxCR" copies a control register to a general register and vice versa.
 //
-//
-//
+//      MFCR <RegR> "," <Creg>
+//      MTCR <Creg> "," <RegB>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
-  
-    parseExpr( &rExpr );
-   
     
-    acceptComma( );
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_CREG ) depositInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG ); // fix ...
     
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrLDPA" ...
+// "parseInstrLDPA" returns the physical address of a virtual address. It is very similar to the memory type
+// instruction load and store, except it does just do address translation. If the page is not in main memory,
+// a zero is returned.
 //
-//
-//
-//
+//       LDPA  [.B/H/W/D ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       LDPA  [.B/H/W/D ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
+
 //------------------------------------------------------------------------------------------------------------
 void parseInstrLDPA( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1986,29 +1974,57 @@ void parseInstrLDPA( uint32_t *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags;
     
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_LDPA ) && ( instrFlags & ~IM_LDPA_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if ((( instrOpToken == TOK_OP_LD  ) && ( instrFlags & ~IM_LD_OP ))  ||
+        (( instrOpToken == TOK_OP_ST  ) && ( instrFlags & ~IM_ST_OP ))  ||
+        (( instrOpToken == TOK_OP_LDR ) && ( instrFlags & ~IM_NIL   ))  ||
+        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw( ERR_INVALID_INSTR_OPT );
     
-    setInstrDataWidth( instr, instrFlags );
+    if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) instrFlags |= IF_D;
+    
+    setInstrDwField( instr, instrFlags );
+    
+    parseTargetReg( instr );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
+        
+        setInstrDwField( instr, instrFlags );
+        depositInstrImm13( instr, rExpr.numVal );
+        
+        acceptLparen( );
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRparen( );
+    }
+    else if ( rExpr.typ == TYP_GREG) {
+        
+        if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) {
+         
+            throw( ERR_INVALID_INSTR_MODE );
+        }
+        
+        setInstrDwField( instr, instrFlags );
+        depositInstrRegA( instr, rExpr.numVal );
+        
+        acceptLparen( );
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRparen( );
+    }
+    else throw( ERR_EXPECTED_NUMERIC );
   
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrPRBx" ...
+// "parseInstrPRBx" probes a virtual address for access. The "P/U" indicate privileged and user mode access.
 //
+// ??? rethink this instruction ....
 //
-//
+//      PRB [ .P/U ] <RegR> "," <RegB> "," <RegA>
+//      PRB [ .P/U ] <RegR> "," <RegB> "," <val>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrPRBx( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2019,99 +2035,100 @@ void parseInstrPRBx( uint32_t *instr, uint32_t instrOpToken ) {
     parseInstrOptions( &instrFlags, instrOpToken );
     if ((( instrOpToken == TOK_OP_PRBR ) && ( instrFlags & ~IM_PRBx_OP )) ||
         (( instrOpToken == TOK_OP_PRBW ) && ( instrFlags & ~IM_PRBx_OP ))) throw( ERR_INVALID_INSTR_OPT );
-    
-    setInstrDataWidth( instr, instrFlags );
-  
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
 
+    parseTargetReg( instr );
+    
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
+    
     acceptComma( );
     
     parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG ) {
+        
+        depositInstrRegB( instr, rExpr.numVal );
+    }
+    else if ( rExpr.typ == TYP_NUM ) {
+        
+        depositInstrBit( instr, 14, true );
+        if ( rExpr.numVal != 0 ) depositInstrField( instr, 9, 4, 1 );
+    }
+    else throw ( ERR_INVALID_EXPR );
     
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrTlbOp" ...
+// "parseInstrTlbOp" insert or removs a translation in the TLB. RegB contains the virtual address. For TLB
+// inserts RegA contains the info on access rights and physical address. The result is in RegR.
 //
-//
-//
+//      ITLB <targetReg> "," <RegB> "," <RegA>
+// ^    PTLB <targetReg> "," <RegB>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
-    acceptComma( );
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    // ??? to do ...
+    if ( instrOpToken == TOK_OP_ITLB ) {
+        
+        acceptComma( );
+        
+        parseExpr( &rExpr );
+        if ( isTokenTyp( TYP_GREG )) depositInstrRegA( instr, rExpr.numVal );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
+    }
     
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrCacheOp" ...
+// "parseInstrCacheOp" assemble the cache flush and purge operation.
 //
-//
-//
+//      PCA <targetReg> "," <RegB>
+//      FCA <targetReg> "," <RegB>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
-    acceptComma( );
+    parseTargetReg( instr );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegB( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrSregOp" ...
+// "parseInstrSregOp" sets or clears status register bits. Under construction ...
 //
-//
-//
+//      RSM <RegR> "," <val>
+//      SSM <RegR> "," <val>
 //
 //------------------------------------------------------------------------------------------------------------
 void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
+    parseTargetReg( instr );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
-    acceptComma( );
+    if ( rExpr.typ == TYP_NUM ) {
+        
+    }
+    else throw ( ERR_EXPECTED_NUMERIC );
     
-    
-    // ??? to do ...
-    
-    checkEOS( );
-    
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -2123,46 +2140,55 @@ void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
     
-    checkEOS( );
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrDIAG" ...
+// "parseInstrDIAG" is the general purpose diagnotsic instruction. It accepts essemtially two registers and
+// returns a result in the target register.
 //
+//      DIAG <RegR> "," <val> "," <RegB> "," <RegA"
 //
-//
-//
+// ??? need a diag code field ?
 //------------------------------------------------------------------------------------------------------------
 void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
+    parseTargetReg( instr );
+    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
+    if ( rExpr.typ == TYP_NUM ) depositInstrImm9( instr , rExpr.numVal );
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
     acceptComma( );
     
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
     
-    // ??? to do ...
+    acceptComma( );
     
-    checkEOS( );
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, rExpr.numVal );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
     
+    acceptEOS( );
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseInstrTrapOp" ...
+// "parseInstrTrapOp" assmbles the trap operations.
 //
 //
 //
-//
+// ??? to be designed ...
 //------------------------------------------------------------------------------------------------------------
 void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) setInstrRegR( instr, rExpr.numVal );
+    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
 
     acceptComma( );
@@ -2170,7 +2196,7 @@ void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     // ??? to do ...
     
-    checkEOS( );
+    acceptEOS( );
     
 }
 
@@ -2279,6 +2305,16 @@ ErrId parseAsmLine( char *inputStr, uint32_t *instr ) {
         *instr = 0;
         return( errNum );
     }
+}
+
+ErrId getErrId( ) {
+    
+    return ( NO_ERR );
+}
+
+void ErrMsgStr( ErrId err, char *buf, int bufLen ) {
+    
+    
 }
 
 
