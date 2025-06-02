@@ -60,314 +60,54 @@ static inline uint32_t extractField( uint32_t arg, int bitpos, int len) {
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-static inline uint32_t extractSignedField( uint32_t arg, int bitpos, int len ) {
+static inline int extractSignedField( uint32_t arg, int bitpos, int len ) {
     
     uint32_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
+    if ( len < 32 )  return ( field << ( 32 - len )) >> ( 32- len );
     else             return ( field );
+}
+
+static inline int extractRegR( uint32_t instr ) {
     
+    return( extractField( instr, 22, 4 ));
 }
 
-static inline uint32_t depositField( uint32_t word, int bitpos, int len, T64Word value) {
+static inline int extractRegB( uint32_t instr ) {
     
-    uint32_t mask = (( 1U << len ) - 1 ) << bitpos;
-    return ( word & ~mask ) | (( value << bitpos ) & mask );
+    return( extractField( instr, 15, 4 ));
 }
 
-
-//------------------------------------------------------------------------------------------------------------
-//
-// ??? idea: sprintf the operanda. Perhaps we have a way to use few foramts for the operands...
-//------------------------------------------------------------------------------------------------------------
-int buildOperandStrALU( char *buf, uint32_t instr, int rdx ) {
- 
-    return ( 0 );
-}
-
-int buildOperandStrMEM( char *buf,uint32_t instr, int rdx ) {
- 
-    return ( 0 );
-}
-
-int buildOperandStrBR( char *buf, uint32_t instr, int rdx ) {
- 
-    return ( 0 );
-}
-
-int buildOperandStrSYS( char *buf, uint32_t instr, int rdx ) {
- 
-    return ( 0 );
-}
-
-
-int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
+static inline int extractRegA( uint32_t instr ) {
     
-    uint32_t opCodeGrp = extractField( instr, 30, 2 );
+    return( extractField( instr, 9, 4 ));
+}
+
+static inline int extractImm13( uint32_t instr ) {
     
-    switch ( opCodeGrp ) {
-            
-        case OPC_GRP_ALU: return( buildOperandStrALU( buf, instr, rdx ));
-        case OPC_GRP_MEM: return( buildOperandStrMEM( buf, instr, rdx ));
-        case OPC_GRP_BR:  return( buildOperandStrBR( buf, instr, rdx ));
-        case OPC_GRP_SYS: return( buildOperandStrSYS( buf, instr, rdx ));
-        default: return( 0 );
-    }
+    return( extractSignedField( instr, 0, 13 ));
+}
+
+static inline int extractImm15( uint32_t instr ) {
+    
+    return( extractSignedField( instr, 0, 15 ));
+}
+
+static inline int extractImm19( uint32_t instr ) {
+    
+    return( extractSignedField( instr, 0, 19 ));
+}
+
+static inline int extractImm20( uint32_t instr ) {
+    
+    return( extractField( instr, 0, 20 ));
 }
 
 //------------------------------------------------------------------------------------------------------------
 //
-// ??? idea: check the FLD bits and sprintf the final opcode. We also need to print the relevangt options.
-//------------------------------------------------------------------------------------------------------------
-int buildOpCodeStrALU( char *buf, uint32_t instr ) {
-    
-    uint32_t opCode = extractField( instr, 26, 4 );
-    
-    switch( opCode ) {
-            
-        case OPC_ADD: break;
-        case OPC_SUB: break;
-        case OPC_AND: break;
-        case OPC_OR: break;
-        case OPC_XOR: break;
-        case OPC_CMP: break;
-        case OPC_BITOP: break;
-        case OPC_SHAOP: break;
-        case OPC_IMMOP: break;
-        case OPC_LDO: break;
-        default: return ( 0 );
-    }
-    
-    return ( 0 );
-}
-
-int buildOpCodeStrMEM( char *buf,uint32_t instr ) {
-    
-    uint32_t opCode = extractField( instr, 26, 4 );
-    
-    switch( opCode ) {
-            
-        case OPC_ADD: break;
-        case OPC_SUB: break;
-        case OPC_AND: break;
-        case OPC_OR: break;
-        case OPC_XOR: break;
-        case OPC_CMP: break;
-        case OPC_LD  : break;
-        case OPC_ST      : break;
-        case OPC_LDR   : break;
-        case OPC_STC    : break;
-        default: return ( 0 );
-    }
-    
-    return ( 0 );
-}
-
-int buildOpCodeStrBR( char *buf, uint32_t instr ) {
- 
-    uint32_t opCode = extractField( instr, 26, 4 );
-    
-    switch( opCode ) {
-            
-        case OPC_B: break;
-        case OPC_BR: break;
-        case OPC_BB: break;
-        case OPC_BV: break;
-        case OPC_CBR: break;
-        case OPC_MBR: break;
-        default: return ( 0 );
-    }
-    
-    return ( 0 );
-}
-
-int buildOpCodeStrSYS( char *buf, uint32_t instr ) {
- 
-    uint32_t opCode = extractField( instr, 26, 4 );
-    
-    switch( opCode ) {
-         
-        case OPC_MR: break;
-        case OPC_LDPA: break;
-        case OPC_PRB: break;
-        case OPC_TLB: break;
-        case OPC_CA: break;
-        case OPC_MST: break;
-        case OPC_RFI  : break;
-        case OPC_TRAP      : break;
-        case OPC_DIAG   : break;
-        default: return ( 0 );
-    }
-    
-    return ( 0 );
-}
-
-int buildOpCodeStr( char *buf, uint32_t instr ) {
-    
-    uint32_t opCodeGrp = extractField( instr, 30, 2 );
-    
-    switch ( opCodeGrp ) {
-            
-        case OPC_GRP_ALU: return( buildOpCodeStrALU( buf, instr ));
-        case OPC_GRP_MEM: return( buildOpCodeStrMEM( buf, instr ));
-        case OPC_GRP_BR:  return( buildOpCodeStrBR( buf, instr ));
-        case OPC_GRP_SYS: return( buildOpCodeStrSYS( buf, instr ));
-        default: return( 0 );
-    }
-}
-
-} // namespace
-
-
-//------------------------------------------------------------------------------------------------------------
-// Format an instruction. An instruction has generally three parts. The opCode, the opCode options and the
-// operands. An instruction cna be formatted as a whole string, or as two groups with opcode and operands
-// separated. We need this split for the code window to show the date in two aligned fields.
-//
-//------------------------------------------------------------------------------------------------------------
-int getOpCodeFieldWidth( ) {
-    
-    return( 12 );
-}
-
-int getOperandsFieldWidth( ) {
-    
-    return( 16 );
-}
-
-int formatOpCode( char *buf, int bufLen, uint32_t instr ) {
-    
-    return ( buildOpCodeStr( buf, instr ));
-}
-
-int formatOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
-    
-    // ??? check buf len...
-    
-    return( buildOperandStr( buf, instr, rdx ));
-}
-
-int formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
-    
-    // ??? checkl buf len ...
-    
-    int cursor = 0;
-    
-    cursor += buildOpCodeStr( buf + cursor, instr );
-    cursor += buildOperandStr( buf + cursor, instr, rdx );
-    return( cursor );
-}
-
-
-
-#if 0
-/*
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-const struct {
-    
-    uint8_t op;
-    char    name[ 6 ];
-    
-} opCodeTab[ ] = {
-    
-    { .op = OP_ALU_NOP,     .name = "NOP"   },
-    { .op = OP_ALU_AND,     .name = "AND"   },
-    { .op = OP_ALU_OR,      .name = "OR"    },
-    { .op = OP_ALU_XOR,     .name = "XOR"   },
-    { .op = OP_ALU_ADD,     .name = "ADD"   },
-    { .op = OP_ALU_SUB,     .name = "SUB"   },
-    { .op = OP_ALU_CMP,     .name = "CMP"   },
-    { .op = OP_ALU_EXTR,    .name = "EXTR"  },
-    { .op = OP_ALU_DEP,     .name = "DEP"   },
-    { .op = OP_ALU_DSR,     .name = "DSR"   },
-    { .op = OP_ALU_CHK,     .name = "CHK"   },
-    
-    { .op = OP_MEM_LD,      .name = "LD"    },
-    { .op = OP_MEM_ST,      .name = "ST"    },
-    { .op = OP_MEM_LDR,     .name = "LDR"   },
-    { .op = OP_MEM_STC,     .name = "STC"   },
-    { .op = OP_MEM_AND,     .name = "AND"   },
-    { .op = OP_MEM_OR,      .name = "OR"    },
-    { .op = OP_MEM_XOR,     .name = "XOR"   },
-    { .op = OP_MEM_ADD,     .name = "ADD"   },
-    { .op = OP_MEM_SUB,     .name = "SUB"   },
-    { .op = OP_MEM_CMP,     .name = "CMP"   },
-    
-    { .op = OP_BR_LDI,      .name = "LDI"   },
-    { .op = OP_BR_ADDIL,    .name = "ADDIL" },
-    { .op = OP_BR_LDO,      .name = "LDO"   },
-    { .op = OP_BR_B,        .name = "B"     },
-    { .op = OP_BR_BR,       .name = "BR"    },
-    { .op = OP_BR_BV,       .name = "BV"    },
-    { .op = OP_BR_CBR,      .name = "CBR"   },
-    { .op = OP_BR_TBR,      .name = "TBR"   },
-    { .op = OP_BR_MBR,      .name = "MBR"   },
-    
-    { .op = OP_SYS_MR,      .name = "MR"    },
-    { .op = OP_SYS_MST,     .name = "MST"   },
-    { .op = OP_SYS_LPA,     .name = "LPA"   },
-    { .op = OP_SYS_PRB,     .name = "PRB"   },
-    { .op = OP_SYS_ITLB,    .name = "ITLB"  },
-    { .op = OP_SYS_DTLB,    .name = "DTLB"  },
-    { .op = OP_SYS_PCA,     .name = "PCA"   },
-    { .op = OP_SYS_DIAG,    .name = "DIAG"  },
-    { .op = OP_SYS_BRK,     .name = "BRK"   },
-    { .op = OP_SYS_RFI,     .name = "RFI"   }
-};
-*/
-
-//------------------------------------------------------------------------------------------------------------
-// Local namespace. These routines are not visible outside this source file.
-//
-//------------------------------------------------------------------------------------------------------------
-namespace {
-
-
-
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-const char *opCodeToStr( uint8_t opCode ) {
-    
-    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
-    
-    for ( int i = 0; i < entries; i++ ) {
-        
-        if ( opCodeTab[ i ].op == opCode ) return((char *) &opCodeTab[ i ].name );
-    }
-                                                  
-    return((char*) &"***" );
-}
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-uint8_t strToOpCode( char *opStr ) {
-    
-    int entries = sizeof( opCodeTab ) / sizeof( opCodeTab[0]);
-    
-    for ( int i = 0; i < entries; i++ ) {
-       
-        if ( strcmp( opStr, opCodeTab[ i ].name ) == 0 ) return ( opCodeTab[ i ].op );
-    }
-                                                  
-    return( 0 );
-}
-
-
-
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
 // Format hex with '_' every 4, 8, 12, or 16 digits, no "0x", left-padded with zeros if desired
+// Do we need it ?
+//------------------------------------------------------------------------------------------------------------
 void format_hex64( T64Word value, char *buf, int digits = 16 ) {
     
     if ( digits < 1 ) digits    = 1;
@@ -396,10 +136,11 @@ void format_hex64( T64Word value, char *buf, int digits = 16 ) {
 
 //------------------------------------------------------------------------------------------------------------
 //
-//
-//------------------------------------------------------------------------------------------------------------
 // Format decimal with '_' every 3 digits (from right to left)
+// Do we need it ?
+//------------------------------------------------------------------------------------------------------------
 void format_dec64( T64Word value, char *buf ) {
+    
     char temp[32]; // enough to hold 20-digit uint64 + separators
     int len = 0;
     
@@ -419,38 +160,8 @@ void format_dec64( T64Word value, char *buf ) {
     buf[len] = '\0';
 }
 
-
-
-
-
-// ??? see what we keep...
-
 //------------------------------------------------------------------------------------------------------------
-// Instruction decoding means to get to bits and bit fields. Here is a set of helper functions.
-//
-//------------------------------------------------------------------------------------------------------------
-bool extractBit( uint32_t arg, int pos ) {
-    
-    return( arg & ( 1U << ( 31 - ( pos % 32 ))));
-}
-
-uint32_t extractBitField( uint32_t arg, int pos, int len, bool sign = false ) {
-    
-    pos = pos % 32;
-    len = len % 32;
-
-    uint32_t tmpM = ( 1U << len ) - 1;
-    uint32_t tmpA = arg >> ( 31 - pos );
-    
-    if (( sign ) && ( getBit( arg, pos - len + 1 ))) {
-        
-        return( tmpA | ( ~ tmpM ));
-    }
-    else return( tmpA & tmpM );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// "printImmVal" display an immediate value in the selected radix. Octals and hex numbers are printed unsigned
+// "printImmVal" display an immediate value in the selected radix. Hex numbers are printed in unsigned
 // quantities, decimal numbers are interpreted as signed integers. Most often decimal notation is used to
 // specify offsets on indexed addressing modes. The function returns the characters written. The maximum
 // size of what is added is set to 16.
@@ -463,7 +174,6 @@ int printImmVal( char *buf, uint32_t val, int rdx = 16 ) {
     else {
        
         if      ( rdx == 10 )  return( snprintf( buf, 16, "%d", ((int) val )));
-        else if ( rdx == 8  )  return( snprintf( buf, 16, "%#0o", val ));
         else if ( rdx == 16 )  return( snprintf( buf, 16, "%#0x", val ));
         else                   return( snprintf( buf, 16, "**num***" ));
     }
@@ -476,629 +186,673 @@ int printImmVal( char *buf, uint32_t val, int rdx = 16 ) {
 // to 2.
 //
 //------------------------------------------------------------------------------------------------------------
-int formatComparisonCodes( char *buf, uint32_t cmpCode ) {
+int printCondField( char *buf, uint32_t cmpCode ) {
     
     switch( cmpCode ) {
             
-        case CC_EQ:  return( snprintf( buf, 4, "EQ" ));
-        case CC_LT:  return( snprintf( buf, 4, "LT" ));
-        case CC_NE:  return( snprintf( buf, 4, "NE" ));
-        case CC_LE:  return( snprintf( buf, 4, "LE" ));
-        default:     return( snprintf( buf, 4, "**" ));
+        case 0:  return( snprintf( buf, 4, "EQ" ));
+        case 1:  return( snprintf( buf, 4, "LT" ));
+        case 2:  return( snprintf( buf, 4, "NE" ));
+        case 3:  return( snprintf( buf, 4, "LE" ));
+        default: return( snprintf( buf, 4, "**" ));
     }
 }
 
 //------------------------------------------------------------------------------------------------------------
-// A little helper function to display the test condition in human readable form. The function returns the
-// characters written. The maximum size of what is added is set to 2.
+// A little helper function to display the DW field.
 //
 //------------------------------------------------------------------------------------------------------------
-int formatTestCodes( char *buf, uint32_t tstCode ) {
+int printDwField( char *buf, uint32_t dw ) {
     
-    switch( tstCode ) {
+    switch( dw ) {
             
-        case TC_EQ: return( snprintf( buf, 4, "EQ" ));
-        case TC_LT: return( snprintf( buf, 4, "LT" ));
-        case TC_GT: return( snprintf( buf, 4, "GT" ));
-        case TC_EV: return( snprintf( buf, 4, "EV" ));
-        case TC_NE: return( snprintf( buf, 4, "NE" ));
-        case TC_LE: return( snprintf( buf, 4, "LE" ));
-        case TC_GE: return( snprintf( buf, 4, "GE" ));
-        case TC_OD: return( snprintf( buf, 4, "OD" ));
-        default:    return( snprintf( buf, 4, "**" ));
+        case 0:  return( snprintf( buf, 4, "B" ));
+        case 1:  return( snprintf( buf, 4, "H" ));
+        case 2:  return( snprintf( buf, 4, "W" ));
+        case 3:  return( snprintf( buf, 4, "D" ));
+        default: return( snprintf( buf, 4, "*" ));
     }
 }
 
 //------------------------------------------------------------------------------------------------------------
-// There are instructions that use the operand argument format. This routine will format such an operand.
-// The function returns the characters written. The function returns the characters written.
+// Decode the ALU group opcodes and options.
 //
 //------------------------------------------------------------------------------------------------------------
-int formatOperandModeField( char *buf, uint32_t instr, int rdx = 10 ) {
+int buildOpCodeStrALU( char *buf, uint32_t instr ) {
     
-    uint32_t opMode = getBitField( instr, 13, 2 );
+    uint32_t opCode = extractField( instr, 26, 4 );
     
-    switch ( opMode ) {
+    switch( opCode ) {
             
-        case OP_MODE_IMM: {
+        case OPC_ADD: return( snprintf( buf, 16, "ADD" ));
+        case OPC_SUB: return( snprintf( buf, 16, "ADD" ));
             
-            return( printImmVal( buf, getBitField( instr, 31, 18, true ), 10 ));
+        case OPC_AND: {
             
-        } break;
-          
-        case OP_MODE_REG: {
+            int cursor = snprintf( buf, 16, "AND" );
+            if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
             
-            return( snprintf( buf, 16, "r%d, r%d", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 )));
+        case OPC_OR: {
             
-        } break;
+            int cursor = snprintf( buf, 16, "OR" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
             
-        case OP_MODE_REG_INDX: {
+        case OPC_XOR: {
+            
+            int cursor = snprintf( buf, 16, "XOR" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
+            
+        case OPC_CMP: {
+            
+            int cursor = snprintf( buf, 16, "CMP" );
+            printCondField( buf + cursor, extractField( instr, 20, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_BITOP: {
            
-            return( snprintf( buf, 16, "r%d(r%d)", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 )));
+            switch ( extractField( instr, 19, 3 )) {
+                    
+                case 0: {
+                    
+                    int cursor = snprintf( buf, 16, "EXTR" );
+                    if ( extractBit( instr, 12 )) cursor += snprintf( buf + cursor, 4, ".S" );
+                    return( cursor );
+                }
+                    
+                case 1: {
+                    
+                    int cursor = snprintf( buf, 16, "DEP" );
+                    if ( extractBit( instr, 12 )) cursor += snprintf( buf + cursor, 4, ".Z" );
+                    if ( extractBit( instr, 14 )) cursor += snprintf( buf + cursor, 4, ".I" );
+                    return( cursor );
+                }
+                    
+                case 2: return( snprintf( buf, 16, "DSR" ));
+                    
+                default: return ( 0 );
+            }
+        }
+        
+        case OPC_SHAOP: {
             
-        } break;
+            int cursor = 0;
             
-        case OP_MODE_INDX: {
+            switch ( extractField( instr, 19, 3 )) {
+                    
+                case 2: cursor += snprintf( buf + cursor, 8, "SHL1A" ); break;
+                case 4: cursor += snprintf( buf + cursor, 8, "SHL2A" ); break;
+                case 6: cursor += snprintf( buf + cursor, 8, "SHL3A" ); break;
+               
+                case 3: cursor += snprintf( buf + cursor, 8, "SHR1A" ); break;
+                case 5: cursor += snprintf( buf + cursor, 8, "SHR2A" ); break;
+                case 7: cursor += snprintf( buf + cursor, 8, "SHR3A" ); break;
+                default: ;
+            }
             
-            int len = printImmVal( buf, getBitField( instr, 27, 12, true ), 10 );
-            return ( snprintf( buf + len , 16, "(r%d)", getBitField( instr, 31, 4 )));
+            if ( extractBit( instr, 14 )) cursor += snprintf( buf + cursor, 4, ".I" );
             
-        } break;
+            return( 0 );
+        }
+        
+        case OPC_IMMOP: {
             
+            switch ( extractField( instr, 20, 2 )) {
+                    
+                case 1:  return ( snprintf( buf, 8, "LDI.L" ));
+                case 2:  return ( snprintf( buf, 8, "LDI.S" ));
+                case 3:  return ( snprintf( buf, 8, "LDI.U" ));
+                default: return ( 0 );
+            }
+            
+            return( 0 );
+        }
+            
+        case OPC_LDO: return( snprintf( buf, 8, "LDO" ));
+        
+        default: return ( 0 );
+    }
+    
+    return ( 0 );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Decode the ALU group instruction opererands.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOperandStrALU( char *buf, uint32_t instr, int rdx ) {
+    
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_ADD:
+        case OPC_SUB:
+        case OPC_AND:
+        case OPC_OR:
+        case OPC_XOR:
+        case OPC_CMP: {
+            
+            if ( extractBit( instr, 19 ))
+                return( snprintf( buf, 16, "R%d, R%d, %d",
+                                 extractRegR( instr ),
+                                 extractRegB( instr ),
+                                 extractImm15( instr )));
+            else
+                return( snprintf( buf, 16, "R%d,R%d, R%d",
+                                 extractRegR( instr ),
+                                 extractRegA( instr ),
+                                 extractRegB( instr )));
+        }
+            
+        case OPC_BITOP: {
+            
+            switch ( extractField( instr, 19, 3 )) {
+                    
+                case 0: { // EXTR
+                    
+                    if ( extractBit( instr, 13 ))
+                        return( snprintf( buf, 16, "R%d, R%d, SAR, %d",
+                                         extractRegR( instr ),
+                                         extractRegB( instr ),
+                                         extractField( instr, 0, 6 )));
+                    else
+                        return( snprintf( buf, 16, "R%d, R%d, %d, %d",
+                                         extractRegR( instr ),
+                                         extractRegB( instr ),
+                                         extractField( instr, 6, 6 ), extractField( instr, 0, 6 )));
+                }
+                    
+                case 1: { // DEP
+                    
+                    if ( extractBit( instr, 14 )) {
+                        
+                        if ( extractBit( instr, 13 ))
+                            return( snprintf( buf, 16, "R%d, %d, SAR, %d",
+                                             extractRegR( instr ),
+                                             extractField( instr, 15, 4 ),
+                                             extractField( instr, 0, 6 )));
+                        else
+                            return( snprintf( buf, 16, "R%d, R%d, %d, %d",
+                                             extractRegR( instr ),
+                                             extractRegB( instr ),
+                                             extractField( instr, 6, 6 ),
+                                             extractField( instr, 0, 6 )));
+                    }
+                    else {
+                        
+                        if ( extractBit( instr, 13 ))
+                            return( snprintf( buf, 16, "R%d, R%d, SAR, %d",
+                                             extractRegR( instr ),
+                                             extractRegB( instr ),
+                                             extractField( instr, 0, 6 )));
+                        else
+                            return( snprintf( buf, 16, "R%d, R%d, %d, %d",
+                                             extractRegR( instr ),
+                                             extractRegB( instr ),
+                                             extractField( instr, 6, 6 ),
+                                             extractField( instr, 0, 6 )));
+                    }
+                }
+                    
+                case 2: { // DSR
+                    
+                    if ( extractBit( instr, 13 ))
+                        return( snprintf( buf, 16, "R%d, R%d, R%d, SAR",
+                                         extractRegR( instr ),
+                                         extractRegB( instr ),
+                                         extractRegA( instr )));
+                    else
+                        return( snprintf( buf, 16, "R%d, R%d, R%d, %d",
+                                         extractRegR( instr ),
+                                         extractRegB( instr ),
+                                         extractRegA( instr ),
+                                         extractField( instr, 0, 6 )));
+                }
+        
+                default: return ( 0 );;
+            }
+        }
+            
+        case OPC_SHAOP: {
+            
+            if ( extractBit( instr, 19 ))
+                return( snprintf( buf, 16, "R%d, R%d, %d",
+                                 extractRegR( instr ),
+                                 extractRegB( instr ),
+                                 extractImm15( instr )));
+            else
+                return( snprintf( buf, 16, "R%d,R%d, R%d",
+                                 extractRegR( instr ),
+                                 extractRegA( instr ),
+                                 extractRegB( instr )));
+        }
+            
+        case OPC_IMMOP: {
+            
+            return( snprintf( buf, 16, "R%d, %d",
+                             extractRegR( instr ),
+                             extractImm20( instr )));
+        }
+            
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Decode the MEM group opcodes and options.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOpCodeStrMEM( char *buf,uint32_t instr ) {
+   
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_ADD: return( snprintf( buf, 16, "ADD" ));
+        case OPC_SUB: return( snprintf( buf, 16, "ADD" ));
+            
+        case OPC_AND: {
+            
+            int cursor = snprintf( buf, 16, "AND" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
+            
+        case OPC_OR: {
+            
+            int cursor = snprintf( buf, 16, "OR" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
+            
+        case OPC_XOR: {
+            
+            int cursor = snprintf( buf, 16, "XOR" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
+            if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
+            return( cursor );
+        }
+            
+        case OPC_CMP: {
+            
+            int cursor = snprintf( buf, 16, "CMP" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printCondField( buf + cursor, extractField( instr, 20, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_LD: {
+            
+            int cursor = snprintf( buf, 4, "LD" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_ST: {
+            
+            int cursor = snprintf( buf, 4, "ST" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_LDR: return( snprintf( buf, 8, "LDR" ));
+        case OPC_STC: return( snprintf( buf, 8, "STC" ));
+            
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Decode the MEM group instruction opererands.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOperandStrMEM( char *buf,uint32_t instr, int rdx ) {
+ 
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_ADD:
+        case OPC_SUB:
+        case OPC_AND:
+        case OPC_OR:
+        case OPC_XOR:
+        case OPC_CMP:
+        case OPC_LD:
+        case OPC_ST:
+        case OPC_LDR:
+        case OPC_STC: {
+            
+            if ( extractField( instr, 19, 3 ) == 0 )
+                return( snprintf( buf, 16, "R%d, %d(R%d)",
+                                 extractRegR( instr ), extractImm13( instr ), extractRegB( instr )));
+            else
+                return( snprintf( buf, 16, "R%d, R%d(R%d)",
+                                 extractRegR( instr ), extractRegA( instr ), extractRegB( instr )));
+        }
+            
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+//  Decode the BR group opcodes and options.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOpCodeStrBR( char *buf, uint32_t instr ) {
+ 
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_B: {
+            
+            int cursor = snprintf( buf, 4, "B" );
+            if ( extractBit( instr, 19 )) cursor += snprintf( buf + cursor, 4, ".G" );
+            return( cursor );
+        }
+            
+        case OPC_BR: return( snprintf( buf, 8, "BR" ));
+            
+        case OPC_BV: return( snprintf( buf, 8, "BV" ));
+            
+        case OPC_BB: {
+            
+            int cursor = snprintf( buf, 4, "BB" );
+            if ( extractBit( instr, 19 ))   cursor += snprintf( buf + cursor, 4, ".T" );
+            else                            cursor += snprintf( buf + cursor, 4, ".F" );
+            return( cursor );
+        }
+    
+        case OPC_CBR: {
+            
+            int cursor = snprintf( buf, 16, "CBR" );
+            cursor += printCondField( buf + cursor, extractField( instr, 20, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_MBR: {
+            
+            int cursor = snprintf( buf, 16, "MBR" );
+            cursor += printCondField( buf + cursor, extractField( instr, 20, 2 ));
+            return( cursor );
+        }
+            
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Decode the BR group instruction opererands.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOperandStrBR( char *buf, uint32_t instr, int rdx ) {
+ 
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_B: {
+            
+            int cursor = snprintf( buf, 16, ",%d", extractImm19( instr ));
+            
+            if ( extractField( instr, 26, 4 ) != 0 )
+                cursor += snprintf( buf + cursor, 8, ", R%d", extractRegR( instr ));
+            return( cursor );
+        }
+            
+        case OPC_BR: {
+            
+            int cursor = snprintf( buf, 16, "R%d", extractRegB( instr ));
+            
+            if ( extractField( instr, 26, 4 ) != 0 )
+                cursor += snprintf( buf + cursor, 8, ", R%d", extractRegR( instr ));
+            return( cursor );
+        }
+            
+        case OPC_BV: {
+            
+            int cursor = snprintf( buf, 16, "R%d, R%d",
+                                  extractRegB( instr ),
+                                  extractRegA( instr ));
+            
+            if ( extractField( instr, 26, 4 ) != 0 )
+                cursor += snprintf( buf + cursor, 8, ", R%d", extractRegR( instr ));
+            return( cursor );
+        }
+            
+        case OPC_BB: {
+            
+            int cursor = snprintf( buf, 16, "R%d", extractRegR( instr ));
+            
+            if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 8, ", SAR" );
+            else  cursor += snprintf( buf + cursor, 8, ", %d", extractField( instr, 13, 6 ));
+            
+            cursor += snprintf( buf + cursor, 16, ", %d", extractImm13( instr ));
+            return( cursor );
+        }
+            
+        case OPC_CBR:
+        case OPC_MBR:  {
+            
+            int cursor = snprintf( buf, 16, "R%d, R%d",
+                                  extractRegR( instr ),
+                                  extractRegB( instr ));
+            cursor += snprintf( buf + cursor, 16, ", %d", extractImm15( instr ));
+            return( cursor );
+        }
+        
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+//  Decode the SYS group opcodes and options.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOpCodeStrSYS( char *buf, uint32_t instr ) {
+ 
+    switch ( extractField( instr, 26, 4 )) {
+         
+        case OPC_MR: {
+            
+            if ( extractField( instr, 19, 3 ) == 0 ) return( snprintf( buf, 8, "MFCR" ));
+            else                                     return( snprintf( buf, 8, "MTCR" ));
+        }
+            
+        case OPC_LDPA: {
+            
+            int cursor = snprintf( buf, 4, "LDPA" );
+            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            return( cursor );
+        }
+            
+        case OPC_PRB: {
+            
+            int cursor = snprintf( buf, 4, "PRB" );
+            if ( extractBit( instr, 19 ))   cursor += snprintf( buf + cursor, 4, ".P" );
+            else                            cursor += snprintf( buf + cursor, 4, ".U" );
+            return( cursor );
+        }
+            
+        case OPC_TLB: {
+            
+            if      ( extractField( instr, 19, 3 ) == 0 ) return( snprintf( buf, 8, "ITLB" ));
+            else if ( extractField( instr, 19, 3 ) == 1 ) return( snprintf( buf, 8, "PTLB" ));
+            else return( snprintf( buf, 8, "****" ));
+        }
+            
+        case OPC_CA: {
+            
+            if      ( extractField( instr, 19, 3 ) == 0 ) return( snprintf( buf, 8, "PCA" ));
+            else if ( extractField( instr, 19, 3 ) == 1 ) return( snprintf( buf, 8, "FCA" ));
+            else return( snprintf( buf, 8, "***" ));
+        }
+            
+        case OPC_MST: {
+            
+            if      ( extractField( instr, 19, 3 ) == 0 ) return( snprintf( buf, 8, "RSM" ));
+            else if ( extractField( instr, 19, 3 ) == 1 ) return( snprintf( buf, 8, "SSM" ));
+            else return( snprintf( buf, 8, "***" ));
+        }
+            
+        case OPC_RFI:   return( snprintf( buf, 8, "RFI" ));
+            
+        case OPC_TRAP:  return( 0 );  // ??? to do ...
+            
+        case OPC_DIAG:  return( snprintf( buf, 8, "DIAG" ));
+            
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Decode the SYS group instruction opererands.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOperandStrSYS( char *buf, uint32_t instr, int rdx ) {
+ 
+    switch ( extractField( instr, 26, 4 )) {
+            
+        case OPC_MR: return( snprintf( buf, 16, "R%d, C%d", extractRegR( instr ), extractRegB( instr )));
+            
+        case OPC_LDPA: {
+            
+            if ( extractField( instr, 19, 3 ) == 0 )
+                return( snprintf( buf, 16, "R%d, %d(R%d)",
+                                 extractRegR( instr ), extractImm13( instr ), extractRegB( instr )));
+            else
+                return( snprintf( buf, 16, "R%d, R%d(R%d)",
+                                 extractRegR( instr ), extractRegA( instr ), extractRegB( instr )));
+        }
+            
+        case OPC_PRB: {
+            
+            if ( extractBit( instr, 14 ))
+                return ( snprintf( buf, 16, "R%d, R%d",
+                                  extractRegR( instr ),
+                                  extractRegB( instr )));
+            else
+                return ( snprintf( buf, 16, "R%d, R%d, R%d",
+                                  extractRegR( instr ),
+                                  extractRegB( instr ),
+                                  extractRegA( instr )));
+            
+        }
+            
+        case OPC_TLB: {
+            
+            return ( snprintf( buf, 16, "R%d, R%d, R%d",
+                                extractRegR( instr ),
+                                extractRegB( instr ),
+                                extractRegA( instr )));
+        }
+            
+        case OPC_CA: {
+            
+            return ( snprintf( buf, 16, "R%d, R%d",
+                                extractRegR( instr ),
+                                extractRegB( instr )));
+        }
+            
+        case OPC_MST: {
+            
+            return ( snprintf( buf, 16, "R%d",
+                                extractRegR( instr )
+                                ));
+        }
+            
+        case OPC_RFI:   return( 0 );
+            
+        case OPC_TRAP:  return( 0 );  // ??? to do ...
+            
+        case OPC_DIAG:  {
+            
+            return ( snprintf( buf, 16, "R%d, R%d, R%d",
+                                extractRegR( instr ),
+                                extractRegB( instr ),
+                                extractRegA( instr )));
+        }
+        
+        default: return ( 0 );
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Build the opcode and options string. This routine selects the instruction group handler.
+//
+//------------------------------------------------------------------------------------------------------------
+int buildOpCodeStr( char *buf, uint32_t instr ) {
+   
+    switch ( extractField( instr, 30, 2 )) {
+            
+        case OPC_GRP_ALU: return( buildOpCodeStrALU( buf, instr ));
+        case OPC_GRP_MEM: return( buildOpCodeStrMEM( buf, instr ));
+        case OPC_GRP_BR:  return( buildOpCodeStrBR( buf, instr ));
+        case OPC_GRP_SYS: return( buildOpCodeStrSYS( buf, instr ));
         default: return( 0 );
     }
 }
 
 //------------------------------------------------------------------------------------------------------------
-// Each instruction has an opCode. For most of the instructions, the mnemonic is just a simple mapping to the
-// name stored in the opCode table. However, for some instructions we need to look at more options in the
-// instruction word to come up with the mnemonic. Currently we append to the opCode that allow for a word
-// length to append a character to indicate byte, half-word or word access.
-//
-// There are also instructions have the same opCode but result in a different mnemonic. For example the LD
-// instruction will decode to four different mnemonics. The function returns the characters written.
+// Build the operand string. This routine selects the instruction group handler.
 //
 //------------------------------------------------------------------------------------------------------------
-int formatOpCode( char *buf, uint32_t instr ) {
+int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
     
-    uint32_t opCode = getBitField( instr, 5, 6 );
-    int     cursor  = 0;
-    
-    if ( opCodeTab[ opCode ].flags & OP_MODE_INSTR ) {
-        
-        cursor += snprintf( buf + cursor, 16, "%s", opCodeTab[ opCode ].mnemonic );
-        
-        if (( getBitField( instr, 13, 2 ) == 2 ) || ( getBitField( instr, 13, 2 ) == 3 )) {
+    switch ( extractField( instr, 30, 2 )) {
             
-            switch ( getBitField( instr, 15, 2 )) {
-                    
-                case 0:  cursor += snprintf( buf + cursor, 16, "B" ); break;
-                case 1:  cursor += snprintf( buf + cursor, 16, "H" ); break;
-                case 2:  break;
-                default: cursor += snprintf( buf + cursor, 16, "**dw**" );
-            }
-        }
+        case OPC_GRP_ALU: return( buildOperandStrALU( buf, instr, rdx ));
+        case OPC_GRP_MEM: return( buildOperandStrMEM( buf, instr, rdx ));
+        case OPC_GRP_BR:  return( buildOperandStrBR( buf, instr, rdx ));
+        case OPC_GRP_SYS: return( buildOperandStrSYS( buf, instr, rdx ));
+        default: return( 0 );
     }
-    else {
-        
-        switch ( opCode ) {
-                
-            case OP_LD: 
-            case OP_ST: {
-                
-                cursor += snprintf( buf + cursor, 16, "%s", opCodeTab[ opCode ].mnemonic );
-                
-                switch ( getBitField( instr, 15, 2 )) {
-                        
-                    case 0:  cursor += snprintf( buf + cursor, 16, "B" ); break;
-                    case 1:  cursor += snprintf( buf + cursor, 16, "H" ); break;
-                    case 2:  break;
-                    default: cursor += snprintf( buf + cursor, 16, "**dw**" );
-                }
-                
-            } break;
-            
-            default: cursor += snprintf( buf + cursor, 16, "%s", opCodeTab[ opCode ].mnemonic );
-        }
-    }
-    
-    return( cursor );
 }
 
+} // namespace
+
+
 //------------------------------------------------------------------------------------------------------------
-// Some instructions have a set of further qualifiers. They are listed after a "." and are single characters.
-// If there is no option in a given set is set or it is the common case value, nothing is printed. The
-// function returns the characters written.
+// Format an instruction. An instruction has generally three parts. The opCode, the opCode options and the
+// operands. An instruction cna be formatted as a whole string, or as two groups with opcode and operands
+// separated. We need this split for the code window to show the date in two aligned fields.
 //
 //------------------------------------------------------------------------------------------------------------
-int formatOpCodeOptions( char *buf, uint32_t instr ) {
+int getOpCodeFieldWidth( ) {
     
-    uint32_t    opCode = getBitField( instr, 5, 6 );
-    int         cursor = 0;
-    
-    switch ( opCode ) {
-            
-        case OP_LD:     
-        case OP_ST:
-        case OP_LDA:    
-        case OP_STA: {
-            
-            if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, ".M" );
-            
-        } break;
-            
-        case OP_ADD:    
-        case OP_ADC:
-        case OP_SUB:    
-        case OP_SBC: {
-            
-            if ( getBitField( instr, 11, 2 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "L" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "O" );
-            }
-            
-        } break;
-            
-        case OP_AND:
-        case OP_OR: {
-            
-            if ( getBitField( instr, 11, 2 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "N" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "C" );
-            }
-            
-        } break;
-        
-        case OP_XOR: {
-            
-            if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, ".N" );
-            
-        } break;
-            
-        case OP_CMP: 
-        case OP_CMPU: {
-            
-            cursor += snprintf( buf + cursor, 4, "." );
-            cursor += formatComparisonCodes( buf + cursor, getBitField( instr, 11, 2 ));
-            
-        } break;
-            
-        case OP_EXTR: {
-            
-            if ( getBitField( instr, 11, 2 )) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "S" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "A" );
-            }
-            
-        } break;
-            
-        case OP_DEP: {
-            
-            if ( getBitField( instr, 12, 3 )) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "Z" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "A" );
-                if ( getBit( instr, 12 )) cursor += snprintf( buf + cursor, 4, "I" );
-            }
-            
-        } break;
-            
-        case OP_DSR: {
-            
-            if ( getBit( instr, 11 )) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "A" );
-            }
-            
-        } break;
-            
-        case OP_SHLA: {
-            
-            if ( getBitField( instr, 12, 3 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 ))   cursor += snprintf( buf + cursor, 4, "L" );
-                if ( getBit( instr, 11 ))   cursor += snprintf( buf + cursor, 4, "O" );
-            }
-            
-        } break;
-            
-        case OP_CMR: {
-            
-            cursor += snprintf( buf + cursor, 4, "." );
-            cursor += formatTestCodes( buf + cursor, getBitField( instr, 13, 4 ));
-            
-        } break;
-            
-        case OP_CBR: 
-        case OP_CBRU: {
-            
-            cursor += snprintf( buf + cursor, 4, "." );
-            cursor += formatComparisonCodes( buf + cursor, getBitField( instr, 7, 2 ));
-            
-        } break;
-            
-        case OP_MST: {
-            
-            switch ( getBitField( instr, 11, 2 )) {
-                    
-                case 0:                                                    break;
-                case 1:     cursor += snprintf( buf + cursor, 4, ".S" );   break;
-                case 2:     cursor += snprintf( buf + cursor, 4, ".C" );   break;
-                default:    cursor += snprintf( buf + cursor, 4, ".***" ); break;
-            }
-            
-        } break;
-            
-        case OP_PRB: {
-            
-            if (( getBit( instr, 10 ) || getBit( instr, 11 ))) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "W" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "I" );
-            }
-           
-        } break;
-            
-        case OP_ITLB: {
-            
-            if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, ".T" );
-           
-        } break;
-            
-        case OP_PTLB: {
-            
-            cursor += snprintf( buf + cursor, 4, "." );
-            if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "T" );
-            if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "M" );
-          
-        } break;
-            
-        case OP_PCA: {
-            
-            if (( getBit( instr, 10 ) || getBit( instr, 11 ))) {
-                
-                cursor += snprintf( buf + cursor, 4, "." );
-                if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 4, "T" );
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 4, "M" );
-                if ( getBit( instr, 14 )) cursor += snprintf( buf + cursor, 4, "F" );
-            }
-            
-        } break;
-    }
-    
-    cursor += snprintf( buf + cursor, 4, " " );
-    return ( cursor );
+    return( 12 );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// This routine display the instruction target. Most of the time it is a general register. For the STORE
-// type instructions the target address is decoded and printed. Finally there are the MTR instructions which
-// which will use a segment or control register as the target. There is one further exception. The BLE
-// instruction will produce a register value, the return link stored in R0. This is however not shown in the
-// disassembly printout. The function returns the characters written.
-//
-//------------------------------------------------------------------------------------------------------------
-int formatTarget( char *buf, uint32_t instr, int rdx = 10 ) {
+int getOperandsFieldWidth( ) {
     
-    uint32_t    opCode = getBitField( instr, 5, 6 );
-    int         cursor = 0;
-    
-    if (( opCodeTab[ opCode ].flags & REG_R_INSTR ) && ( ! ( opCodeTab[ opCode ].flags & BRANCH_INSTR ))) {
-        
-        cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 9, 4 ));
-    }
-    else if ( opCodeTab[ opCode ].flags & STORE_INSTR ) {
-        
-        cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 9, 4 ));
-    }
-    else if ( opCode == OP_MR ) {
-        
-        if ( getBit( instr, 10 )) {
-            
-            if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 8, "c%d", getBitField( instr, 31, 5 ));
-            else cursor += snprintf( buf + cursor, 8, "s%d", getBitField( instr, 31, 4 ));
-        }
-        else cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 9, 4 ));
-    }
-    
-    return( cursor );
+    return( 16 );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// Instruction have operands. For most of the instructions this is the operand field with the defined
-// addressing modes. For others it is highly instruction specific. The operand routine also has a parameter
-// to specify in what radix a value is shown. Address offsets are however always printed in decimal. The
-// function returns the characters written.
-//
-//------------------------------------------------------------------------------------------------------------
-int formatOperands( char *buf, uint32_t instr, int rdx = 10 ) {
+int formatOpCode( char *buf, int bufLen, uint32_t instr ) {
     
-    uint32_t    opCode = getBitField( instr, 5, 6 );
-    int         cursor = 0;
-    
-    switch ( opCode ) {
-            
-        case OP_ADD:    case OP_ADC:    case OP_SUB:    case OP_SBC:    case OP_CMP:
-        case OP_CMPU:   case OP_AND:    case OP_OR:     case OP_XOR: {
-            
-            cursor += snprintf( buf + cursor, 4, ", " );
-            cursor += formatOperandModeField( buf + cursor, instr, rdx );
-            
-        } break;
-            
-        case OP_EXTR: {
-            
-            cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 31, 4 ));
-            
-            if ( ! getBit( instr, 11 )) {
-                
-                cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 27, 5 ));
-                cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 21, 5 ));
-                
-            } else cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 21, 5 ));
-            
-        } break;
-            
-        case OP_DEP: {
-            
-            if ( getBit( instr, 12 ))   cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 31, 4 ));
-            else                        cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 31, 4 ));
-            
-            if ( ! getBit( instr, 11 )) {
-                
-                cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 27, 5 ));
-                cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 21, 5 ));
-                
-            } else cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 21, 5 ));
-            
-        } break;
-            
-        case OP_DSR: {
-            
-            cursor += snprintf( buf + cursor, 16, ", r%d, r%d", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            if ( ! getBit( instr, 11 )) cursor += snprintf( buf + cursor, 8, ", %d", getBitField( instr, 21, 5 ));
-            
-        } break;
-            
-        case OP_DS: {
-            
-            cursor += snprintf( buf + cursor, 16, ", r%d, r%d", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_LSID: {
-            
-            cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_CMR: {
-            
-            cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 27, 4 ));
-            cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_DIAG: {
-            
-            cursor += snprintf( buf + cursor, 32, "r%d, r%d, r%d, %d",
-                                getBitField( instr, 9, 4  ),
-                                getBitField( instr, 27, 4 ),
-                                getBitField( instr, 31, 4 ),
-                                getBitField( instr, 13, 4 ));
-        } break;
-            
-        case OP_LD: case OP_ST: case OP_LDR: case OP_STC: {
-            
-            if ( getBit( instr, 10 )) {
-                
-                if ( getBitField( instr, 13, 2 ) == 0 ) {
-                    
-                    cursor += snprintf( buf + cursor, 16, ", r%d(r%d)", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-                }
-                else {
-                    
-                    cursor += snprintf( buf + cursor, 16, ", r%d(s%d, r%d)",
-                                        getBitField( instr, 27, 4 ),
-                                        getBitField( instr, 13, 2 ),
-                                        getBitField( instr, 31, 4 ));
-                }
-            }
-            else {
-                
-                cursor += snprintf( buf + cursor, 4, ", " );
-                cursor += printImmVal( buf + cursor, getBitField( instr, 27, 12, true ), 10 );
-               
-                if ( getBitField( instr, 13, 2 ) == 0 ) {
-                    
-                    cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-                }
-                else {
-                    
-                    cursor += snprintf( buf + cursor, 16, "(s%d, r%d)", getBitField( instr, 13, 2 ), getBitField( instr, 31, 4 ));
-                }
-            }
-        
-        } break;
-            
-        case OP_LDA: case OP_STA: {
-            
-            if ( getBit( instr, 10 )) {
-                
-                cursor += snprintf( buf + cursor, 16, ", r%d(r%d)", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            }
-            else {
-                
-                cursor += snprintf( buf + cursor, 4, ", " );
-                cursor += printImmVal( buf + cursor, getBitField( instr, 27, 12, true ), 10 );
-                cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-            }
-        
-        } break;
-            
-        case OP_SHLA: {
-            
-            cursor += snprintf( buf + cursor, 16, ", r%d, %d", getBitField( instr, 27, 4 ),  getBitField( instr, 31, 4 ));
-            
-            if ( getBitField( instr, 21, 2 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", %d",  getBitField( instr, 21, 2 ));
-            
-        } break;
-            
-        case OP_LDIL:
-        case OP_ADDIL: {
-            
-            cursor += snprintf( buf + cursor, 4, ", " );
-            cursor += printImmVal( buf + cursor, getBitField( instr, 31, 22 ), rdx );
-            
-        } break;
-            
-        case OP_LDO: {
-            
-            cursor += snprintf( buf + cursor, 4, ", " );
-            cursor += printImmVal( buf + cursor, getBitField( instr, 27, 18, true ), 10 );
-            cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_B: 
-        case OP_GATE: {
-            
-            cursor += printImmVal( buf + cursor, getBitField( instr, 31, 22, true ) << 2 , 10 );
-                                  
-            if ( getBitField( instr, 9, 4 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-        
-        } break;
-            
-        case OP_BR: {
-           
-            cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-            if ( getBitField( instr, 9, 4 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-            
-        } break;
-            
-        case OP_BV: {
-           
-            cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-            if ( getBitField( instr, 9, 4 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-            
-        } break;
-            
-        case OP_BE: {
-            
-            cursor += printImmVal( buf + cursor, getBitField( instr, 23, 14, true ) << 2, 10 );
-            cursor += snprintf( buf + cursor, 16, "(s%d,r%d)", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            if ( getBitField( instr, 9, 4 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-            
-        } break;
-            
-        case OP_BVE: {
-            
-            if ( getBitField( instr, 27,4 )) cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 27,4 ));
-            cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31,4 ));
-            if ( getBitField( instr, 9, 4 ) > 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-            
-        } break;
-            
-        case OP_CBR: 
-        case OP_CBRU: {
-            
-            cursor += snprintf( buf + cursor, 16, "r%d, r%d, ", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            
-            cursor += printImmVal( buf + cursor, getBitField( instr, 23, 16, true ) << 2, 10 );
-            
-        } break;
-            
-        case OP_MR: {
-            
-            if ( getBit( instr, 10 )) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 9, 4 ));
-            else {
-                
-                if ( getBit( instr, 11 )) cursor += snprintf( buf + cursor, 8, ", c%d", getBitField( instr, 31, 5 ));
-                else cursor += snprintf( buf + cursor, 8, ", s%d", getBitField( instr, 31, 3 ));
-            }
-            
-        } break;
-            
-        case OP_MST: {
-            
-            cursor += snprintf( buf + cursor, 4, "," );
-            switch( getBitField( instr, 11, 2 )) {
-                    
-                case 0:  cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 31, 4 ));  break;
-                case 1:
-                case 2:  cursor += snprintf( buf + cursor, 8, "0x%x", getBitField( instr, 31, 6 )); break;
-                default: cursor += snprintf( buf + cursor, 4, "***" );
-            }
-            
-        } break;
-            
-        case OP_PRB: {
-            
-            if ( getBitField( instr, 13, 2 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 16, ", (s%d, r%d)", getBitField(instr, 13, 2 ), getBitField( instr, 31, 4 ));
-            }
-            else cursor += snprintf( buf + cursor, 8, ", (r%d)", getBitField( instr, 31, 4 ));
-            
-            if ( getBit( instr, 11 ))   cursor += snprintf( buf + cursor, 8, ", %d", getBit( instr, 27 ));
-            else                        cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 27, 4 ));
-            
-        } break;
-        
-        case OP_LDPA: {
-            
-            if ( getBitField( instr, 27, 4 ) != 0 ) cursor += snprintf( buf + cursor, 8, ", r%d", getBitField( instr, 27, 4 ));
-            
-            if ( getBitField( instr, 13, 2 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 16, "(s%d, r%d)", getBitField( instr, 13, 2 ), getBitField( instr, 31, 4 ));
-            }
-            else cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-                                                          
-        } break;
-            
-        case OP_ITLB: {
-            
-            cursor += snprintf( buf + cursor, 8, "r%d, ", getBitField( instr, 9, 4 ));
-            cursor += snprintf( buf + cursor, 16, "(s%d,r%d)", getBitField( instr, 27, 4 ), getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_PTLB:
-        case OP_PCA:{
-            
-            if ( getBitField( instr, 27, 4 ) != 0 ) cursor += snprintf( buf + cursor, 8, "r%d", getBitField( instr, 27, 4 ));
-            
-            if ( getBitField( instr, 13, 2 ) > 0 ) {
-                
-                cursor += snprintf( buf + cursor, 16, "(s%d, r%d)", getBitField(instr, 13, 2 ), getBitField( instr, 31, 4 ));
-            }
-            else cursor += snprintf( buf + cursor, 8, "(r%d)", getBitField( instr, 31, 4 ));
-            
-        } break;
-            
-        case OP_BRK: {
-            
-            cursor += snprintf( buf + cursor, 16, "%d, %d", getBitField( instr, 9, 4 ), getBitField( instr, 31, 16 ));
-           
-        } break;
-    }
-    
-    return( cursor );
+    if ( bufLen < getOpCodeFieldWidth( )) return ( buildOpCodeStr( buf, instr ));
+    else                                  return( -1 );
 }
 
-}; // namespace
+int formatOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
+    
+    if ( bufLen < getOperandsFieldWidth( )) return( buildOperandStr( buf, instr, rdx ));
+    else                                    return( -1 );
+}
 
-#endif
-
-
+int formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
+    
+    if ( bufLen < ( getOpCodeFieldWidth( ) + 1 + getOperandsFieldWidth( ))) {
+      
+        int cursor = 0;
+        cursor += buildOpCodeStr( buf + cursor, instr );
+        cursor += snprintf( buf +cursor, 4, " " );
+        cursor += buildOperandStr( buf + cursor, instr, rdx );
+        return( cursor );
+    }
+    else return( -1 );
+}
