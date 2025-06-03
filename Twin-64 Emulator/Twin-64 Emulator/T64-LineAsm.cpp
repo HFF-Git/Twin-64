@@ -156,8 +156,7 @@ enum TokId : uint16_t {
     TOK_OP_ITLB             = 361,      TOK_OP_PTLB             = 362,
     TOK_OP_PCA              = 363,      TOK_OP_FCA              = 364,
     
-    TOK_OP_RFI              = 371,      TOK_OP_DIAG             = 372,
-    TOK_OP_BRK              = 373,      TOK_OP_CHK              = 374,
+    TOK_OP_RFI              = 371,      TOK_OP_DIAG             = 372,      TOK_OP_TRAP             = 373,
     
     //--------------------------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -407,9 +406,8 @@ const Token asmTokTab[ ] = {
     { .name = "RSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
     { .name = "SSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
     
-    { .name = "CHK",   .typ = TYP_OP_CODE, .tid = TOK_OP_CHK,   .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
-    { .name = "BRK",   .typ = TYP_OP_CODE, .tid = TOK_OP_BRK,   .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
-    
+    { .name = "TRAP",  .typ = TYP_OP_CODE, .tid = TOK_OP_TRAP,  .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
+   
     { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
     { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
@@ -2276,8 +2274,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                 
             case TOK_OP_DIAG:   parseInstrDIAG( instr, instrOpToken );          break;
                 
-            case TOK_OP_BRK:
-            case TOK_OP_CHK:  parseInstrTrapOp( instr, instrOpToken );          break;
+            case TOK_OP_TRAP:   parseInstrTrapOp( instr, instrOpToken );          break;
                 
             default: throw ( ERR_INVALID_OP_CODE );
         }
