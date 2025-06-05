@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Sketch
+// Twin-64 - A 64-bit CPU - Physical memory
 //
 //------------------------------------------------------------------------------------------------------------
 // This module contains all of the mothods for the different windows that the simlulator supports. The
@@ -9,7 +9,7 @@
 //
 //------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Sketch
+// Twin-64 - A 64-bit CPU - Physical memory
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU
@@ -32,74 +32,36 @@
 #include "T64-Cpu.h"
 #include "T64-Phys-Mem.h"
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 namespace {
+
+static inline T64Word roundup( T64Word arg ) {
     
-    
-    static inline bool isAligned( T64Word adr, int align ) {
-        
-        return (( adr & ( align - 1 )) == 0 );
-    }
-
-    static inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
-        
-        return(( adr >= low ) && ( adr <= high ));
-    }
-
-    static inline T64Word roundup( T64Word arg ) {
-        
-        return( arg ); // for now ...
-    }
-
-    static inline T64Word extractBit( T64Word arg, int bitpos ) {
-        
-        return ( arg >> bitpos ) & 1;
-    }
-
-    static inline T64Word extractField( T64Word arg, int bitpos, int len) {
-        
-        return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
-    }
-
-    static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
-        
-        T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-        
-        if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-        else             return ( field );
-        
-    }
-
-    static inline T64Word depositField( T64Word word, int bitpos, int len, T64Word value) {
-        
-        T64Word mask = (( 1ULL << len ) - 1 ) << bitpos;
-        return ( word & ~mask ) | (( value << bitpos ) & mask );
-    }
-
-    bool willAddOverflow( T64Word a, T64Word b ) {
-        
-        if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
-        if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
-        return false;
-    }
-
-    bool willSubOverflow( T64Word a, T64Word b ) {
-        
-        if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
-        if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
-        return false;
-    }
-
-    bool willShiftLftOverflow( T64Word a, int shift ) {
-        
-        if (( shift < 0 ) || ( shift >= 64 )) return true;
-        if ( a == 0 ) return false;
-        
-        T64Word max = INT64_MAX >> shift;
-        T64Word min = INT64_MIN >> shift;
-        
-        return (( a > max ) || ( a < min ));
-    }
+    return( arg ); // for now ...
 }
+
+static inline bool isAligned( T64Word adr, int align ) {
+    
+    return (( adr & ( align - 1 )) == 0 );
+}
+
+static inline T64Word extractField( T64Word arg, int bitpos, int len) {
+    
+    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
+}
+
+static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
+    
+    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    
+    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
+    else             return ( field );
+}
+
+} // namespace
 
 
 //************************************************************************************************************
@@ -115,7 +77,7 @@ namespace {
 //
 //------------------------------------------------------------------------------------------------------------
 T64PhysMem::T64PhysMem( T64Word size ) {
- 
+    
     this -> size = roundup( size );
     this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
 }
@@ -128,19 +90,19 @@ void T64PhysMem::reset( ) {
 
 //------------------------------------------------------------------------------------------------------------
 //
-//
+// ?? do we sign extend the data ?
 //------------------------------------------------------------------------------------------------------------
 T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     
-    if ( len == 8 ) {
+    if ( len == 1 ) {
         
         T64Word val= mem[ adr ];
         if ( signExtend ) val = extractSignedField( val, 63, 8 );
         return( val );
     }
-    else if ( len == 16 ) {
+    else if ( len == 2 ) {
         
         if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
@@ -150,7 +112,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
         if ( signExtend ) val = extractSignedField( val, 63, 16 );
         return( val );
     }
-    else if ( len == 32 ) {
+    else if ( len == 4 ) {
         
         if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
@@ -163,7 +125,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
         return( val );
         
     }
-    else if ( len == 64 ) {
+    else if ( len == 8 ) {
         
         if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
@@ -189,18 +151,18 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
     
-    if ( len == 8 ) {
+    if ( len == 1 ) {
         
         mem[ adr ] = arg & 0xFF;
     }
-    else if ( len == 16 ) {
+    else if ( len == 2 ) {
         
         if ( ! isAligned( adr, 2 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
         mem[ adr ]      = ( arg >> 8  ) & 0xFF;
         mem[ adr + 1 ]  = ( arg       ) & 0xFF;
     }
-    else if ( len == 32 ) {
+    else if ( len == 4 ) {
         
         if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
@@ -210,7 +172,7 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
         mem[ adr + 3 ] = ( arg       ) & 0xFF;
         
     }
-    else if ( len == 64 ) {
+    else if ( len == 8 ) {
         
         if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
         
@@ -225,97 +187,3 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
     }
     else throw T64Trap( MEM_ADR_ALIGN_TRAP );
 }
-
-#if 0
-//------------------------------------------------------------------------------------------------------------
-//
-// ??? may go away...
-//------------------------------------------------------------------------------------------------------------
-int8_t T64PhysMem::getMem8( T64Word adr ) {
-    
-    if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    return mem[ adr ];
-}
-
-void T64PhysMem::setMem8( T64Word adr, int8_t arg ) {
-    
-    if (adr >= size) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    mem[ adr ] = arg;
-}
-
-int16_t T64PhysMem::getMem16( T64Word adr ) {
-    
-    if ( adr + 1 >= size )      throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    int16_t val = 0;
-    val |= (int16_t) mem[ adr ] << 8;
-    val |= (int16_t) mem[ adr + 1 ];
-    return val;
-}
-
-void T64PhysMem::setMem16( T64Word adr, int16_t arg ) {
-    
-    if ( adr + 1 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 2)) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    mem[ adr ]      = ( arg >> 8  ) & 0xFF;
-    mem[ adr + 1 ]  = ( arg       ) & 0xFF;
-}
-
-int32_t T64PhysMem::getMem32( T64Word adr ) {
-    
-    if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    int32_t val = 0;
-    val |= (int32_t) mem[ adr]     << 24;
-    val |= (int32_t) mem[ adr + 1 ] << 16;
-    val |= (int32_t) mem[ adr + 2 ] << 8;
-    val |= (int32_t) mem[ adr + 3 ];
-    return val;
-}
-
-void T64PhysMem::setMem32( T64Word adr, int32_t arg ) {
-    
-    if ( adr + 3 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    mem[ adr ]     = ( arg >> 24 ) & 0xFF;
-    mem[ adr + 1 ] = ( arg >> 16 ) & 0xFF;
-    mem[ adr + 2 ] = ( arg >> 8  ) & 0xFF;
-    mem[ adr + 3 ] = ( arg       ) & 0xFF;
-}
-
-T64Word T64PhysMem::getMem64( T64Word adr ) {
-    
-    if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    T64Word val = 0;
-    val |= (T64Word) mem[ adr ]     << 56;
-    val |= (T64Word) mem[ adr + 1 ] << 48;
-    val |= (T64Word) mem[ adr + 2 ] << 40;
-    val |= (T64Word) mem[ adr + 3 ] << 32;
-    val |= (T64Word) mem[ adr + 4 ] << 24;
-    val |= (T64Word) mem[ adr + 5 ] << 16;
-    val |= (T64Word) mem[ adr + 6 ] << 8;
-    val |= (T64Word) mem[ adr + 7 ];
-    return val;
-}
-
-void T64PhysMem::setMem64( T64Word adr, T64Word arg ) {
-    
-    if ( adr + 7 >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP );
-    if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
-    
-    mem[ adr]     = ( arg >> 56 ) & 0xFF;
-    mem[ adr + 1] = ( arg >> 48 ) & 0xFF;
-    mem[ adr + 2] = ( arg >> 40 ) & 0xFF;
-    mem[ adr + 3] = ( arg >> 32 ) & 0xFF;
-    mem[ adr + 4] = ( arg >> 24 ) & 0xFF;
-    mem[ adr + 5] = ( arg >> 16 ) & 0xFF;
-    mem[ adr + 6] = ( arg >> 8  ) & 0xFF;
-    mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
-}
-#endif

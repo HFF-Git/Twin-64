@@ -114,6 +114,7 @@ private:
     T64Word         getImm13( uint32_t instr );
     T64Word         getImm15( uint32_t instr );
     T64Word         getImm19( uint32_t instr );
+    T64Word         getImm20U( uint32_t instr );
     
     T64Word         translateAdr( T64Word vAdr );
     

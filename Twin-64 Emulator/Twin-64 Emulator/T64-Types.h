@@ -37,10 +37,14 @@ const   int64_t IO_MEM_LIMIT    = 0xFFFFFFFF;
 enum TrapCode : int {
     
     NO_TRAP             = 0,
-    PHYS_MEM_ADR_TRAP   = 1,
-    IO_MEM_ADR_TRAP     = 2,
-    MEM_ADR_ALIGN_TRAP  = 3,
-    OVERFLOW_TRAP       = 4,
+    ILLEGAL_INSTR_TRAP  = 1,
+    PHYS_MEM_ADR_TRAP   = 2,
+    IO_MEM_ADR_TRAP     = 3,
+    MEM_ADR_ALIGN_TRAP  = 4,
+    OVERFLOW_TRAP       = 5,
+    PROTECTION_TRAP     = 6,
+    PRIV_VIOLATION_TRAP = 7,
+    TLB_ACCESS_TRAP     = 8,
     
 };
 

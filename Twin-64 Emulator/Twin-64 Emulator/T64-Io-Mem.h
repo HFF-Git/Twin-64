@@ -21,8 +21,8 @@ public:
     T64IoMem( T64Word size );
     
     void        reset( );
-    T64Word     readMem( T64Word adr, int len, bool signExtend = false );
-    void        writeMem( T64Word adr, T64Word arg, int len );
+    T64Word     readIoMem( T64Word adr, int len, bool signExtend = false );
+    void        writeIoMem( T64Word adr, T64Word arg, int len );
     
 private:
     
