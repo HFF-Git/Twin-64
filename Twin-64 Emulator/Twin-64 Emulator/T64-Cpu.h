@@ -83,12 +83,11 @@ struct T64Cpu {
     
 public:
     
-    T64Cpu( T64PhysMem *mem, T64IoMem *io );
+    T64Cpu( T64PhysMem *physMem, T64IoMem *ioMem );
     
     void            reset( );
-    void            step( );
-    
-    void            step( int count );
+    void            step( int steps = 1 );
+    void            run( );
     
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );
@@ -106,8 +105,24 @@ private:
     
     void            fetchInstr( );
     void            executeInstr( );
-    void            translateAdr( T64Word vAdr, T64Word *pAdr );
+
+    T64Word         getRegR( uint32_t instr );
+    T64Word         getRegB( uint32_t instr );
+    T64Word         getRegA( uint32_t instr );
+    void            setRegR( uint32_t instr, T64Word val );
+    
+    T64Word         getImm13( uint32_t instr );
+    T64Word         getImm15( uint32_t instr );
+    T64Word         getImm19( uint32_t instr );
+    
+    T64Word         translateAdr( T64Word vAdr );
+    
+    T64Word         dataReadRegBOfsImm13( uint32_t instr );
+    T64Word         dataReadRegBOfsRegX( uint32_t instr );
     T64Word         dataRead( T64Word vAdr, int len  );
+    
+    void            dataWriteRegBOfsImm13( uint32_t instr );
+    void            dataWriteRegBOfsRegX( uint32_t instr );
     void            dataWrite( T64Word vAdr, T64Word val, int len );
    
 private:
@@ -118,9 +133,9 @@ private:
     T64Word         instrReg;
     T64Word         resvReg;
     
-    T64PhysMem      *mem    = nullptr;
-    T64IoMem        *io     = nullptr;
-    T64Tlb          *tlb    = nullptr;
+    T64PhysMem      *physMem    = nullptr;
+    T64IoMem        *ioMem      = nullptr;
+    T64Tlb          *tlb        = nullptr;
 };
 
 

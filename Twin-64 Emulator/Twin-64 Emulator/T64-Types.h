@@ -51,6 +51,7 @@ enum TrapCode : int {
 enum ControlRegId : int {
     
     CTL_REG_CPU_INFO    = 0,
+    CTL_REG_SHAMT       = 1,
     
     CTL_REG_PID0        = 4,
     CTL_REG_PID1        = 5,

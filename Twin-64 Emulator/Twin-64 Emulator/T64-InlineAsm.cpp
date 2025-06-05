@@ -31,6 +31,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "T64-Types.h"
+#include "T64-InlineAsm.h"
 
 //------------------------------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
@@ -51,7 +52,7 @@ const char  EOS_CHAR            = 0;
 // Assembler error codes.
 //
 //------------------------------------------------------------------------------------------------------------
-enum ErrId : uint16_t {
+enum ErrId : int {
     
     NO_ERR                          = 0,
     ERR_EXTRA_TOKEN_IN_STR          = 4,
@@ -76,6 +77,23 @@ enum ErrId : uint16_t {
     ERR_INVALID_INSTR_MODE          = 415,
     ERR_REG_VAL_RANGE               = 416
 };
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+struct ErrMsg {
+    
+    int msgId;
+    char *msg;
+};
+
+const ErrMsg ErrMsgTable[ ] = {
+    
+    { NO_ERR, (char *) "No error" }
+};
+
+const int MAX_ERR_MSG_TAB = sizeof( ErrMsgTable ) / sizeof( ErrMsg );
 
 //------------------------------------------------------------------------------------------------------------
 // Command line tokens and expression have a type.
@@ -303,7 +321,7 @@ enum InstrFlags : uint32_t {
 // token. The value allows for a constant token. The parser can directly use the value in expressions.
 //
 //------------------------------------------------------------------------------------------------------------
-const Token asmTokTab[ ] = {
+const Token AsmTokTab[ ] = {
     
     //--------------------------------------------------------------------------------------------------------
     // General registers.
@@ -449,7 +467,7 @@ const Token asmTokTab[ ] = {
    
 };
 
-const int MAX_ASM_TOKEN_TAB = sizeof( asmTokTab ) / sizeof( Token );
+const int MAX_ASM_TOKEN_TAB = sizeof( AsmTokTab ) / sizeof( Token );
 
 //------------------------------------------------------------------------------------------------------------
 // Expression value. The analysis of an expression results in a value. Depending on the expression type, the
@@ -472,6 +490,7 @@ struct Expr {
 // Global variables for the tokenizer.
 //
 //------------------------------------------------------------------------------------------------------------
+int     lastErr                             = NO_ERR;
 char    tokenLine[ MAX_INPUT_LINE_SIZE ]    = { 0 };
 int     currentLineLen                      = 0;
 int     currentCharIndex                    = 0;
@@ -516,11 +535,11 @@ void addChar( char *buf, int size, char ch ) {
 //------------------------------------------------------------------------------------------------------------
 int lookupToken( char *inputStr, const Token *tokTab ) {
     
-    if (( strlen( inputStr ) == 0 ) || ( strlen ( inputStr ) > MAX_TOKEN_NAME_SIZE )) return( -1 );
+    if (( strlen( inputStr ) == 0 ) || ( strlen ( inputStr ) > MAX_TOKEN_NAME_SIZE )) return ( -1 );
     
     for ( int i = 0; i < MAX_ASM_TOKEN_TAB; i++  ) {
         
-        if ( strcmp( inputStr, tokTab[ i ].name ) == 0 ) return( i );
+        if ( strcmp( inputStr, tokTab[ i ].name ) == 0 ) return ( i );
     }
     
     return ( -1 );
@@ -729,7 +748,7 @@ void parseIdent( ) {
     
     upshiftStr( identBuf );
     
-    int index = lookupToken( identBuf, asmTokTab );
+    int index = lookupToken( identBuf, AsmTokTab );
     
     if ( index == - 1 ) {
         
@@ -737,7 +756,7 @@ void parseIdent( ) {
         currentToken.tid = TOK_IDENT;
         strcpy( currentToken.str, identBuf );
     }
-    else currentToken = asmTokTab[ index ];
+    else currentToken = AsmTokTab[ index ];
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -883,35 +902,35 @@ void setupTokenizer( char *inputStr ) {
 //------------------------------------------------------------------------------------------------------------
 static inline bool isToken( TokId tid ) {
     
-    return( currentToken.tid == tid );
+    return ( currentToken.tid == tid );
 }
 
 static inline bool isTokenTyp( TokTypeId typ ) {
     
-    return( currentToken.typ = typ );
+    return ( currentToken.typ = typ );
 }
 
 static inline void acceptEOS( ) {
     
-    if ( ! isToken( TOK_EOS )) throw( ERR_EXTRA_TOKEN_IN_STR );
+    if ( ! isToken( TOK_EOS )) throw ( ERR_EXTRA_TOKEN_IN_STR );
 }
 
 static inline void acceptComma( ) {
     
     if ( isToken( TOK_COMMA )) nextToken( );
-    else throw( ERR_EXPECTED_COMMA );
+    else throw ( ERR_EXPECTED_COMMA );
 }
 
 static inline void acceptLparen( ) {
     
     if ( isToken( TOK_LPAREN )) nextToken( );
-    else throw( ERR_EXPECTED_LPAREN );
+    else throw ( ERR_EXPECTED_LPAREN );
 }
 
 static inline void acceptRparen( ) {
     
     if ( isToken( TOK_RPAREN )) nextToken( );
-    else throw( ERR_EXPECTED_RPAREN );
+    else throw ( ERR_EXPECTED_RPAREN );
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -1020,7 +1039,7 @@ void parseExpr( Expr *rExpr ) {
         parseTerm( rExpr );
         
         if ( rExpr -> typ == TYP_NUM ) rExpr -> numVal = - rExpr -> numVal;
-        else throw( ERR_EXPECTED_NUMERIC );
+        else throw ( ERR_EXPECTED_NUMERIC );
     }
     else parseTerm( rExpr );
     
@@ -1088,62 +1107,62 @@ static inline void depositInstrBit( uint32_t *word, int bitpos, bool value ) {
 static inline void depositInstrField( uint32_t *instr, int bitpos, int len, T64Word value ) {
     
     if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 // ??? used ?
 static inline void depositInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word value ) {
     
     if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline void depositInstrRegR( uint32_t *instr, T64Word regId ) {
     
     if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 22, 4, regId );
-    else throw( ERR_REG_VAL_RANGE );
+    else throw ( ERR_REG_VAL_RANGE );
 }
 
 static inline void depositInstrRegB( uint32_t *instr, T64Word regId ) {
     
     if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 15, 4, regId );
-    else throw( ERR_REG_VAL_RANGE );
+    else throw ( ERR_REG_VAL_RANGE );
 }
 
 static inline void depositInstrRegA( uint32_t *instr, T64Word regId ) {
     
     if ( isInRangeForBitField( regId, 4 )) depositBitField( instr, 9, 4, regId );
-    else throw( ERR_REG_VAL_RANGE );
+    else throw ( ERR_REG_VAL_RANGE );
 }
 
 static inline void depositInstrImm9( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitField( val, 9 )) depositBitField( instr, 0, 9, val );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline void depositInstrImm13( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline void depositInstrImm15( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitField( val, 15 )) depositBitField( instr, 0, 15, val );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline void depositInstrImm19( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitField( val, 19 )) depositBitField( instr, 0, 19, val );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline void depositInstrImm20U( uint32_t *instr, T64Word val ) {
     
     if ( isInRangeForBitFieldU( val, 20 )) depositBitField( instr, 0, 20, val );
-    else throw( ERR_IMM_VAL_RANGE );
+    else throw ( ERR_IMM_VAL_RANGE );
 }
 
 static inline bool hasDataWidthFlags( uint32_t instrFlags ) {
@@ -1162,12 +1181,17 @@ static inline T64Word extractInstrGroupField( uint32_t instr ) {
     return ( extractBitField( instr, 30, 2 ));
 }
 
-static inline T64Word extractInstrOpField( uint32_t instr ) {
+static inline T64Word extractInstrOpCodeField( uint32_t instr ) {
     
     return ( extractBitField( instr, 26, 4 ));
 }
 
-static inline void replaceInstrGrpField( uint32_t *instr, uint32_t instrMask ) {
+static inline T64Word extractInstrOptField( uint32_t instr ) {
+    
+    return ( extractBitField( instr, 19, 3 ));
+}
+
+static inline void replaceInstrGroupField( uint32_t *instr, uint32_t instrMask ) {
     
     *instr &= 0x3FFFFFFF;
     *instr |= instrMask & 0xC0000000;
@@ -1340,23 +1364,23 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_AND ) && ( instrFlags & ~IM_AND_OP )) ||
         (( instrOpToken == TOK_OP_OR  ) && ( instrFlags & ~IM_OR_OP ))  ||
         (( instrOpToken == TOK_OP_XOR ) && ( instrFlags & ~IM_XOR_OP )) ||
-        (( instrOpToken == TOK_OP_CMP ) && ( instrFlags & IM_CMP_OP ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_CMP ) && ( instrFlags & IM_CMP_OP ))) throw ( ERR_INVALID_INSTR_OPT );
     
     parseTargetReg( instr );
   
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-        if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
+        if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_MODE );
         
-        replaceInstrGrpField( instr, OPG_MEM );
+        replaceInstrGroupField( instr, OPG_MEM );
         setInstrDwField( instr, instrFlags );
         depositInstrImm13( instr, rExpr.numVal );
         
         acceptLparen( );
         parseExpr( &rExpr );
         if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
-        else throw( ERR_EXPECTED_GENERAL_REG );
+        else throw ( ERR_EXPECTED_GENERAL_REG );
         acceptRparen( );
         acceptEOS( );
     }
@@ -1364,7 +1388,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         
         if ( isToken( TOK_COMMA )) {
             
-            if ( hasDataWidthFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
+            if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_MODE );
             
             int tmpRegId = (int) rExpr.numVal;
             
@@ -1387,7 +1411,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         }
         else if ( isToken( TOK_LPAREN )) {
             
-            replaceInstrGrpField( instr, OPG_MEM );
+            replaceInstrGroupField( instr, OPG_MEM );
             setInstrDwField( instr, instrFlags );
             depositInstrRegA( instr, rExpr.numVal );
             
@@ -1431,7 +1455,7 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_EXTR ) && ( instrFlags & ~IM_EXTR_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_EXTR ) && ( instrFlags & ~IM_EXTR_OP )) throw ( ERR_INVALID_INSTR_OPT );
     
     parseTargetReg( instr );
     
@@ -1476,7 +1500,7 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_DEP ) && ( instrFlags & ~IM_DEP_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_DEP ) && ( instrFlags & ~IM_DEP_OP )) throw ( ERR_INVALID_INSTR_OPT );
     
     if ( instrFlags & IF_Z ) depositInstrBit( instr, 12, true );
     
@@ -1558,7 +1582,7 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseInstrOptions( &instrFlags, instrOpToken );
     if ((( instrOpToken == TOK_OP_SHL1A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHL2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw ( ERR_INVALID_INSTR_OPT );
     
     parseTargetReg( instr );
     
@@ -1601,7 +1625,7 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseInstrOptions( &instrFlags, instrOpToken );
     if ((( instrOpToken == TOK_OP_SHR1A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHR2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHR3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_SHR3A ) && ( instrFlags & ~IM_SHLxA_OP ))) throw ( ERR_INVALID_INSTR_OPT );
     
     parseTargetReg( instr );
     
@@ -1643,8 +1667,8 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_LDI    ) && ( instrFlags & ~IM_LDI_OP  )) throw( ERR_INVALID_INSTR_OPT );
-    if (( instrOpToken == TOK_OP_ADDIL  ) && ( instrFlags & ~IM_NIL     )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_LDI    ) && ( instrFlags & ~IM_LDI_OP  )) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_ADDIL  ) && ( instrFlags & ~IM_NIL     )) throw ( ERR_INVALID_INSTR_OPT );
     
     parseTargetReg( instr );
     
@@ -1675,7 +1699,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.numVal );
-    else throw( ERR_EXPECTED_GENERAL_REG );
+    else throw ( ERR_EXPECTED_GENERAL_REG );
    
     acceptRparen( );
     acceptEOS( );
@@ -1705,7 +1729,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     if ((( instrOpToken == TOK_OP_LD  ) && ( instrFlags & ~IM_LD_OP ))  ||
         (( instrOpToken == TOK_OP_ST  ) && ( instrFlags & ~IM_ST_OP ))  ||
         (( instrOpToken == TOK_OP_LDR ) && ( instrFlags & ~IM_NIL   ))  ||
-        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw ( ERR_INVALID_INSTR_OPT );
     
     if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) instrFlags |= IF_D;
     
@@ -1729,7 +1753,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         
         if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) {
          
-            throw( ERR_INVALID_INSTR_MODE );
+            throw ( ERR_INVALID_INSTR_MODE );
         }
         
         setInstrDwField( instr, instrFlags );
@@ -1741,7 +1765,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         else throw ( ERR_EXPECTED_GENERAL_REG );
         acceptRparen( );
     }
-    else throw( ERR_EXPECTED_NUMERIC );
+    else throw ( ERR_EXPECTED_NUMERIC );
   
     acceptEOS( );
 }
@@ -1758,11 +1782,11 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags;
     
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) throw ( ERR_INVALID_INSTR_OPT );
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
-    else throw( ERR_INVALID_NUM );
+    else throw ( ERR_INVALID_NUM );
     
     if ( isToken( TOK_COMMA )) {
         
@@ -1848,7 +1872,7 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags;
     
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) throw ( ERR_INVALID_INSTR_OPT );
     
     if ( instrFlags & IF_T ) depositInstrBit( instr, 19, true );
     
@@ -1878,7 +1902,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags;
     
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw ( ERR_INVALID_INSTR_OPT );
   
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
@@ -1894,7 +1918,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
-    else throw( ERR_EXPECTED_NUMERIC );
+    else throw ( ERR_EXPECTED_NUMERIC );
     
     setInstrCondField( instr, instrFlags );
    
@@ -1914,7 +1938,7 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags;
     
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw ( ERR_INVALID_INSTR_OPT );
   
     parseExpr( &rExpr );
     if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
@@ -1930,7 +1954,7 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) depositInstrImm19( instr, rExpr.numVal );
-    else throw( ERR_EXPECTED_NUMERIC );
+    else throw ( ERR_EXPECTED_NUMERIC );
     
     setInstrCondField( instr, instrFlags );
    
@@ -1975,7 +1999,7 @@ void parseInstrLDPA( uint32_t *instr, uint32_t instrOpToken ) {
     if ((( instrOpToken == TOK_OP_LD  ) && ( instrFlags & ~IM_LD_OP ))  ||
         (( instrOpToken == TOK_OP_ST  ) && ( instrFlags & ~IM_ST_OP ))  ||
         (( instrOpToken == TOK_OP_LDR ) && ( instrFlags & ~IM_NIL   ))  ||
-        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) throw ( ERR_INVALID_INSTR_OPT );
     
     if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) instrFlags |= IF_D;
     
@@ -1999,7 +2023,7 @@ void parseInstrLDPA( uint32_t *instr, uint32_t instrOpToken ) {
         
         if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) {
          
-            throw( ERR_INVALID_INSTR_MODE );
+            throw ( ERR_INVALID_INSTR_MODE );
         }
         
         setInstrDwField( instr, instrFlags );
@@ -2011,7 +2035,7 @@ void parseInstrLDPA( uint32_t *instr, uint32_t instrOpToken ) {
         else throw ( ERR_EXPECTED_GENERAL_REG );
         acceptRparen( );
     }
-    else throw( ERR_EXPECTED_NUMERIC );
+    else throw ( ERR_EXPECTED_NUMERIC );
   
     acceptEOS( );
 }
@@ -2032,7 +2056,7 @@ void parseInstrPRBx( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseInstrOptions( &instrFlags, instrOpToken );
     if ((( instrOpToken == TOK_OP_PRBR ) && ( instrFlags & ~IM_PRBx_OP )) ||
-        (( instrOpToken == TOK_OP_PRBW ) && ( instrFlags & ~IM_PRBx_OP ))) throw( ERR_INVALID_INSTR_OPT );
+        (( instrOpToken == TOK_OP_PRBW ) && ( instrFlags & ~IM_PRBx_OP ))) throw ( ERR_INVALID_INSTR_OPT );
 
     parseTargetReg( instr );
     
@@ -2177,31 +2201,35 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 // "parseInstrTrapOp" assmbles the trap operations.
 //
+//      Generic. TRAP <info1> "," RegB "," RegA "," <info2> "," <val>
 //
+// We have p to 8 trap groupds. Group zero should be the BRK.
 //
 // ??? to be designed ...
 //------------------------------------------------------------------------------------------------------------
 void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr;
+    switch ( extractInstrOptField( *instr )) {
+            
+        case 0: { // BRK ?
+            
+            
+        } break;
+            
+        case 1: ;
+        case 2: ;
+        case 3: ;
+        case 4: ;
+        default: ;
+    }
    
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, rExpr.numVal );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
-    acceptComma( );
-    
-    
-    // ??? to do ...
-    
+   
     acceptEOS( );
-    
 }
 
 //------------------------------------------------------------------------------------------------------------
 // "parseLine" will take the input string and parse the line for an instruction. In the one-line case, there
-// is only the opCode mnemonic and the argument list. No labels, no comments. For each instruction group,
-// there is is a routine that parses the instruction specific input.
+// is only the opCode mnemonic and the argument list. No labels, comments are ignored.
 //
 //------------------------------------------------------------------------------------------------------------
 void parseLine( char *inputStr, uint32_t *instr ) {
@@ -2290,36 +2318,38 @@ void parseLine( char *inputStr, uint32_t *instr ) {
 // comments, only the opcode and the operands.
 //
 //------------------------------------------------------------------------------------------------------------
-ErrId parseAsmLine( char *inputStr, uint32_t *instr ) {
+T64Assemble::T64Assemble( ) { }
+
+int T64Assemble::parseAsmLine( char *inputStr, uint32_t *instr ) {
     
     try {
         
         parseLine( inputStr, instr );
-        return( NO_ERR );
+        return ( NO_ERR );
     }
     catch ( ErrId errNum ) {
         
         *instr = 0;
-        return( errNum );
+        return ( errNum );
     }
 }
 
-ErrId getErrId( ) {
+int T64Assemble::getErrId( ) {
     
-    return ( NO_ERR );
+    return ( lastErr );
 }
 
-void ErrMsgStr( ErrId err, char *buf, int bufLen ) {
+int T64Assemble::getErrPos( ) {
     
-    
+    return ( currentTokCharIndex );
 }
 
-
-// ??? goes away... replace with real call later...
-void testAsm( char *inputStr ) {
+const char *T64Assemble::getErrStr( int err ) {
     
-    uint32_t instr;
-    parseAsmLine( inputStr, &instr );
+    for ( int i = 0; i < MAX_ERR_MSG_TAB; i++ ) {
+        
+        if ( ErrMsgTable[ i ].msgId == err ) return( ErrMsgTable[ i ].msg );
+    }
     
-    printf( "Instr: 0x%x\n", instr );
+    return ( "Unknown Error Id" );
 }

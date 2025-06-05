@@ -1,13 +1,13 @@
-//------------------------------------------------------------------------------------------------------------
+///------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU
-//
-//------------------------------------------------------------------------------------------------------------
-//
+// Twin-64 - A 64-bit CPU - Inline Assebler / Disassembler
 //
 //------------------------------------------------------------------------------------------------------------
+// This ...
 //
-// Twin-64 - A 64-bit CPU
+//------------------------------------------------------------------------------------------------------------
+//
+// Twin-64 - A 64-bit CPU - Sketch
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU
@@ -20,52 +20,47 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //------------------------------------------------------------------------------------------------------------
+#ifndef T64_InlineAsm_h
+#define T64_InlineAsm_h
+
 #include "T64-Types.h"
-#include "T64-InlineAsm.h"
-#include "T64-Cpu.h"
-#include "T64-Phys-Mem.h"
-#include "T64-Io-Mem.h"
-
-extern void testAsm( char *buf );
 
 //------------------------------------------------------------------------------------------------------------
-//
+// "T64Assemble" is a one line assembler. It just parses the instrcution string and produces an instruction.
+// Utiity routines for converting an error code to an error message and an index into the input source line
+// to where the error occured is provided too.
 //
 //------------------------------------------------------------------------------------------------------------
-void parseParameters( int argc, const char * argv[] ) {
+struct T64Assemble {
     
+public:
     
-}
+    T64Assemble( );
+    
+    int         parseAsmLine( char *inputStr, uint32_t *instr );
+
+    int         getErrId( );
+    int         getErrPos( );
+    const char   *getErrStr( int err );
+};
 
 //------------------------------------------------------------------------------------------------------------
-//
+// "T64DisAssemble" will disassemble an instruction and return a human readable form. The disassmbly string
+// can also congain just the opcode part, the operand part or both. The split allows for displaying the
+// disassembled instruction in an aligned fashion, when printing several lines.
 //
 //------------------------------------------------------------------------------------------------------------
-int main( int argc, const char * argv[] ) {
+struct T64DisAssemble {
     
-    parseParameters( argc, argv );
+public:
     
-    T64Assemble     *doAsm  = new T64Assemble( );
-    T64DisAssemble  *disAsm = new T64DisAssemble( );
+    T64DisAssemble( );
     
-    T64PhysMem      *mem = new T64PhysMem( 2040 );
-    T64IoMem        *io  = new T64IoMem( 2048 );
-    T64Cpu          *cpu = new T64Cpu( mem, io );
-    
-    cpu -> reset( );
-    
-    uint32_t instr;
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, r2, r3", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, -100(r2)", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, 0x3_9(r2)    ; a comment ", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    printf( "%s\n", doAsm -> getErrStr( 0 ));
-    
-    return 0;
-}
+    int formatInstr( char *buf, int bufLen, uint32_t instr, int rdx );
+    int formatOpCode( char *buf, int bufLen, uint32_t instr );
+    int formatOperands( char *buf, int bufLen, uint32_t instr, int rdx );
+    int getOpCodeFieldWidth( );
+    int getOperandsFieldWidth( );
+};
+
+#endif /* T64_InlineAsm_h */
