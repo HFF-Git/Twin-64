@@ -71,7 +71,7 @@ T64Word T64IoMem::readIoMem( T64Word adr, int len, bool signExtend ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     
-    if ( ! isAligned( adr, len )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+    if ( ! isAligned( adr, len )) throw T64Trap( ALIGNMENT_TRAP );
     
     return ( 0 );
 }
@@ -84,7 +84,7 @@ void T64IoMem::writeIoMem( T64Word adr, T64Word arg, int len ) {
     
     if ( ! isInRange( adr, IO_MEM_START, IO_MEM_LIMIT )) throw T64Trap( IO_MEM_ADR_TRAP );
     
-    if ( ! isAligned( adr, len )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+    if ( ! isAligned( adr, len )) throw T64Trap( ALIGNMENT_TRAP );
     
    
 }

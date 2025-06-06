@@ -1069,11 +1069,6 @@ void parseExpr( Expr *rExpr ) {
 // Helper functions for instruction fields.
 //
 //------------------------------------------------------------------------------------------------------------
-static inline bool isAligned( T64Word adr, int align ) {
-    
-    return (( adr & ( align - 1 )) == 0 );
-}
-
 static inline bool isInRangeForBitField( T64Word val, int bitLen ) {
     
     int min = - ( 1 << (( bitLen - 1 ) % 64 ));
@@ -1105,13 +1100,6 @@ static inline void depositInstrBit( uint32_t *word, int bitpos, bool value ) {
 }
 
 static inline void depositInstrField( uint32_t *instr, int bitpos, int len, T64Word value ) {
-    
-    if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
-    else throw ( ERR_IMM_VAL_RANGE );
-}
-
-// ??? used ?
-static inline void depositInstrFieldU( uint32_t *instr, int bitpos, int len, T64Word value ) {
     
     if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
     else throw ( ERR_IMM_VAL_RANGE );
@@ -1171,21 +1159,6 @@ static inline bool hasDataWidthFlags( uint32_t instrFlags ) {
             ( instrFlags & IF_W ) || ( instrFlags & IF_D ));
 }
 
-static inline int extractInstrDwField( uint32_t instr ) {
-    
-    return ((int) extractBitField( instr, 13, 2 ));
-}
-
-static inline T64Word extractInstrGroupField( uint32_t instr ) {
-    
-    return ( extractBitField( instr, 30, 2 ));
-}
-
-static inline T64Word extractInstrOpCodeField( uint32_t instr ) {
-    
-    return ( extractBitField( instr, 26, 4 ));
-}
-
 static inline T64Word extractInstrOptField( uint32_t instr ) {
     
     return ( extractBitField( instr, 19, 3 ));
@@ -1202,13 +1175,11 @@ static inline void replaceInstrGroupField( uint32_t *instr, uint32_t instrMask )
 //
 //------------------------------------------------------------------------------------------------------------
 void setInstrCondField( uint32_t *instr, uint32_t instrFlags ) {
-    
-    int fieldPos = 20;
-    
-    if      ( instrFlags & IF_EQ )  depositInstrField( instr, fieldPos, 2, 0 );
-    else if ( instrFlags & IF_LT )  depositInstrField( instr, fieldPos, 2, 1 );
-    else if ( instrFlags & IF_NE )  depositInstrField( instr, fieldPos, 2, 2 );
-    else if ( instrFlags & IF_LE )  depositInstrField( instr, fieldPos, 2, 3 );
+   
+    if      ( instrFlags & IF_EQ )  depositInstrField( instr, 20, 2, 0 );
+    else if ( instrFlags & IF_LT )  depositInstrField( instr, 20, 2, 1 );
+    else if ( instrFlags & IF_NE )  depositInstrField( instr, 20, 2, 2 );
+    else if ( instrFlags & IF_LE )  depositInstrField( instr, 20, 2, 3 );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -1216,13 +1187,11 @@ void setInstrCondField( uint32_t *instr, uint32_t instrFlags ) {
 //
 //------------------------------------------------------------------------------------------------------------
 void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
-    
-    int fieldPos = 13;
-    
-    if      ( instrFlags & IF_B )   depositInstrField( instr, fieldPos, 2, 0 );
-    else if ( instrFlags & IF_H )   depositInstrField( instr, fieldPos, 2, 1 );
-    else if ( instrFlags & IF_W )   depositInstrField( instr, fieldPos, 2, 2 );
-    else if ( instrFlags & IF_D )   depositInstrField( instr, fieldPos, 2, 3 );
+   
+    if      ( instrFlags & IF_B )   depositInstrField( instr, 13, 2, 0 );
+    else if ( instrFlags & IF_H )   depositInstrField( instr, 13, 2, 1 );
+    else if ( instrFlags & IF_W )   depositInstrField( instr, 13, 2, 2 );
+    else if ( instrFlags & IF_D )   depositInstrField( instr, 13, 2, 3 );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -2320,7 +2289,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
 //------------------------------------------------------------------------------------------------------------
 T64Assemble::T64Assemble( ) { }
 
-int T64Assemble::parseAsmLine( char *inputStr, uint32_t *instr ) {
+int T64Assemble::assembleInstr( char *inputStr, uint32_t *instr ) {
     
     try {
         

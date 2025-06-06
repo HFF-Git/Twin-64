@@ -36,15 +36,17 @@ const   int64_t IO_MEM_LIMIT    = 0xFFFFFFFF;
 //------------------------------------------------------------------------------------------------------------
 enum TrapCode : int {
     
-    NO_TRAP             = 0,
-    ILLEGAL_INSTR_TRAP  = 1,
-    PHYS_MEM_ADR_TRAP   = 2,
-    IO_MEM_ADR_TRAP     = 3,
-    MEM_ADR_ALIGN_TRAP  = 4,
-    OVERFLOW_TRAP       = 5,
-    PROTECTION_TRAP     = 6,
-    PRIV_VIOLATION_TRAP = 7,
-    TLB_ACCESS_TRAP     = 8,
+    NO_TRAP                 = 0,
+    ILLEGAL_INSTR_TRAP      = 1,
+    ALIGNMENT_TRAP          = 2,
+    
+    PHYS_MEM_ADR_TRAP       = 4,
+    IO_MEM_ADR_TRAP         = 5,
+    
+    OVERFLOW_TRAP       = 6,
+    PROTECTION_TRAP     = 7,
+    PRIV_VIOLATION_TRAP = 8,
+    TLB_ACCESS_TRAP     = 9,
     
 };
 
@@ -111,8 +113,8 @@ enum OpCodeFam : uint32_t {
     OPC_CA       = 5U,
     OPC_MST      = 6U,
     OPC_RFI      = 7U,
-    OPC_TRAP     = 8U,
-    OPC_DIAG     = 9U
+    OPC_TRAP     = 14U,
+    OPC_DIAG     = 15U
 };
 
 

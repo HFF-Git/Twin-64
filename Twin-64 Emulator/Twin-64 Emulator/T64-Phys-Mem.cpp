@@ -104,7 +104,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
     }
     else if ( len == 2 ) {
         
-        if ( ! isAligned( adr, 2))  throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 2))  throw T64Trap( ALIGNMENT_TRAP );
         
         T64Word val = 0;
         val |= (int16_t) mem[ adr ] << 8;
@@ -114,7 +114,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
     }
     else if ( len == 4 ) {
         
-        if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 4 )) throw T64Trap( ALIGNMENT_TRAP );
         
         T64Word val = 0;
         val |= (int32_t) mem[ adr]     << 24;
@@ -127,7 +127,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
     }
     else if ( len == 8 ) {
         
-        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 8 )) throw T64Trap( ALIGNMENT_TRAP );
         
         T64Word val = 0;
         val |= (T64Word) mem[ adr ]     << 56;
@@ -140,7 +140,7 @@ T64Word T64PhysMem::readMem( T64Word adr, int len, bool signExtend ) {
         val |= (T64Word) mem[ adr + 7 ];
         return ( val );
     }
-    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
+    else throw T64Trap( ALIGNMENT_TRAP );
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -157,14 +157,14 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
     }
     else if ( len == 2 ) {
         
-        if ( ! isAligned( adr, 2 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 2 )) throw T64Trap( ALIGNMENT_TRAP );
         
         mem[ adr ]      = ( arg >> 8  ) & 0xFF;
         mem[ adr + 1 ]  = ( arg       ) & 0xFF;
     }
     else if ( len == 4 ) {
         
-        if ( ! isAligned( adr, 4 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 4 )) throw T64Trap( ALIGNMENT_TRAP );
         
         mem[ adr ]     = ( arg >> 24 ) & 0xFF;
         mem[ adr + 1 ] = ( arg >> 16 ) & 0xFF;
@@ -174,7 +174,7 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
     }
     else if ( len == 8 ) {
         
-        if ( ! isAligned( adr, 8 )) throw T64Trap( MEM_ADR_ALIGN_TRAP );
+        if ( ! isAligned( adr, 8 )) throw T64Trap( ALIGNMENT_TRAP );
         
         mem[ adr]     = ( arg >> 56 ) & 0xFF;
         mem[ adr + 1] = ( arg >> 48 ) & 0xFF;
@@ -185,5 +185,5 @@ void T64PhysMem::writeMem( T64Word adr, T64Word arg, int len ) {
         mem[ adr + 6] = ( arg >> 8  ) & 0xFF;
         mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
     }
-    else throw T64Trap( MEM_ADR_ALIGN_TRAP );
+    else throw T64Trap( ALIGNMENT_TRAP );
 }

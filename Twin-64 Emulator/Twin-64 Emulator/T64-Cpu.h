@@ -65,6 +65,7 @@ public:
     
     void            reset( );
     T64TlbEntry     *lookupTlb( T64Word vAdr );
+    int             insertTlb( T64Word vAdr, T64Word info );
     void            purgeTlb( T64Word vAdr );
     T64TlbEntry     *getTlbEntry( int index );
     void            setTlbEntry( int index, T64TlbEntry *entry );
@@ -131,7 +132,7 @@ private:
     T64Word         ctlRegFile[ MAX_CREGS ];
     T64Word         genRegFile[ MAX_GREGS ];
     T64Word         pswReg;
-    T64Word         instrReg;
+    uint32_t        instrReg;
     T64Word         resvReg;
     
     T64PhysMem      *physMem    = nullptr;

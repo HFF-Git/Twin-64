@@ -35,6 +35,10 @@
 #include "T64-Types.h"
 #include "T64-InlineAsm.h"
 
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 namespace {
 
 const int OPCODE_FIELD_LEN  = 16;
@@ -56,10 +60,20 @@ static inline uint32_t extractField( uint32_t arg, int bitpos, int len) {
 
 static inline int extractSignedField( uint32_t arg, int bitpos, int len ) {
     
-    uint32_t field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    int field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
-    if ( len < 32 )  return ( field << ( 32 - len )) >> ( 32- len );
+    if ( len < 32 )  return ( field << ( 32 - len ) >> ( 32 - len ));
     else             return ( field );
+}
+
+static inline int extractOpGroup( uint32_t arg ) {
+    
+    return( extractField( arg, 30, 2 ));
+}
+
+static inline int extractOpCode( uint32_t arg ) {
+    
+    return( extractField( arg, 26, 4 ));
 }
 
 static inline int extractRegR( uint32_t instr ) {
@@ -75,6 +89,11 @@ static inline int extractRegB( uint32_t instr ) {
 static inline int extractRegA( uint32_t instr ) {
     
     return ( extractField( instr, 9, 4 ));
+}
+
+static inline int extractDw( uint32_t instr ) {
+    
+    return ( extractField( instr, 13, 2 ));
 }
 
 static inline int extractImm13( uint32_t instr ) {
@@ -158,7 +177,7 @@ int printDwField( char *buf, uint32_t dw ) {
 //------------------------------------------------------------------------------------------------------------
 int buildOpCodeStr( char *buf, uint32_t instr ) {
     
-    uint32_t opCode = extractField( instr, 30, 2 ) * 16 + extractField( instr, 26, 4 );
+    uint32_t opCode = extractOpGroup( instr ) * 16 + extractOpCode( instr );
     
     switch( opCode ) {
             
@@ -405,7 +424,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
     
     uint32_t opCode = extractField( instr, 30, 2 ) * 16 + extractField( instr, 26, 4 );
     
-    switch ( extractField( instr, 26, 4 )) {
+    switch ( opCode ) {
             
         case ( OPC_GRP_ALU * 16 + OPC_ADD ):
         case ( OPC_GRP_ALU * 16 + OPC_SUB ):
@@ -422,10 +441,10 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                  extractImm15( instr )));
             else
                 
-                return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d,R%d, R%d",
-                                 extractRegR( instr ),
-                                 extractRegA( instr ),
-                                 extractRegB( instr )));
+                return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, R%d",
+                                  extractRegR( instr ),
+                                  extractRegA( instr ),
+                                  extractRegB( instr )));
         }
             
         case ( OPC_GRP_ALU * 16 + OPC_BITOP ): {
@@ -437,15 +456,16 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                     if ( extractBit( instr, 13 ))
                         
                         return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, SAR, %d",
-                                         extractRegR( instr ),
-                                         extractRegB( instr ),
-                                         extractField( instr, 0, 6 )));
+                                          extractRegR( instr ),
+                                          extractRegB( instr ),
+                                          extractField( instr, 0, 6 )));
                     else
                         
                         return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, %d, %d",
-                                         extractRegR( instr ),
-                                         extractRegB( instr ),
-                                         extractField( instr, 6, 6 ), extractField( instr, 0, 6 )));
+                                          extractRegR( instr ),
+                                          extractRegB( instr ),
+                                          extractField( instr, 6, 6 ),
+                                          extractField( instr, 0, 6 )));
                 }
                     
                 case 1: { // DEP
@@ -488,12 +508,11 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                     
                     if ( extractBit( instr, 13 ))
                         
-                        return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, R%d, SAR",
-                                         extractRegR( instr ),
-                                         extractRegB( instr ),
-                                         extractRegA( instr )));
+                        return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, R%d",
+                                          extractRegR( instr ),
+                                          extractRegB( instr ),
+                                          extractRegA( instr )));
                     else
-                        
                         return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, R%d, %d",
                                          extractRegR( instr ),
                                          extractRegB( instr ),
@@ -515,10 +534,10 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                  extractImm15( instr )));
             else
                 
-                return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d,R%d, R%d",
-                                 extractRegR( instr ),
-                                 extractRegB( instr ),
-                                 extractRegA( instr )));
+                return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, R%d, R%d",
+                                  extractRegR( instr ),
+                                  extractRegB( instr ),
+                                  extractRegA( instr )));
         }
             
         case ( OPC_GRP_ALU * 16 + OPC_IMMOP ): {
@@ -669,7 +688,10 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d", extractRegR( instr )));
         }
             
-        case ( OPC_GRP_SYS * 16 + OPC_RFI ):   return ( 0 );
+        case ( OPC_GRP_SYS * 16 + OPC_RFI ): {
+            
+            return ( 0 );
+        }
             
         case ( OPC_GRP_SYS * 16 + OPC_TRAP ):  {
             
@@ -723,11 +745,11 @@ int T64DisAssemble::formatOperands( char *buf, int bufLen, uint32_t instr, int r
 
 int T64DisAssemble::formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
     
-    if ( bufLen < ( getOpCodeFieldWidth( ) + 1 + getOperandsFieldWidth( ))) {
+    if ( bufLen >= ( getOpCodeFieldWidth( ) + 1 + getOperandsFieldWidth( ))) {
         
         int cursor = 0;
         cursor += buildOpCodeStr( buf + cursor, instr );
-        cursor += snprintf( buf +cursor, 4, " " );
+        cursor += snprintf( buf + cursor, 4, " " );
         cursor += buildOperandStr( buf + cursor, instr, rdx );
         return ( cursor );
     }

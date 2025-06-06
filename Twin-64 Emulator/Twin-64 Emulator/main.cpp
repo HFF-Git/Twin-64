@@ -26,7 +26,12 @@
 #include "T64-Phys-Mem.h"
 #include "T64-Io-Mem.h"
 
-extern void testAsm( char *buf );
+T64Assemble     *doAsm  = nullptr;
+T64DisAssemble  *disAsm = nullptr;
+
+T64PhysMem      *mem    = nullptr;
+T64IoMem        *io     = nullptr;
+T64Cpu          *cpu    = nullptr;
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -41,31 +46,59 @@ void parseParameters( int argc, const char * argv[] ) {
 //
 //
 //------------------------------------------------------------------------------------------------------------
+void createCpu( ) {
+    
+    mem = new T64PhysMem( 2040 );
+    io  = new T64IoMem( 2048 );
+    cpu = new T64Cpu( mem, io );
+    
+    cpu -> reset( );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+void createAsm( ) {
+    
+    doAsm  = new T64Assemble( );
+    disAsm = new T64DisAssemble( );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+int testAsm ( char * asmStr ) {
+    
+    uint32_t instr;
+    char     buf[ 128 ];
+    
+    doAsm -> assembleInstr( asmStr, &instr );
+    printf( "ASM: \"%s\" -> Instr: 0x%08x\n", asmStr, instr );
+    
+    disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+    printf( "Instr: 0x%08x -> ASM: \"%s\"\n", instr, buf );
+
+    return ( 0 );
+}
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
     
     parseParameters( argc, argv );
     
-    T64Assemble     *doAsm  = new T64Assemble( );
-    T64DisAssemble  *disAsm = new T64DisAssemble( );
+    createCpu( );
+    createAsm( );
     
-    T64PhysMem      *mem = new T64PhysMem( 2040 );
-    T64IoMem        *io  = new T64IoMem( 2048 );
-    T64Cpu          *cpu = new T64Cpu( mem, io );
+    // testAsm((char *) "ADD r1, r2, r3" );
+    // testAsm((char *) "ADD r1, -100(r2)" );
+    // testAsm((char *) "ADD r1, 0x3_9(r2)" );
     
-    cpu -> reset( );
-    
-    uint32_t instr;
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, r2, r3", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, -100(r2)", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    doAsm -> parseAsmLine((char *) "ADD r1, 0x3_9(r2)    ; a comment ", &instr );
-    printf( "Instr: 0x%08x\n", instr );
-    
-    printf( "%s\n", doAsm -> getErrStr( 0 ));
-    
+    testAsm((char *) "AND.N r1, 0x3_9(r2)" );
+   
     return 0;
 }

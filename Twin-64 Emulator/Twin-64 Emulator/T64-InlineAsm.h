@@ -37,7 +37,7 @@ public:
     
     T64Assemble( );
     
-    int         parseAsmLine( char *inputStr, uint32_t *instr );
+    int         assembleInstr( char *inputStr, uint32_t *instr );
 
     int         getErrId( );
     int         getErrPos( );
