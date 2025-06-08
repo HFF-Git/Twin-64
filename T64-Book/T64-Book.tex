@@ -1,7 +1,6 @@
 %-------------------------------------------------------------------------------------------------------
 %
 %
-%
 %-------------------------------------------------------------------------------------------------------
 \documentclass[a4paper,11pt]{book} 
 
@@ -11,14 +10,6 @@
 %-------------------------------------------------------------------------------------------------------
 \input{packages}
 \input{styles}
-
-%-------------------------------------------------------------------------------------------------------
-% Table of contents options.
-%
-%-------------------------------------------------------------------------------------------------------
-\setcounter{tocdepth}{1}
-\setlength{\cftsecnumwidth}{3em}
-\setlength{\cftsecindent}{0em} 
 
 %-------------------------------------------------------------------------------------------------------
 % Document start.
@@ -43,12 +34,13 @@
   		\pagenumbering{gobble}
   		\begin{titlepage}
     		\begin{center}
+    		    			
       			{\Huge \textbf{TWIN-64}} \\
-      			{\Large \textbf{Architecture Document}} 
+      			{\LARGE \textbf{Architecture Document}} 
 
       			\vspace{2cm}
 
-      			{\Large Helmut Fieres} \\
+      			{\LARGE Helmut Fieres} \\
       			{\large \today}
     		\end{center}
   		\end{titlepage}
@@ -58,7 +50,7 @@
     % Book body.
     %
     %---------------------------------------------------------------------------------------------------
-    \frontmatter 
+   	\frontmatter 
     \pagestyle{fancy}      
 	\tableofcontents   
 	\markboth{ } { }
