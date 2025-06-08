@@ -3,7 +3,7 @@
 %
 %
 %-------------------------------------------------------------------------------------------------------
-\documentclass[a4paper, 11pt]{book}  
+\documentclass[a4paper,11pt]{book} 
 
 %-------------------------------------------------------------------------------------------------------
 % Get all packages and styles.
@@ -25,41 +25,54 @@
 %
 %-------------------------------------------------------------------------------------------------------
 \begin{document}
-
-    %---------------------------------------------------------------------------------------------------
+	
+	%---------------------------------------------------------------------------------------------------
     % Options to deal with how a line is filled.
     %
     %---------------------------------------------------------------------------------------------------
     \setlength{\emergencystretch}{3em}
     \raggedbottom
-
+     
     %---------------------------------------------------------------------------------------------------
     % Title page.
     %
     %---------------------------------------------------------------------------------------------------
-    \begin{center}
-        {\Huge \textbf{TWIN-64}} \\
-        {\Large \textbf{Architecture Document}} 
-        
-        \vspace{ 2cm }
-        
-        {\Large Helmut Fieres} \\
-        {\large \today}
-    \end{center}
+    \begingroup
+  		\let\cleardoublepage\relax
+  		\pagestyle{empty}
+  		\pagenumbering{gobble}
+  		\begin{titlepage}
+    		\begin{center}
+      			{\Huge \textbf{TWIN-64}} \\
+      			{\Large \textbf{Architecture Document}} 
 
+      			\vspace{2cm}
+
+      			{\Large Helmut Fieres} \\
+      			{\large \today}
+    		\end{center}
+  		\end{titlepage}
+	\endgroup
+		
     %---------------------------------------------------------------------------------------------------
     % Book body.
     %
     %---------------------------------------------------------------------------------------------------
-    \frontmatter            
-    \tableofcontents    
-
-    \mainmatter    
+    \frontmatter 
+    \pagestyle{fancy}      
+	\tableofcontents   
+	\markboth{ } { }
+		
+	\mainmatter   
+    \pagestyle{fancy}
+    
     \include {chapters/Introduction/T64-Introduction}
     
     % content goes here ....         
    
     \appendix 
+    
+    % content goes here ....  
 
     \backmatter             
 
