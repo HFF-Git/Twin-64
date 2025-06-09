@@ -1209,7 +1209,7 @@ void T64Cpu::executeInstr( ) {
                 
             } break;
                 
-            case ( OPC_GRP_SYS * 16 + OPC_LDPA ): {
+            case ( OPC_GRP_SYS * 16 + OPC_LPA ): {
                 
                 // ?? privileged op ?
                 

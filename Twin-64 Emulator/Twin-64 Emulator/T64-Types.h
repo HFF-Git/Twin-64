@@ -107,7 +107,7 @@ enum OpCodeFam : uint32_t {
     OPC_MBR      = 6U,
     
     OPC_MR       = 1U,
-    OPC_LDPA     = 2U,
+    OPC_LPA      = 2U,
     OPC_PRB      = 3U,
     OPC_TLB      = 4U,
     OPC_CA       = 5U,

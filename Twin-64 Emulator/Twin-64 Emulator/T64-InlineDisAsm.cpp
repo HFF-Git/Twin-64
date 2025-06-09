@@ -162,11 +162,11 @@ int printDwField( char *buf, uint32_t dw ) {
     
     switch( dw ) {
             
-        case 0:  return ( snprintf( buf, 4, "B" ));
-        case 1:  return ( snprintf( buf, 4, "H" ));
-        case 2:  return ( snprintf( buf, 4, "W" ));
-        case 3:  return ( snprintf( buf, 4, "D" ));
-        default: return ( snprintf( buf, 4, "*" ));
+        case 0:  return ( snprintf( buf, 4, ".B" ));
+        case 1:  return ( snprintf( buf, 4, ".H" ));
+        case 2:  return ( snprintf( buf, 4, ".W" ));
+        case 3:  return ( snprintf( buf, 4, ".D" ));
+        default: return ( snprintf( buf, 4, ".*" ));
     }
 }
 
@@ -369,7 +369,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             else                                     return ( snprintf( buf, OPCODE_FIELD_LEN, "MTCR" ));
         }
             
-        case ( OPC_GRP_SYS * 16 + OPC_LDPA ): {
+        case ( OPC_GRP_SYS * 16 + OPC_LPA ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "LDPA" );
             cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
@@ -558,7 +558,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         case ( OPC_GRP_MEM * 16 + OPC_LDR ):
         case ( OPC_GRP_MEM * 16 + OPC_STC ): {
             
-            if ( extractField( instr, 19, 3 ) == 0 )
+            if ( extractBit( instr, 19 ) == 0 )
                 
                 return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, %d(R%d)",
                                  extractRegR( instr ),
@@ -635,7 +635,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                               extractRegB( instr )));
         }
             
-        case ( OPC_GRP_SYS * 16 + OPC_LDPA ): {
+        case ( OPC_GRP_SYS * 16 + OPC_LPA ): {
             
             if ( extractField( instr, 19, 3 ) == 0 )
                 
