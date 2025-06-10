@@ -1313,9 +1313,8 @@ void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// "parseModeTypeInstr" parses all instructions of type "mode" based in the syntax. The instruction options
-// have already been parsed and are available in the instrFlags variable. The syntax will determine the exact
-// instruction layout and option setting. The syntax is as follows:
+// "parseModeTypeInstr" parses all instructions of type "mode" based on the syntax, which will determine the
+// exact instruction layout and option setting. The syntax is as follows:
 //
 //      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <num>          -> Instruction group ALU
 //      opCode [ "." <opt> ] <targetReg> "," <sourceReg> "," <sourceRegB>   -> Instruction group ALU
@@ -1680,14 +1679,14 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 // specifying the data width. The LDR and STC instruction do not have an option. However we set the dataWidth
 // field for them to "D".
 //
-//       LD  [.B/H/W/D ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
-//       LD  [.B/H/W/D ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D/M ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D/M ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       ST  [.B/H/W/D ] <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
-//       ST  [.B/H/W/D ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D/M ] <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D/M ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       LDR             <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
-//       STC             <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       LDR               <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       STC               <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
 //------------------------------------------------------------------------------------------------------------
 void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1704,7 +1703,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) instrFlags |= IF_D;
     
     setInstrDwField( instr, instrFlags );
-    
+    if ( instrFlags & IF_M ) depositInstrBit( instr, 20, true );
     parseTargetReg( instr );
     
     parseExpr( &rExpr );
@@ -1834,7 +1833,6 @@ void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
 //      BB ".T/F" <regB> "," <pos>
 //      BB ".T/F" <regB> "," "SAR"
 //
-// ??? fix positions....
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1961,13 +1959,12 @@ void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr;
-    uint32_t    instrFlags;
+    Expr rExpr;
     
     parseTargetReg( instr );
     
     parseExpr( &rExpr );
-   if ( rExpr.typ == TYP_GREG) {
+    if ( rExpr.typ == TYP_GREG) {
         
         depositInstrRegA( instr, rExpr.numVal );
         
@@ -1993,9 +1990,8 @@ void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr;
-    uint32_t    instrFlags;
-    
+    Expr rExpr;
+
     parseTargetReg( instr );
     
     parseExpr( &rExpr );

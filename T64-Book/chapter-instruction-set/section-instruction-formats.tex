@@ -5,37 +5,11 @@
 \section*{Instruction Formats}
 \addcontentsline{toc}{section}{Instruction Formats}
 
-\begin{center}
-    \begin{tikzpicture}[scale=0.9, transform shape]
-        
-        \draw[help lines, gray!70, dashed] (0,0) grid(16,1.5);
-        
-        \node[  tsRectangle, 
-                minimum width=16cm,
-                minimum height=1cm,
-                text width=3cm,
-                text centered,
-                fill=white!50] (blocks) at (8,1) { };
-                
-     	\draw[-] (1,0.5) -- (1,1.5);
-     	\draw[-] (3,0.5) -- (3,1.5);
-     	\draw[-] (5,0.5) -- (5,1.5);
-     	\draw[-] (6,0.5) -- (6,1.5);
-     	     	
-     	\node at (0.5,0.25) {2};
-    	\node at (2,0.25) {4};
-    	\node at (4,0.25) {4};
-    	\node at (5.5,0.25) {2};
-   	 	\node at (11,0.25) {20};
-   	 	
-   	 	\node at (0.5,1) {\small Grp};
-		\node at (2,1) {\small OpCode};
-		\node at (4,1) {\small Reg R};
-		\node at (5.5,1) {\small 0};
-		\node at (11,1) {\small U-IMM-20};
-   	 	
-       \end{tikzpicture}
-\end{center}
+T64 uses few instruction formats. They are grouped by the number of available register slots and the length of the immediate value field.
+
+\subsection*{Immediate S19}
+
+The immediate S19 instruction format provides one register and a 19 bit signed immediate field. This format is typically used by branch instructions.
 
 \begin{center}
     \begin{tikzpicture}[scale=0.9, transform shape]
@@ -68,6 +42,10 @@
    	 	
        \end{tikzpicture}
 \end{center}
+
+\subsection*{Immediate S15}
+
+The immediate S15 instruction format provides two registers and a 15 bit signed immediate field. This format is used by branch instructions as well as instruction which operate on a register and an immediate value.
 
 \begin{center}
     \begin{tikzpicture}[scale=0.9, transform shape]
@@ -103,6 +81,10 @@
    	 	
        \end{tikzpicture}
 \end{center}
+
+\subsection*{Immediate S13}
+
+The immediate S13 instruction format provides two registers, an additional option field  and a 13 bit signed immediate field. Some instruction use the S-IMM-13 field for special encodings instead of a signed value. This format is used by memory reference instructions where the address is formed by a base register and a 13-bit signed offset.
 
 \begin{center}
     \begin{tikzpicture}[scale=0.9, transform shape]
@@ -142,7 +124,9 @@
        \end{tikzpicture}
 \end{center}
 
+\subsection*{Immediate S9}
 
+The immediate S9 instruction format provides three registers, an additional option field  and a 9 bit signed immediate field. Some instruction use the S-IMM-9 field for special encodings instead of a signed value.instead of a signed value. This instruction format is used for all computational instructions where three registers are needed.
 
 \begin{center}
     \begin{tikzpicture}[scale=0.9, transform shape]
@@ -184,6 +168,44 @@
    	 	
        \end{tikzpicture}
 \end{center}
+
+
+\subsection*{Immediate U20}
+
+The immediate U20 format is used by the immediate instruction group to provide a 20bit unsigned value. This value is then placed at certain positions in the register target Reg R.
+
+\begin{center}
+    \begin{tikzpicture}[scale=0.9, transform shape]
+        
+        \draw[help lines, gray!70, dashed] (0,0) grid(16,1.5);
+        
+        \node[  tsRectangle, 
+                minimum width=16cm,
+                minimum height=1cm,
+                text width=3cm,
+                text centered,
+                fill=white!50] (blocks) at (8,1) { };
+                
+     	\draw[-] (1,0.5) -- (1,1.5);
+     	\draw[-] (3,0.5) -- (3,1.5);
+     	\draw[-] (5,0.5) -- (5,1.5);
+     	\draw[-] (6,0.5) -- (6,1.5);
+     	     	
+     	\node at (0.5,0.25) {2};
+    	\node at (2,0.25) {4};
+    	\node at (4,0.25) {4};
+    	\node at (5.5,0.25) {2};
+   	 	\node at (11,0.25) {20};
+   	 	
+   	 	\node at (0.5,1) {\small Grp};
+		\node at (2,1) {\small OpCode};
+		\node at (4,1) {\small Reg R};
+		\node at (5.5,1) {\small 0};
+		\node at (11,1) {\small U-IMM-20};
+   	 	
+       \end{tikzpicture}
+\end{center}
+
 
 
 

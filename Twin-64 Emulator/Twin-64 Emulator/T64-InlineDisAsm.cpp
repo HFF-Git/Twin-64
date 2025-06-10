@@ -155,7 +155,8 @@ int printCondField( char *buf, uint32_t cmpCode ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-// A little helper function to display the DW field.
+// A little helper function to display the DW field. Note that we do not display the "D" option. It is the
+// default and thus will not be shown.
 //
 //------------------------------------------------------------------------------------------------------------
 int printDwField( char *buf, uint32_t dw ) {
@@ -165,7 +166,7 @@ int printDwField( char *buf, uint32_t dw ) {
         case 0:  return ( snprintf( buf, 4, ".B" ));
         case 1:  return ( snprintf( buf, 4, ".H" ));
         case 2:  return ( snprintf( buf, 4, ".W" ));
-        case 3:  return ( snprintf( buf, 4, ".D" ));
+        case 3:  return ( 0 );
         default: return ( snprintf( buf, 4, ".*" ));
     }
 }

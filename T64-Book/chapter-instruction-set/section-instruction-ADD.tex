@@ -166,7 +166,7 @@
 		\node at (5.75,1) {\small 0};
 		\node at (7.5,1) {\small Reg B};
 		\node at (9,1) {\small dw};
-		\node at (10.5,1) {\small Reg X};
+		\node at (10.5,1) {\small Reg A};
 		\node at (13.75,1) {\small 0};
    	 	
        \end{tikzpicture}
@@ -188,10 +188,11 @@
 
 \instructionentry{Exceptions}{
 
- 	OVERFLOW\_TRAP\\
-	ALIGNMENT\_TRAP
- 
- 	mem ref traps...
+ 	Integer Overflow \\
+	Data Alignment \\
+	Memory Access Violation \\
+	Memory Protection Violation \\
+	Data TLB miss
 }
 
 \instructionentry{Notes}{
