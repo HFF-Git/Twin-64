@@ -66,25 +66,51 @@ void createAsm( ) {
 }
 
 //------------------------------------------------------------------------------------------------------------
-//
+// Command handlers.
 //
 //------------------------------------------------------------------------------------------------------------
-int testAsm ( char * asmStr ) {
+void assemble( char *asmStr ) {
     
     uint32_t instr;
-    char     buf[ 128 ];
-    
     doAsm -> assembleInstr( asmStr, &instr );
-    printf( "ASM: \"%s\" -> Instr: 0x%08x\n", asmStr, instr );
-    
-    disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
-    printf( "Instr: 0x%08x -> ASM: \"%s\"\n", instr, buf );
+    printf( "0x%08x\n", instr );
+}
 
-    return ( 0 );
+
+void disassemble( uint32_t instr ) {
+    
+    char buf[ 128 ];
+    disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+    printf( "\"%s\"\n", buf );
+}
+
+void printHelp( ) {
+    
+    printf( "A <argStr> -> assemble input argument\n" );
+    printf( "D <val>    -> disassemble instruction value\n" );
+    printf( "E          -> exit\n" );
 }
 
 //------------------------------------------------------------------------------------------------------------
+// Read the command input, strip newline char and convert to uppercase.
 //
+//------------------------------------------------------------------------------------------------------------
+int getInput( char *buf ) {
+    
+    if ( fgets( buf, 128, stdin ) == nullptr ) return( -1 );
+    
+    buf[ strcspn( buf, "\n") ] = '\0';
+
+    for ( char *s = buf; *s; s++ ) {
+        
+        *s = toupper((unsigned char) *s );
+    }
+    
+    return( 1 );
+}
+
+//------------------------------------------------------------------------------------------------------------
+// Here we go.
 //
 //------------------------------------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
@@ -93,11 +119,44 @@ int main( int argc, const char * argv[] ) {
     
     createCpu( );
     createAsm( );
-    
-    testAsm((char *) "ADD r1, r2, r3" );
-    testAsm((char *) "ADD r1, -100(r2)" );
-    testAsm((char *) "ADD r1, 0x3_9(r2)" );
-    testAsm((char *) "AND.N r1, 0x3_9(r2)" );
-   
+
+    while (1) {
+        
+        printf( "-> ");
+        
+        char input[ 128 ];
+        
+        if ( getInput( input ) < 0 ) {
+            
+            printf("Error reading input\n");
+            break;
+        }
+       
+        char *cmd = strtok( input, " \t");
+        char *arg = strtok( NULL, "" );
+        if ( cmd == nullptr ) continue;
+             
+        if ( strcmp( cmd, "A" ) == 0 ) {
+            
+            if ( arg != nullptr ) assemble( arg );
+            else printf( "Expexted assembler input string\n" );
+        }
+        else if ( strcmp( cmd, "D" ) == 0 ) {
+            
+            uint32_t val;
+            if (( arg != nullptr ) && ( sscanf( arg, "%i", &val ) == 1 )) disassemble( val );
+            else printf( "Invalid number for disassembler\n" );
+        }
+        else if ( strcmp( cmd, "E" ) == 0 ) {
+        
+            break;
+        }
+        else if ( strcmp( cmd, "?" ) == 0 ) {
+            
+            printHelp( );
+        }
+        else printf("Unknown command.\n");
+    }
+
     return 0;
 }

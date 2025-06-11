@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -82,6 +83,8 @@ enum OpCodeGroup : uint32_t {
 };
 
 enum OpCodeFam : uint32_t {
+    
+    OPC_NOP      = 0U,
     
     OPC_ADD      = 1U,
     OPC_SUB      = 2U,

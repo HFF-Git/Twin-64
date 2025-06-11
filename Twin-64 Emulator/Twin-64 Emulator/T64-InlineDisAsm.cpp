@@ -412,6 +412,8 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             
         case ( OPC_GRP_SYS * 16 + OPC_DIAG ):  return ( snprintf( buf, OPCODE_FIELD_LEN, "DIAG" ));
             
+        case ( OPC_GRP_ALU * 16 + OPC_NOP ):   return ( snprintf( buf, OPCODE_FIELD_LEN, "NOP" ));
+            
         default: return ( snprintf( buf, OPCODE_FIELD_LEN, "**OPC:%d**", opCode ));
     }
 }
@@ -707,6 +709,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                               extractRegA( instr )));
         }
             
+        case ( OPC_GRP_ALU * 16 + OPC_NOP ): return( 0 );
+            
         default: return ( snprintf( buf, OPERAND_FIELD_LEN, "**OPC:%d**", opCode ));
     }
 }
@@ -752,6 +756,13 @@ int T64DisAssemble::formatInstr( char *buf, int bufLen, uint32_t instr, int rdx 
         cursor += buildOpCodeStr( buf + cursor, instr );
         cursor += snprintf( buf + cursor, 4, " " );
         cursor += buildOperandStr( buf + cursor, instr, rdx );
+        
+        if ( buf[ cursor - 1 ] == ' ' ) {
+            
+            buf[ cursor - 1 ]  = 0;
+            cursor --;
+        }
+        
         return ( cursor );
     }
     else return ( -1 );
