@@ -58,11 +58,11 @@ static inline uint32_t extractField( uint32_t arg, int bitpos, int len) {
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-static inline int extractSignedField( uint32_t arg, int bitpos, int len ) {
+static inline int extractSignedField( T64Word arg, int bitpos, int len ) {
     
-    int field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
+    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
-    if ( len < 32 )  return ( field << ( 32 - len ) >> ( 32 - len ));
+    if ( len < 32 )  return ( field << ( 32 - len )) >> ( 64 - len );
     else             return ( field );
 }
 

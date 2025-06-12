@@ -72,15 +72,15 @@ void createAsm( ) {
 void assemble( char *asmStr ) {
     
     uint32_t instr;
-    doAsm -> assembleInstr( asmStr, &instr );
-    printf( "0x%08x\n", instr );
+    int errCode = doAsm -> assembleInstr( asmStr, &instr );
+    if ( errCode == 0 ) printf( "0x%08x\n", instr );
+    else                printf( "%s\n", doAsm -> getErrStr( doAsm -> getErrId( )));
 }
-
 
 void disassemble( uint32_t instr ) {
     
     char buf[ 128 ];
-    disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+    int errCode = disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
     printf( "\"%s\"\n", buf );
 }
 
@@ -106,7 +106,7 @@ int getInput( char *buf ) {
         *s = toupper((unsigned char) *s );
     }
     
-    return( 1 );
+    return((uint32_t) strlen( buf ));
 }
 
 //------------------------------------------------------------------------------------------------------------

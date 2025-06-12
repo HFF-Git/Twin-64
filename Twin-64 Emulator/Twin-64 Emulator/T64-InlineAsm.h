@@ -41,7 +41,7 @@ public:
 
     int         getErrId( );
     int         getErrPos( );
-    const char   *getErrStr( int err );
+    const char   *getErrStr( int errId );
 };
 
 //------------------------------------------------------------------------------------------------------------
