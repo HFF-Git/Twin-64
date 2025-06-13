@@ -780,9 +780,9 @@ void parseIdent( ) {
     
     if ( index == - 1 ) {
         
+        strcpy( currentToken.name, identBuf );
         currentToken.typ = TYP_IDENT;
         currentToken.tid = TOK_IDENT;
-        strcpy( currentToken.str, identBuf );
     }
     else currentToken = AsmTokTab[ index ];
 }
@@ -793,8 +793,10 @@ void parseIdent( ) {
 //------------------------------------------------------------------------------------------------------------
 void nextToken( ) {
     
-    currentToken.typ       = TYP_NIL;
-    currentToken.tid       = TOK_NIL;
+    currentToken.name[ 0 ]  = 0;
+    currentToken.typ        = TYP_NIL;
+    currentToken.tid        = TOK_NIL;
+    currentToken.val        = 0;
     
     while (( currentChar == ' ' ) || ( currentChar == '\n' ) || ( currentChar == '\r' )) nextChar( );
     
@@ -935,7 +937,7 @@ static inline bool isToken( TokId tid ) {
 
 static inline bool isTokenTyp( TokTypeId typ ) {
     
-    return ( currentToken.typ = typ );
+    return ( currentToken.typ == typ );
 }
 
 static inline void acceptEOS( ) {
@@ -1154,33 +1156,27 @@ static inline void depositInstrRegA( uint32_t *instr, uint32_t regId ) {
     depositBitField( instr, 9, 4, regId );
 }
 
-static inline void depositInstrImm9( uint32_t *instr, uint32_t val ) {
-    
-    if ( ! isInRangeForBitField( val, 9 )) depositBitField( instr, 0, 9, val );
-    else throw ( ERR_IMM_VAL_RANGE );
-}
-
-static inline void depositInstrImm13( uint32_t *instr, uint32_t val ) {
+static inline void depositInstrImm13( uint32_t *instr, int val ) {
     
     if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-static inline void depositInstrScaledImm13( uint32_t *instr, uint32_t val ) {
-    
-    val = val << extractBitField( *instr, 13, 2 );
+static inline void depositInstrScaledImm13( uint32_t *instr, int val ) {
+   
+    val = val >> extractBitField( *instr, 13, 2 );
     
     if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-static inline void depositInstrImm15( uint32_t *instr, uint32_t val ) {
+static inline void depositInstrImm15( uint32_t *instr, int val ) {
     
     if ( isInRangeForBitField( val, 15 )) depositBitField( instr, 0, 15, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-static inline void depositInstrImm19( uint32_t *instr, uint32_t val ) {
+static inline void depositInstrImm19( uint32_t *instr, int val ) {
     
     if ( isInRangeForBitField( val, 19 )) depositBitField( instr, 0, 19, val );
     else throw ( ERR_IMM_VAL_RANGE );
@@ -1243,7 +1239,7 @@ void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
 // be in the same group with a sequence of individual individual characters. Currently only the CMP, CBR and
 // MBR instructions are such cases.
 //
-// The assembler can handle multile ".xxx" sequences. One could for example put each individual character in
+// The assembler can handle multiple ".xxx" sequences. One could for example put each individual character in
 // a separate ".x" location. Once we have all options seen, we check that there are no conflicting options
 // where only one option out of an option group can be set.
 //
@@ -1332,7 +1328,7 @@ void parseTargetReg( uint32_t *instr ) {
     Expr rExpr;
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -1773,7 +1769,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         
         acceptLparen( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
         acceptRparen( );
     }
@@ -1789,7 +1785,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         
         acceptLparen( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+        if (  rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
         acceptRparen( );
     }
@@ -1824,7 +1820,7 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
         
         nextToken( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
     }
     
@@ -1844,14 +1840,14 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
     Expr rExpr;
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     if ( isToken( TOK_COMMA )) {
         
         nextToken( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
     }
     
@@ -1870,20 +1866,20 @@ void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
     Expr rExpr;
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegA( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     if ( isToken( TOK_COMMA )) {
         
         nextToken( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
     }
     
@@ -1908,7 +1904,7 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     if ( instrFlags & IF_T ) depositInstrBit( instr, 19, true );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -1942,13 +1938,13 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw ( ERR_INVALID_INSTR_OPT );
   
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -1987,7 +1983,7 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptComma( );
@@ -2047,7 +2043,7 @@ void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptLparen( );
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     acceptRparen( );
     
@@ -2097,14 +2093,14 @@ void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptComma( );
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     if ( instrOpToken == TOK_OP_ITLB ) {
         
         acceptComma( );
         parseExpr( &rExpr );
-        if ( isTokenTyp( TYP_GREG )) depositInstrRegA( instr, (uint32_t) rExpr.numVal );
+        if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.numVal );
         else throw ( ERR_EXPECTED_GENERAL_REG );
     }
     
@@ -2127,7 +2123,7 @@ void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
+    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
     
     acceptEOS( );
