@@ -62,7 +62,7 @@ static inline int extractSignedField( T64Word arg, int bitpos, int len ) {
     
     T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
-    if ( len < 32 )  return ( field << ( 32 - len )) >> ( 64 - len );
+    if ( len < 32 )  return ( field << ( 32 - len )) >> ( 32 - len );
     else             return ( field );
 }
 
