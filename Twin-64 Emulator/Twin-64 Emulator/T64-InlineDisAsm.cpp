@@ -276,7 +276,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
                     return ( snprintf( buf, OPCODE_FIELD_LEN, "DSR" ));
                 }
                     
-                    return ( snprintf( buf, OPCODE_FIELD_LEN, "**BITOP**" ));
+                default: return ( snprintf( buf, OPCODE_FIELD_LEN, "**BITOP**" ));
             }
         }
             
