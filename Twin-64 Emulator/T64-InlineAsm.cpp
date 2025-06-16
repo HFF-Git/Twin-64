@@ -65,7 +65,7 @@ enum ErrId : int {
     ERR_EXPECTED_LPAREN             = 23,
     ERR_EXPECTED_RPAREN             = 24,
     ERR_EXPECTED_STR                = 25,
-    ERR_EXPECTED_EXPR               = 26,
+    ERR_EXPECTED_OPCODE             = 26,
     ERR_EXPECTED_INSTR_OPT          = 27,
     ERR_EXPECTED_DIAG_OP            = 28,
     ERR_EXPECTED_GENERAL_REG        = 29,
@@ -108,8 +108,8 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_EXPECTED_COMMA,           (char *) "Expected a comma" },
     { ERR_EXPECTED_LPAREN,          (char *) "Expected a left parenthesis" },
     { ERR_EXPECTED_RPAREN,          (char *) "Expected a right parenthesis" },
-    { ERR_EXPECTED_STR,             (char *) "Expcted a string" },
-    { ERR_EXPECTED_EXPR,            (char *) " " },
+    { ERR_EXPECTED_STR,             (char *) "Expected a string" },
+    { ERR_EXPECTED_OPCODE,          (char *) "Epected an opCode" },
     { ERR_EXPECTED_INSTR_OPT,       (char *) "Expected an instruction option" },
     { ERR_EXPECTED_DIAG_OP,         (char *) "Expcted the DIAG opCode" },
     { ERR_EXPECTED_GENERAL_REG,     (char *) "Expected a general register" },
@@ -1251,9 +1251,17 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
     while ( isToken( TOK_PERIOD )) {
         
         nextToken( );
-        if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
         
-        char        *optBuf     = currentToken.str;
+        if ( isToken( TOK_OP_B )) {
+            
+            currentToken.typ = TYP_IDENT;
+            currentToken.tid = TOK_IDENT;
+            strncpy( currentToken.name, "B", 4 );
+        }
+        
+        if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
+          
+        char        *optBuf     = currentToken.name;
         int         optStrLen   = (int) strlen( optBuf );
         
         if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrMask |= IF_EQ;
@@ -1427,12 +1435,12 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         else throw ( ERR_EXPECTED_COMMA );
     }
     
-    if ( instrOpToken == TOK_OP_AND ) {
+    if (( instrOpToken == TOK_OP_AND ) || ( instrOpToken == TOK_OP_OR )){
         
         if ( instrFlags & IF_C ) depositInstrBit( instr, 20, true );
         if ( instrFlags & IF_N ) depositInstrBit( instr, 21, true );
     }
-    else if (( instrOpToken == TOK_OP_OR ) || ( instrOpToken == TOK_OP_XOR )) {
+    else if ( instrOpToken == TOK_OP_XOR ) {
         
         if ( instrFlags & IF_N ) depositInstrBit( instr, 21, true );
     }
@@ -2305,6 +2313,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             default: throw ( ERR_INVALID_OP_CODE );
         }
     }
+    else throw ( ERR_EXPECTED_OPCODE );
 }
 
 } // namespace
