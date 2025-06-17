@@ -1,15 +1,15 @@
 ///------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Sketch
+// Twin-64 - A 64-bit Processor
 //
 //------------------------------------------------------------------------------------------------------------
-// This module contains all of the mothods for the different windows that the simlulator supports. The
-// exception is the command window, which is in a separate file. A window generally consist of a banner line,
-// shown in inverse video and a nuber of body lines.
+// This module contains all of the processor methods that the emulator supports.
+//
+//
 //
 //------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Sketch
+// Twin-64 - A 64-bit Processor
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU
@@ -183,7 +183,7 @@ void formatDecVal( T64Word value, char *buf ) {
 //
 //************************************************************************************************************
 //************************************************************************************************************
-//
+// 
 //
 //------------------------------------------------------------------------------------------------------------
 T64Tlb::T64Tlb( int size ) {
@@ -213,11 +213,10 @@ T64TlbEntry *T64Tlb::lookupTlb( T64Word vAdr ) {
     return( nullptr );
 }
 
-int T64Tlb::insertTlb( T64Word vAdr, T64Word info ) {
+void T64Tlb::insertTlb( T64Word vAdr, T64Word info ) {
     
     // ??? to do ...
     
-    return( 0 );
 }
 
 void T64Tlb::purgeTlb( T64Word vAdr ) {
@@ -236,13 +235,6 @@ T64TlbEntry *T64Tlb::getTlbEntry( int index ) {
     else                                    return( nullptr );
 }
 
-void T64Tlb::setTlbEntry( int index, T64TlbEntry *entry ) {
-    
-    if ( isInRange( index, 0, size - 1 )) {
-        
-        map[ index ] = *entry;
-    }
-}
 
 //************************************************************************************************************
 //************************************************************************************************************
@@ -1261,7 +1253,9 @@ void T64Cpu::executeInstr( ) {
                 
                 if ( extractField( instrReg, 19, 3 ) == 0 ) {
                     
-                    setRegR(instrReg, tlb -> insertTlb( getRegB(instrReg ), getRegB(instrReg )));
+                    tlb -> insertTlb( getRegB(instrReg ), getRegB(instrReg ));
+                    
+                    setRegR( instrReg, 1 );
                 }
                 else if ( extractField( instrReg, 19, 3 ) == 1 ) {
                     

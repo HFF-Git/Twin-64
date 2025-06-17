@@ -41,12 +41,50 @@ private:
 };
 
 //------------------------------------------------------------------------------------------------------------
+// Cache
+//
+//
+// ??? not sure we even need a cache for the Emulator. It is perhaps too slow. However when we have more than
+// one cpu thread, the cache protocols are interesting... also for LDR and STC. Firs version, just pass
+// through...
+//
+//------------------------------------------------------------------------------------------------------------
+struct T64CacheLine {
+    
+    bool            valid;
+    
+    // access rights, status bits
+    
+    T64Word         vAdr;
+    T64Word         pAdr;
+    T64Word         line[ 4 ]; // a constant ?
+};
+
+struct T64Cache {
+    
+    T64Cache( );
+    void reset( );
+    
+    T64CacheLine *lookupUpCache( T64Word vAdr );
+    void purgeCache( T64Word vAdr );
+    void flushCache( T64Word vAdr );
+    
+    // void insertInCache( ... );
+     
+    T64CacheLine *getCacheLine( int index );
+};
+
+
+//------------------------------------------------------------------------------------------------------------
 //
 // ??? how to best store the field data ?
 //------------------------------------------------------------------------------------------------------------
 struct T64TlbEntry {
 
     bool            valid;
+    
+    // some more flags ...
+    
     uint8_t         accessId;
     uint32_t        protectId;
     T64Word         vAdr;
@@ -54,8 +92,11 @@ struct T64TlbEntry {
 };
 
 //------------------------------------------------------------------------------------------------------------
+// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we only need one TLB for both
+// instruction and data. In the real world, we need to mke sure that we can access from both pipeline stages.
+// Our TLB is a simple array of entries, i.e. modelling a full associative array with a LRU replacement
+// policy.
 //
-// ??? just a simple translation buffer...
 //------------------------------------------------------------------------------------------------------------
 struct T64Tlb {
     
@@ -65,11 +106,12 @@ public:
     
     void            reset( );
     T64TlbEntry     *lookupTlb( T64Word vAdr );
-    int             insertTlb( T64Word vAdr, T64Word info );
-    void            purgeTlb( T64Word vAdr );
-    T64TlbEntry     *getTlbEntry( int index );
-    void            setTlbEntry( int index, T64TlbEntry *entry );
     
+    void            insertTlb( T64Word vAdr, T64Word info );
+    void            purgeTlb( T64Word vAdr );
+    
+    T64TlbEntry     *getTlbEntry( int index );
+   
 private:
     
     int             size = 0;

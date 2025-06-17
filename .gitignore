@@ -34,3 +34,21 @@ Twin-64 Emulator/Twin-64 Emulator.xcodeproj/project.xcworkspace/xcuserdata/helmu
 .DS_Store
 .DS_Store
 .DS_Store
+.DS_Store
+
+# cmake
+
+/build
+/bin
+.DS_Store
+**/.DS_Store
+**/_.DS_Store
+/*/._.DS_Store
+/*/.DS_Store
+/*/_.DS_Store
+/*/._.DS_Store
+/*/*/._.DS_Store
+/*/*/.DS_Store
+/*/*/_.DS_Store
+/*/*/._.DS_Store
+
