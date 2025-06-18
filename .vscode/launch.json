@@ -5,7 +5,7 @@
       "name": "Debug Twin64-AsmTest",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/Twin64-AsmTest",
+      "program": "${workspaceFolder}/bin/Twin64-AsmTest",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

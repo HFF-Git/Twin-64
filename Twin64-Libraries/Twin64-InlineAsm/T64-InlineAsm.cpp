@@ -1720,6 +1720,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
     
+    nextToken( );
     parseTargetReg( instr );
     parseExpr( &rExpr );
     

@@ -655,6 +655,14 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                   extractRegB( instr )));
             }
         }
+
+        case ( OPC_GRP_ALU * 16 + OPC_LDO ): {
+
+            return ( snprintf( buf, OPERAND_FIELD_LEN, "R%d, %d(R%d)",
+                                  extractRegR( instr ),
+                                  extractImm15( instr ),
+                                  extractRegB( instr )));
+        }
             
         case ( OPC_GRP_BR * 16 + OPC_B ): {
             
