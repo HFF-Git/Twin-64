@@ -137,4 +137,7 @@ enum OpCodeFam : uint32_t {
 };
 
 
+// ??? a test ..... we could move all extract / deposit / etc. to this file....
+static inline void hugo( ) {  }
+
 #endif

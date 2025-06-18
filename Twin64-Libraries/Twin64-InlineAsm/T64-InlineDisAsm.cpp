@@ -113,7 +113,7 @@ static inline int extractImm19( uint32_t instr ) {
 }
 
 static inline int extractImm20( uint32_t instr ) {
-    
+
     return ( extractField( instr, 0, 20 ));
 }
 

@@ -9,10 +9,15 @@ project( Twin64-Processor C CXX ASM )
 set( CMAKE_C_STANDARD 11 )
 set( CMAKE_CXX_STANDARD 17 ) 
 
-# add_library( ${PROJECT_NAME} STATIC     ) 
+add_library( ${PROJECT_NAME} STATIC  
 
-# target_include_directories( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
-# target_sources ( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
+    T64-Cpu.h
+   
+   
+    T64-Cpu.cpp 
+    T64-Io-Mem.cpp
+    T64-Phys-Mem.cpp
+) 
 
-# target_link_libraries( ${PROJECT_NAME}      )
-
+target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common )
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
