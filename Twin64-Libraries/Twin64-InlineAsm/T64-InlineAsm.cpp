@@ -2097,9 +2097,9 @@ void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr;
    
+    nextToken( );
     parseTargetReg( instr );
     
-    acceptComma( );
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.numVal );
     else throw ( ERR_EXPECTED_GENERAL_REG );
