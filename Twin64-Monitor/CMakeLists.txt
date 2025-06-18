@@ -16,8 +16,16 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 endif()
 
-include_directories( Twon64-Module Twin64-processor Twin64-InlineAsm )
+add_executable( ${PROJECT_NAME} main.cpp )
 
-add_executable(${PROJECT_NAME} main.cpp)
+target_include_directories( Twin64-Monitor
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}  # if you have your own headers
+        ${CMAKE_SOURCE_DIR}/Twin64-Libraries/Twin64-Common
+       # ${CMAKE_SOURCE_DIR}/Twin64-InlineAsm
+       # ${CMAKE_SOURCE_DIR}/Twin64-Module
+       # ${CMAKE_SOURCE_DIR}/Twin64-Processor
+)
 
-target_link_libraries ( Twin64-Monitor PRIVATE Twin64-Libraries )
+target_sources ( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
+target_link_libraries( ${PROJECT_NAME} Twin64-Common )

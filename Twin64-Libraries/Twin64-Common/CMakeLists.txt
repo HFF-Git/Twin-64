@@ -4,17 +4,10 @@
 # ------------------------------------------------------------------------------------------------------------
 cmake_minimum_required( VERSION 3.29 )
 
-project( Twin64-InlineAsm C CXX ASM )
+project( Twin64-Common C CXX ASM )
 
 set( CMAKE_C_STANDARD 11 )
 set( CMAKE_CXX_STANDARD 17 ) 
 
-add_library( ${PROJECT_NAME} STATIC 
-
-    T64-InlineAsm.h 
-    T64-InlineAsm.cpp 
-    T64-InlineDisasm.cpp
-) 
-
-target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common )
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
+add_library( ${PROJECT_NAME} INTERFACE ) 
+target_include_directories( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
