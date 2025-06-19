@@ -86,7 +86,7 @@ static inline int extractRegA( uint32_t instr ) {
     return ( extractField( instr, 9, 4 ));
 }
 
-static inline int extractDw( uint32_t instr ) {
+static inline int extractDwField( uint32_t instr ) {
     
     return ( extractField( instr, 13, 2 ));
 }
@@ -98,7 +98,7 @@ static inline int extractImm13( uint32_t instr ) {
 
 static inline int extractScaledImm13( uint32_t instr ) {
     
-    int val = extractImm13( instr ) << extractField( instr, 13, 2 );
+    int val = extractImm13( instr ) << extractDwField( instr );
     return ( val );
 }
 
@@ -147,11 +147,11 @@ int printCondField( char *buf, uint32_t cmpCode ) {
     
     switch( cmpCode ) {
             
-        case 0:  return ( snprintf( buf, 4, "EQ" ));
-        case 1:  return ( snprintf( buf, 4, "LT" ));
-        case 2:  return ( snprintf( buf, 4, "NE" ));
-        case 3:  return ( snprintf( buf, 4, "LE" ));
-        default: return ( snprintf( buf, 4, "**" ));
+        case 0:  return ( snprintf( buf, 4, ".EQ" ));
+        case 1:  return ( snprintf( buf, 4, ".LT" ));
+        case 2:  return ( snprintf( buf, 4, ".NE" ));
+        case 3:  return ( snprintf( buf, 4, ".LE" ));
+        default: return ( snprintf( buf, 4, ".**" ));
     }
 }
 
@@ -191,7 +191,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_ADD ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "ADD" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             return ( cursor );
         }
             
@@ -203,7 +203,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_SUB ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "SUB" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             return ( cursor );
         }
             
@@ -218,7 +218,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_AND ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "AND" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
             if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
             return ( cursor );
@@ -235,7 +235,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_OR ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "OR" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".C" );
             if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
             return ( cursor );
@@ -252,7 +252,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_XOR ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "XOR" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".**" );
             if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".N" );
             return ( cursor );
@@ -268,7 +268,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_CMP ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "CMP" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             cursor += printCondField( buf + cursor, extractField( instr, 20, 2 ));
             return ( cursor );
         }
@@ -342,7 +342,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             
             if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".M" );
             if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".**" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             return ( cursor );
         }
             
@@ -351,7 +351,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "ST" );
             if ( extractBit( instr, 20 )) cursor += snprintf( buf + cursor, 4, ".M" );
             if ( extractBit( instr, 21 )) cursor += snprintf( buf + cursor, 4, ".**" );
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             return ( cursor );
         }
             
@@ -399,7 +399,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_BR * 16 + OPC_CBR ): {
             
             int cursor = snprintf( buf, OPCODE_FIELD_LEN, "CBR" );
-            if ( extractBit( instr, 19 ))   cursor += snprintf( buf + cursor, 4, ".**" );
+            if ( extractBit( instr, 19 )) cursor += snprintf( buf + cursor, 4, ".**" );
             cursor += printCondField( buf + cursor, extractField( instr, 20, 2 ));
             return ( cursor );
         }
@@ -426,7 +426,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             if ( extractField( instr, 19, 3 ) == 0 ) cursor = snprintf( buf, OPCODE_FIELD_LEN, "LPA" );
             else                                     cursor = snprintf( buf, OPCODE_FIELD_LEN, "**LPAOP**" );
             
-            cursor += printDwField( buf + cursor, extractField( instr, 13, 2 ));
+            cursor += printDwField( buf + cursor, extractDwField( instr ));
             return ( cursor );
         }
             
