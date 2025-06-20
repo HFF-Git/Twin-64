@@ -61,7 +61,7 @@ void testAsmDisAsm( char *asmStr ) {
     int errCode = doAsm -> assembleInstr( asmStr, &instr );
     if ( errCode == 0 ) {
         
-        printf( "0x%08x -> \n", instr );
+        printf( "0x%08x -> ", instr );
 
         disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
         printf( "\"%s\"\n", buf );

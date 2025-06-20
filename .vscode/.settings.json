@@ -1,13 +1,3 @@
 {
 
-"clangd.path": "/usr/bin/clangd",
-"clangd.arguments": [
-    "--log=verbose",
-    "--compile-commands-dir=build",
-    "--header-insertion=never",
-    "-std=gnu++17",
-    "-Wno-gnu-anonymous-struct",
-    "-Wno-nested-anon-types"
-  ],
-  "C_Cpp.intelliSenseEngine": "disabled"
 }
