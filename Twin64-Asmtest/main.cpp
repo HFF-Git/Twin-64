@@ -40,7 +40,7 @@ void parseParameters( int argc, const char * argv[] ) {
 //------------------------------------------------------------------------------------------------------------
 void assemble( char *asmStr ) {
     
-    uint32_t instr;
+    static uint32_t instr;
     int errCode = doAsm -> assembleInstr( asmStr, &instr );
     if ( errCode == 0 ) printf( "0x%08x\n", instr );
     else                printf( "%s\n", doAsm -> getErrStr( doAsm -> getErrId( )));
@@ -55,8 +55,8 @@ void disassemble( uint32_t instr ) {
 
 void testAsmDisAsm( char *asmStr ) {
 
-    uint32_t    instr;
-    char        buf[ 128 ];
+    static uint32_t instr;
+    char            buf[ 128 ];
     
     int errCode = doAsm -> assembleInstr( asmStr, &instr );
     if ( errCode == 0 ) {

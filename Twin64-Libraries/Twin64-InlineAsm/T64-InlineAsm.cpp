@@ -485,7 +485,6 @@ const Token AsmTokTab[ ] = {
     { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .u.val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
     { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .u.val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
-   
     //--------------------------------------------------------------------------------------------------------
     // Assembler synthetioc mnemonics. They ar like the assembler mnemonics, except that they pre decode some
     // bits settings in the option fields and reduce the ".<opt>" notation settings through meaningful
@@ -509,13 +508,12 @@ struct Expr {
     
     union {
         
-        struct {    T64Word     val;                 };
-        struct {    T64Word     adr;                 };
-        struct {    char        str[ TOK_STR_SIZE ]; };
+        struct { T64Word    val;                 };
+        struct { char       str[ TOK_STR_SIZE ]; };
     } u;
 };
 
-const Expr initExpr = { .typ = TYP_NIL, .u.val = 0 }; 
+const Expr INIT_EXPR = { .typ = TYP_NIL, .u.val = 0 }; 
 
 //------------------------------------------------------------------------------------------------------------
 // Global variables for the tokenizer.
@@ -1336,7 +1334,7 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseTargetReg( uint32_t *instr ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.u.val );
@@ -1369,7 +1367,7 @@ void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
 //-----------------------------------------------------------------------------------------------------------
 void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1464,7 +1462,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1515,7 +1513,7 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr      = initExpr;
+    Expr        rExpr      = INIT_EXPR;
     uint32_t    instrFlags = IF_NIL;
     
     nextToken( );
@@ -1570,7 +1568,7 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     nextToken( );
     parseTargetReg( instr );
@@ -1611,7 +1609,7 @@ void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1654,7 +1652,7 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr      = initExpr;
+    Expr        rExpr      = INIT_EXPR;
     uint32_t    instrFlags = IF_NIL;
     
     nextToken( );
@@ -1698,7 +1696,7 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr      = initExpr;
+    Expr        rExpr      = INIT_EXPR;
     uint32_t    instrFlags = IF_NIL;
     
     nextToken( );
@@ -1723,7 +1721,7 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     nextToken( );
     parseTargetReg( instr );
@@ -1759,7 +1757,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1817,7 +1815,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1853,7 +1851,7 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
   
     nextToken( );
     parseExpr( &rExpr );
@@ -1880,7 +1878,7 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
    
     nextToken( );
     parseExpr( &rExpr );
@@ -1913,7 +1911,7 @@ void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1950,7 +1948,7 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -1990,7 +1988,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr        rExpr       = initExpr;
+    Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
@@ -2030,7 +2028,7 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     nextToken( );
     parseTargetReg( instr );
@@ -2052,7 +2050,7 @@ void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     nextToken( );
     parseTargetReg( instr );
@@ -2082,7 +2080,7 @@ void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
 
     nextToken( );
     parseTargetReg( instr );
@@ -2111,7 +2109,7 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
     
     nextToken( );
     parseTargetReg( instr );
@@ -2140,7 +2138,7 @@ void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
    
     nextToken( );
     parseTargetReg( instr );
@@ -2163,7 +2161,7 @@ void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
    
     nextToken( );
     parseTargetReg( instr );
@@ -2201,7 +2199,7 @@ void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
 //------------------------------------------------------------------------------------------------------------
 void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = initExpr;
+    Expr rExpr = INIT_EXPR;
    
     nextToken( );
     parseTargetReg( instr );
