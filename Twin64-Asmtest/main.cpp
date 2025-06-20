@@ -53,10 +53,28 @@ void disassemble( uint32_t instr ) {
     printf( "\"%s\"\n", buf );
 }
 
+void testAsmDisAsm( char *asmStr ) {
+
+    uint32_t    instr;
+    char        buf[ 128 ];
+    
+    int errCode = doAsm -> assembleInstr( asmStr, &instr );
+    if ( errCode == 0 ) {
+        
+        printf( "0x%08x -> \n", instr );
+
+        disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+        printf( "\"%s\"\n", buf );
+    }
+    else printf( "%s\n", doAsm -> getErrStr( doAsm -> getErrId( )));
+
+}
+
 void printHelp( ) {
     
     printf( "A <argStr> -> assemble input argument\n" );
     printf( "D <val>    -> disassemble instruction value\n" );
+    printf( "T <argStr> -> assemble input, show and pass to disassemble\n" );
     printf( "E          -> exit\n" );
 }
 
@@ -116,6 +134,11 @@ int main( int argc, const char * argv[] ) {
             if (( arg != nullptr ) && ( sscanf( arg, "%i", &val ) == 1 )) disassemble( val );
             else printf( "Invalid number for disassembler\n" );
         }
+        else if ( strcmp( cmd, "T" ) == 0 ) {
+        
+            if ( arg != nullptr ) testAsmDisAsm( arg );
+            else printf( "Expexted assembler input string\n" );
+        }  
         else if ( strcmp( cmd, "E" ) == 0 ) {
         
             break;
