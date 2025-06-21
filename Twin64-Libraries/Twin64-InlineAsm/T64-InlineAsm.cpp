@@ -631,8 +631,8 @@ void parseNum( ) {
 // "parseIdent" parses an identifier. It is a sequence of characters starting with an alpha character. An
 // identifier found in the token table will assume the type and value of the token found. Any other identifier
 // is just an identifier symbol. There is one more thing. There are qualified constants that begin with a
-// character followed by a percent character, followed by the value. During the character analysis, We first
-// check for these kind of qualifiers and if found hand over to parse a number.
+// character followed by a percent character, followed by a numeric value. During the character analysis, We
+// first check for these kind of qualifiers and if found hand over to parse a number.
 //
 //------------------------------------------------------------------------------------------------------------
 void parseIdent( ) {

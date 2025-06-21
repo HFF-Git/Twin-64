@@ -4,10 +4,13 @@
 # ------------------------------------------------------------------------------------------------------------
 cmake_minimum_required( VERSION 3.29 )
 
-project( Twin64-Module C CXX ASM )
+project( Twin64-System C CXX ASM )
 
-# add_library( ${PROJECT_NAME} STATIC        ) 
+add_library( ${PROJECT_NAME} STATIC  
 
-# target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common )
-# target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
+    T64-System.h 
+    T64-System.cpp
+ ) 
 
+target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common )
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )

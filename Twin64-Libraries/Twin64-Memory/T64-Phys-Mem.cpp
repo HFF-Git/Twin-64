@@ -23,7 +23,33 @@
 //
 //------------------------------------------------------------------------------------------------------------
 #include "T64-Common.h"
-#include "T64-Cpu.h"
+#include "T64-Processor.h"
+
+// ??? to sort....
+
+//------------------------------------------------------------------------------------------------------------
+//
+//
+//------------------------------------------------------------------------------------------------------------
+struct T64PhysMem {
+    
+public:
+    
+    T64PhysMem( T64Word size );
+    
+    void        reset( );
+    T64Word     readMem( T64Word adr, int len, bool signExtend = false );
+    void        writeMem( T64Word adr, T64Word arg, int len );
+   
+private:
+    
+    T64Word    size = 0;
+    uint8_t    *mem = nullptr;
+    
+};
+
+
+
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -31,9 +57,11 @@
 //------------------------------------------------------------------------------------------------------------
 namespace {
 
-static inline T64Word roundup( T64Word arg ) {
+
+static inline T64Word roundup( T64Word arg, int round ) {
     
-    return( arg ); // for now ...
+    if ( round == 0 ) return ( arg );
+    return ((( arg + round - 1 ) / round ) * round );
 }
 
 static inline bool isAligned( T64Word adr, int align ) {
@@ -71,7 +99,7 @@ static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
 //------------------------------------------------------------------------------------------------------------
 T64PhysMem::T64PhysMem( T64Word size ) {
     
-    this -> size = roundup( size );
+    this -> size = roundup( size, 16 ); // ??? what is teh roundup level ?
     this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
 }
 

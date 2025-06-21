@@ -1,16 +1,29 @@
+//------------------------------------------------------------------------------------------------------------
 //
-//  T64-Core.h
-//  Twin-64 Emulator
+// Twin-64 - Processor
 //
-//  Created by Helmut Fieres on 01.05.25.
+//------------------------------------------------------------------------------------------------------------
+// This ...
 //
-
-#ifndef T64_Cpu_h
-#define T64_Cpu_h
+//------------------------------------------------------------------------------------------------------------
+//
+// Twin-64 - Processor
+// Copyright (C) 2025 - 2025 Helmut Fieres
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation, either version 3 of the License,
+// or any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+// License for more details. You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//------------------------------------------------------------------------------------------------------------
+#ifndef T64_Processor_h
+#define T64_Processor_h
 
 #include "T64-Common.h"
-
-
 
 //------------------------------------------------------------------------------------------------------------
 //
@@ -62,21 +75,23 @@ struct T64CacheLine {
 struct T64Cache {
     
     T64Cache( );
-    void reset( );
+    void            reset( );
     
-    T64CacheLine *lookupUpCache( T64Word vAdr );
-    void purgeCache( T64Word vAdr );
-    void flushCache( T64Word vAdr );
+    void            readCacheWord( T64Word vAdr, T64Word *data );
+    void            writeCacheWord( T64Word vAdr, T64Word *data );
+    void            fetchCachLine( T64Word vAdr,  T64Word *data );
+    void            purgeCacheLine( T64Word vAdr );
+    void            flushCacheLine( T64Word vAdr );
     
-    // void insertInCache( ... );
-     
-    T64CacheLine *getCacheLine( int index );
+    T64CacheLine    *getCacheLine( int index );
 };
 
-
 //------------------------------------------------------------------------------------------------------------
+// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we only need one TLB for both
+// instruction and data. In the real world, we need to mke sure that we can access from both pipeline stages.
+// Our TLB is a simple array of entries, i.e. modelling a full associative array with a LRU replacement
+// policy.
 //
-// ??? how to best store the field data ?
 //------------------------------------------------------------------------------------------------------------
 struct T64TlbEntry {
 
@@ -90,13 +105,6 @@ struct T64TlbEntry {
     T64Word         pAdr;
 };
 
-//------------------------------------------------------------------------------------------------------------
-// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we only need one TLB for both
-// instruction and data. In the real world, we need to mke sure that we can access from both pipeline stages.
-// Our TLB is a simple array of entries, i.e. modelling a full associative array with a LRU replacement
-// policy.
-//
-//------------------------------------------------------------------------------------------------------------
 struct T64Tlb {
     
 public:
@@ -117,59 +125,15 @@ private:
     T64TlbEntry     *map = nullptr;
 };
 
-
 //------------------------------------------------------------------------------------------------------------
-//
+// The CPU core executs the instructions.
 //
 //------------------------------------------------------------------------------------------------------------
-struct T64PhysMem {
+struct T64Processor {
     
 public:
     
-    T64PhysMem( T64Word size );
-    
-    void        reset( );
-    T64Word     readMem( T64Word adr, int len, bool signExtend = false );
-    void        writeMem( T64Word adr, T64Word arg, int len );
-   
-private:
-    
-    T64Word    size = 0;
-    uint8_t    *mem = nullptr;
-    
-};
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-struct T64IoMem {
-    
-public:
-    
-    T64IoMem( T64Word size );
-    
-    void        reset( );
-    T64Word     readIoMem( T64Word adr, int len, bool signExtend = false );
-    void        writeIoMem( T64Word adr, T64Word arg, int len );
-    
-private:
-    
-    T64Word    size = 0;
-    
-    // how to structure this space...
-    
-};
-
-//------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-struct T64Cpu {
-    
-public:
-    
-    T64Cpu( T64PhysMem *physMem, T64IoMem *ioMem );
+    T64Processor(  );
     
     void            reset( );
     void            step( int steps = 1 );
@@ -184,13 +148,15 @@ public:
     T64Word         getPswReg( );
     void            setPswReg( T64Word val );
     
+    void            purgeTlb( T64Word vAdr );
     T64TlbEntry     *getTlbEntry( int index );
     void            setTlbEntry( int index );
+
+    void            flushCache( T64Word vAdr );
+    void            purgeCache( T64Word vAdr );
+    T64CacheLine    *getCacheLine( int index );
             
 private:
-    
-    void            fetchInstr( );
-    void            executeInstr( );
 
     T64Word         getRegR( uint32_t instr );
     T64Word         getRegB( uint32_t instr );
@@ -204,6 +170,9 @@ private:
     
     T64Word         translateAdr( T64Word vAdr );
     
+    void            instrRead( );
+    void            instrExecute( );
+
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
     T64Word         dataReadRegBOfsRegX( uint32_t instr );
     T64Word         dataRead( T64Word vAdr, int len  );
@@ -220,8 +189,6 @@ private:
     uint32_t        instrReg;
     T64Word         resvReg;
     
-    T64PhysMem      *physMem    = nullptr;
-    T64IoMem        *ioMem      = nullptr;
     T64Tlb          *tlb        = nullptr;
 };
 
