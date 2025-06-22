@@ -4,13 +4,13 @@
     {
       "label": "Run Twin64-AsmTest",
       "type": "shell",
-      "command": "open -a Terminal \"${workspaceFolder}/build/bin/Twin64-AsmTest\"",
+      "command": "open -a Terminal \"${workspaceFolder}/bin/Twin64-AsmTest\"",
       "problemMatcher": []
     },
     {
       "label": "Run Twin64-Monitor",
       "type": "shell",
-      "command": "open -a Terminal \"${workspaceFolder}/build/bin/Twin64-Monitor\"",
+      "command": "open -a Terminal \"${workspaceFolder}/bin/Twin64-Monitor\"",
       "problemMatcher": []
     },
     {

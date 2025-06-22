@@ -26,33 +26,6 @@
 #include "T64-Common.h"
 
 //------------------------------------------------------------------------------------------------------------
-//
-//
-//------------------------------------------------------------------------------------------------------------
-struct T64Trap {
-    
-public:
-    
-    T64Trap( int    trapCode,
-             int    trapInfo1 = 0,
-             int    trapInfo2 = 0,
-             int    trapInfo3 = 0 ) {
-        
-        this -> trapCode  = trapCode;
-        this -> trapInfo1 = trapInfo1;
-        this -> trapInfo2 = trapInfo1;
-        this -> trapInfo3 = trapInfo1;
-    }
-    
-private:
-    
-    int trapCode;
-    int trapInfo1;
-    int trapInfo2;
-    int trapInfo3;
-};
-
-//------------------------------------------------------------------------------------------------------------
 // Cache
 //
 //
@@ -138,23 +111,23 @@ public:
     void            reset( );
     void            step( int steps = 1 );
     void            run( );
-    
+
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );
-    
+
     T64Word         getControlReg( int index );
     void            setControlReg( int index, T64Word val );
-    
-    T64Word         getPswReg( );
-    void            setPswReg( T64Word val );
-    
-    void            purgeTlb( T64Word vAdr );
+
+    void            addTlbEntry( T64Word vAdr, T64Word info );
+    void            removeTlbEntry( T64Word vAdr, T64Word info );
     T64TlbEntry     *getTlbEntry( int index );
-    void            setTlbEntry( int index );
 
     void            flushCache( T64Word vAdr );
     void            purgeCache( T64Word vAdr );
-    T64CacheLine    *getCacheLine( int index );
+    T64CacheLine    *getCacheEntry( int set, int index );
+    
+    T64Word         getPswReg( );
+    void            setPswReg( T64Word val );
             
 private:
 
@@ -163,23 +136,25 @@ private:
     T64Word         getRegA( uint32_t instr );
     void            setRegR( uint32_t instr, T64Word val );
     
-    T64Word         getImm13( uint32_t instr );
-    T64Word         getImm15( uint32_t instr );
-    T64Word         getImm19( uint32_t instr );
-    T64Word         getImm20U( uint32_t instr );
+    T64Word         extractImm13( uint32_t instr );
+    T64Word         extractImm15( uint32_t instr );
+    T64Word         extractImm19( uint32_t instr );
+    T64Word         extractImm20U( uint32_t instr );
+    T64Word         extractDwField( uint32_t instr );
     
     T64Word         translateAdr( T64Word vAdr );
     
     void            instrRead( );
-    void            instrExecute( );
+    T64Word         dataRead( T64Word vAdr, int len  );
+    void            dataWrite( T64Word vAdr, T64Word val, int len );
 
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
     T64Word         dataReadRegBOfsRegX( uint32_t instr );
-    T64Word         dataRead( T64Word vAdr, int len  );
-    
+
     void            dataWriteRegBOfsImm13( uint32_t instr );
     void            dataWriteRegBOfsRegX( uint32_t instr );
-    void            dataWrite( T64Word vAdr, T64Word val, int len );
+    
+    void            instrExecute( );
    
 private:
     
@@ -190,6 +165,7 @@ private:
     T64Word         resvReg;
     
     T64Tlb          *tlb        = nullptr;
+    T64Cache        *cache      = nullptr;
 };
 
 

@@ -1,13 +1,15 @@
 //------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - System
+// Twin-64 - A 64-bit CPU - Physical memory
 //
 //------------------------------------------------------------------------------------------------------------
-// This ...
+// This module contains all of the mothods for the different windows that the simlulator supports. The
+// exception is the command window, which is in a separate file. A window generally consist of a banner line,
+// shown in inverse video and a nuber of body lines.
 //
 //------------------------------------------------------------------------------------------------------------
 //
-// Twin-64 - System
+// Twin-64 - A 64-bit CPU - Physical memory
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU
@@ -20,42 +22,34 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //------------------------------------------------------------------------------------------------------------
-#ifndef T64_System_h
-#define T64_System_h
+#ifndef T64_Memory_h
+#define T64_Memory_h
 
 #include "T64-Common.h"
-#include "T64-Processor.h"
-#include "T64-Memory.h"
-
-//------------------------------------------------------------------------------------------------------------
-//
-// ??? should we place the module logic here ?
-// ??? modules such as processor or memory extend this class.
-//------------------------------------------------------------------------------------------------------------
-struct T64Module {
-
-
-
-};
-
 
 //------------------------------------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------------------------------------
-struct Twin64System {
-
-    public: 
-
-    Twin64System( );
-
-    void            reset( );
-
-    T64Processor    *getProcessor( );
-    T64Memory       *getMemory( );
+struct T64Memory {
     
-   // ?? an array of modules ? 
+public:
+    
+    T64Memory( T64Word size );
+    
+    void        reset( );
+    T64Word     read( T64Word pAdr, int len, bool signExtend = false );
+    void        write( T64Word pAdr, T64Word arg, int len );
 
+    // ??? separate routines for monitor display ?
+    // int getWord( T64Word adr, uint32_t *data );
+    // int putWord( T64Word adr, uint32_t data );
+   
+private:
+    
+    T64Word    size = 0;
+    uint8_t    *mem = nullptr;
+    
 };
 
 #endif

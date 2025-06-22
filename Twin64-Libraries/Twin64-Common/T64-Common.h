@@ -60,11 +60,38 @@ enum TrapCode : int {
     PHYS_MEM_ADR_TRAP       = 4,
     IO_MEM_ADR_TRAP         = 5,
     
-    OVERFLOW_TRAP       = 6,
-    PROTECTION_TRAP     = 7,
-    PRIV_VIOLATION_TRAP = 8,
-    TLB_ACCESS_TRAP     = 9,
+    OVERFLOW_TRAP           = 6,
+    PROTECTION_TRAP         = 7,
+    PRIV_VIOLATION_TRAP     = 8,
+    TLB_ACCESS_TRAP         = 9,
     
+};
+
+//------------------------------------------------------------------------------------------------------------
+// Trap definition. A Trap will consist of a trap code and up to three info parameters.
+//
+//------------------------------------------------------------------------------------------------------------
+struct T64Trap {
+    
+public:
+    
+    T64Trap( int    trapCode,
+             int    trapInfo1 = 0,
+             int    trapInfo2 = 0,
+             int    trapInfo3 = 0 ) {
+        
+        this -> trapCode  = trapCode;
+        this -> trapInfo1 = trapInfo1;
+        this -> trapInfo2 = trapInfo1;
+        this -> trapInfo3 = trapInfo1;
+    }
+    
+private:
+    
+    int trapCode;
+    int trapInfo1;
+    int trapInfo2;
+    int trapInfo3;
 };
 
 //------------------------------------------------------------------------------------------------------------

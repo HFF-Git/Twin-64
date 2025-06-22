@@ -8,13 +8,9 @@ project( Twin64-Memory C CXX ASM )
 
 add_library( ${PROJECT_NAME} STATIC 
     
+    T64-Memory.h
+    T64-Memory.cpp
 ) 
 
-target_include_directories( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
-target_sources ( ${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} )
-
-target_link_libraries( ${PROJECT_NAME} 
-
-    
-    )
-
+target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common )
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
