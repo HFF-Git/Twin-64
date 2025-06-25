@@ -156,62 +156,62 @@ enum TokId : int {
     // General tokens and symbols.
     //
     //--------------------------------------------------------------------------
-    TOK_NIL                 = 0,        TOK_ERR                 = 1,        TOK_EOS                 = 2,
-    TOK_COMMA               = 3,        TOK_PERIOD              = 4,        TOK_LPAREN              = 5,
-    TOK_RPAREN              = 6,        TOK_PLUS                = 8,
-    TOK_MINUS               = 9,        TOK_MULT                = 10,       TOK_DIV                 = 11,
-    TOK_MOD                 = 12,       TOK_REM                 = 13,       TOK_NEG                 = 14,
-    TOK_AND                 = 15,       TOK_OR                  = 16,       TOK_XOR                 = 17,
-    TOK_IDENT               = 24,       TOK_NUM                 = 25,       TOK_STR                 = 26,
+    TOK_NIL         = 0,    TOK_ERR         = 1,    TOK_EOS         = 2,        
+    TOK_COMMA       = 3,    TOK_PERIOD      = 4,    TOK_LPAREN      = 5,
+    TOK_RPAREN      = 6,    TOK_PLUS        = 8,    TOK_MINUS       = 9,        
+    TOK_MULT        = 10,   TOK_DIV         = 11,   TOK_MOD         = 12,       
+    TOK_REM         = 13,   TOK_NEG         = 14,   TOK_AND         = 15,       
+    TOK_OR          = 16,   TOK_XOR         = 17,   TOK_IDENT       = 24,       
+    TOK_NUM         = 25,   TOK_STR         = 26,
     
     //--------------------------------------------------------------------------
     // General, Segment and Control Registers Tokens.
     //
     //--------------------------------------------------------------------------
-    REG_SET                 = 100,
+    REG_SET         = 100,
     
-    TOK_GR_0                = 101,      TOK_GR_1                = 102,      TOK_GR_2                = 103,
-    TOK_GR_3                = 104,      TOK_GR_4                = 105,      TOK_GR_5                = 106,
-    TOK_GR_6                = 107,      TOK_GR_7                = 108,      TOK_GR_8                = 109,
-    TOK_GR_9                = 110,      TOK_GR_10               = 111,      TOK_GR_11               = 112,
-    TOK_GR_12               = 113,      TOK_GR_13               = 114,      TOK_GR_14               = 115,
-    TOK_GR_15               = 116,
+    TOK_GR_0        = 101,  TOK_GR_1        = 102,  TOK_GR_2        = 103,
+    TOK_GR_3        = 104,  TOK_GR_4        = 105,  TOK_GR_5        = 106,
+    TOK_GR_6        = 107,  TOK_GR_7        = 108,  TOK_GR_8        = 109,
+    TOK_GR_9        = 110,  TOK_GR_10       = 111,  TOK_GR_11       = 112,
+    TOK_GR_12       = 113,  TOK_GR_13       = 114,  TOK_GR_14       = 115,
+    TOK_GR_15       = 116,
     
-    TOK_CR_0                = 121,      TOK_CR_1                = 122,      TOK_CR_2                = 123,
-    TOK_CR_3                = 124,      TOK_CR_4                = 125,      TOK_CR_5                = 126,
-    TOK_CR_6                = 127,      TOK_CR_7                = 128,      TOK_CR_8                = 129,
-    TOK_CR_9                = 130,      TOK_CR_10               = 131,      TOK_CR_11               = 132,
-    TOK_CR_12               = 133,      TOK_CR_13               = 134,      TOK_CR_14               = 136,
-    TOK_CR_15               = 137,
+    TOK_CR_0        = 121,  TOK_CR_1        = 122,  TOK_CR_2        = 123,
+    TOK_CR_3        = 124,  TOK_CR_4        = 125,  TOK_CR_5        = 126,
+    TOK_CR_6        = 127,  TOK_CR_7        = 128,  TOK_CR_8        = 129,
+    TOK_CR_9        = 130,  TOK_CR_10       = 131,  TOK_CR_11       = 132,
+    TOK_CR_12       = 133,  TOK_CR_13       = 134,  TOK_CR_14       = 136,
+    TOK_CR_15       = 137,
     
     //--------------------------------------------------------------------------
     // OP Code Tokens.
     //
     //--------------------------------------------------------------------------
-    TOK_OP_NOP              = 300,
+    TOK_OP_NOP      = 300,
     
-    TOK_OP_AND              = 301,      TOK_OP_OR               = 302,      TOK_OP_XOR              = 303,
-    TOK_OP_ADD              = 304,      TOK_OP_SUB              = 305,      TOK_OP_CMP              = 306,
+    TOK_OP_AND      = 301,  TOK_OP_OR       = 302,  TOK_OP_XOR      = 303,
+    TOK_OP_ADD      = 304,  TOK_OP_SUB      = 305,  TOK_OP_CMP      = 306,
     
-    TOK_OP_EXTR             = 311,      TOK_OP_DEP              = 312,      TOK_OP_DSR              = 313,
-    TOK_OP_SHL1A            = 314,      TOK_OP_SHL2A            = 315,      TOK_OP_SHL3A            = 316,
-    TOK_OP_SHR1A            = 317,      TOK_OP_SHR2A            = 318,      TOK_OP_SHR3A            = 319,
+    TOK_OP_EXTR     = 311,  TOK_OP_DEP      = 312,  TOK_OP_DSR      = 313,
+    TOK_OP_SHL1A    = 314,  TOK_OP_SHL2A    = 315,  TOK_OP_SHL3A    = 316,
+    TOK_OP_SHR1A    = 317,  TOK_OP_SHR2A    = 318,  TOK_OP_SHR3A    = 319,
     
-    TOK_OP_LDI              = 331,      TOK_OP_ADDIL            = 332,      TOK_OP_LDO              = 333,
-    TOK_OP_LD               = 334,      TOK_OP_LDR              = 335,
-    TOK_OP_ST               = 337,      TOK_OP_STC              = 338,
+    TOK_OP_LDI      = 331,  TOK_OP_ADDIL    = 332,  TOK_OP_LDO      = 333,
+    TOK_OP_LD       = 334,  TOK_OP_LDR      = 335,
+    TOK_OP_ST       = 337,  TOK_OP_STC      = 338,
     
-    TOK_OP_B                = 341,      TOK_OP_BR               = 342,      TOK_OP_BV               = 343,
-    TOK_OP_BB               = 344,      TOK_OP_CBR              = 345,      TOK_OP_MBR              = 346,
+    TOK_OP_B        = 341,  TOK_OP_BR       = 342,  TOK_OP_BV       = 343,
+    TOK_OP_BB       = 344,  TOK_OP_CBR      = 345,  TOK_OP_MBR      = 346,
     
-    TOK_OP_MFCR             = 351,      TOK_OP_MTCR             = 352,
-    TOK_OP_RSM              = 353,      TOK_OP_SSM              = 354,
-    TOK_OP_LPA              = 355,      TOK_OP_PRB              = 356,
+    TOK_OP_MFCR     = 351,  TOK_OP_MTCR     = 352,
+    TOK_OP_RSM      = 353,  TOK_OP_SSM      = 354,
+    TOK_OP_LPA      = 355,  TOK_OP_PRB      = 356,
     
-    TOK_OP_ITLB             = 361,      TOK_OP_PTLB             = 362,
-    TOK_OP_PCA              = 363,      TOK_OP_FCA              = 364,
+    TOK_OP_ITLB     = 361,  TOK_OP_PTLB     = 362,
+    TOK_OP_PCA      = 363,  TOK_OP_FCA      = 364,
     
-    TOK_OP_RFI              = 371,      TOK_OP_DIAG             = 372,      TOK_OP_TRAP             = 373,
+    TOK_OP_RFI      = 371,  TOK_OP_DIAG     = 372,  TOK_OP_TRAP     = 373,
     
     //--------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
@@ -404,29 +404,29 @@ const Token AsmTokTab[ ] = {
     // Runtime architcture register names for general registers.
     //
     //--------------------------------------------------------------------------
-    { .name = "T0",             .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1         },
-    { .name = "T1",             .typ = TYP_GREG,            .tid = TOK_GR_2,        .val =  2         },
-    { .name = "T2",             .typ = TYP_GREG,            .tid = TOK_GR_3,        .val =  3         },
-    { .name = "T3",             .typ = TYP_GREG,            .tid = TOK_GR_4,        .val =  4         },
-    { .name = "T4",             .typ = TYP_GREG,            .tid = TOK_GR_5,        .val =  5         },
-    { .name = "T5",             .typ = TYP_GREG,            .tid = TOK_GR_6,        .val =  6         },
-    { .name = "T6",             .typ = TYP_GREG,            .tid = TOK_GR_7,        .val =  7         },
+    { .name = "T0",     .typ = TYP_GREG,    .tid = TOK_GR_1,    .val =  1   },
+    { .name = "T1",     .typ = TYP_GREG,    .tid = TOK_GR_2,    .val =  2   },
+    { .name = "T2",     .typ = TYP_GREG,    .tid = TOK_GR_3,    .val =  3   },
+    { .name = "T3",     .typ = TYP_GREG,    .tid = TOK_GR_4,    .val =  4   },
+    { .name = "T4",     .typ = TYP_GREG,    .tid = TOK_GR_5,    .val =  5   },
+    { .name = "T5",     .typ = TYP_GREG,    .tid = TOK_GR_6,    .val =  6   },
+    { .name = "T6",     .typ = TYP_GREG,    .tid = TOK_GR_7,    .val =  7   },
     
-    { .name = "ARG3",           .typ = TYP_GREG,            .tid = TOK_GR_8,        .val =  8         },
-    { .name = "ARG2",           .typ = TYP_GREG,            .tid = TOK_GR_9,        .val =  9         },
-    { .name = "ARG1",           .typ = TYP_GREG,            .tid = TOK_GR_10,       .val =  10        },
-    { .name = "ARG0",           .typ = TYP_GREG,            .tid = TOK_GR_11,       .val =  11        },
+    { .name = "ARG3",   .typ = TYP_GREG,    .tid = TOK_GR_8,    .val =  8   },
+    { .name = "ARG2",   .typ = TYP_GREG,    .tid = TOK_GR_9,    .val =  9   },
+    { .name = "ARG1",   .typ = TYP_GREG,    .tid = TOK_GR_10,   .val =  10  },
+    { .name = "ARG0",   .typ = TYP_GREG,    .tid = TOK_GR_11,   .val =  11  },
     
-    { .name = "RET3",           .typ = TYP_GREG,            .tid = TOK_GR_8,        .val =  8         },
-    { .name = "RET2",           .typ = TYP_GREG,            .tid = TOK_GR_9,        .val =  9         },
-    { .name = "RET1",           .typ = TYP_GREG,            .tid = TOK_GR_10,       .val =  10        },
-    { .name = "RET0",           .typ = TYP_GREG,            .tid = TOK_GR_11,       .val =  11        },
+    { .name = "RET3",   .typ = TYP_GREG,    .tid = TOK_GR_8,    .val =  8   },
+    { .name = "RET2",   .typ = TYP_GREG,    .tid = TOK_GR_9,    .val =  9   },
+    { .name = "RET1",   .typ = TYP_GREG,    .tid = TOK_GR_10,   .val =  10  },
+    { .name = "RET0",   .typ = TYP_GREG,    .tid = TOK_GR_11,   .val =  11  },
     
-    { .name = "DP",             .typ = TYP_GREG,            .tid = TOK_GR_13,       .val =  13        },
-    { .name = "RL",             .typ = TYP_GREG,            .tid = TOK_GR_14,       .val =  14        },
-    { .name = "SP",             .typ = TYP_GREG,            .tid = TOK_GR_15,       .val =  15        },
+    { .name = "DP",     .typ = TYP_GREG,    .tid = TOK_GR_13,   .val =  13  },
+    { .name = "RL",     .typ = TYP_GREG,    .tid = TOK_GR_14,   .val =  14  },
+    { .name = "SP",     .typ = TYP_GREG,    .tid = TOK_GR_15,   .val =  15  },
     
-    { .name = "SAR",            .typ = TYP_GREG,            .tid = TOK_GR_1,        .val =  1         },
+    { .name = "SAR",    .typ = TYP_GREG,    .tid = TOK_GR_1,    .val =  1   },
     
     //--------------------------------------------------------------------------
     // Assembler mnemonics. Like all other tokens, we habe the name, the type 
@@ -438,8 +438,13 @@ const Token AsmTokTab[ ] = {
     {   .name   = "ADD",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_ADD    | OPM_FLD_0 ) },
 
-    { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB    | OPM_FLD_0 ) },
-    { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
+    {   .name   = "SUB",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB    | OPM_FLD_0 ) },
+
+    {   .name = "AND",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_AND,      .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
+
+        
     { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
     { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
     { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
@@ -633,7 +638,7 @@ void parseNum( ) {
             continue;
         }
         else {
-            
+
             if ( isdigit( currentChar )) {
 
                 currentToken.val = ( currentToken.val * base ) + currentChar - '0';
@@ -1098,7 +1103,10 @@ inline bool isInRangeForBitFieldU( uint32_t val, int bitLen ) {
     return ( val <= max );
 }
 
-inline void depositBitField( uint32_t *word, int bitpos, int len, T64Word value ) {
+inline void depositBitField( uint32_t *word, 
+                             int bitpos, 
+                             int len, 
+                             T64Word value ) {
     
     uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
@@ -1115,7 +1123,10 @@ inline void depositInstrBit( uint32_t *word, int bitpos, bool value ) {
     *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-inline void depositInstrFieldS( uint32_t *instr, int bitpos, int len, uint32_t value ) {
+inline void depositInstrFieldS( uint32_t *instr, 
+                                int bitpos, 
+                                int len, 
+                                uint32_t value ) {
     
     if ( isInRangeForBitField( value, len )) { 
         
@@ -1124,7 +1135,10 @@ inline void depositInstrFieldS( uint32_t *instr, int bitpos, int len, uint32_t v
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrFieldU( uint32_t *instr, int bitpos, int len, uint32_t value ) {
+inline void depositInstrFieldU( uint32_t *instr, 
+                                int bitpos, 
+                                int len, 
+                                uint32_t value ) {
     
     if ( isInRangeForBitFieldU( value, len )) { 
         
@@ -1433,13 +1447,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
         
         acceptLparen( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) {
-            
-            depositInstrRegB( instr, (uint32_t) rExpr.val );
-        }
-        else throw ( ERR_EXPECTED_GENERAL_REG );
-        
+        acceptRegB( instr );        
         acceptRparen( );
         acceptEOS( );
     }
@@ -1458,7 +1466,6 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_NUM ) {
                 
-                depositInstrBit( instr, 19, true );
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrImm15( instr, (uint32_t) rExpr.val );
             }
@@ -1472,18 +1479,14 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             acceptEOS( );
         }
         else if ( isToken( TOK_LPAREN )) {
-            
+
             replaceInstrGroupField( instr, OPG_MEM );
             setInstrDwField( instr, instrFlags );
+            depositInstrBit( instr, 19, true );
             depositInstrRegA( instr, (uint32_t) rExpr.val );
             
             nextToken( );
-            parseExpr( &rExpr );
-            if ( rExpr.typ == TYP_GREG ) { 
-                
-                depositInstrRegB( instr, (uint32_t) (uint32_t) rExpr.val );
-            }
-            
+            acceptRegB( instr );
             acceptRparen( );
             acceptEOS( );
         }
@@ -1529,14 +1532,7 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegB( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr ); 
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -1647,23 +1643,9 @@ void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegB( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegA( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegA( instr ); 
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -1705,14 +1687,7 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegB( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -1756,14 +1731,7 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegB( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -1841,17 +1809,10 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
         
         depositInstrImm15( instr, (uint32_t) rExpr.val );
     }
-    else throw ( ERR_EXPECTED_NUMERIC );
+    else throw( ERR_EXPECTED_NUMERIC );
     
     acceptLparen( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) { 
-        
-        depositInstrRegB( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-   
+    acceptRegB( instr );
     acceptRparen( );
     acceptEOS( );
 }
@@ -1905,12 +1866,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
         
         acceptLparen( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) { 
-            
-            depositInstrRegB( instr, (uint32_t) rExpr.val );
-        }
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegB( instr );
         acceptRparen( );
     }
     else if ( rExpr.typ == TYP_GREG) {
@@ -1924,12 +1880,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         depositInstrRegA( instr, (uint32_t) rExpr.val );
         
         acceptLparen( );
-        parseExpr( &rExpr );
-        if (  rExpr.typ == TYP_GREG ) { 
-            
-            depositInstrRegB( instr, (uint32_t) rExpr.val );
-        }
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegB( instr );
         acceptRparen( );
     }
     else throw ( ERR_EXPECTED_NUMERIC );
@@ -1937,12 +1888,13 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseOpB" parses the branch instruction. The branch instruction may have the "gate" option.
+//------------------------------------------------------------------------------
+// "parseOpB" parses the branch instruction. The branch instruction may have 
+// the "gate" option.
 //
 //      B [ .G ] <ofs> [ "," <Reg R> ]
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
@@ -1950,7 +1902,10 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) {
+
+        throw ( ERR_INVALID_INSTR_OPT );
+    } 
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
@@ -1963,81 +1918,67 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     if ( isToken( TOK_COMMA )) {
         
         nextToken( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.val );
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegR( instr );
     }
     
     if ( instrFlags & IF_G ) depositInstrBit( instr, 19, true );
     acceptEOS( ); 
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseOpBR" is the IA-relative branch adding RegB to IA. Optional, we specify a return link register.
+//------------------------------------------------------------------------------
+// "parseOpBR" is the IA-relative branch adding RegB to IA. Optionally, we 
+//  can specify a return link register.
 //
 //      BR <regB> [ "," <regR> ]
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
   
     nextToken( );
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    acceptRegB( instr );
     
     if ( isToken( TOK_COMMA )) {
         
         nextToken( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.val );
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegR( instr );
     }
     
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseOpBV" is the vectored branch. We add RegB and Regx, which form the target offset. Optionally, the
-// return link is returned.
+//------------------------------------------------------------------------------
+// "parseOpBV" is the vectored branch. We add RegB and Regx, which form the 
+// target offset. Optionally, we can specify a return link register.
 //
 //      BV <regB>, <RegX> [ "," <regR> ]
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
-   
     nextToken( );
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    acceptRegA( instr );
     
     if ( isToken( TOK_COMMA )) {
         
         nextToken( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.val );
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegR( instr );
     }
     
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // "parseOpBB" is the branch on bit instruction.
 //
 //      BB ".T/F" <regB> "," <pos>
 //      BB ".T/F" <regB> "," "SAR"
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
@@ -2045,14 +1986,14 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) {
+
+        throw ( ERR_INVALID_INSTR_OPT );        
+    } 
     
     if ( instrFlags & IF_T ) depositInstrBit( instr, 19, true );
     
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -2069,12 +2010,12 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseOpCBR" performa a copare and a branch based in the condition being true.
+//------------------------------------------------------------------------------
+// "parseOpCBR" performa a copare and a branch based on the condition.
 //
 //      CBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
@@ -2082,18 +2023,14 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) {
+        
+        throw ( ERR_INVALID_INSTR_OPT );
+    }
   
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegR( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -2108,13 +2045,14 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrMBR" move the source reg to teh target reg and vranches on teh condition specified.
+//------------------------------------------------------------------------------
+// "parseInstrMBR" move the source reg to teh target reg and vranches on the
+// condition specified.
 //
 //      MBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
 //
 // ??? same conditions that CMP ?
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
@@ -2122,18 +2060,14 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) {
+        
+        throw ( ERR_INVALID_INSTR_OPT );
+    }
   
-    parseExpr( &rExpr );
-    if ( isTokenTyp( TYP_GREG )) depositInstrRegR( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegR( instr ); 
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
@@ -2148,36 +2082,32 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrMxCR" copies a control register to a general register and vice versa.
+//------------------------------------------------------------------------------
+// "parseInstrMxCR" copies a control register to a general register and vice 
+// versa.
 //
 //      MFCR <RegR> "," <Creg>
 //      MTCR <Rreg> "," <CegB>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr rExpr = INIT_EXPR;
-    
+   
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_CREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_CONTROL_REG );
-    
+    acceptRegB( instr );
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrLDPA" returns the physical address of a virtual address. It is very similar to the memory type
-// instruction load and store, except it does just do address translation. If the page is not in main memory,
-// a zero is returned.
+//------------------------------------------------------------------------------
+// "parseInstrLDPA" returns the physical address of a virtual address. It is 
+// very similar to the memory type instruction load and store, except it does 
+// just do address translation. If the page is not in main memory, a zero is
+// returned.
 //
 //       LPA <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
@@ -2185,30 +2115,27 @@ void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
+   
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG) {
         
         depositInstrRegA( instr, (uint32_t) rExpr.val );
-        nextToken( );
     }
     
     acceptLparen( );
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-
+    acceptRegB( instr );
     acceptRparen( );
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrPRB" probes a virtual address for access. The "P/U" indicate privileged and user mode access.
+//------------------------------------------------------------------------------
+// "parseInstrPRB" probes a virtual address for access. The "P/U" indicate 
+// privileged and user mode access.
 //
 //      PRB <RegR> "," <RegB> "," <RegA>
 //      PRB <RegR> "," <RegB> "," <val>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
@@ -2216,83 +2143,72 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
     
     parseExpr( &rExpr );
-    if      ( rExpr.typ == TYP_GREG )   depositInstrRegA( instr, (uint32_t) rExpr.val );
-    else if ( rExpr.typ == TYP_NUM )    depositBitField( instr, 9, 2, rExpr.val );
-    else                                throw ( ERR_EXPECTED_PRB_ARG );
+    if ( rExpr.typ == TYP_GREG ) {
+        
+        depositInstrRegA( instr, (uint32_t) rExpr.val );
+    }
+    else if ( rExpr.typ == TYP_NUM ) {
+
+        depositBitField( instr, 9, 2, rExpr.val );
+    }   
+    else throw ( ERR_EXPECTED_PRB_ARG );
     
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrTlbOp" insert or removs a translation in the TLB. RegB contains the virtual address. For TLB
-// inserts RegA contains the info on access rights and physical address. The result is in RegR.
+//------------------------------------------------------------------------------
+// "parseInstrTlbOp" insert or removs a translation in the TLB. RegB contains 
+// the virtual address. For TLB inserts RegA contains the info on access rights
+// and physical address. The result is in RegR.
 //
 //      ITLB <targetReg> "," <RegB> "," <RegA>
 // ^    PTLB <targetReg> "," <RegB>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr rExpr = INIT_EXPR;
-    
+   
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
+    acceptRegB( instr );
     
     if ( instrOpToken == TOK_OP_ITLB ) {
         
         acceptComma( );
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.val );
-        else throw ( ERR_EXPECTED_GENERAL_REG );
+        acceptRegA( instr );
     }
     
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // "parseInstrCacheOp" assemble the cache flush and purge operation.
 //
 //      PCA <targetReg> "," <RegB>
 //      FCA <targetReg> "," <RegB>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
-   
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrSregOp" sets or clears status register bits. Under construction ...
+//------------------------------------------------------------------------------
+// "parseInstrSregOp" sets or clears status register bits. 
+// Under construction ...
 //
 //      RSM <RegR> "," <val>
 //      SSM <RegR> "," <val>
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
@@ -2303,35 +2219,34 @@ void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
-        
-        if ( rExpr.val < 256 ) depositBitField( instr, 0, 8, (uint32_t) rExpr.val );
-        else throw ( ERR_INVALID_NUM );
+
+        depositInstrFieldU( instr, 0, 8, (uint32_t) rExpr.val );
     }
     else throw ( ERR_EXPECTED_NUMERIC );
     
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// The "RFI" instruction is the return from interrupt method. So far it is only the instruction with no
-// further options and arguments.
+//------------------------------------------------------------------------------
+// The "RFI" instruction is the return from interrupt method. So far it is only
+// the instruction with no further options and arguments.
 //
 //      RFI
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseInstrDIAG" is the general purpose diagnotsic instruction. It accepts essemtially two registers and
-// returns a result in the target register.
+//------------------------------------------------------------------------------
+// "parseInstrDIAG" is the general purpose diagnotsic instruction. It accepts 
+// essentially two registers and returns a result in the target register.
 //
 //      DIAG <RegR> "," <val> "," <RegB> "," <RegA"
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
@@ -2349,21 +2264,13 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     else throw ( ERR_EXPECTED_DIAG_OP );
     
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegB( instr );
     acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_GENERAL_REG );
-    
+    acceptRegA( instr );
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // "parseInstrTrapOp" assmbles the trap operations.
 //
 //      Generic. TRAP <info1> "," RegB "," RegA "," <info2> "," <val>
@@ -2371,7 +2278,7 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 // We have p to 8 trap group IDs. Group zero should be the BRK group ID..
 //
 // ??? to be designed ...
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     switch ( extractInstrOptField( *instr )) {
@@ -2387,11 +2294,12 @@ void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
     acceptEOS( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseLine" will take the input string and parse the line for an instruction. In the one-line case, there
-// is only the opCode mnemonic and the argument list. No labels, comments are ignored.
+//------------------------------------------------------------------------------
+// "parseLine" will take the input string and parse the line for an instruction. 
+// In the one-line case, there is only the opCode mnemonic and the argument 
+// list. No labels, comments are ignored.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseLine( char *inputStr, uint32_t *instr ) {
     
     setupTokenizer( inputStr );
@@ -2403,66 +2311,66 @@ void parseLine( char *inputStr, uint32_t *instr ) {
         
         switch( instrOpToken ) {
                 
-            case TOK_OP_NOP:    parseNopInstr( instr, instrOpToken );           break;
+            case TOK_OP_NOP:  parseNopInstr( instr, instrOpToken );      break;
                 
             case TOK_OP_ADD:
             case TOK_OP_SUB:
             case TOK_OP_AND:
             case TOK_OP_OR:
             case TOK_OP_XOR:
-            case TOK_OP_CMP:    parseModeTypeInstr( instr, instrOpToken );      break;
+            case TOK_OP_CMP:  parseModeTypeInstr( instr, instrOpToken ); break;
                 
-            case TOK_OP_EXTR:   parseInstrEXTR( instr, instrOpToken );          break;
-            case TOK_OP_DEP:    parseInstrDEP( instr, instrOpToken );           break;
-            case TOK_OP_DSR:    parseInstrDSR( instr, instrOpToken );           break;
+            case TOK_OP_EXTR: parseInstrEXTR( instr, instrOpToken );     break;
+            case TOK_OP_DEP:  parseInstrDEP( instr, instrOpToken );      break;
+            case TOK_OP_DSR:  parseInstrDSR( instr, instrOpToken );      break;
                 
             case TOK_OP_SHL1A:
             case TOK_OP_SHL2A:
-            case TOK_OP_SHL3A:  parseInstrSHLxA( instr, instrOpToken );         break;
+            case TOK_OP_SHL3A:  parseInstrSHLxA( instr, instrOpToken );  break;
                 
             case TOK_OP_SHR1A:
             case TOK_OP_SHR2A:
-            case TOK_OP_SHR3A:  parseInstrSHRxA( instr, instrOpToken );         break;
+            case TOK_OP_SHR3A:  parseInstrSHRxA( instr, instrOpToken );  break;
                 
             case TOK_OP_LDI:
-            case TOK_OP_ADDIL:  parseInstrImmOp( instr, instrOpToken );         break;
+            case TOK_OP_ADDIL: parseInstrImmOp( instr, instrOpToken );   break;
                 
-            case TOK_OP_LDO:    parseInstrLDO( instr, instrOpToken );           break;
+            case TOK_OP_LDO:   parseInstrLDO( instr, instrOpToken );     break;
                 
             case TOK_OP_LD:
             case TOK_OP_LDR:
             case TOK_OP_ST:
-            case TOK_OP_STC:    parseMemOp( instr, instrOpToken );              break;
+            case TOK_OP_STC:   parseMemOp( instr, instrOpToken );        break;
                 
-            case TOK_OP_B:      parseInstrB( instr, instrOpToken );             break;
-            case TOK_OP_BR:     parseInstrBR( instr, instrOpToken );            break;
-            case TOK_OP_BV:     parseInstrBV( instr, instrOpToken );            break;
-            case TOK_OP_BB:     parseInstrBB( instr, instrOpToken );            break;
+            case TOK_OP_B:     parseInstrB( instr, instrOpToken );       break;
+            case TOK_OP_BR:    parseInstrBR( instr, instrOpToken );      break;
+            case TOK_OP_BV:    parseInstrBV( instr, instrOpToken );      break;
+            case TOK_OP_BB:    parseInstrBB( instr, instrOpToken );      break;
                 
-            case TOK_OP_CBR:    parseInstrCBR( instr, instrOpToken );           break;
-            case TOK_OP_MBR:    parseInstrMBR( instr, instrOpToken );           break;
+            case TOK_OP_CBR:   parseInstrCBR( instr, instrOpToken );     break;
+            case TOK_OP_MBR:   parseInstrMBR( instr, instrOpToken );     break;
                 
             case TOK_OP_MFCR:
-            case TOK_OP_MTCR:   parseInstrMxCR( instr, instrOpToken );          break;
+            case TOK_OP_MTCR:  parseInstrMxCR( instr, instrOpToken );    break;
                 
-            case TOK_OP_LPA:    parseInstrLPA( instr, instrOpToken );           break;
+            case TOK_OP_LPA:   parseInstrLPA( instr, instrOpToken );     break;
                 
-            case TOK_OP_PRB:    parseInstrPRB( instr, instrOpToken );           break;
+            case TOK_OP_PRB:   parseInstrPRB( instr, instrOpToken );     break;
                 
             case TOK_OP_ITLB:
-            case TOK_OP_PTLB:   parseInstrTlbOp( instr, instrOpToken );         break;
+            case TOK_OP_PTLB:  parseInstrTlbOp( instr, instrOpToken );   break;
                 
             case TOK_OP_PCA:
-            case TOK_OP_FCA:    parseInstrCacheOp( instr, instrOpToken );       break;
+            case TOK_OP_FCA:   parseInstrCacheOp( instr, instrOpToken ); break;
                 
             case TOK_OP_SSM:
-            case TOK_OP_RSM:    parseInstrSregOp( instr, instrOpToken );        break;
+            case TOK_OP_RSM:   parseInstrSregOp( instr, instrOpToken );  break;
                 
-            case TOK_OP_RFI:    parseInstrRFI( instr, instrOpToken );           break;
+            case TOK_OP_RFI:   parseInstrRFI( instr, instrOpToken );     break;
                 
-            case TOK_OP_DIAG:   parseInstrDIAG( instr, instrOpToken );          break;
+            case TOK_OP_DIAG:  parseInstrDIAG( instr, instrOpToken );    break;
                 
-            case TOK_OP_TRAP:   parseInstrTrapOp( instr, instrOpToken );          break;
+            case TOK_OP_TRAP:  parseInstrTrapOp( instr, instrOpToken );  break;
                 
             default: throw ( ERR_INVALID_OP_CODE );
         }
@@ -2472,13 +2380,12 @@ void parseLine( char *inputStr, uint32_t *instr ) {
 
 } // namespace
 
-
-//------------------------------------------------------------------------------------------------------------
-// A simple one line assembler. This object is the counterpart to the disassembler. We will parse a one line
-// input string for a valid instruction, using the syntax of the real assembler. There will be no labels and
-// comments, only the opcode and the operands.
+//------------------------------------------------------------------------------
+// A simple one line assembler. We will parse a one line input string for a 
+// valid instruction, using the syntax of the real assembler. There will be no 
+// labels and comments, only the opcode and the operands.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 T64Assemble::T64Assemble( ) { }
 
 int T64Assemble::assembleInstr( char *inputStr, uint32_t *instr ) {
