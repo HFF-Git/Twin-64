@@ -1,0 +1,14 @@
+{
+    "[c]": {
+        "editor.rulers": [
+        { "column": 80, "color": "#00ff0040" },   
+        { "column": 100, "color": "#ff000040" }
+        ]
+    },
+    "[cpp]": {
+        "editor.rulers": [
+        { "column": 80, "color": "#00ff0040" },   
+        { "column": 100, "color": "#ff000040" }
+        ]
+    }
+}

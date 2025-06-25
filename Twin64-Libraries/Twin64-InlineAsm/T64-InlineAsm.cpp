@@ -347,8 +347,16 @@ const Token AsmTokTab[ ] = {
     // General registers.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "R0",             .typ = TYP_GREG,            .tid = TOK_GR_0,        .val = 0          },
-    { .name = "R1",             .typ = TYP_GREG,            .tid = TOK_GR_1,        .val = 1          },
+    {   .name = "R0",             
+        .typ = TYP_GREG,            
+        .tid = TOK_GR_0,        
+        .val = 0          },
+
+    {   .name = "R1",             
+        .typ = TYP_GREG,            
+        .tid = TOK_GR_1,        
+        .val = 1          },
+
     { .name = "R2",             .typ = TYP_GREG,            .tid = TOK_GR_2,        .val = 2          },
     { .name = "R3",             .typ = TYP_GREG,            .tid = TOK_GR_3,        .val = 3          },
     { .name = "R4",             .typ = TYP_GREG,            .tid = TOK_GR_4,        .val = 4          },
@@ -419,7 +427,11 @@ const Token AsmTokTab[ ] = {
     // bits set in the first option field to further qualify the instruction.
     //
     //--------------------------------------------------------------------------------------------------------
-    { .name = "ADD",   .typ = TYP_OP_CODE, .tid = TOK_OP_ADD,   .val = ( OPG_ALU | OPF_ADD    | OPM_FLD_0 ) },
+    {   .name = "ADD",   
+        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_ADD,   
+        .val = ( OPG_ALU | OPF_ADD    | OPM_FLD_0 ) },
+        
     { .name = "SUB",   .typ = TYP_OP_CODE, .tid = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB    | OPM_FLD_0 ) },
     { .name = "AND",   .typ = TYP_OP_CODE, .tid = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
     { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
