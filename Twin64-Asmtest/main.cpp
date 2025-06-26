@@ -1,49 +1,50 @@
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// Twin-64 - Inline Assembler/Disassembler
+// Twin-64 - Inline Assembler/Disassembler Test Program.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// Twin-64 - Inline Assembler/Disassembler
+// T64 - A 64-bit CPU - One Line Assembler
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
-// General Public License as published by the Free Software Foundation, either version 3 of the License,
-// or any later version.
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-// License for more details. You should have received a copy of the GNU General Public License along with
-// this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+// more details. You should have received a copy of the GNU General Public
+// License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 #include "T64-Common.h"
 #include "T64-InlineAsm.h"
 
 T64Assemble     *doAsm  = nullptr;
 T64DisAssemble  *disAsm = nullptr;
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Program input parameters.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void parseParameters( int argc, const char * argv[] ) {
     
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Command handlers.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void assemble( char *asmStr ) {
     
     static uint32_t instr;
     int errCode = doAsm -> assembleInstr( asmStr, &instr );
     if ( errCode == 0 ) printf( "0x%08x\n", instr );
-    else                printf( "%s\n", doAsm -> getErrStr( doAsm -> getErrId( )));
+    else           printf( "%s\n", doAsm -> getErrStr( doAsm -> getErrId( )));
 }
 
 void disassemble( uint32_t instr ) {
@@ -78,10 +79,10 @@ void printHelp( ) {
     printf( "E          -> exit\n" );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Read the command input, strip newline char and convert to uppercase.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 int getInput( char *buf ) {
     
     if ( fgets( buf, 128, stdin ) == nullptr ) return( -1 );
@@ -96,10 +97,10 @@ int getInput( char *buf ) {
     return((uint32_t) strlen( buf ));
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Here we go.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
     
     parseParameters( argc, argv );
@@ -131,7 +132,10 @@ int main( int argc, const char * argv[] ) {
         else if ( strcmp( cmd, "D" ) == 0 ) {
             
             uint32_t val;
-            if (( arg != nullptr ) && ( sscanf( arg, "%i", &val ) == 1 )) disassemble( val );
+            if (( arg != nullptr ) && ( sscanf( arg, "%i", &val ) == 1 )) {
+                
+                disassemble( val );
+            }
             else printf( "Invalid number for disassembler\n" );
         }
         else if ( strcmp( cmd, "T" ) == 0 ) {

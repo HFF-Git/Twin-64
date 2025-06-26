@@ -75,6 +75,7 @@ enum ErrId : int {
     ERR_EXPECTED_BR_OFS             = 32,
     ERR_EXPECTED_CONTROL_REG        = 33,
     ERR_EXPECTED_PRB_ARG            = 34,
+    ERR_UNEXPECTED_EOS              = 35,
    
     ERR_EXPR_TYPE_MATCH             = 40,
     ERR_IMM_VAL_RANGE               = 42,
@@ -119,6 +120,7 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_EXPECTED_BR_OFS,          (char *) "Expected a branch offset" },
     { ERR_EXPECTED_CONTROL_REG,     (char *) "Expected a control register" },
     { ERR_EXPECTED_PRB_ARG,         (char *) "Expected the PRB argument" },
+    { ERR_UNEXPECTED_EOS,           (char *) "Unexpected end of string" },   
    
     { ERR_EXPR_TYPE_MATCH ,         (char *) "Expression type mismatch" },
     { ERR_IMM_VAL_RANGE,            (char *) "Value range error " },
@@ -444,60 +446,118 @@ const Token AsmTokTab[ ] = {
     {   .name = "AND",          .typ = TYP_OP_CODE, 
         .tid = TOK_OP_AND,      .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
 
-        
-    { .name = "OR",    .typ = TYP_OP_CODE, .tid = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
-    { .name = "XOR",   .typ = TYP_OP_CODE, .tid = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
-    { .name = "CMP",   .typ = TYP_OP_CODE, .tid = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
+    {   .name = "OR",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_OR,       .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
     
-    { .name = "EXTR",  .typ = TYP_OP_CODE, .tid = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
-    { .name = "DEP",   .typ = TYP_OP_CODE, .tid = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_1 ) },
-    { .name = "DSR",   .typ = TYP_OP_CODE, .tid = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
+    {   .name = "XOR",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_XOR,      .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
     
-    { .name = "SHL1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
-    { .name = "SHL2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
-    { .name = "SHL3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHL3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_6 ) },
+    {   .name = "CMP",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_CMP,      .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
     
-    { .name = "SHR1A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
-    { .name = "SHR2A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
-    { .name = "SHR3A", .typ = TYP_OP_CODE, .tid = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
-    
-    { .name = "LDI",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
-    { .name = "ADDIL", .typ = TYP_OP_CODE, .tid = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
-    { .name = "LDO",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
-    
-    { .name = "LD",    .typ = TYP_OP_CODE, .tid = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
-    { .name = "LDR",   .typ = TYP_OP_CODE, .tid = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
-    { .name = "ST",    .typ = TYP_OP_CODE, .tid = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST     | OPM_FLD_1 ) },
-    { .name = "STC",   .typ = TYP_OP_CODE, .tid = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC    | OPM_FLD_1 ) },
-    
-    { .name = "B",     .typ = TYP_OP_CODE, .tid = TOK_OP_B,     .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
-    { .name = "BR",    .typ = TYP_OP_CODE, .tid = TOK_OP_BR,    .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
-    { .name = "BV",    .typ = TYP_OP_CODE, .tid = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
-    { .name = "BB",    .typ = TYP_OP_CODE, .tid = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
-    
-    { .name = "CBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_CBR    | OPM_FLD_0 ) },
-    { .name = "MBR",   .typ = TYP_OP_CODE, .tid = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
-    
-    { .name = "MFCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
-    { .name = "MTCR",  .typ = TYP_OP_CODE, .tid = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
-    
-    { .name = "LPA",   .typ = TYP_OP_CODE, .tid = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA    | OPM_FLD_0 ) },
-    
-    { .name = "PRB",   .typ = TYP_OP_CODE, .tid = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
+    {   .name = "EXTR",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_EXTR,     .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
 
-    { .name = "ITLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
-    { .name = "PTLB",  .typ = TYP_OP_CODE, .tid = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+    {   .name = "DEP",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_DEP,      .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_1 ) },
+
+    {   .name = "DSR",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_DSR,      .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
     
-    { .name = "PCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
-    { .name = "FCA",   .typ = TYP_OP_CODE, .tid = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
+    {   .name = "SHL1A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHL1A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
+
+    {   .name = "SHL2A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHL2A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
+
+    {   .name = "SHL3A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHL3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_6 ) },
+
+    {   .name = "SHR1A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHR1A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
+
+    {   .name = "SHR2A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHR2A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
+
+    {   .name = "SHR3A",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_SHR3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
     
-    { .name = "RSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
-    { .name = "SSM",   .typ = TYP_OP_CODE, .tid = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
+    {   .name = "LDI",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_LDI,      .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+
+    {   .name = "ADDIL",        .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_ADDIL,    .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+
+    {   .name = "LDO",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_LDO,      .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
     
-    { .name = "TRAP",  .typ = TYP_OP_CODE, .tid = TOK_OP_TRAP,  .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
+    {   .name = "LD",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_LD,       .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
+
+    {   .name = "LDR",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_LDR,      .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
+    {   .name = "ST",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_ST,       .val = ( OPG_MEM | OPF_ST     | OPM_FLD_1 ) },
+
+    {   .name = "STC",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_STC,      .val = ( OPG_MEM | OPF_STC    | OPM_FLD_1 ) },
+    
+    {   .name = "B",            .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_B,        .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
+
+    {   .name = "BR",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_BR,       .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
+
+    {   .name = "BV",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_BV,       .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
+
+    {   .name = "BB",           .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_BB,       .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
+    
+    {   .name = "CBR",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_CBR,      .val = ( OPG_BR  | OPF_CBR    | OPM_FLD_0 ) },
+
+    {   .name = "MBR",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_MBR,      .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
+    
+    {   .name = "MFCR",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_MFCR,     .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
+
+    {   .name = "MTCR",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_MTCR,     .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
+    
+    {   .name = "LPA",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_LPA,      .val = ( OPG_SYS | OPF_LPA    | OPM_FLD_0 ) },
+    
+    {   .name = "PRB",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_PRB,      .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
+
+    {   .name = "ITLB",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_ITLB,     .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
+
+    {   .name = "PTLB",         .typ = TYP_OP_CODE,
+        .tid = TOK_OP_PTLB,     .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+    
+    {   .name = "PCA",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_PCA,      .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
+
+    {   .name = "FCA",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_FCA,      .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
+    
+    {   .name = "RSM",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_RSM,      .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
+
+    {   .name = "SSM",          .typ = TYP_OP_CODE,
+        .tid = TOK_OP_SSM,      .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
+    
+    {   .name = "TRAP",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_TRAP,     .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
    
-    { .name = "RFI",   .typ = TYP_OP_CODE, .tid = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
-    { .name = "DIAG",  .typ = TYP_OP_CODE, .tid = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
+    {   .name = "RFI",          .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_RFI,      .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
+
+    {   .name = "DIAG",         .typ = TYP_OP_CODE, 
+        .tid = TOK_OP_DIAG,     .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
     //--------------------------------------------------------------------------
     // Assembler synthetioc mnemonics. They ar like the assembler mnemonics, 
@@ -618,6 +678,7 @@ void parseNum( ) {
     int     base        = 10;
     int     maxDigits   = 22;
     int     digits      = 0;
+    T64Word tmpVal      = 0;
     
     if ( currentChar == '0' ) {
         
@@ -627,6 +688,10 @@ void parseNum( ) {
             base        = 16;
             maxDigits   = 16;
             nextChar( );
+        }
+        else if ( currentChar == EOS_CHAR ) {
+
+            throw ( ERR_UNEXPECTED_EOS );
         }
     }
     
@@ -641,15 +706,19 @@ void parseNum( ) {
 
             if ( isdigit( currentChar )) {
 
-                currentToken.val = ( currentToken.val * base ) + currentChar - '0';
+                tmpVal = ( tmpVal * base ) + currentChar - '0';
             }
-            else if (( base == 16 ) && ( currentChar >= 'a' ) && ( currentChar <= 'f' )) {
+            else if (( base == 16         ) && 
+                     ( currentChar >= 'a' ) && 
+                     ( currentChar <= 'f' )) {
 
-                currentToken.val = ( currentToken.val * base ) + currentChar - 'a' + 10;            
+                tmpVal = ( tmpVal * base ) + currentChar - 'a' + 10;            
             }
-            else if (( base == 16 ) && ( currentChar >= 'A' ) && ( currentChar <= 'F' )) {
+            else if (( base == 16         ) && 
+                     ( currentChar >= 'A' ) && 
+                     ( currentChar <= 'F' )) {
 
-                currentToken.val = ( currentToken.val * base ) + currentChar - 'A' + 10;
+                tmpVal = ( tmpVal * base ) + currentChar - 'A' + 10;
             }      
             else throw ( ERR_INVALID_NUM );
             
@@ -660,6 +729,8 @@ void parseNum( ) {
         }
     }
     while ( isxdigit( currentChar ) || ( currentChar == '_' ));
+
+    currentToken.val = tmpVal;
 }
 
 //------------------------------------------------------------------------------
@@ -1438,7 +1509,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
     acceptRegR( instr );
     acceptComma( );
-  
+
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
       
@@ -1876,6 +1947,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
             throw ( ERR_INVALID_INSTR_MODE );
         }
         
+        depositInstrBit( instr, 19, true );
         setInstrDwField( instr, instrFlags );
         depositInstrRegA( instr, (uint32_t) rExpr.val );
         
