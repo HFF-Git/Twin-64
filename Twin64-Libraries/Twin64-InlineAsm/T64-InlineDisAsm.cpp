@@ -588,18 +588,18 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                         
                         return ( 
                             snprintf( buf, LEN_32, "R%d, R%d, SAR, %d",
-                                          extractRegR( instr ),
-                                          extractRegB( instr ),
-                                          extractField( instr, 0, 6 )));
+                                        extractRegR( instr ),
+                                        extractRegB( instr ),
+                                        extractField( instr, 0, 6 )));
                     }
                     else {
                         
                         return (     
                             snprintf( buf, LEN_32, "R%d, R%d, %d, %d",
-                                          extractRegR( instr ),
-                                          extractRegB( instr ),
-                                          extractField( instr, 6, 6 ),
-                                          extractField( instr, 0, 6 )));
+                                        extractRegR( instr ),
+                                        extractRegB( instr ),
+                                        extractField( instr, 6, 6 ),
+                                        extractField( instr, 0, 6 )));
                     }
                 }
                     
@@ -731,7 +731,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             int cursor = snprintf( buf, LEN_32, ", %d", extractImm19( instr ));
             
             if ( extractField( instr, 26, 4 ) != 0 )
-                cursor += snprintf( buf + cursor, LEN_32, ", R%d", extractRegR( instr ));
+                cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
+                                    extractRegR( instr ));
             
             return ( cursor );
         }
@@ -741,7 +742,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             int cursor = snprintf( buf, LEN_32, "R%d", extractRegB( instr ));
             
             if ( extractField( instr, 26, 4 ) != 0 )
-                cursor += snprintf( buf + cursor, LEN_32, ", R%d", extractRegR( instr ));
+                cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
+                                    extractRegR( instr ));
             
             return ( cursor );
         }
@@ -753,7 +755,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                   extractRegA( instr ));
             
             if ( extractField( instr, 26, 4 ) != 0 )
-                cursor += snprintf( buf + cursor, LEN_32, ", R%d", extractRegR( instr ));
+                cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
+                                    extractRegR( instr ));
             
             return ( cursor );
         }
@@ -768,7 +771,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 cursor += snprintf( buf + cursor, LEN_32, ", %d", 
                                     extractField( instr, 13, 6 ));
             
-            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractImm13( instr ));
+            cursor += snprintf( buf + cursor, LEN_32, ", %d", 
+                                extractImm13( instr ));
             return ( cursor );
         }
             
@@ -779,7 +783,8 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                   extractRegR( instr ),
                                   extractRegB( instr ));
             
-            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractImm15( instr ));
+            cursor += snprintf( buf + cursor, LEN_32, ", %d", 
+                                extractImm15( instr ));
             
             return ( cursor );
         }
@@ -897,11 +902,14 @@ int T64DisAssemble::getOperandsFieldWidth( ) {
 
 int T64DisAssemble::formatOpCode( char *buf, int bufLen, uint32_t instr ) {
     
-    if ( bufLen < getOpCodeFieldWidth( )) return ( buildOpCodeStr( buf, instr ));
-    else                                  return ( -1 );
+    if ( bufLen < getOpCodeFieldWidth( )) 
+        return ( buildOpCodeStr( buf, instr ));
+    else                                 
+        return ( -1 );
 }
 
-int T64DisAssemble::formatOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
+int T64DisAssemble::formatOperands( 
+    char *buf, int bufLen, uint32_t instr, int rdx ) {
     
     if ( bufLen < getOperandsFieldWidth( )) 
         return ( buildOperandStr( buf, instr, rdx ));
@@ -909,7 +917,8 @@ int T64DisAssemble::formatOperands( char *buf, int bufLen, uint32_t instr, int r
         return ( -1 );
 }
 
-int T64DisAssemble::formatInstr( char *buf, int bufLen, uint32_t instr, int rdx ) {
+int T64DisAssemble::formatInstr( 
+    char *buf, int bufLen, uint32_t instr, int rdx ) {
     
     if ( bufLen >= ( getOpCodeFieldWidth( ) + 1 + getOperandsFieldWidth( ))) {
         

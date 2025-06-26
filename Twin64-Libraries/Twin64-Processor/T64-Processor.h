@@ -1,39 +1,40 @@
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// Twin-64 - Processor
+// T64 - A 64-bit CPU - Processor
 //
-//------------------------------------------------------------------------------------------------------------
-// This ...
+//------------------------------------------------------------------------------
+// 
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// Twin-64 - Processor
+// T64 - A 64-bit CPU - Processor
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
-// General Public License as published by the Free Software Foundation, either version 3 of the License,
-// or any later version.
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-// License for more details. You should have received a copy of the GNU General Public License along with
-// this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+// more details. You should have received a copy of the GNU General Public
+// License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 #ifndef T64_Processor_h
 #define T64_Processor_h
 
 #include "T64-Common.h"
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Cache
 //
 //
-// ??? not sure we even need a cache for the Emulator. It is perhaps too slow. However when we have more than
-// one cpu thread, the cache protocols are interesting... also for LDR and STC. Firs version, just pass
-// through...
+// ??? not sure we even need a cache for the Emulator. It is perhaps too slow. 
+// However when we have more than one CPU thread, the cache protocols are 
+// interesting... also for LDR and STC. Firs version, just pass through...
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 struct T64CacheLine {
     
     bool            valid;
@@ -59,13 +60,14 @@ struct T64Cache {
     T64CacheLine    *getCacheLine( int index );
 };
 
-//------------------------------------------------------------------------------------------------------------
-// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we only need one TLB for both
-// instruction and data. In the real world, we need to mke sure that we can access from both pipeline stages.
-// Our TLB is a simple array of entries, i.e. modelling a full associative array with a LRU replacement
-// policy.
+//------------------------------------------------------------------------------
+// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we 
+// only need one TLB for both instruction and data. In the real world, we need 
+// to mke sure that we can access from both pipeline stages. Our TLB is a simple
+// array of entries, i.e. modelling a full associative array with a LRU 
+// replacement policy.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 struct T64TlbEntry {
 
     bool            valid;
@@ -98,10 +100,10 @@ private:
     T64TlbEntry     *map = nullptr;
 };
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // The CPU core executs the instructions.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 struct T64Processor {
     
 public:
@@ -169,4 +171,4 @@ private:
 };
 
 
-#endif /* T64_Cpu_h */
+#endif // T64_Processor_h

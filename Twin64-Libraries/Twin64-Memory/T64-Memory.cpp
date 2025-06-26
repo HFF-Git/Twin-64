@@ -1,33 +1,32 @@
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // Twin-64 - A 64-bit CPU - Physical memory
 //
-//------------------------------------------------------------------------------------------------------------
-// This module contains all of the mothods for the different windows that the simlulator supports. The
-// exception is the command window, which is in a separate file. A window generally consist of a banner line,
-// shown in inverse video and a nuber of body lines.
+//------------------------------------------------------------------------------
+// This module contains ...
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // Twin-64 - A 64-bit CPU - Physical memory
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
-// General Public License as published by the Free Software Foundation, either version 3 of the License,
-// or any later version.
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-// License for more details. You should have received a copy of the GNU General Public License along with
-// this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+// more details. You should have received a copy of the GNU General Public
+// License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 #include "T64-Memory.h"
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 namespace {
 
 
@@ -52,18 +51,18 @@ static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
 
 } // namespace
 
-//************************************************************************************************************
-//************************************************************************************************************
+//******************************************************************************
+//******************************************************************************
 //
 // Physical memory
 //
-//************************************************************************************************************
-//************************************************************************************************************
+//******************************************************************************
+//******************************************************************************
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 T64Memory::T64Memory( T64Word size ) {
     
     this -> size = roundup( size, 16 ); // ??? what is teh roundup level ?
@@ -76,10 +75,10 @@ void T64Memory::reset( ) {
     this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP, adr );
@@ -131,10 +130,10 @@ T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
     else throw T64Trap( ALIGNMENT_TRAP );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void T64Memory::write( T64Word adr, T64Word arg, int len ) {
     
     if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP, adr );

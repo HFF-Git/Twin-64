@@ -1537,6 +1537,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_NUM ) {
                 
+                depositInstrBit( instr, 19, true );
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrImm15( instr, (uint32_t) rExpr.val );
             }

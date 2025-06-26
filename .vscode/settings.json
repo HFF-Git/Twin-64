@@ -1,19 +1,19 @@
 {
     "[c]": {
         "editor.rulers": [
-        { "column": 80, "color": "#0026ff40" },   
-        { "column": 90, "color": "#ff000040" }
+            { "column": 80, "color": "#CCCCCC40" },
+            { "column": 90, "color": "#CCCCCC40" }
         ]
     },
     "[cpp]": {
         "editor.rulers": [
-        { "column": 80, "color": "#00ff0040" },   
-        { "column": 90, "color": "#ff000040" }
+            { "column": 80, "color": "#CCCCCC40" },
+            { "column": 90, "color": "#CCCCCC40" }
         ]
     },
     "[cmake]": {
         "editor.rulers": [
-            { "column": 90, "color": "#0000ff40" }
+            { "column": 80, "color": "#CCCCCC40" }
         ]
     }
 }

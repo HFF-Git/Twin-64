@@ -6,7 +6,7 @@
 // The one line assembler assembles an instruction without further context. It 
 // is intended to for testing instructions in the monitor. There is no symbol 
 // table or any concept of assembling multiple instructions. The instruction to
-// generate test is completely self sufficient. The parser is a straightforward 
+// generate test is completely self sufficient. The parser is a straightforward
 // recursive descendant parser, LL1 grammar. It uses the C++ try / catch to 
 // escape when an error is detected. Considering that we only have one line to 
 // parse, there is no need to implement a better parser error recovery method.
