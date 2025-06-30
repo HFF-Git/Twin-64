@@ -15,5 +15,8 @@
         "editor.rulers": [
             { "column": 80, "color": "#CCCCCC40" }
         ]
+    },
+    "files.associations": {
+        "sstream": "cpp"
     }
 }

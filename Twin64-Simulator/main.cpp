@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Physical memory
+// T64 - A 64-bit CPU - Monitor
 //
 //------------------------------------------------------------------------------
-// This module contains ...
+// 
 //
 //------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Physical memory
+// T64 - A 64-bit CPU - Monitor
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it
@@ -21,35 +21,38 @@
 // License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
 //------------------------------------------------------------------------------
-#ifndef T64_Memory_h
-#define T64_Memory_h
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "T64-Common.h"
-#include "T64-Module.h"
+#include "T64-Processor.h"
+
+T64Processor *proc;
 
 //------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------
-struct T64Memory : T64Module {
-    
-public:
-    
-    T64Memory( T64Word size );
-    
-    void        reset( ) override;
-    T64Word     read( T64Word pAdr, int len, bool signExtend = false );
-    void        write( T64Word pAdr, T64Word arg, int len );
+void setupProcssor( ) {
 
-    // ??? separate routines for monitor display ?
-    // int getWord( T64Word adr, uint32_t *data );
-    // int putWord( T64Word adr, uint32_t data );
+    proc = new T64Processor( );
+}
+
+//------------------------------------------------------------------------------
+// Here we go.
+//
+//------------------------------------------------------------------------------
+int main( int argc, const char * argv[] ) {
+
+    setupProcssor( );
+
+    proc -> reset( );
    
-private:
-    
-    T64Word    size = 0;
-    uint8_t    *mem = nullptr;
-    
-};
+    printf( "Twin64 - Simulator MAIN - test\n");
 
-#endif // T64-Memory.h
+    return 0;
+}

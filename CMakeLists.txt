@@ -25,7 +25,7 @@ else()
 endif()
 
 add_subdirectory( Twin64-Asmtest )
-add_subdirectory( Twin64-Monitor )
+add_subdirectory( Twin64-Simulator )
 
 add_subdirectory( Twin64-Libraries/Twin64-Common )
 add_subdirectory( Twin64-Libraries/Twin64-System )

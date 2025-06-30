@@ -223,22 +223,22 @@ void SimEnv::removeEnvVar( char *name ) {
     
     int index = lookupEntry( name );
     
-    if ( index >= 0 ) {
+    if ( index == -1 ) throw ( ERR_ENV_VAR_NOT_FOUND );
         
-        SimEnvTabEntry *ptr = &table[ index ];
+    SimEnvTabEntry *ptr = &table[ index ];
+    
+    if ( ptr -> predefined ) throw( ERR_ENV_PREDEFINED );
+    
+    if (( ptr -> typ == TYP_STR ) && 
+        ( ptr -> strVal != nullptr )) free( ptr -> strVal );
+    
+    ptr -> valid    = false;
+    ptr -> typ      = TYP_NIL;
+    
+    if ( ptr == hwm - 1 ) {
         
-        if ( ptr -> predefined ) throw( ERR_ENV_PREDEFINED );
-        if (( ptr -> typ == TYP_STR ) && ( ptr -> strVal != nullptr )) free( ptr -> strVal );
-        
-        ptr -> valid    = false;
-        ptr -> typ      = TYP_NIL;
-        
-        if ( ptr == hwm - 1 ) {
-            
-            while (( ptr >= table ) && ( ptr -> valid )) hwm --;
-        }
-    }
-    else throw ( ERR_ENV_VAR_NOT_FOUND );
+        while (( ptr >= table ) && ( ptr -> valid )) hwm --;
+    } 
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -366,7 +366,7 @@ bool SimEnv::isPredefined( char *name ) {
     else return( false );
 }
 
-SimEnvTabEntry *SimEnv::getEnvVarEntry( char *name ) {
+SimEnvTabEntry *SimEnv::getEnvEntry( char *name ) {
     
     int index = lookupEntry( name );
     if ( index >= 0 ) return( &table[ index ] );
@@ -377,13 +377,14 @@ SimEnvTabEntry *SimEnv::getEnvVarEntry( char *name ) {
 // Look a variable. We just do a linear search up to the HWM. If not found a -1 is returned. Straightforward.
 //
 //------------------------------------------------------------------------------------------------------------
-int SimEnv::lookupEntry( char *name ) {
+int SimEnv::lookupEnvEntry( char *name ) {
     
     SimEnvTabEntry *entry = table;
     
     while ( entry < hwm ) {
         
-        if (( entry -> valid ) && ( strcmp( entry -> name, name ) == 0 )) return((int) ( entry - table ));
+        if (( entry -> valid ) && ( strcmp( entry -> name, name ) == 0 )) 
+            return((int) ( entry - table ));
         else entry ++;
     }
     
@@ -481,13 +482,12 @@ uint8_t SimEnv::displayEnvTableEntry( SimEnvTabEntry *entry ) {
 //------------------------------------------------------------------------------------------------------------
 // Enter the predefined entries.
 //
+// enbterVAr is a voiud function !!!!
 //------------------------------------------------------------------------------------------------------------
 void SimEnv::setupPredefined( ) {
     
-    uint8_t rStat = NO_ERR;
-    
-    if ( rStat == NO_ERR ) enterEnvVar((char *)  ENV_TRUE, (bool) true, true, true );
-    if ( rStat == NO_ERR ) enterEnvVar((char *)  ENV_FALSE, (bool) false, true, true );
+    enterEnvVar((char *)  ENV_TRUE, (bool) true, true, true );
+    enterEnvVar((char *)  ENV_FALSE, (bool) false, true, true );
     
     if ( rStat == NO_ERR ) enterEnvVar((char *)  ENV_PROG_VERSION, (char *) SIM_VERSION, true, false );
     if ( rStat == NO_ERR ) enterEnvVar((char *)  ENV_GIT_BRANCH, (char *) SIM_GIT_BRANCH, true, false );

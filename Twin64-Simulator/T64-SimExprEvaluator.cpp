@@ -1,35 +1,35 @@
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// VCPU32 - A 32-bit CPU - Simulator expressions
+// Twin64 - A 64-bit CPU - Simulator Command line expression parser
 //
-//------------------------------------------------------------------------------------------------------------
-// The command interpreter features expression evaluation for command arguments. It is a straightforward
-// recursive top down interpeter.
+//------------------------------------------------------------------------------
+// The command interpreter features expression evaluation for command arguments.
+// It is a straightforward recursive top down interpeter.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// VCPU32 - A 32-bit CPU - Simulator expressions
-// Copyright (C) 2022 - 2025 Helmut Fieres
+// Twin64 - A 64-bit CPU - Simulator Command line expression parser
+// Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the terms of the GNU
-// General Public License as published by the Free Software Foundation, either version 3 of the License,
-// or any later version.
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-// License for more details. You should have received a copy of the GNU General Public License along with
-// this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+// more details. You should have received a copy of the GNU General Public
+// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------------------------------------
-#include "VCPU32-SimVersion.h"
-#include "VCPU32-Types.h"
-#include "VCPU32-SimDeclarations.h"
-#include "VCPU32-SimTables.h"
-#include "VCPU32-Core.h"
+//------------------------------------------------------------------------------
+#include "T64-Common.h"
+#include "T64-SimVersion.h"
+#include "T64-SimDeclarations.h"
+#include "T64-SimTables.h"
 
-
-//------------------------------------------------------------------------------------------------------------
-// The commadn line features an expression evaluator for the arguments. The overall syntaxt is as follows:
+//------------------------------------------------------------------------------
+// The commadn line features an expression evaluator for the arguments. The 
+// overall syntaxt is as follows:
 //
 //      <command>   ->  <cmdId> [ <argList> ]
 //      <function>  ->  <funcId> “(“ [ <argList> ] ")"
@@ -38,11 +38,9 @@
 // Expression have a type, which are NUM, ADR, STR, SREG, GREG and CREG.
 //
 //      <factor> -> <number>                        |
-//                  <extAdr>                        |
 //                  <string>                        |
 //                  <envId>                         |
 //                  <gregId>                        |
-//                  <sregId>                        |
 //                  <cregId>                        |
 //                  "~" <factor>                    |
 //                  "(" <expr> ")"
@@ -53,20 +51,21 @@
 //      <expr>      ->  [ ( "+" | "-" ) ] <term> { <exprOp> <term> }
 //      <exprOp>    ->  "+" | "-" | "|" | "^"
 //
-// If a command is called, there is no output other than what the command was issuing.
-// If a function is called in the command place, the function result will be printed.
-// If an argument represents a function, its return value will be the argument in the command.
+// If a command is called, there is no output other than what the command was 
+// issuing. If a function is called in the command place, the function result 
+// will be printed. If an argument represents a function, its return value will
+// be the argument in the command.
 //
 // The token table becomes a kind of dictionary with name, type and values.
 // The environment table needs to enhanced to allow for user defined variables.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 namespace {
 
 enum logicalOpId : int {
@@ -76,10 +75,10 @@ enum logicalOpId : int {
     XOR_OP  = 2
 };
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Add operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -94,26 +93,15 @@ void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
             }
             
         } break;
-            
-        case TYP_EXT_ADR: {
-            
-            switch ( lExpr -> typ ) {
-                    
-                case TYP_NUM: rExpr -> ofs += lExpr -> numVal; break;
                 
-                default: throw ( ERR_EXPR_TYPE_MATCH );
-            }
-            
-        } break;
-            
         default: throw ( ERR_EXPR_TYPE_MATCH );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Sub operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -129,25 +117,14 @@ void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
         } break;
             
-        case TYP_EXT_ADR: {
-            
-            switch ( lExpr -> typ ) {
-                    
-                case TYP_NUM: rExpr -> ofs -= lExpr -> numVal; break;
-                
-                default: throw ( ERR_EXPR_TYPE_MATCH );
-            }
-            
-        } break;
-            
         default: throw ( ERR_EXPR_TYPE_MATCH );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Multiply operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -163,25 +140,14 @@ void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
         } break;
             
-        case TYP_EXT_ADR: {
-            
-            switch ( lExpr -> typ ) {
-                    
-                case TYP_NUM: rExpr -> ofs *= lExpr -> numVal; break;
-                
-                default: throw ( ERR_EXPR_TYPE_MATCH );
-            }
-            
-        } break;
-            
         default: throw ( ERR_EXPR_TYPE_MATCH );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Divide Operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -197,25 +163,14 @@ void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
         } break;
             
-        case TYP_EXT_ADR: {
-            
-            switch ( lExpr -> typ ) {
-                    
-                case TYP_NUM: rExpr -> ofs /= lExpr -> numVal; break;
-                
-                default: throw ( ERR_EXPR_TYPE_MATCH );
-            }
-            
-        } break;
-            
         default: throw ( ERR_EXPR_TYPE_MATCH );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Modulo operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -230,26 +185,15 @@ void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
             }
             
         } break;
-            
-        case TYP_EXT_ADR: {
-            
-            switch ( lExpr -> typ ) {
-                    
-                case TYP_NUM: rExpr -> ofs %= lExpr -> numVal; break;
                 
-                default: throw ( ERR_EXPR_TYPE_MATCH );
-            }
-            
-        } break;
-            
         default: throw ( ERR_EXPR_TYPE_MATCH );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Logical operation.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
     
     switch ( rExpr -> typ ) {
@@ -296,26 +240,26 @@ void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
 }; // namespace
 
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Evaluation Expression Object constructor.
 //
-//------------------------------------------------------------------------------------------------------------
-SimExprEvaluator::SimExprEvaluator( VCPU32Globals *glb, SimTokenizer *tok ) {
+//------------------------------------------------------------------------------
+SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
     
     this -> glb         = glb;
     this -> tok         = tok;
     
-    disAsm      = new SimDisAsm( );
-    oneLineAsm  = new SimOneLineAsm( );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// Coercin functions. Not a lot there yet. The idea is to coerce an expression into a 32-bit value where
-// possible. There are signed and unisgned versions, which at the moment identical. We only have 32-bit
-// values. If we have one day 16-bit and 64-bit vaous in addition, there is more to do. What we also coerce
-// is the first characters of a string, right justified if shorter than 4 bytes.
+//------------------------------------------------------------------------------
+// Coercing functions. Not a lot there yet. The idea is to coerce an expression 
+// into a 32-bit value where possible. There are signed and unisgned versions, 
+// which at the moment identical. We only have 32-bit values. If we have one 
+// day 16-bit and 64-bit vaous in addition, there is more to do. What we also 
+// coerced is the first characters of a string, right justified if shorter than
+//  4 bytes.
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncS32( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
@@ -376,11 +320,11 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Assemble function.
 //
 // ASSEMBLE "(" <str> ")"
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     
     SimExpr         lExpr;
@@ -394,7 +338,7 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_STR ) {
         
-        ret = oneLineAsm -> parseAsmLine( lExpr.strVal, &instr );
+       // ret = oneLineAsm -> parseAsmLine( lExpr.strVal, &instr ); // ???
         
         if ( ret == NO_ERR ) {
             
@@ -409,17 +353,18 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Dis-assemble function.
 //
 // DISASSEMBLE "(" <str> [ "," <rdx> ] ")"
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
     uint32_t    instr;
     char        asmStr[ CMD_LINE_BUF_SIZE ];
-    int         rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int         rdx = 16;  // ??? fix ....
+    // glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
     tok -> nextToken( );
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
@@ -436,7 +381,6 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
             tok -> nextToken( );
             
             if (( tok -> tokId( ) == TOK_HEX ) ||
-                ( tok -> tokId( ) == TOK_OCT ) ||
                 ( tok -> tokId( ) == TOK_DEC )) {
                 
                 rdx = tok -> tokVal( );
@@ -453,7 +397,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
         
-        disAsm -> formatInstr( asmStr, sizeof( asmStr ), instr );
+        // disAsm -> formatInstr( asmStr, sizeof( asmStr ), instr ); // ???
         
         rExpr -> typ = TYP_STR;
         strcpy( rExpr -> strVal, asmStr );
@@ -461,11 +405,11 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_INSTR_VAL );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Virtual address hash function.
 //
 // HASH "(" <extAdr> ")"
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
@@ -476,90 +420,18 @@ void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_LPAREN );
         
     parseExpr( &lExpr );
-    if ( lExpr.typ == TYP_EXT_ADR ) {
-        
-        hashVal = glb -> cpu -> iTlb -> hashAdr( lExpr.seg, lExpr.ofs );
-        
-        rExpr -> typ    = TYP_NUM;
-        rExpr -> numVal = hashVal;
-    }
-    else throw ( ERR_EXPECTED_STR );
 
+    // ??? call the function ...
+   
     if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------------------------------------
-// Virtual address function. The portions <seg> and <expr> can be numeric values or the respective register
-// content. When we only have <expr>, the segment portion is derived from the upper two bits of the offset.
+//------------------------------------------------------------------------------
+// Entry point to the predefined functions. We dispatch based on the predefined
+// function token Id.
 //
-// ADR "(" <seg> "," <expr> ")"
-// ADR "(" <expr> "," <expr> ")"
-// ADR "(" <ofs> ")"
-//------------------------------------------------------------------------------------------------------------
-void SimExprEvaluator::pFuncExtAdr( SimExpr *rExpr ) {
-    
-    SimExpr     lExpr;
-    uint32_t    seg;
-    
-    tok -> nextToken( );
-    if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
-    else throw ( ERR_EXPECTED_LPAREN );
-    
-    if ( tok -> isTokenTyp( TYP_SREG )) {
-        
-        seg = glb -> cpu -> getReg( RC_SEG_REG_SET, tok -> tokVal( ));
-        
-        tok -> nextToken( );
-        if ( ! tok -> isToken( TOK_COMMA )) throw ( ERR_EXPECTED_COMMA );
-        else tok -> nextToken( );
-        
-        parseExpr( &lExpr );
-        
-        if ( lExpr.typ == TYP_NUM ) {
-            
-            rExpr -> typ = TYP_EXT_ADR;
-            rExpr -> seg = seg;
-            rExpr -> ofs = lExpr.numVal;
-            
-            if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
-            else throw ( ERR_EXPECTED_RPAREN );
-        }
-        else throw ( ERR_EXPECTED_OFS );
-    }
-    else {
-        
-        parseExpr( &lExpr );
-        
-        if ( lExpr.typ == TYP_NUM ) {
-            
-            uint32_t segId = lExpr.numVal >> 30;
-            if ( segId == 0 ) segId += 4;
-            
-            rExpr -> typ = TYP_EXT_ADR;
-            rExpr -> seg = glb -> cpu -> getReg( RC_SEG_REG_SET, segId );
-            rExpr -> ofs = lExpr.numVal;
-            
-            if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
-            else throw ( ERR_EXPECTED_RPAREN );
-        }
-        else if ( lExpr.typ == TYP_EXT_ADR ) {
-            
-            rExpr -> typ = TYP_EXT_ADR;
-            rExpr -> seg = lExpr.seg;
-            rExpr -> ofs = lExpr.ofs;
-            
-            if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
-            else throw ( ERR_EXPECTED_RPAREN );
-        }
-        else throw( ERR_INVALID_EXPR );
-    }
-}
-
-//------------------------------------------------------------------------------------------------------------
-// Entry point to the predefined functions. We dispatch based on the predefined function token Id.
-//
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr ) {
     
     switch( funcId.tid ) {
@@ -567,27 +439,23 @@ void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr 
         case PF_ASSEMBLE:       pFuncAssemble( rExpr );     break;
         case PF_DIS_ASSEMBLE:   pFuncDisAssemble( rExpr );  break;
         case PF_HASH:           pFuncHash( rExpr );         break;
-        case PF_EXT_ADR:        pFuncExtAdr( rExpr );       break;
         case PF_S32:            pFuncS32( rExpr );          break;
-        case PF_U32:            pFuncU32( rExpr );          break;
             
         default: throw ( ERR_UNDEFINED_PFUNC );
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // "parseFactor" parses the factor syntax part of an expression.
 //
 //      <factor> -> <number>                        |
-//                  <extAdr>                        |
 //                  <gregId>                        |
 //                  <sregId>                        |
 //                  <cregId>                        |
 //                  "~" <factor>                    |
-//                  "(" [ <sreg> "," ] <greg> ")"   |
 //                  "(" <expr> ")"
 //
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
     rExpr -> typ       = TYP_NIL;
@@ -599,13 +467,6 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         rExpr -> numVal  = tok -> tokVal( );
         tok -> nextToken( );
     }
-    else if ( tok -> isTokenTyp( TYP_EXT_ADR )) {
-        
-        rExpr -> typ    = TYP_EXT_ADR;
-        rExpr -> seg    = tok -> tokSeg( );
-        rExpr -> ofs    = tok -> tokOfs( );
-        tok -> nextToken( );
-    }
     else if ( tok -> isTokenTyp( TYP_STR ))  {
         
         rExpr -> typ = TYP_STR;
@@ -615,27 +476,22 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     else if ( tok -> isTokenTyp( TYP_GREG ))  {
         
         rExpr -> typ    = TYP_NUM;
-        rExpr -> numVal = glb -> cpu -> getReg( RC_GEN_REG_SET, tok -> tokVal( ));
-        tok -> nextToken( );
-    }
-    else if ( tok -> isTokenTyp( TYP_SREG ))  {
-        
-        rExpr -> typ    = TYP_SREG;
-        rExpr -> numVal = glb -> cpu -> getReg( RC_SEG_REG_SET, tok -> tokVal( ));
+       //  rExpr -> numVal = glb -> cpu -> getReg( RC_GEN_REG_SET, tok -> tokVal( ));
         tok -> nextToken( );
     }
     else if ( tok -> isTokenTyp( TYP_CREG ))  {
         
         rExpr -> typ    = TYP_CREG;
-        rExpr -> numVal = glb -> cpu -> getReg( RC_CTRL_REG_SET, tok -> tokVal( ));
+      //  rExpr -> numVal = glb -> cpu -> getReg( RC_CTRL_REG_SET, tok -> tokVal( ));
         tok -> nextToken( );
     }
-    else if ( tok -> isTokenTyp( TYP_PREDEFINED_FUNC )) {
+    else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
         
         parsePredefinedFunction( tok -> token( ), rExpr );
     }
     else if ( tok -> isToken( TOK_IDENT )) {
         
+        #if 0 // fix .....
         SimEnvTabEntry *entry = glb -> env -> getEnvVarEntry ( tok -> tokStr( ));
         
         if ( entry != nullptr ) {
@@ -644,22 +500,16 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
             
             switch( rExpr -> typ ) {
                     
-                case TYP_BOOL:  rExpr -> bVal       =  entry -> bVal;           break;
-                case TYP_NUM:   rExpr -> numVal     =  entry -> iVal;           break;
-                case TYP_ADR:   rExpr -> adr        =  entry -> uVal;           break;
-                case TYP_STR:   strcpy( rExpr -> strVal, entry -> strVal );     break;
-                
-                case TYP_EXT_ADR: {
-                    
-                    rExpr -> seg = entry -> seg;
-                    rExpr -> ofs = entry -> ofs;
-                    
-                } break;
+                case TYP_BOOL:  rExpr -> bVal       =  entry -> u.bVal;           break;
+                case TYP_NUM:   rExpr -> numVal     =  entry -> u.iVal;           break;
+              
+                case TYP_STR:   strcpy( rExpr -> strVal, entry -> u.strVal );     break;
                 
                 default: fprintf( stdout, "**** uncaptured type in factor, fix ... \n" );
             }
         }
         else throw( ERR_ENV_VAR_NOT_FOUND );
+        #endif
         
         tok -> nextToken( );
     }
@@ -677,21 +527,22 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
     }
-    else if (( tok -> tokTyp( ) == TYP_NIL ) && ( tok -> tokId( ) == TOK_EOS )) {
+    else if (( tok -> tokTyp( ) == TYP_NIL ) && 
+             ( tok -> tokId( ) == TOK_EOS )) {
         
         rExpr -> typ = TYP_NIL;
     }
     else throw ( ERR_EXPR_FACTOR );
 }
 
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // "parseTerm" parses the term syntax.
 //
 //      <term>      ->  <factor> { <termOp> <factor> }
 //      <termOp>    ->  "*" | "/" | "%" | "&"
 //
 // ??? type mix options ?
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::parseTerm( SimExpr *rExpr ) {
     
     SimExpr lExpr;
@@ -720,15 +571,16 @@ void SimExprEvaluator::parseTerm( SimExpr *rExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------------------------------------
-// "parseExpr" parses the expression syntax. The one line assembler parser routines use this call in many
-// places where a numeric expression or an address is needed.
+//------------------------------------------------------------------------------
+// "parseExpr" parses the expression syntax. The one line assembler parser 
+// routines use this call in many places where a numeric expression or an 
+// address is needed.
 //
 //      <expr>      ->  [ ( "+" | "-" ) ] <term> { <exprOp> <term> }
 //      <exprOp>    ->  "+" | "-" | "|" | "^"
 //
 // ??? type mix options ?
-//------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void SimExprEvaluator::parseExpr( SimExpr *rExpr ) {
     
     SimExpr lExpr;

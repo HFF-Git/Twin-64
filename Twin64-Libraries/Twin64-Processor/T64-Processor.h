@@ -111,7 +111,7 @@ public:
     
     T64Processor(  );
     
-    void            reset( );
+    void            reset( ) override;
     void            step( int steps = 1 );
     void            run( );
 
@@ -167,8 +167,10 @@ private:
     uint32_t        instrReg;
     T64Word         resvReg;
     
-    T64Tlb          *tlb        = nullptr;
-    T64Cache        *cache      = nullptr;
+    T64Tlb          *tlb                = nullptr;
+    T64Cache        *cache              = nullptr;
+    T64Word         instructionCount    = 0;
+    T64Word         cycleCount          = 0;
 };
 
 

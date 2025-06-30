@@ -36,9 +36,9 @@ struct T64Module {
 
     T64Module( );
 
-   void reset( );
+    virtual void reset( );
 
-   private:
+    private:
 
 };
 

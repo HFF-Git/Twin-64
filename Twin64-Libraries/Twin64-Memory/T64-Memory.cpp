@@ -29,19 +29,18 @@
 //------------------------------------------------------------------------------
 namespace {
 
-
-static inline T64Word roundup( T64Word arg, int round ) {
+inline T64Word roundup( T64Word arg, int round ) {
     
     if ( round == 0 ) return ( arg );
     return ((( arg + round - 1 ) / round ) * round );
 }
 
-static inline bool isAligned( T64Word adr, int align ) {
+inline bool isAligned( T64Word adr, int align ) {
     
     return (( adr & ( align - 1 )) == 0 );
 }
 
-static inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
+inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
     
     T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
@@ -70,6 +69,8 @@ T64Memory::T64Memory( T64Word size ) {
 }
 
 void T64Memory::reset( ) {
+
+    T64Module::reset( );
     
     if ( mem != nullptr ) free( mem );
     this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
