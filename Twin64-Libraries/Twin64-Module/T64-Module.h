@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Physical memory
+// T64 - A 64-bit CPU - Module
 //
 //------------------------------------------------------------------------------
-// This module contains ...
+// 
 //
 //------------------------------------------------------------------------------
 //
-// Twin-64 - A 64-bit CPU - Physical memory
+// T64 - A 64-bit CPU - Processor
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it
@@ -21,35 +21,26 @@
 // License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
 //------------------------------------------------------------------------------
-#ifndef T64_Memory_h
-#define T64_Memory_h
+#ifndef T64_Module_h
+#define T64_Module_h
 
 #include "T64-Common.h"
-#include "T64-Module.h"
 
 //------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------
-struct T64Memory {
+struct T64Module {
     
-public:
-    
-    T64Memory( T64Word size );
-    
-    void        reset( );
-    T64Word     read( T64Word pAdr, int len, bool signExtend = false );
-    void        write( T64Word pAdr, T64Word arg, int len );
+    public:
 
-    // ??? separate routines for monitor display ?
-    // int getWord( T64Word adr, uint32_t *data );
-    // int putWord( T64Word adr, uint32_t data );
-   
-private:
-    
-    T64Word    size = 0;
-    uint8_t    *mem = nullptr;
-    
+    T64Module( );
+
+   void reset( );
+
+   private:
+
 };
 
-#endif // T64-Memory.h
+
+#endif // T64_Module_h

@@ -25,6 +25,7 @@
 #define T64_Processor_h
 
 #include "T64-Common.h"
+#include "T64-Module.h"
 
 //------------------------------------------------------------------------------
 // Cache
@@ -104,7 +105,7 @@ private:
 // The CPU core executs the instructions.
 //
 //------------------------------------------------------------------------------
-struct T64Processor {
+struct T64Processor : T64Module {
     
 public:
     
