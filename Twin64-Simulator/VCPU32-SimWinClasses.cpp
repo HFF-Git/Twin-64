@@ -165,6 +165,13 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 //***********************************************************************************************************
 //***********************************************************************************************************
 
+// Format:
+//
+// GR0:  0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000 
+// GR4:  0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000
+// GR8:  0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000
+// GR12: 0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000 0x0000_0000_0000_0000
+
 
 //------------------------------------------------------------------------------------------------------------
 // Object creator.
@@ -449,148 +456,6 @@ void SimWinSpecialRegs::drawBody( ) {
     padLine( fmtDesc );
 }
 
-//***********************************************************************************************************
-//***********************************************************************************************************
-//
-// Methods for the CPU24 pipeline register window class.
-//
-//***********************************************************************************************************
-//***********************************************************************************************************
-
-//------------------------------------------------------------------------------------------------------------
-// Object constructor.
-//
-//------------------------------------------------------------------------------------------------------------
-SimWinPipeLineRegs::SimWinPipeLineRegs( VCPU32Globals *glb ) : SimWin( glb ) { }
-
-//------------------------------------------------------------------------------------------------------------
-// The default values are the initial settings when windows is brought up the first time, or for the WDEF
-// command.
-//
-//------------------------------------------------------------------------------------------------------------
-void SimWinPipeLineRegs::setDefaults( ) {
-    
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 84, 16 );
-    setDefColumns( 106, 8 );
-    setDefColumns( 84, 10 );
-    setColumns( getDefColumns( getRadix( )));
-    setRows( 4 );
-    
-    setWinType( WT_PL_WIN );
-    setEnable( false );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the radix chosen.
-//
-//------------------------------------------------------------------------------------------------------------
-void SimWinPipeLineRegs::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( getRadix( )));
-}
-
-//------------------------------------------------------------------------------------------------------------
-// The banner line for the pipeline register window. We show the cycle counter in the banner.
-//
-//------------------------------------------------------------------------------------------------------------
-void SimWinPipeLineRegs::drawBanner( ) {
-    
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-    
-    setWinCursor( 1, 1 );
-    printTextField((char *) "Pipeline", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    
-    printTextField((char *) "ClockSteps: ", fmtDesc );
-    printNumericField( glb -> cpu -> stats.clockCntr, fmtDesc );
-    
-    padLine( fmtDesc );
-    printRadixField( fmtDesc | FMT_LAST_FIELD );
-}
-
-//------------------------------------------------------------------------------------------------------------
-// The pipeline window shows the pipeline registers of the three stages.
-//
-// ??? can we also print entire lines using printChars ?
-//------------------------------------------------------------------------------------------------------------
-void SimWinPipeLineRegs::drawBody( ) {
-    
-    uint32_t fmtDesc = FMT_DEF_ATTR;
-    
-    setWinCursor( 2, 1 );
-    
-    if ( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_STALLED ) == 1 )
-        
-        printTextField((char *) "FD(s):", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    else
-        printTextField((char *) "FD:   ", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    
-    printTextField((char *) "PSW:",  ( fmtDesc | FMT_ALIGN_LFT ), 5 );
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 15, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) ":", ( fmtDesc | FMT_ALIGN_LFT ));
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 31, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) "." );
-    printNumericField( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1 ) );
-    padLine( fmtDesc );
-    
-    setWinCursor( 3, 1 );
-    
-    if ( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_STALLED ) == 1 )
-        
-        printTextField((char *) "MA(s):", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    else
-        printTextField((char *) "MA:   ", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    
-    printTextField((char *) "PSW:",  ( fmtDesc | FMT_ALIGN_LFT ), 5 );
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 15, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) ":", ( fmtDesc | FMT_ALIGN_LFT ));
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 31, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) "." );
-    printNumericField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_PSW_1 ) );
-    padLine( fmtDesc );
-    
-    printTextField(( char *) "  I: " );
-    printNumericField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_INSTR ));
-    printTextField(( char *) "  A: " );
-    printNumericField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_VAL_A ));
-    printTextField(( char *) "  B: " );
-    printNumericField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_VAL_B ));
-    printTextField(( char *) "  X: " );
-    printNumericField( glb -> cpu -> getReg( RC_MA_PSTAGE, PSTAGE_REG_ID_VAL_X ));
-    padLine( fmtDesc );
-    
-    setWinCursor( 4, 1 );
-    
-    if ( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_STALLED ) == 1 )
-        printTextField((char *) "EX(s):", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    else
-        printTextField((char *) "EX:   ", ( fmtDesc | FMT_ALIGN_LFT | FMT_BOLD ), 8 );
-    
-    printTextField((char *) "PSW:",  ( fmtDesc | FMT_ALIGN_LFT ), 5 );
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 15, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) ":", ( fmtDesc | FMT_ALIGN_LFT ));
-    printNumericField( getBitField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_PSW_0 ), 31, 16 ),
-                      ( fmtDesc | FMT_HALF_WORD ));
-    printTextField(( char *) "." );
-    printNumericField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_PSW_1 ) );
-    padLine( fmtDesc );
-    
-    printTextField(( char *) "  I: " );
-    printNumericField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_INSTR ));
-    printTextField(( char *) "  A: " );
-    printNumericField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_VAL_A ));
-    printTextField(( char *) "  B: " );
-    printNumericField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_VAL_B ));
-    printTextField(( char *) "  X: " );
-    printNumericField( glb -> cpu -> getReg( RC_EX_PSTAGE, PSTAGE_REG_ID_VAL_X ));
-    padLine( fmtDesc );
-}
 
 //***********************************************************************************************************
 //***********************************************************************************************************
@@ -659,6 +524,11 @@ void SimWinStatistics::drawBody( ) {
 //
 //***********************************************************************************************************
 //***********************************************************************************************************
+
+// Format:
+//
+// (0x00_0000_0000) 0x0000_0000 0x0000_0000 .... 8 times.
+
 
 //------------------------------------------------------------------------------------------------------------
 // Object constructor.
@@ -928,6 +798,10 @@ void SimWinCode::drawLine( uint32_t itemAdr ) {
 //
 //***********************************************************************************************************
 //***********************************************************************************************************
+
+// Format:
+//
+// (0x0000) [xxxx][xx] va: 0x0_0000_0000_0000 pa: 0x00_0000_0000 Pid: 0x0000_0000
 
 //------------------------------------------------------------------------------------------------------------
 // Object constructor. All we do is to remember what kind of TLB this is.

@@ -197,7 +197,41 @@ enum SimWinIndex : int {
 // Format descriptor for putting out a field. The options are simply ORed. The 
 // idea is that a format descriptor can be assembled once and used for many 
 // fields. A value of zero will indicate to simply use the previously 
-// established descriptor set by the attributes routine.
+// established descriptor.
+//
+//  FMT_USE_ACTUAL_ATTR -> Use previously established settings.
+//    
+//  FMT_BG_COL_DEF      -> Set default background color seting.
+//  FMT_BG_COL_RED      -> Set RED background color seting.
+//  FMT_BG_COL_GREEN    -> Set GREEN background color seting.
+//  FMT_BG_COL_YELLOW   -> Set YELLOW background color seting.
+//    
+//  FMT_FG_COL_DEF      -> Set default foreground color seting.
+//  FMT_FG_COL_RED      -> Set RED foreground color seting.
+//  FMT_FG_COL_GREEN    -> Set GREEN foreground color seting.
+//  FMT_FG_COL_YELLOW   -> Set YELLOW foreground color seting.
+//    
+//  FMT_BOLD            -> Set BOLD character mode.
+//  FMT_BLINK           -> Set BLINK character mode.
+//  FMT_INVERSE         -> Set INVERSE character mode.
+//  FMT_HEX             -> Print numeric data as a hex value "0xvvv...".
+//  FMT_DEC             -> Print numeric data as decimal "vvvv...".
+//
+//  FMT_HEX_2           -> Print numeric data as "0xvv".
+//  FMT_HEX_4           -> Print numeric data as "0xvvvv"
+//  FMT_HEX_2_4         -> Print numeric data as "0xvv_vvvv"
+//  FMT_HEX_4_4         -> Print numeric data as "0xvvvv_vvvv"
+//  FMT_HEX_2_4_4       -> Print numeric data as "0xvv_vvvv_vvvv"
+//  FMT_HEX_4_4_4       -> Print numeric data as "0xvvvv_vvvv_vvvv"
+//  FMT_HEX_2_4_4_4     -> Print numeric data as "0xvv_vvvv_vvvv_vvvv"
+//  FMT_HEX_4_4_4_4     -> Print numeric data as "0xvvvv_vvvv_vvvv_vvvv"
+//
+//  FMT_ALIGN_LFT       -> Align data left in field.
+//  FMT_TRUNC_LFT       -> Align data left and optionally truncate.
+//  FMT_LAST_FIELD      -> repeat last setting to end of line.
+//
+//  FMT_INVALID_NUM     -> not sure where I need it ...
+//  FMT_DEF_ATTR        -> Use default attributes...
 //
 //------------------------------------------------------------------------------
 enum SimFmtDescOptions : uint32_t {
@@ -206,33 +240,34 @@ enum SimFmtDescOptions : uint32_t {
     
     FMT_BG_COL_DEF      = 0x00000001,
     FMT_BG_COL_RED      = 0x00000002,
-    FMT_BG_COL_GREEN    = 0x00000003,
-    FMT_BG_COL_YELLOW   = 0x00000004,
+    FMT_BG_COL_GREEN    = 0x00000004,
+    FMT_BG_COL_YELLOW   = 0x00000008,
     
     FMT_FG_COL_DEF      = 0x00000010,
     FMT_FG_COL_RED      = 0x00000020,
-    FMT_FG_COL_GREEN    = 0x00000030,
-    FMT_FG_COL_YELLOW   = 0x00000040,
+    FMT_FG_COL_GREEN    = 0x00000040,
+    FMT_FG_COL_YELLOW   = 0x00000080,
     
     FMT_BOLD            = 0x00000100,
     FMT_BLINK           = 0x00000200,
     FMT_INVERSE         = 0x00000400,
-    FMT_ALIGN_LFT       = 0x00000800,
-    FMT_TRUNC_LFT       = 0x00001000,
-    
-    FMT_LAST_FIELD      = 0x00002000,
+    FMT_HEX             = 0x00000800, 
+    FMT_DEC             = 0x00001000,
 
-    FMT_HEX_2           = 0x00010000,
-    FMT_HEX_4           = 0x00020000,
-    FMT_HEX_2_4         = 0x0040000,
-    FMT_HEX_4_4         = 0x00080000,
-    FMT_HEX_2_4_4       = 0x00100000,
-    FMT_HEX_4_4_4       = 0x00200000,
-    FMT_HEX_2_4_4_4     = 0x00400000,
-    FMT_HEX_4_4_4_4     = 0x00800000,
+    FMT_HEX_2           = 0x00002000,
+    FMT_HEX_4           = 0x00004000,
+    FMT_HEX_2_4         = 0x00008000,
+    FMT_HEX_4_4         = 0x00010000,
+    FMT_HEX_2_4_4       = 0x00020000,
+    FMT_HEX_4_4_4       = 0x00040000,
+    FMT_HEX_2_4_4_4     = 0x00080000,
+    FMT_HEX_4_4_4_4     = 0x00100000,
 
-    FMT_INVALID_NUM     = 0x00008000, // ( ??? )
-    
+    FMT_ALIGN_LFT       = 0x00200000,
+    FMT_TRUNC_LFT       = 0x00400000,
+    FMT_LAST_FIELD      = 0x00800000,
+
+    FMT_INVALID_NUM     = 0x01000000, // ( ??? )    
     FMT_DEF_ATTR        = 0x10000000
 };
 
@@ -287,8 +322,8 @@ enum SimTokId : uint16_t {
     //
     //--------------------------------------------------------------------------
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
-    TOK_STR                 = 102,      TOK_CPU                 = 105,      
-    TOK_MEM                 = 106,      TOK_STATS               = 107,
+    TOK_STR                 = 102,      TOK_CPU                 = 103,      
+    TOK_MEM                 = 104,      TOK_STATS               = 105,
     
     TOK_C                   = 108,      TOK_D                   = 109,      
     TOK_F                   = 110,      TOK_I                   = 111,      
@@ -314,21 +349,21 @@ enum SimTokId : uint16_t {
     CMD_SET                 = 1000,
     
     CMD_EXIT                = 1001,     CMD_HELP                = 1002,
-    CMD_DO                  = 1010,     CMD_REDO                = 1011,     
-    CMD_HIST                = 1012,     CMD_ENV                 = 1013,     
-    CMD_XF                  = 1014,     CMD_WRITE_LINE          = 1015,
+    CMD_DO                  = 1003,     CMD_REDO                = 1004,     
+    CMD_HIST                = 1005,     CMD_ENV                 = 1006,     
+    CMD_XF                  = 1007,     CMD_WRITE_LINE          = 1008,
     
-    CMD_RESET               = 1020,     CMD_RUN                 = 1021,     
-    CMD_STEP                = 1022,
+    CMD_RESET               = 1009,     CMD_RUN                 = 1010,     
+    CMD_STEP                = 1011,
     
-    CMD_DR                  = 1030,     CMD_MR                  = 1031,
-    CMD_DA                  = 1037,     CMD_MA                  = 1038,
+    CMD_DR                  = 1012,     CMD_MR                  = 1013,
+    CMD_DA                  = 1014,     CMD_MA                  = 1015,
     
-    CMD_D_TLB               = 1040,     CMD_I_TLB               = 1041,     
-    CMD_P_TLB               = 1042,
+    CMD_D_TLB               = 1016,     CMD_I_TLB               = 1017,     
+    CMD_P_TLB               = 1018,
 
-    CMD_D_CACHE             = 1043,     CMD_F_CACHE             = 1044,
-    CMD_P_CACHE             = 1045,
+    CMD_D_CACHE             = 1019,     CMD_F_CACHE             = 1020,
+    CMD_P_CACHE             = 1021,
     
     //--------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -383,15 +418,15 @@ enum SimTokId : uint16_t {
     GR_14                   = 4114,     GR_15                   = 4115,     
     GR_SET                  = 4116,
     
-    CR_0                    = 4300,     CR_1                    = 4301,     
-    CR_2                    = 4302,     CR_3                    = 4303,     
-    CR_4                    = 4304,     CR_5                    = 4305,
-    CR_6                    = 4306,     CR_7                    = 4307,     
-    CR_8                    = 4308,     CR_9                    = 4309,     
-    CR_10                   = 4310,     CR_11                   = 4311,
-    CR_12                   = 4312,     CR_13                   = 4313,     
-    CR_14                   = 4314,     CR_15                   = 4315,       
-    CR_SET                  = 4332,
+    CR_0                    = 4200,     CR_1                    = 4201,     
+    CR_2                    = 4202,     CR_3                    = 4203,     
+    CR_4                    = 4204,     CR_5                    = 4205,
+    CR_6                    = 4206,     CR_7                    = 4207,     
+    CR_8                    = 4208,     CR_9                    = 4209,     
+    CR_10                   = 4210,     CR_11                   = 4211,
+    CR_12                   = 4212,     CR_13                   = 4213,     
+    CR_14                   = 4214,     CR_15                   = 4215,       
+    CR_SET                  = 4216,
 };
 
 //------------------------------------------------------------------------------
@@ -552,8 +587,8 @@ struct SimGlobals;
 //------------------------------------------------------------------------------
 struct SimErrMsgTabEntry {
     
-    SimErrMsgId  errNum;
-    char            *errStr;
+    SimErrMsgId errNum;
+    char        *errStr;
 };
 
 //------------------------------------------------------------------------------
@@ -572,7 +607,9 @@ struct SimHelpMsgEntry {
 //------------------------------------------------------------------------------
 // The command line interpreter works the command line as a list of tokens. A
 // token found in a string is recorded using the token structure. The token
-// types are numeric and strings.
+// types are numeric and strings. The string is a buffer in the tokenizer. 
+// Scanning a new token potentially overwrites or invalidates the string. You
+// need to copy it to a safe place before scanning the next token.
 //
 //------------------------------------------------------------------------------
 struct SimToken {
@@ -583,16 +620,16 @@ struct SimToken {
     
     union {
         
-        struct {  T64Word val;                };
-        struct {  char str[ TOK_STR_SIZE ];   };
+        T64Word val;
+        char    *str; 
+
     } u;
 };
 
 //------------------------------------------------------------------------------
-// Tokenizer object. The command line interface as well as the one line 
-// assembler parse their input buffer line. The tokenizer will return the tokens
-// found in the line. The tokenizer will will work with the global token table
-// found in the tokenizer source file. The tokenizer raises exceptions.
+// Tokenizer object. The command line interface parse their input buffer line.
+// The tokenizer will return the tokens found in the line. The tokenizer raises
+// exceptions.
 //
 // ??? check the assembler version ....
 //------------------------------------------------------------------------------
@@ -613,31 +650,25 @@ struct SimTokenizer {
     SimTokId        tokId( );
     T64Word         tokVal( );
     char            *tokStr( );
-    uint32_t        tokSeg( );
-    uint32_t        tokOfs( );
     
     int             tokCharIndex( );
     char            *tokenLineStr( );
 
     private:
     
-    void            tokenError( char *errMsg );
     void            nextChar( );
     void            parseNum( );
     void            parseString( );
     void            parseIdent( );
 
     SimToken        currentToken;
-    SimToken        *tokTab                 = nullptr;
-    char            tokenLine[ 256 ]        = { 0 };
     int             currentLineLen          = 0;
     int             currentCharIndex        = 0;
     int             currentTokCharIndex     = 0;
     char            currentChar             = ' ';
-
-    char            strTokenBuf[ 16 ] [ 256 ]; // ??? fix ...
-    
-    SimGlobals      *glb                    = nullptr;
+    SimToken        *tokTab                 = nullptr;
+    char            tokenLine[ 256 ]        = { 0 };
+    char            strTokenBuf[ 256 ]      = { 0 };    
 };
 
 //------------------------------------------------------------------------------
@@ -652,14 +683,15 @@ struct SimExpr {
     SimTokTypeId typ;
    
     union {
+
+        T64Word val;
+        bool    bVal;  
+        char    *str;
         
-        struct {    SimTokId    tokId;                      };
-        struct {    bool        bVal;                       };
-        struct {    uint32_t    numVal;                     };
-        struct {    char        strVal[ TOK_STR_SIZE ];     };
-        struct {    uint32_t    adr;                        };
-        struct {    uint8_t     sReg;  uint8_t gReg;        };
-    };
+      //  SimTokId    tokId;   // ??? needed ?
+      //  struct {    uint32_t    adr;                        };
+       
+    } u;
 };
 
 //------------------------------------------------------------------------------
@@ -682,7 +714,7 @@ struct SimExprEvaluator {
     void        parseFactor( SimExpr *rExpr );
     void        parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );
     
-    // ??? rework...
+    // ??? rework... we need some to deal with the numeric sizes...
     void        pFuncS32( SimExpr *rExpr );
     void        pFuncU32( SimExpr *rExpr );
     
@@ -712,15 +744,10 @@ struct SimEnvTabEntry {
     
     union {
     
-        // ??? clean up ....
+        bool        bVal; 
+        T64Word     iVal;        
+        char        *strVal;      
 
-        struct {    bool            bVal;           };
-        struct {    uint32_t        uVal;           };
-        struct {    int             iVal;           };
-        struct {    char            *strVal;        };
-        struct {    uint32_t        adr;            };
-        
-        struct {    uint32_t seg;   uint32_t ofs;   };
     } u;
 };
 
@@ -732,25 +759,20 @@ struct SimEnvTabEntry {
 //------------------------------------------------------------------------------
 struct SimEnv {
     
-    SimEnv( uint32_t size );
+    SimEnv( int size );
     
-    uint8_t         displayEnvTable( );
-    uint8_t         displayEnvTableEntry( char *name );
+    void            displayEnvTable( );
+    void            displayEnvTableEntry( char *name );
     void            setupPredefined( );
     
-    void            setEnvVar( char *name, int iVal );
-    void            setEnvVar( char *name, uint32_t uVal );
-    void            setEnvVar( char *name, bool bVal );
-    void            setEnvVar( char *name, uint32_t seg, uint32_t ofs );
+    void            setEnvVar( char *name, T64Word val );
+    void            setEnvVar( char *name, bool val );
     void            setEnvVar( char *name, char *str );
     
     bool            getEnvVarBool( char *name,bool def = false );
-    int             getEnvVarInt( char *name, int def = 0 );
-    uint32_t        getEnvVarUint( char *name, uint32_t def = 0U );
-    uint32_t        getEnvVarExtAdrSeg( char *name, uint32_t def = 0U );
-    uint32_t        getEnvVarExtAdrOfs( char *name, uint32_t def = 0U );
+    T64Word         getEnvVarInt( char *name, T64Word def = 0 );
     char            *getEnvVarStr( char *name, char *def = nullptr );
-    SimEnvTabEntry  *getEnvVarEntry( char *name );
+    SimEnvTabEntry  *getEnvEntry( char *name );
     
     bool            isValid( char *name );
     bool            isReadOnly( char *name );
@@ -763,33 +785,22 @@ struct SimEnv {
     int             lookupEntry( char *name );
     int             findFreeEntry( );
     
-    void            enterEnvVar( char *name, 
-                                 int32_t iVal, 
+    void            enterVar( char *name, 
+                                 T64Word val, 
                                  bool predefined = false, 
                                  bool rOnly = false );
 
-    void            enterEnvVar( char *name, 
-                                 uint32_t uVal, 
+    void            enterVar( char *name, 
+                                 bool val, 
                                  bool predefined = false, 
                                  bool rOnly = false );
 
-    void            enterEnvVar( char *name, 
-                                bool bVal, 
-                                bool predefined = false, 
-                                bool rOnly = false );
-
-    void            enterEnvVar( char *name, 
+    void            enterVar( char *name, 
                                  char *str, 
                                  bool predefined = false, 
                                  bool rOnly = false );
-
-    void            enterEnvVar( char *name, 
-                                 uint32_t seg, 
-                                 uint32_t ofs, 
-                                 bool predefined = false, 
-                                 bool rOnly = false );
     
-    uint8_t         displayEnvTableEntry( SimEnvTabEntry *entry );
+    void            displayEnvEntry( SimEnvTabEntry *entry );
     
     SimEnvTabEntry  *table  = nullptr;
     SimEnvTabEntry  *hwm    = nullptr;
@@ -863,7 +874,7 @@ public:
     
 private:
     
-    char        buffer[ MAX_WIN_OUT_LINES ] [ MAX_WIN_OUT_LINE_SIZE ] = { 0 };
+    char        buffer[ MAX_WIN_OUT_LINES ] [ MAX_WIN_OUT_LINE_SIZE ];
     int         topIndex    = 0; // Index of the next line to use.
     int         cursorIndex = 0; // Index of the last line currently shown.
     int         screenSize  = 0; // Number of lines displayed in the window.

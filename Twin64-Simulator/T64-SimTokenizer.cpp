@@ -110,6 +110,7 @@ void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
     this -> currentCharIndex        = 0;
     this -> currentTokCharIndex     = 0;
     this -> currentChar             = ' ';
+
 }
 
 //------------------------------------------------------------------------------
@@ -148,7 +149,7 @@ T64Word SimTokenizer::tokVal( ) {
 
 char *SimTokenizer::tokStr( ) { 
     
-    return( currentToken.u.str );  // will change ....
+    return( currentToken.u.str );
 }
 
 int SimTokenizer::tokCharIndex( ) { 
@@ -257,7 +258,9 @@ void SimTokenizer::parseString( ) {
     
     currentToken.tid        = TOK_STR;
     currentToken.typ        = TYP_STR;
-    currentToken.u.str[ 0 ]   = '\0';
+    currentToken.u.str      = nullptr;
+
+    strTokenBuf[ 0 ] = '\0';             
 
     nextChar( );
     while (( currentChar != EOS_CHAR ) && ( currentChar != '"' )) {
@@ -268,35 +271,32 @@ void SimTokenizer::parseString( ) {
             if ( currentChar != EOS_CHAR ) {
                 
                 if ( currentChar == 'n' ) {
-                    
-                    strcat( currentToken.u.str, (char *) "\n" );
+
+                    strcat( strTokenBuf, (char *) "\n" );
                 } 
                 else if ( currentChar == 't' ) {  
                     
-                    strcat( currentToken.u.str, (char *) "\t" );
+                    strcat( strTokenBuf, (char *) "\t" );
                 }
                 else if ( currentChar == '\\' ) { 
                     
-                    strcat( currentToken.u.str, (char *) "\\" );
+                    strcat( strTokenBuf, (char *) "\\" );
                 }
                 else {
                     
-                    addChar( currentToken.u.str, 
-                             sizeof( currentToken.u.str ), 
+                    addChar( strTokenBuf, 
+                             sizeof( strTokenBuf ), 
                              currentChar );
                 }
             }
             else throw ( ERR_EXPECTED_CLOSING_QUOTE );
         }
-        else { 
-            
-            addChar( currentToken.u.str, 
-                      sizeof( currentToken.u.str ), 
-                      currentChar );
-            }
+        else addChar( strTokenBuf, sizeof( strTokenBuf ), currentChar );
         
         nextChar( );
     }
+
+    strncpy( currentToken.u.str, strTokenBuf, sizeof( strTokenBuf ));
 
     nextChar( );
 }

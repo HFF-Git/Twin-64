@@ -87,7 +87,7 @@ void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> numVal += lExpr -> numVal; break;
+                case TYP_NUM: rExpr -> u.val += lExpr -> u.val; break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -110,7 +110,7 @@ void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> numVal -= lExpr -> numVal; break;
+                case TYP_NUM: rExpr -> u.val -= lExpr -> u.val; break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -133,7 +133,7 @@ void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> numVal *= lExpr -> numVal; break;
+                case TYP_NUM: rExpr -> u.val *= lExpr -> u.val; break;
                     
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -156,7 +156,7 @@ void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> numVal /= lExpr -> numVal; break;
+                case TYP_NUM: rExpr -> u.val /= lExpr -> u.val; break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -179,7 +179,7 @@ void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> numVal %= lExpr -> numVal; break;
+                case TYP_NUM: rExpr -> u.val %= lExpr -> u.val; break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -204,9 +204,9 @@ void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
                 
                 switch ( op ) {
                         
-                    case AND_OP:    rExpr -> bVal &= lExpr -> bVal; break;
-                    case OR_OP:     rExpr -> bVal |= lExpr -> bVal; break;
-                    case XOR_OP:    rExpr -> bVal ^= lExpr -> bVal; break;
+                    case AND_OP:    rExpr -> u.bVal &= lExpr -> u.bVal; break;
+                    case OR_OP:     rExpr -> u.bVal |= lExpr -> u.bVal; break;
+                    case XOR_OP:    rExpr -> u.bVal ^= lExpr -> u.bVal; break;
                 }
             }
             else throw ( ERR_EXPR_TYPE_MATCH );
@@ -221,9 +221,9 @@ void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
                     
                     switch ( op ) {
                             
-                        case AND_OP:    rExpr -> numVal &= lExpr -> numVal; break;
-                        case OR_OP:     rExpr -> numVal |= lExpr -> numVal; break;
-                        case XOR_OP:    rExpr -> numVal ^= lExpr -> numVal; break;
+                        case AND_OP:    rExpr -> u.val &= lExpr -> u.val; break;
+                        case OR_OP:     rExpr -> u.val |= lExpr -> u.val; break;
+                        case XOR_OP:    rExpr -> u.val ^= lExpr -> u.val; break;
                     }
                     
                 } break;
@@ -272,19 +272,19 @@ void SimExprEvaluator::pFuncS32( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_NUM ) {
         
-        res = lExpr.numVal;
+        res = lExpr.u.val;
     }
     else if ( lExpr.typ == TYP_STR ) {
        
-        if ( strlen( lExpr.strVal ) > 0 ) res = ( lExpr.strVal[ 0 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 1 ) res = ( res << 8 ) | ( lExpr.strVal[ 1 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 2 ) res = ( res << 8 ) | ( lExpr.strVal[ 2 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 3 ) res = ( res << 8 ) | ( lExpr.strVal[ 3 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 0 ) res = ( lExpr.u.str[ 0 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 1 ) res = ( res << 8 ) | ( lExpr.u.str[ 1 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 2 ) res = ( res << 8 ) | ( lExpr.u.str[ 2 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 3 ) res = ( res << 8 ) | ( lExpr.u.str[ 3 ] & 0xFF );
     }
     else throw ( ERR_EXPECTED_EXPR );
     
     rExpr -> typ    = TYP_NUM;
-    rExpr -> numVal = res;
+    rExpr -> u.val = res;
 
     if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_RPAREN );
@@ -302,19 +302,19 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_NUM ) {
         
-        res = lExpr.numVal;
+        res = lExpr.u.val;
     }
     else if ( lExpr.typ == TYP_STR ) {
         
-        if ( strlen( lExpr.strVal ) > 0 ) res = ( lExpr.strVal[ 0 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 1 ) res = ( res << 8 ) | ( lExpr.strVal[ 1 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 2 ) res = ( res << 8 ) | ( lExpr.strVal[ 2 ] & 0xFF );
-        if ( strlen( lExpr.strVal ) > 3 ) res = ( res << 8 ) | ( lExpr.strVal[ 3 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 0 ) res = ( lExpr.u.str[ 0 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 1 ) res = ( res << 8 ) | ( lExpr.u.str[ 1 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 2 ) res = ( res << 8 ) | ( lExpr.u.str[ 2 ] & 0xFF );
+        if ( strlen( lExpr.u.str ) > 3 ) res = ( res << 8 ) | ( lExpr.u.str[ 3 ] & 0xFF );
     }
     else throw ( ERR_EXPECTED_EXPR );
     
     rExpr -> typ    = TYP_NUM;
-    rExpr -> numVal = res;
+    rExpr -> u.val = res;
 
     if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_RPAREN );
@@ -328,7 +328,7 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     
     SimExpr         lExpr;
-    uint32_t        instr;
+    uint32_t        instr = 0;
     SimErrMsgId     ret = NO_ERR;
     
     tok -> nextToken( );
@@ -338,12 +338,12 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_STR ) {
         
-       // ret = oneLineAsm -> parseAsmLine( lExpr.strVal, &instr ); // ???
+       // ret = oneLineAsm -> parseAsmLine( lExpr.str, &instr ); // ???
         
         if ( ret == NO_ERR ) {
             
             rExpr -> typ    = TYP_NUM;
-            rExpr -> numVal = instr;
+            rExpr -> u.val = instr;
         }
         else throw ( ret );
     }
@@ -361,9 +361,10 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
 void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
-    uint32_t    instr;
+    uint32_t    instr = 0;
+    int         rdx   = 0;
     char        asmStr[ CMD_LINE_BUF_SIZE ];
-    int         rdx = 16;  // ??? fix ....
+    
     // glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
     tok -> nextToken( );
@@ -374,7 +375,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     
     if ( lExpr.typ == TYP_NUM ) {
         
-        instr = lExpr.numVal;
+        instr = lExpr.u.val;
         
         if ( tok -> tokId( ) == TOK_COMMA ) {
             
@@ -384,7 +385,6 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
                 ( tok -> tokId( ) == TOK_DEC )) {
                 
                 rdx = tok -> tokVal( );
-                
                 tok -> nextToken( );
             }
             else if ( tok -> tokId( ) == TOK_EOS ) {
@@ -400,7 +400,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
         // disAsm -> formatInstr( asmStr, sizeof( asmStr ), instr ); // ???
         
         rExpr -> typ = TYP_STR;
-        strcpy( rExpr -> strVal, asmStr );
+        strcpy( rExpr -> u.str, asmStr );
     }
     else throw ( ERR_EXPECTED_INSTR_VAL );
 }
@@ -413,8 +413,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
 void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
-    uint32_t    hashVal;
-    
+   
     tok -> nextToken( );
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_LPAREN );
@@ -459,18 +458,18 @@ void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr 
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
     rExpr -> typ       = TYP_NIL;
-    rExpr -> numVal    = 0;
+    rExpr -> u.val    = 0;
     
     if ( tok -> isTokenTyp( TYP_NUM ))  {
         
         rExpr -> typ     = TYP_NUM;
-        rExpr -> numVal  = tok -> tokVal( );
+        rExpr -> u.val  = tok -> tokVal( );
         tok -> nextToken( );
     }
     else if ( tok -> isTokenTyp( TYP_STR ))  {
         
         rExpr -> typ = TYP_STR;
-        strcpy( rExpr -> strVal, tok -> tokStr( ));
+        strcpy( rExpr -> u.str, tok -> tokStr( ));
         tok -> nextToken( );
     }
     else if ( tok -> isTokenTyp( TYP_GREG ))  {
@@ -503,7 +502,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
                 case TYP_BOOL:  rExpr -> bVal       =  entry -> u.bVal;           break;
                 case TYP_NUM:   rExpr -> numVal     =  entry -> u.iVal;           break;
               
-                case TYP_STR:   strcpy( rExpr -> strVal, entry -> u.strVal );     break;
+                case TYP_STR:   strcpy( rExpr -> str, entry -> u.str );     break;
                 
                 default: fprintf( stdout, "**** uncaptured type in factor, fix ... \n" );
             }
@@ -517,7 +516,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         
         tok -> nextToken( );
         parseFactor( rExpr );
-        rExpr -> numVal = ~ rExpr -> numVal;
+        rExpr -> u.val = ~ rExpr -> u.val;
     }
     else if ( tok -> isToken( TOK_LPAREN )) {
         
@@ -597,7 +596,7 @@ void SimExprEvaluator::parseExpr( SimExpr *rExpr ) {
         tok -> nextToken( );
         parseTerm( rExpr );
         
-        if ( rExpr -> typ == TYP_NUM ) rExpr -> numVal = - (int32_t) rExpr -> numVal;
+        if ( rExpr -> typ == TYP_NUM ) rExpr -> u.val = - (int32_t) rExpr -> u.val;
         else throw ( ERR_EXPECTED_NUMERIC );
     }
     else parseTerm( rExpr );

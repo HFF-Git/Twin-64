@@ -12,6 +12,7 @@ add_executable( ${PROJECT_NAME}
     T64-SimTables.h
     T64-SimTokenizer.cpp
     T64-SimExprEvaluator.cpp
+    T64-SimEnvVars.cpp
 )
 
 target_link_libraries( ${PROJECT_NAME}
