@@ -1,7 +1,7 @@
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 #  CMAKE File
 #  Copyright (C) 2025 - 2025  Helmut Fieres
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 cmake_minimum_required( VERSION 3.29 )
 
 project( Twin64 C CXX ASM )
@@ -14,6 +14,7 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS)
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Cross-platform compiler warnings
+
 if(MSVC)
     add_compile_options( /W4 /permissive- )
 else()

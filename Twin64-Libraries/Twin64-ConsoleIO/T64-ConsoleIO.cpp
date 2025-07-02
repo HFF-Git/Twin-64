@@ -1,18 +1,18 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Monitor - Console IO
 //
-//------------------------------------------------------------------------------
-// Console IO is the piece of code that provides a single character interface 
-// for the terminal screen. For the simulator, it is just plain character IO 
-// to the terminal screen.For the simulator running in CPU mode, the characters
-// are taken from and place into the virtual console declared on the IO space.
+//----------------------------------------------------------------------------------------
+// Console IO is the piece of code that provides a single character interface for the
+// terminal screen. For the simulator, it is just plain character IO to the terminal 
+// screen.For the simulator running in CPU mode, the characters are taken from and 
+// place into the virtual console declared on the IO space.
 //
-// Unfortunately, PCs and Macs differ. The standard system calls typically 
-// buffer the input up to the carriage return. To avoid this, the terminal 
-// needs to be place in "raw" mode. And this is different for the two platforms.
+// Unfortunately, PCs and Macs differ. The standard system calls typically buffer the
+// input up to the carriage return. To avoid this, the terminal needs to be place in
+// "raw" mode. And this is different for the two platforms.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // // Twin64 - A 64-bit CPU Monitor - Console IO
 // Copyright (C) 2025 - 2025 Helmut Fieres
@@ -27,31 +27,34 @@
 // more details. You should have received a copy of the GNU General Public
 // License along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #include "T64-Common.h"
 #include "T64-ConsoleIO.h"
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Local name space.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 namespace {
 
-//------------------------------------------------------------------------------
-// The previous teminal attribute settings. We restore them when the console IO
-// object is deleted.
+//----------------------------------------------------------------------------------------
+// The previous teminal attribute settings. We restore them when the console IO object
+// is deleted.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #if __APPLE__
 struct termios saveTermSetting;
 #endif
 
 char outputBuffer[ 1024 ];
 
-//------------------------------------------------------------------------------
+#if 0
+// ??? we move these routines to the simulator if needed ...
+
+//----------------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #if __APPLE__
 uint16_t toBigEndian16( uint16_t val ) { return ( __builtin_bswap16( val )); }
 uint16_t toBigEndian32( uint32_t val ) { return ( __builtin_bswap32( val )); }
@@ -60,14 +63,14 @@ uint16_t toBigEndian16( uint16_t val ) { return ( _byteswap_ushort( val )); }
 uint16_t toBigEndian32( uint32_t val ) { return ( _byteswap_ulong( val )); }
 #endif
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "removeChar" will remove a character from the input buffer at the cursor 
 // position and adjust the string size accordingly. If the cursor is at the end
 // of the string, both string size and cursor position are decremented by one, 
 // otherwise the cursor stays where it is and just the string size is 
 // decremented.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void removeChar( char *buf, int *strSize, int *pos ) {
     
     if (( *strSize > 0 ) && ( *strSize == *pos )) {
@@ -82,7 +85,7 @@ void removeChar( char *buf, int *strSize, int *pos ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "insertChar" will insert a character in the input buffer at the cursor 
 // position and adjust cursor and overall string size accordingly. There are 
 // two basic cases. The first is simply appending to the buffer when both the 
@@ -90,7 +93,7 @@ void removeChar( char *buf, int *strSize, int *pos ) {
 // cursor is somewhere in the input buffer. In this case we need to shift the 
 // characters to the right to make room first.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void insertChar( char *buf, int ch, int *strSize, int *pos ) {
     
     if ( *pos == *strSize ) {
@@ -109,24 +112,25 @@ void insertChar( char *buf, int ch, int *strSize, int *pos ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "appendChar" will add a character to the end of the buffer and adjust the 
 // overall size.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void appendChar( char *buf, int ch, int *strSize ) {
     
     buf[ *strSize ] = ch;
     *strSize        = *strSize + 1;
 }
+#endif
 
 }; // namespace
 
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Object constructur. We will save the current terminal settings.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 SimConsoleIO::SimConsoleIO( ) {
   
 #if __APPLE__
@@ -143,26 +147,25 @@ SimConsoleIO::~SimConsoleIO( ) {
     
 }
 
-//------------------------------------------------------------------------------
-// The Simulator works in raw character mode. This is to support basic editiing 
-// features and IO to the simulator console window when teh simulation is 
-// active. There is a price to pay in that there is no nice buffering of input
-// and basic line editing capabilities. On Mac/Linux the terminal needs to be 
-// set into raw character mode. On windows, this seems to work without special 
-// setups. Hmm, anyway. This routine will set the raw mode attributes. For a 
-// windows system, these methods are a no operation.
+//----------------------------------------------------------------------------------------
+// The Simulator works in raw character mode. This is to support basic editing features
+// and IO to the simulator console window when teh simulation is active. There is a 
+// price to pay in that there is no nice buffering of input and basic line editing 
+// capabilities. On Mac/Linux the terminal needs to be set into raw character mode. On 
+// windows, this seems to work without special setups. Hmm, anyway. This routine will
+// set the raw mode attributes. For a windows system, these methods are a no operation.
 //
-// There is also a non-blocking IO mode. When the simulator hands over control 
-// to the CPU, the console IO is mapped to the PDC console driver and output is
-// directed to the console window. The console IO becomes part of the periodic
-// processing and a key pressed will set the flags in the PDC console driver 
-// data. We act as"true" hardware. Non-blocking mode is enabled on entry to 
-// single step and run command and disabled when we are back to the monitor.
+// There is also a non-blocking IO mode. When the simulator hands over control to the 
+// CPU, the console IO is mapped to the PDC console driver and output is directed to
+// the console window. The console IO becomes part of the periodic processing and a key
+// pressed will set the flags in the PDC console driver data. We act as"true" hardware.
+// Non-blocking mode is enabled on entry to single step and run command and disabled 
+// when we are back to the monitor.
 //
 //
 // ??? perhaps a place to save the previous setings and restore them ?
 // ??? Or just do all this in the object creator ?
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimConsoleIO::initConsoleIO( ) {
     
 #if __APPLE__
@@ -177,23 +180,23 @@ void SimConsoleIO::initConsoleIO( ) {
     blockingMode  = true;
 }
 
-//------------------------------------------------------------------------------
-// "isConsole" is used by the command interpreter to figure whether we have a 
-// true terminal or just read from a file.
+//----------------------------------------------------------------------------------------
+// "isConsole" is used by the command interpreter to figure whether we have a true 
+// terminal or just read from a file.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 bool  SimConsoleIO::isConsole( ) {
     
     return( isatty( fileno( stdin )));
 }
 
-//------------------------------------------------------------------------------
-// "setBlockingMode" will put the terminal into blocking or non-blocking mode. 
-// For the command interpreter we will use the blocking mode, i.e. we wait for
-// character input. When the CPU runs, the console IO must be in non-blocking,
-// and we check for input on each CPU "tick".
+//----------------------------------------------------------------------------------------
+// "setBlockingMode" will put the terminal into blocking or non-blocking mode. For the
+// command interpreter we will use the blocking mode, i.e. we wait for character input.
+// When the CPU runs, the console IO must be in non-blocking, and we check for input on
+// each CPU "tick".
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimConsoleIO::setBlockingMode( bool enabled ) {
     
 #if __APPLE__
@@ -218,22 +221,21 @@ void SimConsoleIO::setBlockingMode( bool enabled ) {
     blockingMode = enabled;
 }
 
-//------------------------------------------------------------------------------
-// "readConsoleChar" is the single entry point to get a character from the 
-// terminal input. On Mac/Linux, this is the "read" system call. Whether the 
-// mode is blocking or non-blocking is set in the terminal settings. The read
-// function is the same. If there is no character available, a zero is returned,
-// otherwise the character.
+//----------------------------------------------------------------------------------------
+// "readConsoleChar" is the single entry point to get a character from the terminal
+// input. On Mac/Linux, this is the "read" system call. Whether the mode is blocking or
+// non-blocking is set in the terminal settings. The read function is the same. If 
+// there is no character available, a zero is returned, otherwise the character.
 //
-// On Windows there is a similar call, which does just return one character at
-// a time. However, there seems to be no real waiting function. Instead, the 
-// "_kbhit" tests for a keyboard input. In blocking mode, we will loop for a 
-// keyboard input and then get the character. In non-blocking mode, we test the
-// keyboard and return either the character typed or a zero.
+// On Windows there is a similar call, which does just return one character at a time. 
+// However, there seems to be no real waiting function. Instead, the "_kbhit" tests for
+// a keyboard input. In blocking mode, we will loop for a keyboard input and then get
+// the character. In non-blocking mode, we test the keyboard and return either the 
+// character typed or a zero.
 //
 // ??? this also means on Windows a "busy" loop..... :-(
 // ??? perhas a "sleep" eases the busy loop a little...
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 int SimConsoleIO::readChar( ) {
     
 #if __APPLE__
@@ -259,12 +261,12 @@ int SimConsoleIO::readChar( ) {
     
 }
 
-//------------------------------------------------------------------------------
-// "writeChar" is the single entry point to write to the terminal. On Mac/Linux,
-// this is the "write" system call. On windows there is a similar call, which 
-// does just prints one character at a time.
+//----------------------------------------------------------------------------------------
+// "writeChar" is the single entry point to write to the terminal. On Mac/Linux, this
+// is the "write" system call. On windows there is a similar call, which does just 
+// prints one character at a time.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimConsoleIO::writeChar( char ch  ) {
     
 #if __APPLE__
@@ -291,6 +293,10 @@ int SimConsoleIO::writeChars( const char *format, ... ) {
     return( len );
 }
 
+//----------------------------------------------------------------------------------------
+// Escape code functions.
+//
+//----------------------------------------------------------------------------------------
 void SimConsoleIO::eraseChar( ) {
     
     writeChars( "\033[D \033[P" );
@@ -360,5 +366,3 @@ void SimConsoleIO::clearScrollArea( ) {
     
     writeChars((char *) "\x1b[r" );
 }
-
-// ??? add the window text formatter routines too ?
