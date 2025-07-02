@@ -38,7 +38,7 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
-// The previous teminal attribute settings. We restore them when the console IO object
+// The previous terminal attribute settings. We restore them when the console IO object
 // is deleted.
 //
 //----------------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ void appendChar( char *buf, int ch, int *strSize ) {
 
 
 //----------------------------------------------------------------------------------------
-// Object constructur. We will save the current terminal settings.
+// Object constructor. We will save the current terminal settings.
 //
 //----------------------------------------------------------------------------------------
 SimConsoleIO::SimConsoleIO( ) {
@@ -149,7 +149,7 @@ SimConsoleIO::~SimConsoleIO( ) {
 
 //----------------------------------------------------------------------------------------
 // The Simulator works in raw character mode. This is to support basic editing features
-// and IO to the simulator console window when teh simulation is active. There is a 
+// and IO to the simulator console window when the simulation is active. There is a 
 // price to pay in that there is no nice buffering of input and basic line editing 
 // capabilities. On Mac/Linux the terminal needs to be set into raw character mode. On 
 // windows, this seems to work without special setups. Hmm, anyway. This routine will
@@ -163,7 +163,7 @@ SimConsoleIO::~SimConsoleIO( ) {
 // when we are back to the monitor.
 //
 //
-// ??? perhaps a place to save the previous setings and restore them ?
+// ??? perhaps a place to save the previous settings and restore them ?
 // ??? Or just do all this in the object creator ?
 //----------------------------------------------------------------------------------------
 void SimConsoleIO::initConsoleIO( ) {
@@ -234,7 +234,7 @@ void SimConsoleIO::setBlockingMode( bool enabled ) {
 // character typed or a zero.
 //
 // ??? this also means on Windows a "busy" loop..... :-(
-// ??? perhas a "sleep" eases the busy loop a little...
+// ??? perhaps a "sleep" eases the busy loop a little...
 //----------------------------------------------------------------------------------------
 int SimConsoleIO::readChar( ) {
     
@@ -431,9 +431,9 @@ int SimConsoleIO::printText( char *text, int maxLen ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "printNumber" will print the number in teh selected format. There quite a few HEX
+// "printNumber" will print the number in the selected format. There quite a few HEX
 // format to ease the printing of large numbers as we have in 64-bit system. If the 
-// "invalid number" option is set in addition to the nuber format, the format is filled 
+// "invalid number" option is set in addition to the number format, the format is filled 
 // with asterisks instead of numbers.
 //
 //----------------------------------------------------------------------------------------
@@ -446,7 +446,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x""**" ));
             else
-                return ( writeChars((char *) "0x2x", val & 0xFF ));
+                return ( writeChars((char *) "0x%2x", val & 0xFF ));
 
         } break;
 
@@ -455,7 +455,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x""****" ));
             else
-                return ( writeChars((char *) "0x4x", val & 0xFFFF ));
+                return ( writeChars((char *) "0x%4x", val & 0xFFFF ));
 
         } break;
 
@@ -464,7 +464,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x""****""****" ));
             else
-                return ( writeChars((char *) "0x8x", val & 0xFFFFFFFF ));
+                return ( writeChars((char *) "0x%8x", val & 0xFFFFFFFF ));
 
         } break;
 
@@ -473,7 +473,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x""****""****""****""****" ));
             else
-                return ( writeChars((char *) "0x16x", val ));
+                return ( writeChars((char *) "0x%16x", val ));
 
         } break;
 
@@ -482,7 +482,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x**_****" ));
             else
-                return ( writeChars((char *) "0x%2x_%4x", 
+                return ( writeChars((char *) "0x%02x_%04x", 
                                     (( val >> 4 ) & 0xFF   ),
                                     (( val      ) & 0xFFFF )));
 
@@ -493,7 +493,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x****_****" ));
             else
-                return ( writeChars((char *) "0x%4x_%4x", 
+                return ( writeChars((char *) "0x%04x_%04x", 
                                     (( val >> 4 ) & 0xFFFF ),
                                     (( val      ) & 0xFFFF )));
 
@@ -504,7 +504,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x**_****_****" ));
             else
-                return ( writeChars((char *) "0x%2x_%4x_%4x", 
+                return ( writeChars((char *) "0x%02x_%04x_%04x", 
                                     (( val >> 8 ) & 0xFF   ),
                                     (( val >> 4 ) & 0xFFFF ),
                                     (( val      ) & 0xFFFF )));
@@ -516,7 +516,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x****_****_****" ));
             else
-                return ( writeChars((char *) "0x%4x_%4x_%4x", 
+                return ( writeChars((char *) "0x%04x_%04x_%04x", 
                                     (( val >> 8 ) & 0xFFFF ),
                                     (( val >> 4 ) & 0xFFFF ),
                                     (( val      ) & 0xFFFF )));
@@ -528,7 +528,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x**_****_****_****" ));
             else
-                return ( writeChars((char *) "0x%2X_%4x_%4x_%4x", 
+                return ( writeChars((char *) "0x%02X_%04x_%04x_%04x", 
                                     (( val >> 12 ) & 0xFF   ),
                                     (( val >> 8  ) & 0xFFFF ),
                                     (( val >> 4  ) & 0xFFFF ),
@@ -541,7 +541,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
             if ( fmtDesc & FMT_INVALID_NUM ) 
                 return ( printf((char *) "0x****_****_****_****" ));
             else
-                return ( writeChars((char *) "0x%4x_%4x_%4x_%4x", 
+                return ( writeChars((char *) "0x%04x_%04x_%04x_%04x", 
                                     (( val >> 12 ) & 0xFFFF ),
                                     (( val >> 8  ) & 0xFFFF ),
                                     (( val >> 4  ) & 0xFFFF ),
@@ -560,7 +560,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The window system sometiomes prints numbers in a field with a given length. This
+// The window system sometimes prints numbers in a field with a given length. This
 // routine returns based on value and format the necessary field length.
 //
 //----------------------------------------------------------------------------------------
