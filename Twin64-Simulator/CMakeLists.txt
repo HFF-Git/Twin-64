@@ -1,7 +1,7 @@
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 #  #  CMAKE File
 #  Copyright (C) 2025 - 2025  Helmut Fieres
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 project( Twin64-Simulator )
 
 add_executable( ${PROJECT_NAME} 
@@ -15,7 +15,10 @@ add_executable( ${PROJECT_NAME}
     T64-SimEnvVars.cpp
 )
 
-target_link_libraries( ${PROJECT_NAME}
+target_link_libraries( ${PROJECT_NAME} PRIVATE 
 
-    PRIVATE Twin64-Common Twin64-ConsoleIO Twin64-InlineAsm Twin64-Processor
+    Twin64-Common 
+    Twin64-ConsoleIO 
+    Twin64-InlineAsm 
+    Twin64-Processor
 )

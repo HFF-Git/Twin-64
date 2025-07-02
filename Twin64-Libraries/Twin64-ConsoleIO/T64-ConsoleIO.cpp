@@ -366,3 +366,238 @@ void SimConsoleIO::clearScrollArea( ) {
     
     writeChars((char *) "\x1b[r" );
 }
+
+//----------------------------------------------------------------------------------------
+// Console output is also used to print out window forms. A window will consist of lines
+// with lines having fields on them. A field has a set of attributes such as foreground
+// and background colors, bold characters and so on. This routine sets the attributes 
+// based on the format descriptor. If the descriptor is zero, we will just stay where 
+// are with their attributes.
+//
+//----------------------------------------------------------------------------------------
+void SimConsoleIO::setFmtAttributes( uint32_t fmtDesc ) {
+    
+    if ( fmtDesc != 0 ) {
+        
+        writeChars((char *) "\x1b[0m" );
+        if ( fmtDesc & FMT_INVERSE ) writeChars((char *) "\x1b[7m" );
+        if ( fmtDesc & FMT_BLINK )   writeChars((char *) "\x1b[5m" );
+        if ( fmtDesc & FMT_BOLD )    writeChars((char *) "\x1b[1m" );
+        
+        switch ( fmtDesc & 0xF ) {
+                
+            case 1:     writeChars((char *) "\x1b[41m"); break;
+            case 2:     writeChars((char *) "\x1b[42m"); break;
+            case 3:     writeChars((char *) "\x1b[43m"); break;
+            default:    writeChars((char *) "\x1b[49m");
+        }
+        
+        switch (( fmtDesc >> 4 ) & 0xF ) {
+                
+            case 1:     writeChars((char *) "\x1b[31m"); break;
+            case 2:     writeChars((char *) "\x1b[32m"); break;
+            case 3:     writeChars((char *) "\x1b[33m"); break;
+            default:    writeChars((char *) "\x1b[39m");
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// Routine for putting out simple text. We make sure that the string length is in the
+// range of what the text size could be.
+//
+//----------------------------------------------------------------------------------------
+int SimConsoleIO::printText( char *text, int maxLen ) {
+    
+    if ( strlen( text ) < maxLen ) {
+        
+        return( writeChars((char *) "%s", text ));
+    }
+    else {
+     
+        if ( maxLen > 4 ) {
+
+            for ( int i = 0; i < maxLen - 3; i++  ) writeChar( text[ i ] );
+            writeChars((char *) "..." );
+
+            return( maxLen );
+        }
+        else {
+
+            for ( int i = 0; i < maxLen; i++  ) writeChar( '.' );
+            return( maxLen );
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// "printNumber" will print the number in teh selected format. There quite a few HEX
+// format to ease the printing of large numbers as we have in 64-bit system. If the 
+// "invalid number" option is set in addition to the nuber format, the format is filled 
+// with asterisks instead of numbers.
+//
+//----------------------------------------------------------------------------------------
+int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
+
+    switch (( fmtDesc >> 8 ) & 0xF ) {
+
+        case 1: { // HEX_2
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x""**" ));
+            else
+                return ( writeChars((char *) "0x2x", val & 0xFF ));
+
+        } break;
+
+        case 2: { // HEX_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x""****" ));
+            else
+                return ( writeChars((char *) "0x4x", val & 0xFFFF ));
+
+        } break;
+
+        case 3: { // HEX_8
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x""****""****" ));
+            else
+                return ( writeChars((char *) "0x8x", val & 0xFFFFFFFF ));
+
+        } break;
+
+        case 4: { // HEX_16
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x""****""****""****""****" ));
+            else
+                return ( writeChars((char *) "0x16x", val ));
+
+        } break;
+
+        case 5: { // FMT_HEX_2_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x**_****" ));
+            else
+                return ( writeChars((char *) "0x%2x_%4x", 
+                                    (( val >> 4 ) & 0xFF   ),
+                                    (( val      ) & 0xFFFF )));
+
+        } break;
+
+        case 6: { // FMT_HEX_4_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x****_****" ));
+            else
+                return ( writeChars((char *) "0x%4x_%4x", 
+                                    (( val >> 4 ) & 0xFFFF ),
+                                    (( val      ) & 0xFFFF )));
+
+        } break;
+
+        case 7: { // FMT_HEX_2_4_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x**_****_****" ));
+            else
+                return ( writeChars((char *) "0x%2x_%4x_%4x", 
+                                    (( val >> 8 ) & 0xFF   ),
+                                    (( val >> 4 ) & 0xFFFF ),
+                                    (( val      ) & 0xFFFF )));
+
+        } break;
+
+        case 8: { // FMT_HEX_4_4_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x****_****_****" ));
+            else
+                return ( writeChars((char *) "0x%4x_%4x_%4x", 
+                                    (( val >> 8 ) & 0xFFFF ),
+                                    (( val >> 4 ) & 0xFFFF ),
+                                    (( val      ) & 0xFFFF )));
+
+        } break;
+
+        case 9: { // FMT_HEX_2_4_4_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x**_****_****_****" ));
+            else
+                return ( writeChars((char *) "0x%2X_%4x_%4x_%4x", 
+                                    (( val >> 12 ) & 0xFF   ),
+                                    (( val >> 8  ) & 0xFFFF ),
+                                    (( val >> 4  ) & 0xFFFF ),
+                                    (( val       ) & 0xFFFF )));
+
+        } break;
+
+        case 10: { // FMT_HEX_4_4_4_4
+
+            if ( fmtDesc & FMT_INVALID_NUM ) 
+                return ( printf((char *) "0x****_****_****_****" ));
+            else
+                return ( writeChars((char *) "0x%4x_%4x_%4x_%4x", 
+                                    (( val >> 12 ) & 0xFFFF ),
+                                    (( val >> 8  ) & 0xFFFF ),
+                                    (( val >> 4  ) & 0xFFFF ),
+                                    (( val       ) & 0xFFFF )));
+
+        } break;
+
+        case 11: { // DEC as is
+
+            return ( writeChars((char *) "%ll", val));
+
+        } break;
+
+        default: return ( printf ((char *) "*NN*" ));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// The window system sometiomes prints numbers in a field with a given length. This
+// routine returns based on value and format the necessary field length.
+//
+//----------------------------------------------------------------------------------------
+int SimConsoleIO::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
+
+    switch (( fmtDesc >> 8 ) & 0xF ) {
+
+        case 1:     return ( 4  );   // HEX_2
+        case 2:     return ( 6  );   // HEX_4
+        case 3:     return ( 10 );   // HEX_8
+        case 4:     return ( 18 );   // HEX_16
+        case 5:     return ( 9  );   // FMT_HEX_2_4
+        case 6:     return ( 11 );   // FMT_HEX_4_4
+        case 7:     return ( 14 );   // FMT_HEX_2_4_4
+        case 8:     return ( 16 );   // FMT_HEX_4_4_4
+        case 9:     return ( 19 );   // FMT_HEX_2_4_4_4
+        case 10:    return ( 21 );   // FMT_HEX_4_4_4_4
+
+        case 11: {
+
+            int len = (( val < 0 ) ? 2 : 1 );
+
+            val = abs( val );
+            
+            while ( val > 10 ) {
+
+                val /= 10;
+                len ++;
+            }
+            
+            return( len );
+
+        } break;
+
+        default: return( 0 );
+    }
+}
+
+
+

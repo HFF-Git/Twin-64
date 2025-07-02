@@ -19,5 +19,14 @@
     },
     "files.associations": {
         "sstream": "cpp"
-    }
+    },
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext",
+        "cpp"
+    ]
 }

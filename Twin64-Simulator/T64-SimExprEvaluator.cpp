@@ -1,12 +1,12 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Command line expression parser
 //
-//------------------------------------------------------------------------------
-// The command interpreter features expression evaluation for command arguments.
-// It is a straightforward recursive top down interpeter.
+//----------------------------------------------------------------------------------------
+// The command interpreter features expression evaluation for command arguments. It is
+// a straightforward recursive top down interpreter.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Command line expression parser
 // Copyright (C) 2025 - 2025 Helmut Fieres
@@ -21,15 +21,15 @@
 // more details. You should have received a copy of the GNU General Public
 // License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #include "T64-Common.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 
-//------------------------------------------------------------------------------
-// The commadn line features an expression evaluator for the arguments. The 
-// overall syntaxt is as follows:
+//----------------------------------------------------------------------------------------
+// The command line features an expression evaluator for the arguments. The overall 
+// syntax is as follows:
 //
 //      <command>   ->  <cmdId> [ <argList> ]
 //      <function>  ->  <funcId> “(“ [ <argList> ] ")"
@@ -51,21 +51,21 @@
 //      <expr>      ->  [ ( "+" | "-" ) ] <term> { <exprOp> <term> }
 //      <exprOp>    ->  "+" | "-" | "|" | "^"
 //
-// If a command is called, there is no output other than what the command was 
-// issuing. If a function is called in the command place, the function result 
-// will be printed. If an argument represents a function, its return value will
-// be the argument in the command.
+// If a command is called, there is no output other than what the command was issuing.
+// If a function is called in the command place, the function result will be printed. 
+// If an argument represents a function, its return value will be the argument in the
+//  command.
 //
-// The token table becomes a kind of dictionary with name, type and values.
-// The environment table needs to enhanced to allow for user defined variables.
+// The token table becomes a kind of dictionary with name, type and values. The 
+// environment table needs to enhanced to allow for user defined variables.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 namespace {
 
 enum logicalOpId : int {
@@ -75,10 +75,10 @@ enum logicalOpId : int {
     XOR_OP  = 2
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Add operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -98,10 +98,10 @@ void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Sub operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -121,10 +121,10 @@ void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Multiply operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -144,10 +144,10 @@ void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Divide Operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -167,10 +167,10 @@ void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Modulo operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
     
     switch ( rExpr -> typ ) {
@@ -190,10 +190,10 @@ void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Logical operation.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
     
     switch ( rExpr -> typ ) {
@@ -240,10 +240,10 @@ void logicalOp( SimExpr *rExpr, SimExpr *lExpr, logicalOpId op ) {
 }; // namespace
 
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Evaluation Expression Object constructor.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
     
     this -> glb         = glb;
@@ -251,15 +251,14 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
     
 }
 
-//------------------------------------------------------------------------------
-// Coercing functions. Not a lot there yet. The idea is to coerce an expression 
-// into a 32-bit value where possible. There are signed and unisgned versions, 
-// which at the moment identical. We only have 32-bit values. If we have one 
-// day 16-bit and 64-bit vaous in addition, there is more to do. What we also 
-// coerced is the first characters of a string, right justified if shorter than
-//  4 bytes.
+//----------------------------------------------------------------------------------------
+// Coercing functions. Not a lot there yet. The idea is to coerce an expression into a
+// 32-bit value where possible. There are signed and unsigned versions, which at the
+// moment identical. We only have 32-bit values. If we have one day 16-bit and 64-bit 
+// various in addition, there is more to do. What we also coerced is the first characters
+// of a string, right justified if shorter than 4 bytes.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncS32( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
@@ -320,11 +319,11 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Assemble function.
 //
 // ASSEMBLE "(" <str> ")"
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     
     SimExpr         lExpr;
@@ -353,11 +352,11 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Dis-assemble function.
 //
 // DISASSEMBLE "(" <str> [ "," <rdx> ] ")"
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
@@ -405,11 +404,11 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_INSTR_VAL );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Virtual address hash function.
 //
 // HASH "(" <extAdr> ")"
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
@@ -426,11 +425,11 @@ void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     else throw ( ERR_EXPECTED_RPAREN );
 }
 
-//------------------------------------------------------------------------------
-// Entry point to the predefined functions. We dispatch based on the predefined
-// function token Id.
+//----------------------------------------------------------------------------------------
+// Entry point to the predefined functions. We dispatch based on the predefined function
+// token Id.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr ) {
     
     switch( funcId.tid ) {
@@ -444,7 +443,7 @@ void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr 
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "parseFactor" parses the factor syntax part of an expression.
 //
 //      <factor> -> <number>                        |
@@ -454,7 +453,7 @@ void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr 
 //                  "~" <factor>                    |
 //                  "(" <expr> ")"
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
     rExpr -> typ       = TYP_NIL;
@@ -534,14 +533,14 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     else throw ( ERR_EXPR_FACTOR );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "parseTerm" parses the term syntax.
 //
 //      <term>      ->  <factor> { <termOp> <factor> }
 //      <termOp>    ->  "*" | "/" | "%" | "&"
 //
 // ??? type mix options ?
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseTerm( SimExpr *rExpr ) {
     
     SimExpr lExpr;
@@ -570,16 +569,15 @@ void SimExprEvaluator::parseTerm( SimExpr *rExpr ) {
     }
 }
 
-//------------------------------------------------------------------------------
-// "parseExpr" parses the expression syntax. The one line assembler parser 
-// routines use this call in many places where a numeric expression or an 
-// address is needed.
+//----------------------------------------------------------------------------------------
+// "parseExpr" parses the expression syntax. The one line assembler parser routines use
+// this call in many places where a numeric expression or an address is needed.
 //
 //      <expr>      ->  [ ( "+" | "-" ) ] <term> { <exprOp> <term> }
 //      <exprOp>    ->  "+" | "-" | "|" | "^"
 //
 // ??? type mix options ?
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseExpr( SimExpr *rExpr ) {
     
     SimExpr lExpr;

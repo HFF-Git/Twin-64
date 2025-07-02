@@ -68,6 +68,92 @@
 
 #include "T64-Common.h"
 
+// ??? should this become part of console IO ?
+//------------------------------------------------------------------------------
+// Format descriptor for putting out a field. The options are simply ORed. The 
+// idea is that a format descriptor can be assembled once and used for many 
+// fields. A value of zero will indicate to simply use the previously 
+// established descriptor.
+//
+//  FMT_USE_ACTUAL_ATTR -> Use previously established settings.
+//    
+//  FMT_BG_COL_DEF      -> Set default background color seting.
+//  FMT_BG_COL_RED      -> Set RED background color seting.
+//  FMT_BG_COL_GREEN    -> Set GREEN background color seting.
+//  FMT_BG_COL_YELLOW   -> Set YELLOW background color seting.
+//    
+//  FMT_FG_COL_DEF      -> Set default foreground color seting.
+//  FMT_FG_COL_RED      -> Set RED foreground color seting.
+//  FMT_FG_COL_GREEN    -> Set GREEN foreground color seting.
+//  FMT_FG_COL_YELLOW   -> Set YELLOW foreground color seting.
+//
+//  FMT_DEC             -> Print numeric data as decimal "vvvv..."
+//  FMT_HEX_2           -> Print numeric data as "0xvv"
+//  FMT_HEX_4           -> Print numeric data as "0xvvvv"
+//  FMT_HEX_8           -> Print numeric data as "0xvvvvvvvv"
+//  FMT_HEX_16          -> Print numeric data as "0xvvvvvvvvvvvvvvvv"
+//  FMT_HEX_2_4         -> Print numeric data as "0xvv_vvvv"
+//  FMT_HEX_4_4         -> Print numeric data as "0xvvvv_vvvv"
+//  FMT_HEX_2_4_4       -> Print numeric data as "0xvv_vvvv_vvvv"
+//  FMT_HEX_4_4_4       -> Print numeric data as "0xvvvv_vvvv_vvvv"
+//  FMT_HEX_2_4_4_4     -> Print numeric data as "0xvv_vvvv_vvvv_vvvv"
+//  FMT_HEX_4_4_4_4     -> Print numeric data as "0xvvvv_vvvv_vvvv_vvvv"
+//
+//  FMT_BOLD            -> Set BOLD character mode.
+//  FMT_BLINK           -> Set BLINK character mode.
+//  FMT_INVERSE         -> Set INVERSE character mode.
+//
+//  FMT_ALIGN_LFT       -> Align data left in field.
+//  FMT_TRUNC_LFT       -> Align data left and optionally truncate.
+//  FMT_LAST_FIELD      -> repeat last setting to end of line.
+//  FMT_INVALID_NUM     -> Print numeric field as invalid number.
+//  FMT_DEF_ATTR        -> Use default attributes.
+//
+// Note that some options are encoded in a field as a numeric value, e.g the
+// nuber format, and some options are encoded as indivudal bits which can be
+// used in combination. In any case, the options are ORed to form the final 
+// formrat descriptor.
+// 
+//------------------------------------------------------------------------------
+enum FmtDescOptions : uint32_t {
+    
+    FMT_USE_ACTUAL_ATTR = 0x0,
+    
+    FMT_BG_COL_DEF      = 0x00000001,
+    FMT_BG_COL_RED      = 0x00000002,
+    FMT_BG_COL_GREEN    = 0x00000003,
+    FMT_BG_COL_YELLOW   = 0x00000004,
+    
+    FMT_FG_COL_DEF      = 0x00000010,
+    FMT_FG_COL_RED      = 0x00000020,
+    FMT_FG_COL_GREEN    = 0x00000030,
+    FMT_FG_COL_YELLOW   = 0x00000040,
+
+    FMT_HEX_2           = 0x00000100,
+    FMT_HEX_4           = 0x00000200,
+    FMT_HEX_8           = 0x00000300,
+    FMT_HEX_16          = 0x00000400,
+    FMT_HEX_2_4         = 0x00000500,
+    FMT_HEX_4_4         = 0x00000600,
+    FMT_HEX_2_4_4       = 0x00000700,
+    FMT_HEX_4_4_4       = 0x00000800,
+    FMT_HEX_2_4_4_4     = 0x00000900,
+    FMT_HEX_4_4_4_4     = 0x00000A00,
+     
+    FMT_DEC             = 0x00000B00,
+
+    FMT_BOLD            = 0x00010000,
+    FMT_BLINK           = 0x00020000,
+    FMT_INVERSE         = 0x00040000,
+    FMT_ALIGN_LFT       = 0x00080000,
+    FMT_TRUNC_LFT       = 0x00100000,
+    FMT_LAST_FIELD      = 0x00200000,
+    FMT_INVALID_NUM     = 0x00400000,
+   
+    FMT_DEF_ATTR        = 0x10000000
+};
+
+
 //----------------------------------------------------------------------------------------
 // Console IO object. The simulator is a character based interface. The typical terminal
 // IO functionality such as buffered data input and output needs to be disabled. We run
@@ -105,6 +191,11 @@ struct SimConsoleIO {
     void    setWindowSize( int row, int col );
     void    setScrollArea( int start, int end );
     void    clearScrollArea( );
+
+    void    setFmtAttributes( uint32_t fmtDesc );
+    int     printText( char *text, int len );
+    int     printNumber( T64Word val, uint32_t fmtDesc );
+    int     numberFmtLen( T64Word val, uint32_t fmtDesc );
     
     private:
     

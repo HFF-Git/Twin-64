@@ -1,13 +1,13 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 //  Twin64 - A 64-bit CPU Simulator - Declarations
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // ...
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator Version ID
+// Twin64 - A 64-bit CPU Simulator - Declarations
 // Copyright (C) 2022 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it
@@ -20,14 +20,14 @@
 // more details. You should have received a copy of the GNU General Public
 // License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #ifndef Sim_Declarations_h
 #define Sim_Declarations_h
 
 #include "T64-Common.h"
 #include "T64-ConsoleIO.h"
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // General screen structure:
 //
 //          |---> column (absolute)
@@ -63,9 +63,9 @@
 // an input line at the lowest line. Scroll lock after the active windows before
 // the command window. Routines to move cursor, print fields with attributes.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 //  Global Window commands:
 //
@@ -107,12 +107,12 @@
 //  Example: PSE -> enable general regs window.
 //  Note: not all combinations are possible...
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // General maximum size for commands, etc.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 const int MAX_CMD_HIST_BUF_SIZE     = 32;
 const int MAX_WIN_OUT_LINES         = 256;
 const int MAX_WIN_OUT_LINE_SIZE     = 256;
@@ -124,10 +124,10 @@ const int MAX_TOKEN_NAME_SIZE       = 32;
 const int MAX_ENV_NAME_SIZE         = 32;
 const int MAX_ENV_VARIABLES         = 256;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Fundamental constants for the window system.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 const int MAX_TEXT_FIELD_LEN    = 132;
 const int MAX_TEXT_LINE_SIZE    = 256;
 
@@ -136,11 +136,11 @@ const int MAX_WIN_COL_SIZE      = 256;
 const int MAX_WINDOWS           = 32;
 const int MAX_WIN_STACKS        = 4;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Windows have a type. The type is primarily used to specify what type of 
 //window to create.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum SimWinType : int {
     
     WT_NIL          = 0,
@@ -173,7 +173,7 @@ enum SimWinType : int {
     WT_IO_S_WIN     = 52,
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Predefined windows are displayed in a fixed order when enabled. The 
 // following constants are the index of these windows in the window table. The
 // first entries are used by the fixed windows and their order is determined by
@@ -181,7 +181,7 @@ enum SimWinType : int {
 // time. An index starting with the first user index is used for dynamically 
 // created windows.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum SimWinIndex : int {
     
     PS_REG_WIN      = 0,
@@ -192,89 +192,11 @@ enum SimWinIndex : int {
     LAST_UWIN       = 31
 };
 
-// ??? should this become part of cosole IO ?
-//------------------------------------------------------------------------------
-// Format descriptor for putting out a field. The options are simply ORed. The 
-// idea is that a format descriptor can be assembled once and used for many 
-// fields. A value of zero will indicate to simply use the previously 
-// established descriptor.
-//
-//  FMT_USE_ACTUAL_ATTR -> Use previously established settings.
-//    
-//  FMT_BG_COL_DEF      -> Set default background color seting.
-//  FMT_BG_COL_RED      -> Set RED background color seting.
-//  FMT_BG_COL_GREEN    -> Set GREEN background color seting.
-//  FMT_BG_COL_YELLOW   -> Set YELLOW background color seting.
-//    
-//  FMT_FG_COL_DEF      -> Set default foreground color seting.
-//  FMT_FG_COL_RED      -> Set RED foreground color seting.
-//  FMT_FG_COL_GREEN    -> Set GREEN foreground color seting.
-//  FMT_FG_COL_YELLOW   -> Set YELLOW foreground color seting.
-//    
-//  FMT_BOLD            -> Set BOLD character mode.
-//  FMT_BLINK           -> Set BLINK character mode.
-//  FMT_INVERSE         -> Set INVERSE character mode.
-//  FMT_HEX             -> Print numeric data as a hex value "0xvvv...".
-//  FMT_DEC             -> Print numeric data as decimal "vvvv...".
-//
-//  FMT_HEX_2           -> Print numeric data as "0xvv".
-//  FMT_HEX_4           -> Print numeric data as "0xvvvv"
-//  FMT_HEX_2_4         -> Print numeric data as "0xvv_vvvv"
-//  FMT_HEX_4_4         -> Print numeric data as "0xvvvv_vvvv"
-//  FMT_HEX_2_4_4       -> Print numeric data as "0xvv_vvvv_vvvv"
-//  FMT_HEX_4_4_4       -> Print numeric data as "0xvvvv_vvvv_vvvv"
-//  FMT_HEX_2_4_4_4     -> Print numeric data as "0xvv_vvvv_vvvv_vvvv"
-//  FMT_HEX_4_4_4_4     -> Print numeric data as "0xvvvv_vvvv_vvvv_vvvv"
-//
-//  FMT_ALIGN_LFT       -> Align data left in field.
-//  FMT_TRUNC_LFT       -> Align data left and optionally truncate.
-//  FMT_LAST_FIELD      -> repeat last setting to end of line.
-//
-//  FMT_INVALID_NUM     -> not sure where I need it ...
-//  FMT_DEF_ATTR        -> Use default attributes...
-//
-//------------------------------------------------------------------------------
-enum SimFmtDescOptions : uint32_t {
-    
-    FMT_USE_ACTUAL_ATTR = 0x0,
-    
-    FMT_BG_COL_DEF      = 0x00000001,
-    FMT_BG_COL_RED      = 0x00000002,
-    FMT_BG_COL_GREEN    = 0x00000004,
-    FMT_BG_COL_YELLOW   = 0x00000008,
-    
-    FMT_FG_COL_DEF      = 0x00000010,
-    FMT_FG_COL_RED      = 0x00000020,
-    FMT_FG_COL_GREEN    = 0x00000040,
-    FMT_FG_COL_YELLOW   = 0x00000080,
-    
-    FMT_BOLD            = 0x00000100,
-    FMT_BLINK           = 0x00000200,
-    FMT_INVERSE         = 0x00000400,
-    FMT_HEX             = 0x00000800, 
-    FMT_DEC             = 0x00001000,
 
-    FMT_HEX_2           = 0x00002000,
-    FMT_HEX_4           = 0x00004000,
-    FMT_HEX_2_4         = 0x00008000,
-    FMT_HEX_4_4         = 0x00010000,
-    FMT_HEX_2_4_4       = 0x00020000,
-    FMT_HEX_4_4_4       = 0x00040000,
-    FMT_HEX_2_4_4_4     = 0x00080000,
-    FMT_HEX_4_4_4_4     = 0x00100000,
-
-    FMT_ALIGN_LFT       = 0x00200000,
-    FMT_TRUNC_LFT       = 0x00400000,
-    FMT_LAST_FIELD      = 0x00800000,
-
-    FMT_INVALID_NUM     = 0x01000000, // ( ??? )    
-    FMT_DEF_ATTR        = 0x10000000
-};
-
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Command line tokens and expression have a type.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum SimTokTypeId : uint16_t {
 
     TYP_NIL                 = 0,    
@@ -291,18 +213,18 @@ enum SimTokTypeId : uint16_t {
     TYP_PSTATE_PREG         = 16,      
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Tokens are the labels for reserved words and symbols recognized by the 
 // tokenizer objects. Tokens have a name, a token id, a token type and an 
 // optional value with further data.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum SimTokId : uint16_t {
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // General tokens and symbols.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     TOK_NIL                 = 0,        TOK_ERR                 = 1,        
     TOK_EOS                 = 2,        TOK_COMMA               = 3,        
     TOK_PERIOD              = 4,        TOK_LPAREN              = 5,
@@ -316,11 +238,11 @@ enum SimTokId : uint16_t {
     TOK_LT                  = 20,       TOK_GT                  = 21,       
     TOK_LE                  = 22,       TOK_GE                  = 23,
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // Token symbols. They are just reserved names used in commands and 
     // functions. Their type and optional value is defined in the token tables.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
     TOK_STR                 = 102,      TOK_CPU                 = 103,      
     TOK_MEM                 = 104,      TOK_STATS               = 105,
@@ -342,10 +264,10 @@ enum SimTokId : uint16_t {
     TOK_DEF                 = 400,
     TOK_INV                 = 401,      TOK_ALL                 = 402,
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // Line Commands.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     CMD_SET                 = 1000,
     
     CMD_EXIT                = 1001,     CMD_HELP                = 1002,
@@ -365,10 +287,10 @@ enum SimTokId : uint16_t {
     CMD_D_CACHE             = 1019,     CMD_F_CACHE             = 1020,
     CMD_P_CACHE             = 1021,
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // Window Commands Tokens.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     WCMD_SET                = 2000,     WTYPE_SET               = 2001,
     
     CMD_WON                 = 2002,     CMD_WOFF                = 2003,     
@@ -392,20 +314,20 @@ enum SimTokId : uint16_t {
     CMD_WS                  = 2060,     CMD_WC                  = 2061,
     CMD_WT                  = 2062,     CMD_WX                  = 2063,
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // Predefined Function Tokens.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     PF_SET                  = 3000,
     PF_ASSEMBLE             = 3001,     PF_DIS_ASSEMBLE         = 3002,     
 
     // ??? rethink... what is needed...
     PF_HASH                 = 3003,     PF_S32                  = 3005,   
     
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     // General, Segment and Control Registers Tokens.
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     REG_SET                 = 4000,
     
     GR_0                    = 4100,     GR_1                    = 4101,     
@@ -429,11 +351,11 @@ enum SimTokId : uint16_t {
     CR_SET                  = 4216,
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Our error messages IDs. There is a routine that maps the ID to a text string.
 //
 // ??? clean up, keep the ones we need...
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum SimErrMsgId : uint16_t {
     
     NO_ERR                          = 0,
@@ -529,12 +451,12 @@ enum SimErrMsgId : uint16_t {
     ERR_CACHE_SIZE_EXCEEDED         = 604,
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Predefined environment variable names. When you create another one, put its 
 // name here.
 //
 // ??? what to keep....
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 const char ENV_TRUE[ ]                  = "TRUE";
 const char ENV_FALSE[ ]                 = "FALSE";
 
@@ -573,28 +495,28 @@ const char ENV_MEM_BANK_SIZE[ ]         = "MEM_BANK_SIZE";
 const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
 const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Forward declaration of the globals structure. Every object will have access 
 // to the globals structure, so we do not have to pass around references to all
 // the individual objects.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimGlobals;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // An error is described in the error message table.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimErrMsgTabEntry {
     
     SimErrMsgId errNum;
     char        *errStr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // An help message is described in the help message table.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimHelpMsgEntry {
     
     SimTokTypeId    helpTypeId;
@@ -604,14 +526,14 @@ struct SimHelpMsgEntry {
     char            *helpStr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The command line interpreter works the command line as a list of tokens. A
 // token found in a string is recorded using the token structure. The token
 // types are numeric and strings. The string is a buffer in the tokenizer. 
 // Scanning a new token potentially overwrites or invalidates the string. You
 // need to copy it to a safe place before scanning the next token.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimToken {
 
     char         name[ MAX_TOKEN_NAME_SIZE ] = { };
@@ -626,13 +548,13 @@ struct SimToken {
     } u;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Tokenizer object. The command line interface parse their input buffer line.
 // The tokenizer will return the tokens found in the line. The tokenizer raises
 // exceptions.
 //
 // ??? check the assembler version ....
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimTokenizer {
 
     public:
@@ -671,13 +593,13 @@ struct SimTokenizer {
     char            strTokenBuf[ 256 ]      = { 0 };    
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Expression value. The analysis of an expression results in a value. Depending
 // on the expression type, the values are simple scalar values or a structured
 // values.
 //
 // ??? cleanup ... what do we need...
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimExpr {
     
     SimTokTypeId typ;
@@ -694,11 +616,11 @@ struct SimExpr {
     } u;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The expression evaluator object. We use the "parseExpr" routine whereever we
 // expect an expression in the command line. The evaluator raises exceptions.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimExprEvaluator {
     
     public:
@@ -728,12 +650,12 @@ private:
     SimTokenizer    *tok        = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Environment table entry, Each environment variable has a name, a couple of 
 // flags and the value. There are predefined variabls and user defined 
 // variables.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimEnvTabEntry {
     
     char            name[ MAX_ENV_NAME_SIZE ]   = { 0 };
@@ -751,12 +673,12 @@ struct SimEnvTabEntry {
     } u;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Environment variables. The simulator has a global table where all variables 
 // are kept. It is a simple array with a high water mark concept. The table will
 // be allocated at simulator start.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimEnv {
     
     SimEnv( int size );
@@ -786,19 +708,19 @@ struct SimEnv {
     int             findFreeEntry( );
     
     void            enterVar( char *name, 
-                                 T64Word val, 
-                                 bool predefined = false, 
-                                 bool rOnly = false );
+                              T64Word val, 
+                              bool predefined = false, 
+                              bool rOnly = false );
 
     void            enterVar( char *name, 
-                                 bool val, 
-                                 bool predefined = false, 
-                                 bool rOnly = false );
+                              bool val, 
+                              bool predefined = false, 
+                              bool rOnly = false );
 
     void            enterVar( char *name, 
-                                 char *str, 
-                                 bool predefined = false, 
-                                 bool rOnly = false );
+                              char *str, 
+                              bool predefined = false, 
+                              bool rOnly = false );
     
     void            displayEnvEntry( SimEnvTabEntry *entry );
     
@@ -807,13 +729,13 @@ struct SimEnv {
     SimEnvTabEntry  *limit  = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Command History. The simulator command interpreter features a simple command
 // history. It is a circular buffer that holds the last commands. There are 
 // functions to show the command history, re-execute a previous command and to
 // retrieve a previous command for editing.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimCmdHistEntry {
     
     int  cmdId;
@@ -841,7 +763,7 @@ private:
     SimCmdHistEntry history[ MAX_CMD_HIST_BUF_SIZE ];
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Command and Console Window output buffer. The ouput buffer will store all 
 // output from the command window to support scrolling. This is the price you 
 // pay when normal terminal scrolling is restricted to an area of the screen. 
@@ -851,7 +773,7 @@ private:
 // the last N lines entered. A cursor is defined which is manipulated by the 
 // cursor up or down routines.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinOutBuffer {
     
 public:
@@ -866,8 +788,8 @@ public:
     
     void        resetLineCursor( );
     char        *getLineRelative( int lineBelowTop );
-    uint16_t    getCursorIndex( );
-    uint16_t    getTopIndex( );
+    int         getCursorIndex( );
+    int         getTopIndex( );
     
     void        scrollUp( int lines = 1 );
     void        scrollDown( int lines = 1 );
@@ -878,11 +800,11 @@ private:
     int         topIndex    = 0; // Index of the next line to use.
     int         cursorIndex = 0; // Index of the last line currently shown.
     int         screenSize  = 0; // Number of lines displayed in the window.
-    uint16_t    charPos     = 0; // Current character position in the line.
+    int         charPos     = 0; // Current character position in the line.
 };
 
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The "SimWin" class. The simulator will in screen mode feature a set of stacks
 // each with a list of screen sub windows. The default is one stack, the general
 // register set window and the command line window, which also spans all stacks.
@@ -892,7 +814,7 @@ private:
 // inheriting class needs to implement. Examples are to initialize a window, 
 // redraw and so on.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWin {
     
 public:
@@ -930,7 +852,7 @@ public:
     int             getWinStack( );
     void            setWinStack( int wStack );
     
-    void            printNumericField(  uint32_t val,
+    void            printNumericField(  T64Word val,
                                         uint32_t fmtDesc = 0,
                                         int len = 0,
                                         int row = 0,
@@ -967,12 +889,7 @@ public:
 protected:
     
     SimGlobals   *glb;
-    
-    void            setFieldAtributes( uint32_t fmtDesc );
-
-    // ??? rethink ...
-    int             printWord( uint32_t val, int rdx = 16, uint32_t fmtDesc = 0 );
-    int             printText( char *text, int len );
+   
     void            padField( int dLen, int fLen );
     
 private:
@@ -997,7 +914,7 @@ private:
     int             lastColPos          = 0;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "WinScrollable" is an extension to the basic window. It implements scrollable
 // windows with a number of lines. There is a high level concept of a starting 
 // index of zero and a limit. The meaning i.e. whether the index is a memory 
@@ -1008,44 +925,44 @@ private:
 // interpretation. The "lineIncrement" is the increment value for the item 
 // address passed.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinScrollable : SimWin {
     
 public:
     
     SimWinScrollable( SimGlobals *glb );
     
-    void            setHomeItemAdr( uint32_t adr );
+    void            setHomeItemAdr( T64Word adr );
     uint32_t        getHomeItemAdr( );
-    void            setCurrentItemAdr( uint32_t adr );
+    void            setCurrentItemAdr( T64Word adr );
     uint32_t        getCurrentItemAdr( );
-    void            setLimitItemAdr( uint32_t adr );
+    void            setLimitItemAdr( T64Word adr );
     uint32_t        getLimitItemAdr( );
-    void            setLineIncrement( uint32_t arg );
+    void            setLineIncrement( T64Word arg );
     uint32_t        getLineIncrement( );
     
     virtual void    drawBody( );
-    virtual void    drawLine( uint32_t index ) = 0;
+    virtual void    drawLine( int index ) = 0;
     
-    void            winHome( uint32_t pos = 0 );
-    void            winForward( uint32_t amt );
-    void            winBackward( uint32_t amt );
-    void            winJump( uint32_t pos );
+    void            winHome( T64Word pos = 0 );
+    void            winForward( T64Word amt );
+    void            winBackward( T64Word amt );
+    void            winJump( T64Word pos );
     
 private:
     
-    uint32_t        homeItemAdr         = 0;
-    uint32_t        currentItemAdr      = 0;
-    uint32_t        limitItemAdr        = 0;
-    uint32_t        lineIncrement       = 0;
+    T64Word         homeItemAdr         = 0;
+    T64Word         currentItemAdr      = 0;
+    T64Word         limitItemAdr        = 0;
+    T64Word         lineIncrement       = 0;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Program State Register Window. This window holds the programmer visible 
 // state with the exception of the program relevant control register values. 
 // They are a separate window.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinProgState : SimWin {
     
 public:
@@ -1058,10 +975,10 @@ public:
     void drawBody( );
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Special Register Window. This window holds the control registers.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinSpecialRegs : SimWin {
     
 public:
@@ -1074,10 +991,10 @@ public:
     void drawBody( );
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Pipeline Register Window. This window holds the CPU pipeline registers.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinPipeLineRegs : SimWin {
     
 public:
@@ -1090,11 +1007,11 @@ public:
     void drawBody( );
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Statistics Window. This window displays the CPU statistics collected during 
 // execution.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinStatistics : SimWin {
     
 public:
@@ -1106,13 +1023,13 @@ public:
     void drawBody( );
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Absolute Memory Window. A memory window will show the absolute memory content
 // starting with the current address followed by a number of data words. The 
 // number of words shown is the number of lines of the window times the number 
 // of items, ie.e words, on a line.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinAbsMem : SimWinScrollable {
     
 public:
@@ -1122,15 +1039,15 @@ public:
     void setDefaults( );
     void setRadix( int rdx );
     void drawBanner( );
-    void drawLine( uint32_t index );
+    void drawLine( int index );
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Code Memory Window. A code memory window will show the instruction memory 
 // content starting with the current address followed by the instruction and a
 // human readable disassembled version.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinCode : SimWinScrollable {
     
 public:
@@ -1139,17 +1056,17 @@ public:
     
     void setDefaults( );
     void drawBanner( );
-    void drawLine( uint32_t index );
+    void drawLine( int index );
     
 private:
     
    //  SimDisAsm *disAsm = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // TLB Window. The TLB data window displays the TLB entries.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinTlb : SimWinScrollable {
     
 public:
@@ -1159,7 +1076,7 @@ public:
     void setDefaults( );
     void setRadix( int rdx );
     void drawBanner( );
-    void drawLine( uint32_t index );
+    void drawLine( int index );
     
 private:
     
@@ -1167,12 +1084,12 @@ private:
     // CpuTlb        *tlb    = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Cache Window. The memory object window display the cache date lines. Since 
 // we can have caches with more than one set, the toggle function allows to 
 // flip through the sets, one at a time.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinCache : SimWinScrollable {
     
 public:
@@ -1183,7 +1100,7 @@ public:
     void setRadix( int rdx );
     void toggleWin( );
     void drawBanner( );
-    void drawLine( uint32_t index );
+    void drawLine( int index );
     
 private:
     
@@ -1192,12 +1109,12 @@ private:
    //  CpuMem  *cPtr           = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Text Window. It may be handy to also display an ordinary ASCII text file. 
 // One day this will allow us to display for example the source code to a 
 // running program when symbolic debugging is supported.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinText : SimWinScrollable {
     
 public:
@@ -1207,7 +1124,7 @@ public:
     
     void    setDefaults( );
     void    drawBanner( );
-    void    drawLine( uint32_t index );
+    void    drawLine( int index );
     
 private:
 
@@ -1220,14 +1137,14 @@ private:
     char    fileName[ 256 ]    = { 0 };
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Console Window. When the CPU is running, it has access to a "console window".
 // This is a rather simple console IO window. Care needs to be taken however 
 // what character IO directed to this window means. For example, escape 
 // sequences cannot be just printed out as it would severly impact the simulator
 // windwos. Likewise scrolling and line editing are to be handheld.
 //
-//-----------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinConsole : SimWin {
     
 public:
@@ -1249,12 +1166,12 @@ private:
     SimWinOutBuffer *winOut = nullptr;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Command Line Window. The command window is a special class, which comes 
 // always last in the windows list and cannot be disabled. It is intended to be
 // a scrollable window, where only the banner line is fixed.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimCommandsWin : SimWin {
     
 public:
@@ -1355,7 +1272,7 @@ private:
    
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The window display screen object is the central object that represents the 
 // simulator. All commands send from the command input will eventually end up 
 // as calls to this object. A simulator screen is an ordered list of windows. 
@@ -1367,7 +1284,7 @@ private:
 // are displayed next to each other. The excpetion is the command window area 
 // which is always displyed across the entire terminal window width.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimWinDisplay {
     
 public:
@@ -1429,7 +1346,7 @@ private:
     
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The globals, accessible to all objects. Turns out that all main objects need
 // to access data from all the individual objects of the CPU. Also, the command
 // interpreter consists of several objects. To ease the passing around there is
@@ -1437,7 +1354,7 @@ private:
 //
 // ??? they also could be globals in the "main.cpp" with externals in the 
 // "cmd" files.... simplify ?
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 struct SimGlobals {
     
     SimConsoleIO        *console        = nullptr;

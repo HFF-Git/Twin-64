@@ -206,182 +206,11 @@ void SimWin::setWinCursor( int row, int col ) {
 int SimWin::getWinCursorRow( ) { return( lastRowPos ); }
 int SimWin::getWinCursorCol( ) { return( lastColPos ); }
 
-// ??? should this become part of the console IO ? it is also not really a 
-// field but rather a change in attributes...
-//----------------------------------------------------------------------------------------
-// A window will consist of lines with lines having fields on them. A field has
-// a set of attributes such as foreground and background colors, bold characters
-// and so on. This routine sets the attributes based on the format descriptor. 
-// If the descriptor is zero, we will just stay where are with their attributes.
-//
-// ??? comment the attributes meaning....
-//----------------------------------------------------------------------------------------
-void SimWin::setFieldAtributes( uint32_t fmtDesc ) {
-    
-    if ( fmtDesc != 0 ) {
-        
-        glb -> console -> writeChars((char *) "\x1b[0m" );
-        if ( fmtDesc & FMT_INVERSE ) glb -> console -> writeChars((char *) "\x1b[7m" );
-        if ( fmtDesc & FMT_BLINK )   glb -> console -> writeChars((char *) "\x1b[5m" );
-        if ( fmtDesc & FMT_BOLD )    glb -> console -> writeChars((char *) "\x1b[1m" );
-        
-        switch ( fmtDesc & 0xF ) {
-                
-            case 1:     glb -> console -> writeChars((char *) "\x1b[41m"); break;
-            case 2:     glb -> console -> writeChars((char *) "\x1b[42m"); break;
-            case 3:     glb -> console -> writeChars((char *) "\x1b[43m"); break;
-            default:    glb -> console -> writeChars((char *) "\x1b[49m");
-        }
-        
-        switch (( fmtDesc >> 4 ) & 0xF ) {
-                
-            case 1:     glb -> console -> writeChars((char *) "\x1b[31m"); break;
-            case 2:     glb -> console -> writeChars((char *) "\x1b[32m"); break;
-            case 3:     glb -> console -> writeChars((char *) "\x1b[33m"); break;
-            default:    glb -> console -> writeChars((char *) "\x1b[39m");
-        }
-    }
-}
-
-//----------------------------------------------------------------------------------------
-//
-// Format hex with '_' every 4, 8, 12, or 16 digits, no "0x", left-padded with 
-// zeros if desired
-//----------------------------------------------------------------------------------------
-void formatHexVal( T64Word value, char *buf, int digits = 16 ) {
-    
-    if ( digits < 1 ) digits    = 1;
-    if ( digits > 16 ) digits   = 16;
-    
-    int     shiftAmount     = 16 - digits;
-    int     tmpBufIndex     = 0;
-    char    tmpBuf[ 20 ];
-    
-    for ( int i = shiftAmount; i < 16; i++ ) {
-        
-        int digit = ( value >> ( i * 4 )) & 0xF;
-        tmpBuf[ tmpBufIndex++ ] = "0123456789abcdef"[ digit ];
-    }
-    
-    int out = 0;
-    
-    for ( int i = 0; i < tmpBufIndex; ++i) {
-        
-        if (( i > 0 ) && ( i % 4 == 0 )) buf[ out++ ] = '_';
-        buf[ out++ ] = tmpBuf[ i ];
-    }
-    
-    buf[ out ] = '\0';
-}
-
-//----------------------------------------------------------------------------------------
-//
-// Format decimal with '_' every 3 digits (from right to left)
-//----------------------------------------------------------------------------------------
-void formatDecVal( T64Word value, char *buf ) {
-    
-    char temp[32]; // enough to hold 20-digit uint64 + separators
-    int len = 0;
-    
-    // Build reversed string with separators
-    do {
-
-        if (len > 0 && len % 3 == 0) temp[len++] = '_';
-        temp[len++] = '0' + (value % 10);
-        value /= 10;
-
-    } while (value > 0);
-    
-    // Reverse to get final string
-    for (int i = 0; i < len; ++i)  buf[i] = temp[len - 1 - i];
-    buf[len]   = '\0';
-}
-
-// ??? rework to use the new format bits .... 
-// ??? printVal( T64Word val, int fieldLen, uint32_t fmt )
-//----------------------------------------------------------------------------------------
-// Routine for putting out a 32-bit or 16-bit machine word at the current cursor
-// position. We will just print out the data using the radix passed. 
-//
-//----------------------------------------------------------------------------------------
-int SimWin::printWord( uint32_t val, int rdx, uint32_t fmtDesc ) {
-    
-    int len;
-    
-    bool half   = fmtDesc & FMT_HALF_WORD;
-    bool noNum  = fmtDesc & FMT_INVALID_NUM;
-    
-        if ( rdx == 10 ) {
-            
-            if ( noNum ) {
-                
-                if ( half ) len = glb -> console -> writeChars((char *) "*****" );
-                else        len = glb -> console -> writeChars((char *) "**********" );
-            }
-            else {
-                
-                if ( half ) len = glb -> console -> writeChars((char *) "%5d", val );
-                else        len = glb -> console -> writeChars((char *) "%10d", val );
-            }
-        }
-        else if ( rdx == 8 ) {
-            
-            if ( noNum ) {
-                
-                if ( half ) len = glb -> console -> writeChars((char *) "*******" );
-                else        len = glb -> console -> writeChars((char *) "************" );
-            }
-            else {
-                
-                if ( half ) len = glb -> console -> writeChars((char *) "%07o", val );
-                else        len = glb -> console -> writeChars((char *) "%#012o", val );
-            }
-        }
-        else if ( rdx == 16 ) {
-            
-            if ( noNum ) {
-                
-                if ( half ) len = glb -> console -> writeChars((char *) "******" );
-                else        len = glb -> console -> writeChars((char *) "**********" );
-            }
-            else {
-                
-                if ( val == 0 ) {
-                    
-                    if ( half ) len = glb -> console -> writeChars((char *) "0x0000" );
-                    else        len = glb -> console -> writeChars((char *) "0x00000000" );
-                    
-                } else {
-                    
-                    if ( half ) len = glb -> console -> writeChars((char *) "%#06x", val );
-                    else        len = glb -> console -> writeChars((char *) "%#010x", val );
-                }
-            }
-        }
-        else len = glb -> console -> writeChars((char *) "***num***" );
-    
-    return( len );
-}
-
-//----------------------------------------------------------------------------------------
-// Routine for putting out simple text. We make sure that the string length is in the
-// range of what the text size could be.
-//
-//----------------------------------------------------------------------------------------
-int SimWin::printText( char *text, int len ) {
-    
-    if ( strlen( text ) < MAX_TEXT_FIELD_LEN ) {
-        
-        return( glb -> console -> writeChars((char *) "%s", text ));
-    }
-    else return( glb -> console -> writeChars((char *) "***Text***" ));
-}
-
 //----------------------------------------------------------------------------------------
 // Fields that have a larger size than the actual argument length in the field need to
 // be padded left or right. This routine is just a simple loop emitting blanks in the
 // current format set.
-//
+// ??? put in console class ?
 //----------------------------------------------------------------------------------------
 void SimWin::padField( int dLen, int fLen ) {
     
@@ -393,54 +222,61 @@ void SimWin::padField( int dLen, int fLen ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Print out a numeric field. Each call will set the format options passed via the format
-// descriptor. If the field length is larger than the positions needed to print the data
-// in the field, the data will be printed left or right justified in the field.
+// Print out a numeric field. Each call will set the format options passed via the 
+// format descriptor. If the field length is larger than the positions needed to print
+// the data in the field, the data will be printed left or right justified in the field.
 //
-// ??? shouldn't we feed into printFieldText to unify field printing ?
-// ??? add radix to override default setting ?
+// ??? use print number .... 
+// ??? what to do about the radix ?
 //----------------------------------------------------------------------------------------
-void SimWin::printNumericField( uint32_t val, uint32_t fmtDesc, int fLen, int row, int col ) {
+void SimWin::printNumericField( uint32_t val, 
+                                uint32_t fmtDesc, 
+                                int fLen, 
+                                int row, 
+                                int col ) {
     
     if ( row == 0 )                     row     = lastRowPos;
     if ( col == 0 )                     col     = lastColPos;
     if ( fmtDesc & FMT_LAST_FIELD )     col     = winColumns - fLen;
-    
-    int maxLen = strlenForNum( getRadix( ), ( fmtDesc & FMT_HALF_WORD ));
+
+    int maxLen = glb -> console -> numberFmtLen( val, fmtDesc );
    
     if ( fLen == 0 ) fLen = maxLen;
-    
-    setFieldAtributes( fmtDesc );
+
+    glb -> console -> setFmtAttributes( fmtDesc );
     setWinCursor( row, col );
    
     if ( fLen > maxLen ) {
         
         if ( fmtDesc & FMT_ALIGN_LFT ) {
-            
-            printWord( val, winRadix, fmtDesc );
+
+            glb -> console -> printNumber( val, fmtDesc );
             padField( maxLen, fLen );
         }
         else {
             
             padField( maxLen, fLen );
-            printWord( val, winRadix, fmtDesc );
+            glb -> console -> printNumber( val, fmtDesc );
         }
     }
-    else printWord( val, winRadix, fmtDesc );
+    else glb -> console -> printNumber( val, fmtDesc );
     
     lastRowPos  = row;
     lastColPos  = col + fLen;
 }
 
 //----------------------------------------------------------------------------------------
-// Print out a text field. Each call will set the format options passed via the
-// format descriptor. If the field length is larger than the positions needed 
-// to print the data in the field, the data will be printed left or right 
-// justified in the field. If the data is larger than the field, it will be 
-// truncated.
+// Print out a text field. Each call will set the format options passed via the format
+// descriptor. If the field length is larger than the positions needed to print the 
+// data in the field, the data will be printed left or right justified in the field.
+// If the data is larger than the field, it will be truncated.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::printTextField( char *text, uint32_t fmtDesc, int fLen, int row, int col ) {
+void SimWin::printTextField( char *text, 
+                             uint32_t fmtDesc, 
+                             int fLen, 
+                             int row, 
+                             int col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
@@ -457,55 +293,54 @@ void SimWin::printTextField( char *text, uint32_t fmtDesc, int fLen, int row, in
     if ( fmtDesc & FMT_LAST_FIELD ) col = winColumns - fLen;
     
     setWinCursor( row, col );
-    setFieldAtributes( fmtDesc );
+    glb -> console -> setFmtAttributes( fmtDesc );
     
     if ( fLen > dLen ) {
         
         if ( fmtDesc & FMT_ALIGN_LFT ) {
             
-            printText( text, dLen );
+            glb -> console -> printText( text, dLen );
             padField( dLen, fLen );
         }
         else {
             
             padField( dLen, fLen );
-            printText( text, dLen );
+            glb -> console -> printText( text, dLen );
         }
     }
     else if ( fLen < dLen ) {
         
         if ( fmtDesc & FMT_TRUNC_LFT ) {
             
-            printText(( char *) "...", 3 );
-            printText((char *) text + ( dLen - fLen ) + 3, fLen - 3 );
+            glb -> console -> printText(( char *) "...", 3 );
+            glb -> console -> printText((char *) text + ( dLen - fLen ) + 3, fLen - 3 );
         }
         else {
             
-            printText( text, fLen - 3 );
-            printText(( char *) "...", 3 );
+            glb -> console -> printText( text, fLen - 3 );
+            glb -> console -> printText(( char *) "...", 3 );
         }
     }
-    else printText( text, dLen );
+    else glb -> console -> printText( text, dLen );
     
     lastRowPos  = row;
     lastColPos  = col + fLen;
 }
 
 //----------------------------------------------------------------------------------------
-// It is a good idea to put the current radix into the banner line to show in 
-// what format the data in the body is presented. This field is when used always
-// printed as the last field in the banner line.
+// It is a good idea to put the current radix into the banner line to show in what 
+// format the data in the body is presented. This field is when used always printed as
+// the last field in the banner line.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
     
-    setFieldAtributes( fmtDesc );
+    glb -> console -> setFmtAttributes( fmtDesc );
     
     if ( fmtDesc & FMT_LAST_FIELD ) col = winColumns - fLen;
     
     switch ( winRadix ) {
             
-        case 8:  printTextField((char *) "oct", fmtDesc, 3, row, col); break;
         case 10: printTextField((char *) "dec", fmtDesc, 3, row, col); break;
         case 16: printTextField((char *) "hex", fmtDesc, 3, row, col); break;
         default: ;
@@ -513,16 +348,21 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A user defined window has a field that shows the window number as well as 
-// this is the current window.
+// A user defined window has a field that shows the window number as well as this is 
+// the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::printWindowIdField( int stack, int index, bool current, uint32_t fmtDesc, int row, int col ) {
+void SimWin::printWindowIdField( int stack, 
+                                 int index, 
+                                 bool current, 
+                                 uint32_t fmtDesc, 
+                                 int row, 
+                                 int col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
     
-    setFieldAtributes( fmtDesc );
+    glb -> console -> setFmtAttributes( fmtDesc );
     
     if (( index >= 0   ) && ( index <= 10 ))  
         glb -> console -> writeChars((char *) "(%1d:%1d)  ", stack, index );
@@ -538,21 +378,19 @@ void SimWin::printWindowIdField( int stack, int index, bool current, uint32_t fm
 }
 
 //----------------------------------------------------------------------------------------
-// Padding a line will write a set of blanks with the current format setting to
-// the end of the line. It is intended to fill for example a banner line that
-// is in inverse video with the inverse format until the end of the screen 
-// column size.
+// Padding a line will write a set of blanks with the current format setting to the 
+// end of the line. It is intended to fill for example a banner line that is in inverse
+// video with the inverse format until the end of the screen column size.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::padLine( uint32_t fmtDesc ) {
     
-    setFieldAtributes( fmtDesc );
+    glb -> console -> setFmtAttributes( fmtDesc );
     padField( lastColPos, winColumns );
 }
 
 //----------------------------------------------------------------------------------------
-//
-//
+// Clear out a field.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::clearField( int len, uint32_t fmtDesc ) {
@@ -561,7 +399,7 @@ void SimWin::clearField( int len, uint32_t fmtDesc ) {
     
     if ( pos + len > winColumns ) len = winColumns - pos;
     
-    setFieldAtributes( fmtDesc );
+    glb -> console -> setFmtAttributes( fmtDesc );;
     padField( lastColPos, lastColPos + len );
     
     setWinCursor( 0,  pos );
