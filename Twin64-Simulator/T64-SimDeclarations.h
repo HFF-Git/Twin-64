@@ -26,6 +26,7 @@
 
 #include "T64-Common.h"
 #include "T64-ConsoleIO.h"
+#include "T64-InlineAsm.h"
 
 //----------------------------------------------------------------------------------------
 // General screen structure:
@@ -43,7 +44,7 @@
 //                  :                                                        :
 //                  :--------------------------------------------------------:
 //
-// General window strcuture:
+// General window structure:
 //
 //          |---> column (relative)
 //          |
@@ -452,8 +453,8 @@ enum SimErrMsgId : uint16_t {
 };
 
 //----------------------------------------------------------------------------------------
-// Predefined environment variable names. When you create another one, put its 
-// name here.
+// Predefined environment variable names. When you create another one, put its name
+// here.
 //
 // ??? what to keep....
 //----------------------------------------------------------------------------------------
@@ -496,9 +497,9 @@ const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
 const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
 
 //----------------------------------------------------------------------------------------
-// Forward declaration of the globals structure. Every object will have access 
-// to the globals structure, so we do not have to pass around references to all
-// the individual objects.
+// Forward declaration of the globals structure. Every object will have access to the
+// globals structure, so we do not have to pass around references to all the individual
+// objects.
 //
 //----------------------------------------------------------------------------------------
 struct SimGlobals;
@@ -527,11 +528,11 @@ struct SimHelpMsgEntry {
 };
 
 //----------------------------------------------------------------------------------------
-// The command line interpreter works the command line as a list of tokens. A
-// token found in a string is recorded using the token structure. The token
-// types are numeric and strings. The string is a buffer in the tokenizer. 
-// Scanning a new token potentially overwrites or invalidates the string. You
-// need to copy it to a safe place before scanning the next token.
+// The command line interpreter works the command line as a list of tokens. A token 
+// found in a string is recorded using the token structure. The token types are 
+// numeric and strings. The string is a buffer in the tokenizer. Scanning a new token
+// potentially overwrites or invalidates the string. You need to copy it to a safe 
+// place before scanning the next token.
 //
 //----------------------------------------------------------------------------------------
 struct SimToken {
@@ -549,9 +550,8 @@ struct SimToken {
 };
 
 //----------------------------------------------------------------------------------------
-// Tokenizer object. The command line interface parse their input buffer line.
-// The tokenizer will return the tokens found in the line. The tokenizer raises
-// exceptions.
+// Tokenizer object. The command line interface parse their input buffer line. The 
+// tokenizer will return the tokens found in the line. The tokenizer raises exceptions.
 //
 // ??? check the assembler version ....
 //----------------------------------------------------------------------------------------
@@ -594,9 +594,8 @@ struct SimTokenizer {
 };
 
 //----------------------------------------------------------------------------------------
-// Expression value. The analysis of an expression results in a value. Depending
-// on the expression type, the values are simple scalar values or a structured
-// values.
+// Expression value. The analysis of an expression results in a value. Depending on 
+// the expression type, the values are simple scalar values or a structured values.
 //
 // ??? cleanup ... what do we need...
 //----------------------------------------------------------------------------------------
@@ -617,8 +616,8 @@ struct SimExpr {
 };
 
 //----------------------------------------------------------------------------------------
-// The expression evaluator object. We use the "parseExpr" routine whereever we
-// expect an expression in the command line. The evaluator raises exceptions.
+// The expression evaluator object. We use the "parseExpr" routine wherever we expect
+// an expression in the command line. The evaluator raises exceptions.
 //
 //----------------------------------------------------------------------------------------
 struct SimExprEvaluator {
@@ -627,33 +626,30 @@ struct SimExprEvaluator {
     
     SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok );
     
-    void        setTokenizer( SimTokenizer *tok );
-    void        parseExpr( SimExpr *rExpr );
+    void            setTokenizer( SimTokenizer *tok );
+    void            parseExpr( SimExpr *rExpr );
     
     private:
     
-    void        parseTerm( SimExpr *rExpr );
-    void        parseFactor( SimExpr *rExpr );
-    void        parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );
+    void            parseTerm( SimExpr *rExpr );
+    void            parseFactor( SimExpr *rExpr );
+    void            parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );
     
     // ??? rework... we need some to deal with the numeric sizes...
-    void        pFuncS32( SimExpr *rExpr );
-    void        pFuncU32( SimExpr *rExpr );
+    void            pFuncS32( SimExpr *rExpr );
+    void            pFuncU32( SimExpr *rExpr );
     
-    void        pFuncAssemble( SimExpr *rExpr );
-    void        pFuncDisAssemble( SimExpr *rExpr );
-    void        pFuncHash( SimExpr *rExpr );
-    
-private:
+    void            pFuncAssemble( SimExpr *rExpr );
+    void            pFuncDisAssemble( SimExpr *rExpr );
+    void            pFuncHash( SimExpr *rExpr );
     
     SimGlobals      *glb        = nullptr;
     SimTokenizer    *tok        = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
-// Environment table entry, Each environment variable has a name, a couple of 
-// flags and the value. There are predefined variabls and user defined 
-// variables.
+// Environment table entry, Each environment variable has a name, a couple of flags 
+// and the value. There are predefined variables and user defined variables.
 //
 //----------------------------------------------------------------------------------------
 struct SimEnvTabEntry {
@@ -674,12 +670,14 @@ struct SimEnvTabEntry {
 };
 
 //----------------------------------------------------------------------------------------
-// Environment variables. The simulator has a global table where all variables 
-// are kept. It is a simple array with a high water mark concept. The table will
-// be allocated at simulator start.
+// Environment variables. The simulator has a global table where all variables are 
+// kept. It is a simple array with a high water mark concept. The table will be 
+// allocated at simulator start.
 //
 //----------------------------------------------------------------------------------------
 struct SimEnv {
+
+    public:
     
     SimEnv( int size );
     
@@ -730,10 +728,10 @@ struct SimEnv {
 };
 
 //----------------------------------------------------------------------------------------
-// Command History. The simulator command interpreter features a simple command
-// history. It is a circular buffer that holds the last commands. There are 
-// functions to show the command history, re-execute a previous command and to
-// retrieve a previous command for editing.
+// Command History. The simulator command interpreter features a simple command history.
+// It is a circular buffer that holds the last commands. There are functions to show
+// the command history, re-execute a previous command and to retrieve a previous 
+// command for editing.
 //
 //----------------------------------------------------------------------------------------
 struct SimCmdHistEntry {
@@ -744,7 +742,7 @@ struct SimCmdHistEntry {
 
 struct SimCmdHistory {
     
-public:
+    public:
     
     SimCmdHistory( );
     
@@ -753,7 +751,7 @@ public:
     int  getCmdCount( );
     int  getCmdNum( );
    
-private:
+    private:
     
     int nextCmdNum          = 0;
     int head                = 0;
@@ -764,19 +762,18 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Command and Console Window output buffer. The ouput buffer will store all 
-// output from the command window to support scrolling. This is the price you 
-// pay when normal terminal scrolling is restricted to an area of the screen. 
-// The buffer offers a simple interface. Any character added will be stored in
-// a line, a "\n" will advance to the next line to store. The buffer itself is 
-// a circular buffer. Each time a command line is entered, the display will show
-// the last N lines entered. A cursor is defined which is manipulated by the 
-// cursor up or down routines.
+// Command and Console Window output buffer. The output buffer will store all output
+// from the command window to support scrolling. This is the price you pay when normal
+// terminal scrolling is restricted to an area of the screen. The buffer offers a
+// simple interface. Any character added will be stored in a line, a "\n" will advance
+// to the next line to store. The buffer itself is a circular buffer. Each time a 
+// command line is entered, the display will show the last N lines entered. A cursor
+// is defined which is manipulated by the cursor up or down routines.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinOutBuffer {
     
-public:
+    public:
     
     SimWinOutBuffer( );
     
@@ -794,7 +791,7 @@ public:
     void        scrollUp( int lines = 1 );
     void        scrollDown( int lines = 1 );
     
-private:
+    private:
     
     char        buffer[ MAX_WIN_OUT_LINES ] [ MAX_WIN_OUT_LINE_SIZE ];
     int         topIndex    = 0; // Index of the next line to use.
@@ -805,19 +802,18 @@ private:
 
 
 //----------------------------------------------------------------------------------------
-// The "SimWin" class. The simulator will in screen mode feature a set of stacks
-// each with a list of screen sub windows. The default is one stack, the general
-// register set window and the command line window, which also spans all stacks.
-// Each sub window is an instance of a specific window class with this class as
-// the base class. There are routines common to all windows to enable/ disable,
-// set the lines displayed and so on. There are also abstract methods that the
-// inheriting class needs to implement. Examples are to initialize a window, 
-// redraw and so on.
+// The "SimWin" class. The simulator will in screen mode feature a set of stacks each 
+// with a list of screen sub windows. The default is one stack, the general register
+// set window and the command line window, which also spans all stacks. Each sub window
+// is an instance of a specific window class with this class as the base class. There
+// are routines common to all windows to enable/ disable, set the lines displayed and
+// so on. There are also abstract methods that the inheriting class needs to implement.
+// Examples are to initialize a window,  redraw and so on.
 //
 //----------------------------------------------------------------------------------------
 struct SimWin {
     
-public:
+    public:
     
     SimWin( SimGlobals *glb );
     virtual         ~ SimWin( );
@@ -886,13 +882,13 @@ public:
     virtual void    drawBanner( )   = 0;
     virtual void    drawBody( )     = 0;
     
-protected:
+    protected:
     
-    SimGlobals   *glb;
+    SimGlobals      *glb;
    
     void            padField( int dLen, int fLen );
     
-private:
+    private:
     
     int             winType             = TOK_NIL;
     int             winUserIndex        = 0;
@@ -916,40 +912,39 @@ private:
 
 //----------------------------------------------------------------------------------------
 // "WinScrollable" is an extension to the basic window. It implements scrollable
-// windows with a number of lines. There is a high level concept of a starting 
-// index of zero and a limit. The meaning i.e. whether the index is a memory 
-// address or an index into a TLB or Cache array is determined by the inheriting
-// class. The scrollable window will show a number of lines, the "drawLine" 
-// method needs to be implemented by the inheriting class. The routine is passed
-// the item address for the line and is responsible for the correct address
-// interpretation. The "lineIncrement" is the increment value for the item 
-// address passed.
+// windows with a number of lines. There is a high level concept of a starting index
+// of zero and a limit. The meaning i.e. whether the index is a memory address or an
+// index into a TLB or Cache array is determined by the inheriting class. The 
+// scrollable window will show a number of lines, the "drawLine" method needs to be
+//  implemented by the inheriting class. The routine is passed the item address for 
+// the line and is responsible for the correct address interpretation. The 
+// "lineIncrement" is the increment value for the item address passed.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinScrollable : SimWin {
     
-public:
+    public:
     
     SimWinScrollable( SimGlobals *glb );
     
     void            setHomeItemAdr( T64Word adr );
-    uint32_t        getHomeItemAdr( );
+    T64Word         getHomeItemAdr( );
     void            setCurrentItemAdr( T64Word adr );
-    uint32_t        getCurrentItemAdr( );
+    T64Word         getCurrentItemAdr( );
     void            setLimitItemAdr( T64Word adr );
-    uint32_t        getLimitItemAdr( );
+    T64Word         getLimitItemAdr( );
     void            setLineIncrement( T64Word arg );
-    uint32_t        getLineIncrement( );
+    T64Word         getLineIncrement( );
     
     virtual void    drawBody( );
-    virtual void    drawLine( int index ) = 0;
+    virtual void    drawLine( T64Word index ) = 0;
     
     void            winHome( T64Word pos = 0 );
     void            winForward( T64Word amt );
     void            winBackward( T64Word amt );
     void            winJump( T64Word pos );
     
-private:
+    private:
     
     T64Word         homeItemAdr         = 0;
     T64Word         currentItemAdr      = 0;
@@ -958,9 +953,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Program State Register Window. This window holds the programmer visible 
-// state with the exception of the program relevant control register values. 
-// They are a separate window.
+// Program State Register Window. This window holds the programmer visible state with
+// the exception of the program relevant control register values. They are a separate
+// window.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinProgState : SimWin {
@@ -992,42 +987,10 @@ public:
 };
 
 //----------------------------------------------------------------------------------------
-// Pipeline Register Window. This window holds the CPU pipeline registers.
-//
-//----------------------------------------------------------------------------------------
-struct SimWinPipeLineRegs : SimWin {
-    
-public:
-    
-    SimWinPipeLineRegs( SimGlobals *glb );
-    
-    void setDefaults( );
-    void setRadix( int rdx );
-    void drawBanner( );
-    void drawBody( );
-};
-
-//----------------------------------------------------------------------------------------
-// Statistics Window. This window displays the CPU statistics collected during 
-// execution.
-//
-//----------------------------------------------------------------------------------------
-struct SimWinStatistics : SimWin {
-    
-public:
-    
-    SimWinStatistics( SimGlobals *glb );
-    
-    void setDefaults( );
-    void drawBanner( );
-    void drawBody( );
-};
-
-//----------------------------------------------------------------------------------------
 // Absolute Memory Window. A memory window will show the absolute memory content
-// starting with the current address followed by a number of data words. The 
-// number of words shown is the number of lines of the window times the number 
-// of items, ie.e words, on a line.
+// starting with the current address followed by a number of data words. The number
+// of words shown is the number of lines of the window times the number of items, 
+// i.e. words, on a line.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinAbsMem : SimWinScrollable {
@@ -1039,13 +1002,13 @@ public:
     void setDefaults( );
     void setRadix( int rdx );
     void drawBanner( );
-    void drawLine( int index );
+    void drawLine( T64Word index );
 };
 
 //----------------------------------------------------------------------------------------
-// Code Memory Window. A code memory window will show the instruction memory 
-// content starting with the current address followed by the instruction and a
-// human readable disassembled version.
+// Code Memory Window. A code memory window will show the instruction memory content
+// starting with the current address followed by the instruction and a human readable
+// disassembled version.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinCode : SimWinScrollable {
@@ -1056,10 +1019,11 @@ public:
     
     void setDefaults( );
     void drawBanner( );
-    void drawLine( int index );
+    void drawLine( T64Word index );
     
 private:
     
+    // may go away...
    //  SimDisAsm *disAsm = nullptr;
 };
 
@@ -1076,7 +1040,7 @@ public:
     void setDefaults( );
     void setRadix( int rdx );
     void drawBanner( );
-    void drawLine( int index );
+    void drawLine( T64Word index );
     
 private:
     
@@ -1085,9 +1049,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Cache Window. The memory object window display the cache date lines. Since 
-// we can have caches with more than one set, the toggle function allows to 
-// flip through the sets, one at a time.
+// Cache Window. The memory object window display the cache date lines. Since we can
+// have caches with more than one set, the toggle function allows to flip through the
+// sets, one at a time.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinCache : SimWinScrollable {
@@ -1100,7 +1064,7 @@ public:
     void setRadix( int rdx );
     void toggleWin( );
     void drawBanner( );
-    void drawLine( int index );
+    void drawLine( T64Word index );
     
 private:
     
@@ -1110,9 +1074,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Text Window. It may be handy to also display an ordinary ASCII text file. 
-// One day this will allow us to display for example the source code to a 
-// running program when symbolic debugging is supported.
+// Text Window. It may be handy to also display an ordinary ASCII text file. One day
+// this will allow us to display for example the source code to a running program 
+// when symbolic debugging is supported.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinText : SimWinScrollable {
@@ -1124,7 +1088,7 @@ public:
     
     void    setDefaults( );
     void    drawBanner( );
-    void    drawLine( int index );
+    void    drawLine( T64Word index );
     
 private:
 
@@ -1138,11 +1102,11 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Console Window. When the CPU is running, it has access to a "console window".
-// This is a rather simple console IO window. Care needs to be taken however 
-// what character IO directed to this window means. For example, escape 
-// sequences cannot be just printed out as it would severly impact the simulator
-// windwos. Likewise scrolling and line editing are to be handheld.
+// Console Window. When the CPU is running, it has access to a "console window". This
+// is a rather simple console IO window. Care needs to be taken however what character
+// IO directed to this window means. For example, escape sequences cannot be just 
+// printed out as it would severely impact the simulator windows. Likewise scrolling 
+// and line editing are to be handheld.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinConsole : SimWin {
@@ -1162,14 +1126,14 @@ public:
     
 private:
     
-    SimGlobals   *glb    = nullptr;
+    SimGlobals      *glb    = nullptr;
     SimWinOutBuffer *winOut = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
-// Command Line Window. The command window is a special class, which comes 
-// always last in the windows list and cannot be disabled. It is intended to be
-// a scrollable window, where only the banner line is fixed.
+// Command Line Window. The command window is a special class, which comes always last
+// in the windows list and cannot be disabled. It is intended to be a scrollable window,
+// where only the banner line is fixed.
 //
 //----------------------------------------------------------------------------------------
 struct SimCommandsWin : SimWin {
@@ -1273,16 +1237,15 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// The window display screen object is the central object that represents the 
-// simulator. All commands send from the command input will eventually end up 
-// as calls to this object. A simulator screen is an ordered list of windows. 
-// Although you can disable a window such that it disappears on the screen, when
-// enabled, it will show up in the place intended for it. For example, the 
-// program state register window will always be on top, followed by the special 
-// regs. The command input scroll area is always last and is the only window 
-// that cannot be disabled. In addition, windows can be grouped in stacks that
-// are displayed next to each other. The excpetion is the command window area 
-// which is always displyed across the entire terminal window width.
+// The window display screen object is the central object of the simulator. Commands
+// send from the command input will eventually end up as calls to this object. A 
+// simulator screen is an ordered list of windows. Although you can disable a window
+// such that it disappears on the screen, when enabled, it will show up in the place
+// intended for it. For example, the program state register window will always be on
+// top, followed by the special regs. The command input scroll area is always last and
+// is the only window that cannot be disabled. In addition, windows can be grouped in
+// stacks that are displayed next to each other. The exception is the command window
+// area which is always displayed across the entire terminal window width.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinDisplay {
@@ -1340,17 +1303,17 @@ private:
     bool            winStacksOn                 = true;
     bool            winModeOn                   = true;
 
-    SimGlobals   *glb                        = nullptr;
+    SimGlobals      *glb                        = nullptr;
     SimCommandsWin  *cmdWin                     = nullptr;
     SimWin          *windowList[ MAX_WINDOWS ]  = { nullptr };
     
 };
 
 //----------------------------------------------------------------------------------------
-// The globals, accessible to all objects. Turns out that all main objects need
-// to access data from all the individual objects of the CPU. Also, the command
-// interpreter consists of several objects. To ease the passing around there is
-// the idea a global structure with a reference to all the individual objects.
+// The globals, accessible to all objects. Turns out that all main objects need to 
+// access data from all the individual objects of the simulator. Also, the command
+// interpreter consists of several objects. To ease the passing around there is the
+// idea a global structure with a reference to all the individual objects.
 //
 // ??? they also could be globals in the "main.cpp" with externals in the 
 // "cmd" files.... simplify ?
@@ -1360,6 +1323,13 @@ struct SimGlobals {
     SimConsoleIO        *console        = nullptr;
     SimEnv              *env            = nullptr;
     SimWinDisplay       *winDisplay     = nullptr;
+
+    T64Assemble         *inlineAsm      = nullptr;
+    T64DisAssemble      *disAsm         = nullptr;
+
+    
+    // ??? inline assembler object ?
+
   //  CpuCore             *cpu            = nullptr;
 };
 

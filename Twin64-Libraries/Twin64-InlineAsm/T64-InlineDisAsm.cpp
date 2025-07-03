@@ -37,9 +37,9 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
-// The disassmble string consists of two parts. Normally, the string is just one string
-// with both opCode and operand parts. For an aligned display of opCode and operand
-// parts, the two constants specifiy how big the field will get.
+// The disassemble string consists of two parts. Normally, the string is just one 
+// string with both opCode and operand parts. For an aligned display of opCode and 
+// operand parts, the two constants specify how big the field will get.
 //
 //----------------------------------------------------------------------------------------
 const int LEN_16 = 16;
@@ -160,7 +160,7 @@ int printDwField( char *buf, uint32_t dw ) {
 
 //----------------------------------------------------------------------------------------
 // Decode the opcode and opcode option portion. An opcode consist of the instruction
-// group and the opcode fanmily. We construct the final opcode for the case statement.
+// group and the opcode family. We construct the final opcode for the case statement.
 //
 //----------------------------------------------------------------------------------------
 int buildOpCodeStr( char *buf, uint32_t instr ) {
@@ -502,7 +502,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Decode the instruction opererands. An opcode consist of the instruction group and 
+// Decode the instruction operands. An opcode consist of the instruction group and 
 // the opcode family. We construct the final opcode for the case statement.
 //
 //----------------------------------------------------------------------------------------

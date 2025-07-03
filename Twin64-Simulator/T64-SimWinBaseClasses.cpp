@@ -3,8 +3,7 @@
 // Twin64 - A 64-bit CPU - Simulator Windows Base Classes
 //
 //----------------------------------------------------------------------------------------
-// The simulator environment has a set of environment variables. They are simple
-// "name = value" pairs for integers, booleans and strings.
+// The simulator ....
 //
 //----------------------------------------------------------------------------------------
 //
@@ -183,11 +182,12 @@ void SimWin::setWinOrigin( int row, int col ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "setWinCursor" sets the cursor to a windows relative position if row and 
-// column are non-zero. If they are zero, the last relative cursor position is
-// used. The final absolute position is computed from the windows absolute row
-// and column on the terminal screen plus the window relative row and column.
+// "setWinCursor" sets the cursor to a windows relative position if row and column are
+// non-zero. If they are zero, the last relative cursor position is used. The final
+// absolute position is computed from the windows absolute row and column on the 
+// terminal screen plus the window relative row and column.
 //
+// comment on row numbering ... ?
 //----------------------------------------------------------------------------------------
 void SimWin::setWinCursor( int row, int col ) {
     
@@ -229,7 +229,7 @@ void SimWin::padField( int dLen, int fLen ) {
 // ??? use print number .... 
 // ??? what to do about the radix ?
 //----------------------------------------------------------------------------------------
-void SimWin::printNumericField( uint32_t val, 
+void SimWin::printNumericField( T64Word val, 
                                 uint32_t fmtDesc, 
                                 int fLen, 
                                 int row, 
@@ -251,11 +251,17 @@ void SimWin::printNumericField( uint32_t val,
         if ( fmtDesc & FMT_ALIGN_LFT ) {
 
             glb -> console -> printNumber( val, fmtDesc );
-            padField( maxLen, fLen );
+
+            if ( fLen > maxLen ) 
+                glb -> console -> printfBlanks( fLen - maxLen );
+           // padField( maxLen, fLen );
         }
         else {
             
-            padField( maxLen, fLen );
+            if ( fLen > maxLen ) 
+                glb -> console -> printfBlanks( fLen - maxLen );
+           // padField( maxLen, fLen );
+
             glb -> console -> printNumber( val, fmtDesc );
         }
     }
@@ -300,11 +306,17 @@ void SimWin::printTextField( char *text,
         if ( fmtDesc & FMT_ALIGN_LFT ) {
             
             glb -> console -> printText( text, dLen );
-            padField( dLen, fLen );
+            if ( fLen > dLen ) 
+                glb -> console -> printfBlanks( fLen - dLen );
+           // padField( dLen, fLen );
+           
         }
         else {
             
-            padField( dLen, fLen );
+             if ( fLen > dLen ) 
+                glb -> console -> printfBlanks( fLen - dLen );
+           // padField( dLen, fLen );
+
             glb -> console -> printText( text, dLen );
         }
     }
@@ -386,7 +398,11 @@ void SimWin::printWindowIdField( int stack,
 void SimWin::padLine( uint32_t fmtDesc ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
-    padField( lastColPos, winColumns );
+
+     if ( winColumns > lastColPos ) 
+                glb -> console -> printfBlanks( winColumns - lastColPos );
+        
+    // padField( lastColPos, winColumns );
 }
 
 //----------------------------------------------------------------------------------------
@@ -399,15 +415,16 @@ void SimWin::clearField( int len, uint32_t fmtDesc ) {
     
     if ( pos + len > winColumns ) len = winColumns - pos;
     
-    glb -> console -> setFmtAttributes( fmtDesc );;
+    glb -> console -> setFmtAttributes( fmtDesc );
+    
     padField( lastColPos, lastColPos + len );
     
     setWinCursor( 0,  pos );
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a banner and a body. The reDraw routine will invoke 
-// these mandatory routines of the child classes.
+// Each window consist of a banner and a body. The reDraw routine will invoke these 
+// mandatory routines of the child classes.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::reDraw( ) {
@@ -420,9 +437,9 @@ void SimWin::reDraw( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Each window allows for perhaps toggling through different content. The 
-// implementation of this capability is entirely up to the specific window. On
-//  the "WT" command, this function will be called.
+// Each window allows perhaps toggling through different content. The implementation 
+// of this capability is entirely up to the specific window. On the "WT" command, this
+// function will be called.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::toggleWin( ) { }
@@ -442,58 +459,57 @@ SimWinScrollable::SimWinScrollable( SimGlobals *glb ) : SimWin( glb ) { }
 // Getter/Setter methods for scrollable window attributes.
 //
 //----------------------------------------------------------------------------------------
-void SimWinScrollable::setHomeItemAdr( uint32_t adr ) { 
+void SimWinScrollable::setHomeItemAdr( T64Word adr ) { 
     
     homeItemAdr = adr; 
 }
 
-uint32_t SimWinScrollable::getHomeItemAdr( ) { 
+T64Word SimWinScrollable::getHomeItemAdr( ) { 
     
     return( homeItemAdr ); 
 }
 
-void SimWinScrollable::setCurrentItemAdr( uint32_t adr ) { 
+void SimWinScrollable::setCurrentItemAdr( T64Word adr ) { 
     
     currentItemAdr = adr; 
 }
 
-uint32_t SimWinScrollable::getCurrentItemAdr( ) { 
+T64Word SimWinScrollable::getCurrentItemAdr( ) { 
     
     return( currentItemAdr ); 
 }
 
-void SimWinScrollable::setLimitItemAdr( uint32_t adr ) { 
+void SimWinScrollable::setLimitItemAdr( T64Word adr ) { 
     
     limitItemAdr = adr; 
 }
 
-uint32_t SimWinScrollable::getLimitItemAdr( ) { 
+T64Word SimWinScrollable::getLimitItemAdr( ) { 
     
     return( limitItemAdr ); 
 }
 
-void SimWinScrollable::setLineIncrement( uint32_t arg ) { 
+void SimWinScrollable::setLineIncrement( T64Word arg ) { 
     
     lineIncrement = arg; 
 }
 
-uint32_t SimWinScrollable::getLineIncrement( ) { 
+T64Word SimWinScrollable::getLineIncrement( ) { 
     
     return( lineIncrement ); 
 }
 
 //----------------------------------------------------------------------------------------
-// The scrollable window inherits from the general window. While the banner 
-// part of a window is expected to be implemented by the inheriting class, the
-// body is done by this class, which will call the "drawLine" method implemented
-// by the inheriting class. The "drawLine" method is passed the current item 
-// address which is the current line start of the item of whatever the window 
-// is displaying. The item address value is incremented by the itemsPerLine 
-// value each time the drawLine routine is called. The cursor position for
-// "drawLine" method call is incremented by the linesPerItem amount. Note that
-// the window system thinks in lines. If a window has items that occupy more 
-// than one line ( linesPerItem > 1 ), the line count in the window needs to be
-// divided by that value.
+// The scrollable window inherits from the general window. While the banner part of
+// a window is expected to be implemented by the inheriting class, the body is done
+// by this class, which will call the "drawLine" method implemented by the inheriting
+// class. The "drawLine" method is passed the current item address which is the current
+// line start of the item of whatever the window is displaying. The item address value
+// is incremented by the itemsPerLine value each time the drawLine routine is called.
+// The cursor position for "drawLine" method call is incremented by the linesPerItem 
+// amount. Note that the window system thinks in lines. If a window has items that 
+// occupy more than one line ( linesPerItem > 1 ), the line count in the window needs
+// to be divided by that value.
 //
 //----------------------------------------------------------------------------------------
 void SimWinScrollable::drawBody( ) {
@@ -508,16 +524,13 @@ void SimWinScrollable::drawBody( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The "winHome" method moves the starting item address of a window within the 
-// boundaries zero and the limit address and sets it as the new home for the 
-// "home" command. An argument of zero will set the window back to the current
-// home address. If the address is larger than the limit address of the window,
-// the position will be the limit address minus the number of lines times the
-// number of items on the line.
+// The "winHome" method set the starting item address of a window within the defined
+// boundaries. An argument of zero will set the window back to the original home address.
+// If the address is larger than the limit address of the window, the position will be
+// the limit address minus the number of lines times the number of items on the line.
 //
-// ??? unsigned addresses ?
 //----------------------------------------------------------------------------------------
-void SimWinScrollable::winHome( uint32_t pos ) {
+void SimWinScrollable::winHome( T64Word pos ) {
     
     if ( pos > 0 ) {
         
@@ -539,21 +552,21 @@ void SimWinScrollable::winHome( uint32_t pos ) {
 // boundaries zero and the limit address.
 //
 //----------------------------------------------------------------------------------------
-void SimWinScrollable::winJump( uint32_t pos ) {
+void SimWinScrollable::winJump( T64Word pos ) {
     
    currentItemAdr = pos;
 }
 
 //----------------------------------------------------------------------------------------
-// Window move implements the forward / backward moves of a window. The amount 
-// is added to the current window body position, also making sure that we stay 
-// inside the boundaries of the address range for the window. If the new 
-// position would point beyond the limit address, we set the new item address
-// to limit minus the window lines times the line increment. Likewise of the 
-// new item address would be less than zero, we just set it to zero.
+// Window move implements the forward / backward moves of a window. The amount is 
+// added to the current window body position, also making sure that we stay inside 
+// the boundaries of the address range for the window. If the new position would point
+// beyond the limit address, we set the new item address to limit minus the window 
+// lines times the line increment. Likewise of the new item address would be less than
+// zero, we just set it to zero.
 //
 //----------------------------------------------------------------------------------------
-void SimWinScrollable::winForward( uint32_t amt ) {
+void SimWinScrollable::winForward( T64Word amt ) {
     
     if ( amt == 0 ) amt = ( getRows( ) - 1 ) * lineIncrement;
     
@@ -564,7 +577,7 @@ void SimWinScrollable::winForward( uint32_t amt ) {
     else currentItemAdr = currentItemAdr + amt;
 }
 
-void SimWinScrollable::winBackward( uint32_t amt ) {
+void SimWinScrollable::winBackward( T64Word amt ) {
     
     if ( amt == 0 ) amt = ( getRows( ) - 1 ) * lineIncrement;
     
@@ -581,16 +594,14 @@ void SimWinScrollable::winBackward( uint32_t amt ) {
 // Object methods - SimCmdWinOutBuffer
 //
 //----------------------------------------------------------------------------------------
-// Command window output buffer. We cannot directly print to the command window when we 
-// want to support scrolling of the command window data. Instead, all printing is routed
-// to a command window buffer. The buffer is a circular structure, the oldest lines are
-// removed when we need room. When it comes to printing the window body content, the data
-// is taken from the windows ouput buffer.
+// Command window output buffer. We cannot directly print to the command window when 
+// we want to support scrolling of the command window data. Instead, all printing is 
+// routed to a command window buffer. The buffer is a circular structure, the oldest 
+// lines are removed when we need room. When it comes to printing the window body 
+// content, the data is taken from the windows output buffer.
 //
 //----------------------------------------------------------------------------------------
-SimWinOutBuffer::SimWinOutBuffer( ) {
-    
-}
+SimWinOutBuffer::SimWinOutBuffer( ) { }
 
 void SimWinOutBuffer::initBuffer( ) {
     
@@ -636,7 +647,7 @@ void SimWinOutBuffer::addToBuffer( const char *buf ) {
 //----------------------------------------------------------------------------------------
 // "printChar and "printChars" will add data to the window output buffer. The resulting
 // print string is just added to the window output buffer. The actual printing to screen
-// is peformed in the "drawBody" routine of the command window.
+// is performed in the "drawBody" routine of the command window.
 //
 //----------------------------------------------------------------------------------------
 int SimWinOutBuffer::printChar( const char ch ) {
@@ -674,15 +685,15 @@ int SimWinOutBuffer::printChars( const char *format, ... ) {
 
 //----------------------------------------------------------------------------------------
 // Cursor up / down movements refer to the output line buffer. There is the top index, 
-// which will always point the next ouputlie to use in our curcular buffer. The cursor 
-// index is normally one below this index, i.e. pointing to the last active line. This
-// is the line from which we start for example printing downward to fill the command 
-// window. The scroll up function will move the cursor away from the top up to the 
-// oldest entry in the ouput line buffer. The scroll down function will move the cursor 
-// toward the top index. Both directions stop when either oldest or last entry is 
-// reached. We cannot move logically above the current top index, and we cannot move 
-// below the last valid line plus the current line display screen. This is due to the 
-// logic that we print the screen content from top line by line away from the top.
+// which will always point the next output line to use in our circular buffer. The 
+// cursor index is normally one below this index, i.e. pointing to the last active 
+// line. This is the line from which we start for example printing downward to fill 
+// the command window. The scroll up function will move the cursor away from the top
+// up to the oldest entry in the output line buffer. The scroll down function will move
+// the cursor toward the top index. Both directions stop when either oldest or last 
+// entry is reached. We cannot move logically above the current top index, and we cannot
+// move below the last valid line plus the current line display screen. This is due to
+// the logic that we print the screen content from top line by line away from the top.
 //
 //----------------------------------------------------------------------------------------
 void SimWinOutBuffer::scrollUp( int lines ) {
@@ -710,10 +721,10 @@ void SimWinOutBuffer::scrollDown( int lines ) {
 }
 
 //----------------------------------------------------------------------------------------
-// For printing the output buffer lines, we will get a line pointer relative to
-// the actual cursor. In the typical case the cursor is identical with the top
-// if the output buffer. If it was moved, the we just get the lines from that
-// position. The line argument is referring to the nth line below the cursor.
+// For printing the output buffer lines, we will get a line pointer relative to the 
+// actual cursor. In the typical case the cursor is identical with the top if the 
+// output buffer. If it was moved, the we just get the lines from that position. The
+// line argument is referring to the nth line below the cursor.
 //
 //----------------------------------------------------------------------------------------
 char *SimWinOutBuffer::getLineRelative( int lineBelowTop ) {
@@ -729,12 +740,12 @@ void SimWinOutBuffer::resetLineCursor( ) {
     cursorIndex = topIndex;
 }
 
-uint16_t SimWinOutBuffer::getCursorIndex( ) {
+int SimWinOutBuffer::getCursorIndex( ) {
     
     return( cursorIndex );
 }
 
-uint16_t SimWinOutBuffer::getTopIndex( ) {
+int SimWinOutBuffer::getTopIndex( ) {
     
     return( topIndex );
 }

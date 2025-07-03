@@ -33,9 +33,9 @@
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------
-// "T64Assemble" is a one line assembler. It just parses the instrcution string and 
-// produces an instruction. Utiity routines for converting an error code to an error
-// message and an index into the input source line to where the error occured is 
+// "T64Assemble" is a one line assembler. It just parses the instruction string and 
+// produces an instruction. Utility routines for converting an error code to an error
+// message and an index into the input source line to where the error occurred is 
 // provided too.
 //
 //----------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ public:
 
 //----------------------------------------------------------------------------------------
 // "T64DisAssemble" will disassemble an instruction and return a human readable form. 
-// The disassmbled string can also contains  two parts, which are the opcode part and
+// The disassembled string can also contains  two parts, which are the opcode part and
 // the operand part. There are options to just one of the parts or both. The split
 // allows for displaying the disassembled instruction in an aligned fashion, when 
 // printing several lines.

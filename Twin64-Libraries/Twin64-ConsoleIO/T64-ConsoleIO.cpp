@@ -403,6 +403,15 @@ void SimConsoleIO::setFmtAttributes( uint32_t fmtDesc ) {
 }
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int SimConsoleIO::printfBlanks( int len ) {
+
+    for ( int i = 0; i < len; i++ ) writeChar( ' ' );
+}
+
+//----------------------------------------------------------------------------------------
 // Routine for putting out simple text. We make sure that the string length is in the
 // range of what the text size could be.
 //

@@ -239,11 +239,11 @@ T64Word T64Processor::extractImm20U( uint32_t instr ) {
 //----------------------------------------------------------------------------------------
 // Translate the virtual address to a physical address. There are two basic address
 // ranges. If the address range is the physical address range or I/O space, the virtual
-// adress is directly mapped to the physical address. The caller must run in privileged
+// address is directly mapped to the physical address. The caller must run in privileged
 // mode. If the address range is the virtual address range, the TLB is consulted and we
 // are subject to access right and protection checking.   
 //
-// ??? need type of access in the paramater list ?
+// ??? need type of access in the parameter list ?
 //----------------------------------------------------------------------------------------
 T64Word T64Processor::translateAdr( T64Word vAdr ) {
     
@@ -307,7 +307,7 @@ void T64Processor::instrRead( ) {
     }
     catch ( const T64Trap t ) {
         
-        // can do someting before reraising ....
+        // can do something before re-raising ....
         throw;
     }
 }
@@ -330,7 +330,7 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
     }
     catch ( const T64Trap t ) {
         
-        // can do someting before reraising ....
+        // can do something before re-raising ....
         throw;
     }
 }
@@ -341,7 +341,7 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
 //----------------------------------------------------------------------------------------
 void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
     
-    // ??? How to distinguish between meem and io ?
+    // ??? How to distinguish between mem and io ?
     
     try {
         
@@ -352,7 +352,7 @@ void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
     }
     catch ( const T64Trap t ) {
         
-        // can do someting before reraising ....
+        // can do something before re-raising ....
         throw;
     }
 }
@@ -426,10 +426,10 @@ void T64Processor:: dataWriteRegBOfsRegX( uint32_t instr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Execute an instruction. This is the key rooutine of the emulator. Essentially
-// a big case statement. Each instruction is encoded based on the instruction 
-// group and the opcode family. Inside each such cases, the option 1 field 
-// ( bits 19 .. 22 ) further qualifies an instruction.
+// Execute an instruction. This is the key routine of the emulator. Essentially a big
+// case statement. Each instruction is encoded based on the instruction group and the
+// opcode family. Inside each such cases, the option 1 field ( bits 19 .. 22 ) further
+// qualifies an instruction.
 //
 //----------------------------------------------------------------------------------------
 void T64Processor::instrExecute( ) {

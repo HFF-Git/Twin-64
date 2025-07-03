@@ -52,6 +52,18 @@ const   int64_t IO_MEM_LIMIT    = 0xFFFFFFFF;
 //
 //
 //----------------------------------------------------------------------------------------
+enum AccRights : int {
+
+    ACC_NONE        = 0,
+    ACC_READ_ONLY   = 1,
+    ACC_READ_WRITE  = 2,
+    ACC_EXECUTE     = 3
+};
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
 enum TrapCode : int {
     
     NO_TRAP                 = 0,
@@ -113,7 +125,7 @@ enum ControlRegId : int {
 };
 
 //----------------------------------------------------------------------------------------
-// Instruction groups and opcode families. Instrcutions are decoded in three fields. 
+// Instruction groups and opcode families. Instructions are decoded in three fields. 
 // The first two bits contain the instruction group. Next are 4 bits for opcode family. 
 // Finally, bits 19..21 are further qualifying the instruction.
 //

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------
-#  #  CMAKE File
+#  CMAKE File
 #  Copyright (C) 2025 - 2025  Helmut Fieres
 # ----------------------------------------------------------------------------------------
 project( Twin64-Simulator )
@@ -13,6 +13,10 @@ add_executable( ${PROJECT_NAME}
     T64-SimTokenizer.cpp
     T64-SimExprEvaluator.cpp
     T64-SimEnvVars.cpp
+    T64-SimWinBaseClasses.cpp
+   T64-SimWinClasses.cpp
+   T64-SimWinCmd.cpp
+   T64-SimWinDisplay.cpp
 )
 
 target_link_libraries( ${PROJECT_NAME} PRIVATE 

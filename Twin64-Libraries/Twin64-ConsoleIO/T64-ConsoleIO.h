@@ -77,15 +77,15 @@
 //
 //  FMT_USE_ACTUAL_ATTR -> Use previously established settings.
 //    
-//  FMT_BG_COL_DEF      -> Set default background color seting.
-//  FMT_BG_COL_RED      -> Set RED background color seting.
-//  FMT_BG_COL_GREEN    -> Set GREEN background color seting.
-//  FMT_BG_COL_YELLOW   -> Set YELLOW background color seting.
+//  FMT_BG_COL_DEF      -> Set default background color setting.
+//  FMT_BG_COL_RED      -> Set RED background color setting.
+//  FMT_BG_COL_GREEN    -> Set GREEN background color setting.
+//  FMT_BG_COL_YELLOW   -> Set YELLOW background color setting.
 //    
-//  FMT_FG_COL_DEF      -> Set default foreground color seting.
-//  FMT_FG_COL_RED      -> Set RED foreground color seting.
-//  FMT_FG_COL_GREEN    -> Set GREEN foreground color seting.
-//  FMT_FG_COL_YELLOW   -> Set YELLOW foreground color seting.
+//  FMT_FG_COL_DEF      -> Set default foreground color setting.
+//  FMT_FG_COL_RED      -> Set RED foreground color setting.
+//  FMT_FG_COL_GREEN    -> Set GREEN foreground color setting.
+//  FMT_FG_COL_YELLOW   -> Set YELLOW foreground color setting.
 //
 //  FMT_DEC             -> Print numeric data as decimal "vvvv..."
 //  FMT_HEX_2           -> Print numeric data as "0xvv"
@@ -110,9 +110,9 @@
 //  FMT_DEF_ATTR        -> Use default attributes.
 //
 // Note that some options are encoded in a field as a numeric value, e.g the
-// nuber format, and some options are encoded as indivudal bits which can be
+// number format, and some options are encoded as individual bits which can be
 // used in combination. In any case, the options are ORed to form the final 
-// formrat descriptor.
+// format descriptor.
 // 
 //------------------------------------------------------------------------------
 enum FmtDescOptions : uint32_t {
@@ -193,6 +193,7 @@ struct SimConsoleIO {
     void    clearScrollArea( );
 
     void    setFmtAttributes( uint32_t fmtDesc );
+    int     printfBlanks( int len );
     int     printText( char *text, int len );
     int     printNumber( T64Word val, uint32_t fmtDesc );
     int     numberFmtLen( T64Word val, uint32_t fmtDesc );
