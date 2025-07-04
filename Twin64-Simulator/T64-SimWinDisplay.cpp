@@ -706,14 +706,22 @@ void SimWinDisplay::windowNew( SimTokId winType, char *argStr ) {
         
         switch ( winType ) {
                 
-            case TOK_PM: windowList[ i ] = ( SimWin * ) new SimWinAbsMem( glb ); break;
-            case TOK_PC: windowList[ i ] = ( SimWin * ) new SimWinCode( glb ); break;
-            case TOK_IT: windowList[ i ] = ( SimWin * ) new SimWinTlb( glb, WT_ITLB_WIN ); break;
-            case TOK_DT: windowList[ i ] = ( SimWin * ) new SimWinTlb( glb, WT_DTLB_WIN ); break;
-            case TOK_IC: windowList[ i ] = ( SimWin * ) new SimWinCache( glb, WT_ICACHE_WIN ); break;
-            case TOK_DC: windowList[ i ] = ( SimWin * ) new SimWinCache( glb, WT_DCACHE_WIN ); break;
-            case TOK_UC: windowList[ i ] = ( SimWin * ) new SimWinCache( glb, WT_UCACHE_WIN ); break;
-            case TOK_TX: windowList[ i ] = ( SimWin * ) new SimWinText( glb, argStr ); break;
+            case TOK_PM: 
+                windowList[ i ] = (SimWin *) new SimWinAbsMem( glb ); break;
+            case TOK_PC: 
+                windowList[ i ] = (SimWin *) new SimWinCode( glb ); break;
+            case TOK_IT: 
+                windowList[ i ] = (SimWin *) new SimWinTlb( glb, WT_ITLB_WIN ); break;
+            case TOK_DT: 
+                windowList[ i ] = (SimWin *) new SimWinTlb( glb, WT_DTLB_WIN ); break;
+            case TOK_IC: 
+                windowList[ i ] = (SimWin *) new SimWinCache( glb, WT_ICACHE_WIN ); break;
+            case TOK_DC: 
+                windowList[ i ] = (SimWin *) new SimWinCache( glb, WT_DCACHE_WIN ); break;
+            case TOK_UC: 
+                windowList[ i ] = (SimWin *) new SimWinCache( glb, WT_UCACHE_WIN ); break;
+            case TOK_TX: 
+                windowList[ i ] = (SimWin *) new SimWinText( glb, argStr ); break;
             
             default: return;
         }

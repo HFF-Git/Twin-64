@@ -193,7 +193,7 @@ struct SimConsoleIO {
     void    clearScrollArea( );
 
     void    setFmtAttributes( uint32_t fmtDesc );
-    int     printfBlanks( int len );
+    int     printBlanks( int len );
     int     printText( char *text, int len );
     int     printNumber( T64Word val, uint32_t fmtDesc );
     int     numberFmtLen( T64Word val, uint32_t fmtDesc );

@@ -267,7 +267,7 @@ void SimWinProgState::drawBody( ) {
 
         // ??? issue. these routines do not know anything about the cursor pos---
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -277,7 +277,7 @@ void SimWinProgState::drawBody( ) {
     for ( int i = 4; i < 8; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -287,7 +287,7 @@ void SimWinProgState::drawBody( ) {
     for ( int i = 8; i < 12; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -297,7 +297,7 @@ void SimWinProgState::drawBody( ) {
     for ( int i = 12; i < 16; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -372,7 +372,7 @@ void SimWinSpecialRegs::drawBody( ) {
     for ( int i = 0; i < 4; i++ ) {
 
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -382,7 +382,7 @@ void SimWinSpecialRegs::drawBody( ) {
     for ( int i = 4; i < 8; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -392,7 +392,7 @@ void SimWinSpecialRegs::drawBody( ) {
     for ( int i = 8; i < 12; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -402,7 +402,7 @@ void SimWinSpecialRegs::drawBody( ) {
     for ( int i = 12; i < 16; i++ ) {
         
         glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printfBlanks( 2 );
+        glb -> console -> printBlanks( 2 );
     }
 
     padLine( fmtDesc );
@@ -560,9 +560,8 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 // ??? need to rework for virtual addresses ? We need to work with segment and offset !!!!
 //----------------------------------------------------------------------------------------
 SimWinCode::SimWinCode( SimGlobals *glb ) : SimWinScrollable( glb ) {
-    
-    // ??? perhaps at GLB level already allocated...
-    //  disAsm = new SimDisAsm( );
+
+    disAsm = new T64DisAssemble( );
 }
 
 //----------------------------------------------------------------------------------------

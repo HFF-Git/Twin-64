@@ -367,6 +367,16 @@ void SimConsoleIO::clearScrollArea( ) {
     writeChars((char *) "\x1b[r" );
 }
 
+
+
+
+
+
+
+
+// ??? maybe no the best place ... I need to be able to serve the output buffer...
+
+
 //----------------------------------------------------------------------------------------
 // Console output is also used to print out window forms. A window will consist of lines
 // with lines having fields on them. A field has a set of attributes such as foreground
@@ -403,12 +413,13 @@ void SimConsoleIO::setFmtAttributes( uint32_t fmtDesc ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Just emit blanks.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::printfBlanks( int len ) {
+int SimConsoleIO::printBlanks( int len ) {
 
     for ( int i = 0; i < len; i++ ) writeChar( ' ' );
+    return( len );
 }
 
 //----------------------------------------------------------------------------------------

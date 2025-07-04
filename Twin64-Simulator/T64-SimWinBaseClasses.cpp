@@ -41,21 +41,6 @@ int setRadix( int rdx ) {
     return((( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
 }
 
-//----------------------------------------------------------------------------------------
-// Routine to figure out what size we need for a numeric word in a given radix. 
-// Decimals needs 10 digits and hexadecimals need 10 digits. For a 16-bit word, 
-// the numbers are reduced to 5 and 6.
-//
-// ??? rework for 64-bit...
-//----------------------------------------------------------------------------------------
-int strlenForNum( int rdx, bool halfWord ) {
-    
-    if      ( rdx == 10 ) return(( halfWord ) ? 5 : 10 );
-    else if ( rdx == 8  ) return(( halfWord ) ? 7 : 12 );
-    else if ( rdx == 16 ) return(( halfWord ) ? 6 : 10 );
-    else return( 10 );
-}
-
 }; // namespace
 
 
@@ -76,75 +61,32 @@ SimWin:: ~SimWin( ) { }
 // Getter/Setter methods for window attributes.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::setWinType( int arg ) { 
-    
-    winType = arg; 
-}
+int  SimWin::getWinType( )              { return( winType ); }
+void SimWin::setWinType( int arg )      { winType = arg; }
 
-int SimWin::getWinType( ) { 
-    
-    return( winType ); 
-}
+int SimWin::getWinIndex( )              { return( winUserIndex ); }
+void SimWin::setWinIndex( int arg )     { winUserIndex = arg; }
 
-void SimWin::setWinIndex( int arg ) { 
-    
-    winUserIndex = arg; 
-}
+bool SimWin::isEnabled( )               { return( winEnabled ); }
+void SimWin::setEnable( bool arg )      { winEnabled = arg; }
 
-int SimWin::getWinIndex( ) { 
-    
-    return( winUserIndex ); 
-}
-
-void SimWin::setEnable( bool arg ) { 
-    
-    winEnabled = arg; 
-}
-
-bool SimWin::isEnabled( ) { 
-    
-    return( winEnabled ); 
-}
-
-void SimWin::setRows( int arg ) { 
+int SimWin::getRows( )                  { return( winRows ); }
+void SimWin::setRows( int arg )         { 
     
     winRows = (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
 }
 
-int SimWin::getRows( ) { 
+int SimWin::getColumns( )               { return( winColumns ); }
+void SimWin::setColumns( int arg )      { 
     
-    return( winRows ); 
+    winColumns = (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
 }
 
-void SimWin::setColumns( int arg ) { 
-    
-    winColumns = arg; 
-}
+int SimWin::getRadix( )                 { return( winRadix ); }
+void SimWin::setRadix( int rdx )        { winRadix = ::setRadix( rdx ); }
 
-int SimWin::getColumns( ) { 
-    
-    return( winColumns ); 
-}
-
-void SimWin::setRadix( int rdx ) { 
-    
-    winRadix = ::setRadix( rdx ); 
-}
-
-int SimWin::getRadix( ) { 
-    
-    return( winRadix ); 
-}
-
-int SimWin::getWinStack( ) { 
-    
-    return( winStack ); 
-}
-
-void SimWin::setWinStack( int wCol ) { 
-    
-    winStack = wCol; 
-}
+int SimWin::getWinStack( )              {  return( winStack ); }
+void SimWin::setWinStack( int wCol )    { winStack = wCol; }
 
 int SimWin::getDefColumns( int rdx ) {
     
@@ -185,9 +127,9 @@ void SimWin::setWinOrigin( int row, int col ) {
 // "setWinCursor" sets the cursor to a windows relative position if row and column are
 // non-zero. If they are zero, the last relative cursor position is used. The final
 // absolute position is computed from the windows absolute row and column on the 
-// terminal screen plus the window relative row and column.
+// terminal screen plus the window relative row and column. Rows and numbers are values
+// starting with 1.
 //
-// comment on row numbering ... ?
 //----------------------------------------------------------------------------------------
 void SimWin::setWinCursor( int row, int col ) {
     
@@ -210,7 +152,7 @@ int SimWin::getWinCursorCol( ) { return( lastColPos ); }
 // Fields that have a larger size than the actual argument length in the field need to
 // be padded left or right. This routine is just a simple loop emitting blanks in the
 // current format set.
-// ??? put in console class ?
+//
 //----------------------------------------------------------------------------------------
 void SimWin::padField( int dLen, int fLen ) {
     
@@ -251,17 +193,11 @@ void SimWin::printNumericField( T64Word val,
         if ( fmtDesc & FMT_ALIGN_LFT ) {
 
             glb -> console -> printNumber( val, fmtDesc );
-
-            if ( fLen > maxLen ) 
-                glb -> console -> printfBlanks( fLen - maxLen );
-           // padField( maxLen, fLen );
+            padField( maxLen, fLen );
         }
         else {
             
-            if ( fLen > maxLen ) 
-                glb -> console -> printfBlanks( fLen - maxLen );
-           // padField( maxLen, fLen );
-
+            padField( maxLen, fLen );
             glb -> console -> printNumber( val, fmtDesc );
         }
     }
@@ -306,17 +242,12 @@ void SimWin::printTextField( char *text,
         if ( fmtDesc & FMT_ALIGN_LFT ) {
             
             glb -> console -> printText( text, dLen );
-            if ( fLen > dLen ) 
-                glb -> console -> printfBlanks( fLen - dLen );
-           // padField( dLen, fLen );
+            padField( dLen, fLen );
            
         }
         else {
             
-             if ( fLen > dLen ) 
-                glb -> console -> printfBlanks( fLen - dLen );
-           // padField( dLen, fLen );
-
+            padField( dLen, fLen );
             glb -> console -> printText( text, dLen );
         }
     }
@@ -398,11 +329,7 @@ void SimWin::printWindowIdField( int stack,
 void SimWin::padLine( uint32_t fmtDesc ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
-
-     if ( winColumns > lastColPos ) 
-                glb -> console -> printfBlanks( winColumns - lastColPos );
-        
-    // padField( lastColPos, winColumns );
+    padField( lastColPos, winColumns );
 }
 
 //----------------------------------------------------------------------------------------
@@ -416,7 +343,6 @@ void SimWin::clearField( int len, uint32_t fmtDesc ) {
     if ( pos + len > winColumns ) len = winColumns - pos;
     
     glb -> console -> setFmtAttributes( fmtDesc );
-    
     padField( lastColPos, lastColPos + len );
     
     setWinCursor( 0,  pos );
@@ -459,45 +385,18 @@ SimWinScrollable::SimWinScrollable( SimGlobals *glb ) : SimWin( glb ) { }
 // Getter/Setter methods for scrollable window attributes.
 //
 //----------------------------------------------------------------------------------------
-void SimWinScrollable::setHomeItemAdr( T64Word adr ) { 
-    
-    homeItemAdr = adr; 
-}
+T64Word SimWinScrollable::getHomeItemAdr( )                 { return( homeItemAdr ); }
+void    SimWinScrollable::setHomeItemAdr( T64Word adr )     { homeItemAdr = adr; }
 
-T64Word SimWinScrollable::getHomeItemAdr( ) { 
-    
-    return( homeItemAdr ); 
-}
+T64Word SimWinScrollable::getCurrentItemAdr( )              { return( currentItemAdr ); }
+void    SimWinScrollable::setCurrentItemAdr( T64Word adr )  { currentItemAdr = adr; }
 
-void SimWinScrollable::setCurrentItemAdr( T64Word adr ) { 
-    
-    currentItemAdr = adr; 
-}
+T64Word SimWinScrollable::getLimitItemAdr( )                { return( limitItemAdr ); }
+void    SimWinScrollable::setLimitItemAdr( T64Word adr )    { limitItemAdr = adr; }
 
-T64Word SimWinScrollable::getCurrentItemAdr( ) { 
-    
-    return( currentItemAdr ); 
-}
+T64Word SimWinScrollable::getLineIncrement( )               { return( lineIncrement ); }
+void    SimWinScrollable::setLineIncrement( T64Word arg )   { lineIncrement = arg; }
 
-void SimWinScrollable::setLimitItemAdr( T64Word adr ) { 
-    
-    limitItemAdr = adr; 
-}
-
-T64Word SimWinScrollable::getLimitItemAdr( ) { 
-    
-    return( limitItemAdr ); 
-}
-
-void SimWinScrollable::setLineIncrement( T64Word arg ) { 
-    
-    lineIncrement = arg; 
-}
-
-T64Word SimWinScrollable::getLineIncrement( ) { 
-    
-    return( lineIncrement ); 
-}
 
 //----------------------------------------------------------------------------------------
 // The scrollable window inherits from the general window. While the banner part of
@@ -698,9 +597,8 @@ int SimWinOutBuffer::printChars( const char *format, ... ) {
 //----------------------------------------------------------------------------------------
 void SimWinOutBuffer::scrollUp( int lines ) {
     
-    int oldestValid = 
-        ( topIndex - ( MAX_WIN_OUT_LINES - lines ) + MAX_WIN_OUT_LINES )
-                         % MAX_WIN_OUT_LINES;
+    int oldestValid   = ( topIndex - ( MAX_WIN_OUT_LINES - lines ) + MAX_WIN_OUT_LINES )
+                          % MAX_WIN_OUT_LINES;
 
     int scrollUpLimit = ( oldestValid + screenSize ) % MAX_WIN_OUT_LINES;
     
@@ -723,21 +621,16 @@ void SimWinOutBuffer::scrollDown( int lines ) {
 //----------------------------------------------------------------------------------------
 // For printing the output buffer lines, we will get a line pointer relative to the 
 // actual cursor. In the typical case the cursor is identical with the top if the 
-// output buffer. If it was moved, the we just get the lines from that position. The
-// line argument is referring to the nth line below the cursor.
+// output buffer. If it was moved, the we just get the lines from that actual position.
+// The line argument is referring to the nth line below the cursor.
 //
 //----------------------------------------------------------------------------------------
 char *SimWinOutBuffer::getLineRelative( int lineBelowTop ) {
     
-    int lineToGet = 
-            ( cursorIndex + MAX_WIN_OUT_LINES - lineBelowTop ) % MAX_WIN_OUT_LINES;
+    int lineToGet = ( cursorIndex + MAX_WIN_OUT_LINES - lineBelowTop ) 
+                    % MAX_WIN_OUT_LINES;
 
     return( &buffer[ lineToGet ][ 0 ] );
-}
-
-void SimWinOutBuffer::resetLineCursor( ) {
-    
-    cursorIndex = topIndex;
 }
 
 int SimWinOutBuffer::getCursorIndex( ) {
@@ -750,7 +643,17 @@ int SimWinOutBuffer::getTopIndex( ) {
     return( topIndex );
 }
 
+void SimWinOutBuffer::resetLineCursor( ) {
+    
+    cursorIndex = topIndex;
+}
+
 void SimWinOutBuffer::setScrollWindowSize( int size ) {
     
     screenSize = size;
 }
+
+
+// ??? should the print routines rather be here ?
+// ??? but i also need them for the banner line ....
+// ??? a separate file ?

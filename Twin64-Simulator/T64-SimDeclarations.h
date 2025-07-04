@@ -608,10 +608,7 @@ struct SimExpr {
         T64Word val;
         bool    bVal;  
         char    *str;
-        
-      //  SimTokId    tokId;   // ??? needed ?
-      //  struct {    uint32_t    adr;                        };
-       
+
     } u;
 };
 
@@ -800,7 +797,6 @@ struct SimWinOutBuffer {
     int         charPos     = 0; // Current character position in the line.
 };
 
-
 //----------------------------------------------------------------------------------------
 // The "SimWin" class. The simulator will in screen mode feature a set of stacks each 
 // with a list of screen sub windows. The default is one stack, the general register
@@ -873,6 +869,7 @@ struct SimWin {
                                         int col = 0 );
     
     void            padLine( uint32_t fmtDesc = 0 );
+    void            padField( int dLen, int fLen );
     void            clearField( int len, uint32_t fmtDesc = 0 ); 
     
     void            reDraw( );
@@ -886,8 +883,6 @@ struct SimWin {
     
     SimGlobals      *glb;
    
-    void            padField( int dLen, int fLen );
-    
     private:
     
     int             winType             = TOK_NIL;
@@ -960,7 +955,7 @@ struct SimWinScrollable : SimWin {
 //----------------------------------------------------------------------------------------
 struct SimWinProgState : SimWin {
     
-public:
+    public:
     
     SimWinProgState( SimGlobals *glb );
     
@@ -976,7 +971,7 @@ public:
 //----------------------------------------------------------------------------------------
 struct SimWinSpecialRegs : SimWin {
     
-public:
+    public:
     
     SimWinSpecialRegs( SimGlobals *glb );
     
@@ -995,7 +990,7 @@ public:
 //----------------------------------------------------------------------------------------
 struct SimWinAbsMem : SimWinScrollable {
     
-public:
+        public:
     
     SimWinAbsMem( SimGlobals *glb );
     
@@ -1013,7 +1008,7 @@ public:
 //----------------------------------------------------------------------------------------
 struct SimWinCode : SimWinScrollable {
     
-public:
+    public:
     
     SimWinCode( SimGlobals *glb );
     
@@ -1021,10 +1016,9 @@ public:
     void drawBanner( );
     void drawLine( T64Word index );
     
-private:
-    
-    // may go away...
-   //  SimDisAsm *disAsm = nullptr;
+    private:
+
+    T64DisAssemble *disAsm = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1033,7 +1027,7 @@ private:
 //----------------------------------------------------------------------------------------
 struct SimWinTlb : SimWinScrollable {
     
-public:
+    public:
     
     SimWinTlb( SimGlobals *glb, int winType );
     
@@ -1042,10 +1036,9 @@ public:
     void drawBanner( );
     void drawLine( T64Word index );
     
-private:
+    private:
     
-    int           winType = 0;
-    // CpuTlb        *tlb    = nullptr;
+    int winType = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1056,7 +1049,7 @@ private:
 //----------------------------------------------------------------------------------------
 struct SimWinCache : SimWinScrollable {
     
-public:
+    public:
     
     SimWinCache( SimGlobals *glb, int winType );
     
@@ -1066,11 +1059,10 @@ public:
     void drawBanner( );
     void drawLine( T64Word index );
     
-private:
+    private:
     
     int     winType         = 0;
     int     winToggleVal    = 0;
-   //  CpuMem  *cPtr           = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1081,7 +1073,7 @@ private:
 //----------------------------------------------------------------------------------------
 struct SimWinText : SimWinScrollable {
     
-public:
+    public:
     
     SimWinText( SimGlobals *glb, char *fName );
     ~ SimWinText( );
@@ -1090,7 +1082,7 @@ public:
     void    drawBanner( );
     void    drawLine( T64Word index );
     
-private:
+    private:
 
     bool    openTextFile( );
     int     readTextFileLine( int linePos, char *lineBuf, int bufLen );
@@ -1164,8 +1156,10 @@ private:
     void            acceptRparen( );
     
     void            displayInvalidWord( int rdx );
-    void            displayWord( uint32_t val, int rdx = 16 );
+
+    void            displayWord( uint32_t val, int rdx = 16 );   // ??? remove ?
     void            displayHalfWord( uint32_t val, int rdx = 16 );
+    
     void            displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx = 16 );
     void            displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, int rdx = 16 );
     
@@ -1232,6 +1226,8 @@ private:
     SimExprEvaluator    *eval           = nullptr;
     SimWinOutBuffer     *winOut         = nullptr;
     SimCommandsWin      *cmdWin         = nullptr;
+    T64Assemble         *inlineAsm      = nullptr;
+    T64DisAssemble      *disAsm         = nullptr;   
     SimTokId            currentCmd      = TOK_NIL;
    
 };
@@ -1326,9 +1322,6 @@ struct SimGlobals {
 
     T64Assemble         *inlineAsm      = nullptr;
     T64DisAssemble      *disAsm         = nullptr;
-
-    
-    // ??? inline assembler object ?
 
   //  CpuCore             *cpu            = nullptr;
 };

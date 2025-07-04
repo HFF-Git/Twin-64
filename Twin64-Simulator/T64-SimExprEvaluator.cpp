@@ -503,7 +503,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
               
                 case TYP_STR:   strcpy( rExpr -> str, entry -> u.str );     break;
                 
-                default: fprintf( stdout, "**** uncaptured type in factor, fix ... \n" );
+                default: fprintf( stdout, "**** un-captured type in factor, fix ... \n" );
             }
         }
         else throw( ERR_ENV_VAR_NOT_FOUND );
