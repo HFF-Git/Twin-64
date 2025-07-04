@@ -1183,7 +1183,7 @@ void SimWinConsole::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimWinConsole::putChar( char ch ) {
     
-    winOut -> printChar( ch );
+    winOut -> writeChar( ch );
 }
 
 

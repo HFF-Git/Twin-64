@@ -68,8 +68,7 @@
 
 #include "T64-Common.h"
 
-// ??? should this become part of console IO ?
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Format descriptor for putting out a field. The options are simply ORed. The 
 // idea is that a format descriptor can be assembled once and used for many 
 // fields. A value of zero will indicate to simply use the previously 
@@ -114,7 +113,7 @@
 // used in combination. In any case, the options are ORed to form the final 
 // format descriptor.
 // 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum FmtDescOptions : uint32_t {
     
     FMT_USE_ACTUAL_ATTR = 0x0,
@@ -153,17 +152,51 @@ enum FmtDescOptions : uint32_t {
     FMT_DEF_ATTR        = 0x10000000
 };
 
+//----------------------------------------------------------------------------------------
+// The formatter abstract class contains all the routines the generate the output 
+// characters, including escape sequences and so on. It is used by the console I/O 
+// written to the terminal screen but also the output window buffer used for the command
+// and console window of the simulator.
+//
+//----------------------------------------------------------------------------------------
+struct SimFormatter {
+
+    virtual int     writeChar( const char ch ) = 0;
+    virtual int     writeChars( const char *format, ... ) = 0;
+    
+    void            writeCarriageReturn( );
+    void            eraseChar( );
+    void            writeCursorLeft( );
+    void            writeCursorRight( );
+    void            writeScrollUp( int n );
+    void            writeScrollDown( int n );
+    void            writeCharAtLinePos( int ch, int pos );
+  
+    void            clearScreen( );
+    void            clearLine( );
+    void            setAbsCursor( int row, int col );
+    void            setWindowSize( int row, int col );
+    void            setScrollArea( int start, int end );
+    void            clearScrollArea( );
+
+    void            setFmtAttributes( uint32_t fmtDesc );
+    int             printBlanks( int len );
+    int             printText( char *text, int len );
+    int             printNumber( T64Word val, uint32_t fmtDesc );
+    int             numberFmtLen( T64Word val, uint32_t fmtDesc );
+
+};
 
 //----------------------------------------------------------------------------------------
 // Console IO object. The simulator is a character based interface. The typical terminal
 // IO functionality such as buffered data input and output needs to be disabled. We run
-// a bare bone console so to speak.There are two modes. In the first mode, the simulator
+// a bare bone console so to speak. There are two modes. In the first mode, the simulator
 // runs and all IO is for command lines, windows and so on. When control is given to the
 // CPU code, the console IO is mapped to a virtual console configured in the IO address
 // space. This interface will also write and read a character at a time.
 //
 //----------------------------------------------------------------------------------------
-struct SimConsoleIO {
+struct SimConsoleIO : SimFormatter {
     
     public:
     
@@ -174,29 +207,10 @@ struct SimConsoleIO {
     void    setBlockingMode( bool enabled );
     bool    isConsole( );
     int     readChar( );
-    void    writeChar( char ch  );
-    int     writeChars( const char *format, ... );
-    
-    void    writeCarriageReturn( );
-    void    eraseChar( );
-    void    writeCursorLeft( );
-    void    writeCursorRight( );
-    void    writeScrollUp( int n );
-    void    writeScrollDown( int n );
-    void    writeCharAtLinePos( int ch, int pos );
-  
-    void    clearScreen( );
-    void    clearLine( );
-    void    setAbsCursor( int row, int col );
-    void    setWindowSize( int row, int col );
-    void    setScrollArea( int start, int end );
-    void    clearScrollArea( );
 
-    void    setFmtAttributes( uint32_t fmtDesc );
-    int     printBlanks( int len );
-    int     printText( char *text, int len );
-    int     printNumber( T64Word val, uint32_t fmtDesc );
-    int     numberFmtLen( T64Word val, uint32_t fmtDesc );
+
+    int     writeChar( const char ch  );
+    int     writeChars( const char *format, ... );
     
     private:
     

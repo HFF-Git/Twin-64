@@ -549,7 +549,7 @@ void SimWinOutBuffer::addToBuffer( const char *buf ) {
 // is performed in the "drawBody" routine of the command window.
 //
 //----------------------------------------------------------------------------------------
-int SimWinOutBuffer::printChar( const char ch ) {
+int SimWinOutBuffer::writeChar( const char ch ) {
     
     char buf[ 2 ];
     buf[0] = ch;
@@ -559,7 +559,7 @@ int SimWinOutBuffer::printChar( const char ch ) {
     return 1;
 }
 
-int SimWinOutBuffer::printChars( const char *format, ... ) {
+int SimWinOutBuffer::writeChars( const char *format, ... ) {
     
     char    lineBuf[ MAX_WIN_OUT_LINE_SIZE ];
     va_list args;
@@ -653,7 +653,3 @@ void SimWinOutBuffer::setScrollWindowSize( int size ) {
     screenSize = size;
 }
 
-
-// ??? should the print routines rather be here ?
-// ??? but i also need them for the banner line ....
-// ??? a separate file ?

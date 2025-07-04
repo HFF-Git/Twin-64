@@ -654,14 +654,14 @@ void SimCommandsWin::cmdLineError( SimErrMsgId errNum, char *argStr ) {
         
         if ( errMsgTab[ i ].errNum == errNum ) {
             
-            winOut -> printChars( "%s\n", errMsgTab[ i ].errStr );
+            winOut -> writeChars( "%s\n", errMsgTab[ i ].errStr );
             return;
         }
     }
     
-    winOut -> printChars( "Error: %d", errNum );
-    if ( argStr != nullptr )  winOut -> printChars( "%32s", argStr );
-    winOut -> printChars( "/n" );
+    winOut -> writeChars( "Error: %d", errNum );
+    if ( argStr != nullptr )  winOut -> writeChars( "%32s", argStr );
+    winOut -> writeChars( "/n" );
 }
 
 //----------------------------------------------------------------------------------------
@@ -683,7 +683,7 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
     }
     else ret = 0;
     
-    winOut -> printChars( "%s\n", buf );
+    winOut -> writeChars( "%s\n", buf );
     return( ret );
 }
 
@@ -724,9 +724,9 @@ void SimCommandsWin::acceptRparen( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayInvalidWord( int rdx ) {
     
-    if      ( rdx == 10 )   winOut -> printChars( "**********" );
-    else if ( rdx == 16 )   winOut -> printChars( "**********" );
-    else                    winOut -> printChars( "**num**" );
+    if      ( rdx == 10 )   winOut -> writeChars( "**********" );
+    else if ( rdx == 16 )   winOut -> writeChars( "**********" );
+    else                    winOut -> writeChars( "**num**" );
 }
 
 // ??? phase out ....
@@ -738,13 +738,13 @@ void SimCommandsWin::displayInvalidWord( int rdx ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayWord( uint32_t val, int rdx ) {
     
-    if      ( rdx == 10 )  winOut -> printChars( "%10d", val );
+    if      ( rdx == 10 )  winOut -> writeChars( "%10d", val );
     else if ( rdx == 16 )  {
         
-        if ( val == 0 ) winOut -> printChars( "0x00000000" );
-        else winOut -> printChars( "%#010x", val );
+        if ( val == 0 ) winOut -> writeChars( "0x00000000" );
+        else winOut -> writeChars( "%#010x", val );
     }
-    else winOut -> printChars( "**num**" );
+    else winOut -> writeChars( "**num**" );
 }
 
 // ??? phase out ....
@@ -756,13 +756,13 @@ void SimCommandsWin::displayWord( uint32_t val, int rdx ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayHalfWord( uint32_t val, int rdx ) {
     
-    if      ( rdx == 10 )  winOut -> printChars( "%5d", val );
+    if      ( rdx == 10 )  winOut -> writeChars( "%5d", val );
     else if ( rdx == 16 )  {
         
-        if ( val == 0 ) winOut -> printChars( "0x0000" );
-        else            winOut -> printChars( "%#05x", val );
+        if ( val == 0 ) winOut -> writeChars( "0x0000" );
+        else            winOut -> writeChars( "%#05x", val );
     }
-    else winOut -> printChars( "**num**" );
+    else winOut -> writeChars( "**num**" );
 }
 
 
@@ -791,7 +791,7 @@ void  SimCommandsWin::displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx 
     while ( index < limit ) {
         
         displayWord( index, rdx );
-        winOut -> printChars( ": " );
+        winOut -> writeChars( ": " );
         
         for ( uint32_t i = 0; i < wordsPerLine; i++ ) {
             
@@ -814,15 +814,15 @@ void  SimCommandsWin::displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx 
                 #endif
             }
             
-            winOut -> printChars( " " );
+            winOut -> writeChars( " " );
             
             index += 4;
         }
         
-        winOut -> printChars( "\n" );
+        winOut -> writeChars( "\n" );
     }
     
-    winOut -> printChars( "\n" );
+    winOut -> writeChars( "\n" );
 }
 
 //----------------------------------------------------------------------------------------
@@ -844,7 +844,7 @@ void  SimCommandsWin::displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, in
     while ( index < limit ) {
         
         displayWord( index, rdx );
-        winOut -> printChars( ": " );
+        winOut -> writeChars( ": " );
         
         #if 0
         if (( physMem != nullptr ) && ( physMem -> validAdr( index ))) {
@@ -862,12 +862,12 @@ void  SimCommandsWin::displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, in
         else displayInvalidWord( rdx );
         #endif
         
-        winOut -> printChars( "\n" );
+        winOut -> writeChars( "\n" );
         
         index += 4;
     }
     
-    winOut -> printChars( "\n" );
+    winOut -> writeChars( "\n" );
 }
 
 #if 0
@@ -1024,14 +1024,14 @@ void SimCommandsWin::printWelcome( ) {
     
     if ( glb -> console -> isConsole( )) {
         
-        winOut -> printChars( "VCPU-32 Simulator, Version: %s, Patch Level: %d\n",
+        winOut -> writeChars( "VCPU-32 Simulator, Version: %s, Patch Level: %d\n",
                              glb -> env -> getEnvVarStr((char *) ENV_PROG_VERSION ),
                              glb -> env -> getEnvVarStr((char *) ENV_PATCH_LEVEL ));
         
-        winOut -> printChars( "Git Branch: %s\n",
+        winOut -> writeChars( "Git Branch: %s\n",
                              glb -> env -> getEnvVarStr((char *) ENV_GIT_BRANCH ));
         
-        winOut -> printChars( "\n" );
+        winOut -> writeChars( "\n" );
     }
 }
 
@@ -1055,7 +1055,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 // routine is used by the "XF" command and also as the handler for the program argument
 // option to execute a file before entering the command loop.
 //
-// XF "<filepath>"
+// XF "<file-path>"
 //
 // ??? which error would we like to report here vs. pass on to outer command loop ?
 //----------------------------------------------------------------------------------------
@@ -1078,7 +1078,7 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
                     
                     if ( glb -> env -> getEnvVarBool((char *) ENV_ECHO_CMD_INPUT )) {
                         
-                        winOut -> printChars( "%s\n", cmdLineBuf );
+                        winOut -> writeChars( "%s\n", cmdLineBuf );
                     }
                     
                     removeComment( cmdLineBuf );
@@ -1096,7 +1096,7 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
                 
             case ERR_OPEN_EXEC_FILE: {
                 
-                winOut -> printChars( "Error in opening file: \"%s\"", fileName );
+                winOut -> writeChars( "Error in opening file: \"%s\"", fileName );
                 
             } break;
                 
@@ -1121,11 +1121,11 @@ void SimCommandsWin::helpCmd( ) {
         for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
             
             if ( cmdHelpTab[ i ].helpTypeId == TYP_CMD )
-                winOut -> printChars( FMT_STR_SUMMARY, 
+                winOut -> writeChars( FMT_STR_SUMMARY, 
                     cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
         }
         
-        winOut -> printChars( "\n" );
+        winOut -> writeChars( "\n" );
     }
     else if (( tok -> isTokenTyp( TYP_CMD  )) ||
              ( tok -> isTokenTyp( TYP_WCMD )) ||
@@ -1138,22 +1138,22 @@ void SimCommandsWin::helpCmd( ) {
             for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
                 if ( cmdHelpTab[ i ].helpTypeId == TYP_CMD )
-                    winOut -> printChars( FMT_STR_SUMMARY, 
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
                         cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
             }
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         else if ( tok -> isToken( WCMD_SET )) {
             
             for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
                 if ( cmdHelpTab[ i ].helpTypeId == TYP_WCMD )
-                    winOut -> printChars( FMT_STR_SUMMARY, 
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
                         cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
             }
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         else if ( tok -> isToken( REG_SET )) {
             
@@ -1161,11 +1161,11 @@ void SimCommandsWin::helpCmd( ) {
                 
                 if ( cmdHelpTab[ i ].helpTypeId == TYP_RSET )
                     
-                    winOut -> printChars( FMT_STR_SUMMARY, 
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
                         cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
             }
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         else if ( tok -> isToken( WTYPE_SET )) {
             
@@ -1173,22 +1173,22 @@ void SimCommandsWin::helpCmd( ) {
                 
                 if ( cmdHelpTab[ i ].helpTypeId == TYP_WTYP )
                     
-                    winOut -> printChars( FMT_STR_SUMMARY, 
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
                         cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
             }
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         else if ( tok -> isToken( PF_SET )) {
             
             for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
                 if ( cmdHelpTab[ i ].helpTypeId == TYP_P_FUNC )
-                    winOut -> printChars( FMT_STR_SUMMARY, 
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
                         cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
             }
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         else {
             
@@ -1196,7 +1196,7 @@ void SimCommandsWin::helpCmd( ) {
                 
                 if ( cmdHelpTab[ i ].helpTokId == tok -> tokId( )) {
                     
-                    winOut -> printChars( FMT_STR_DETAILS, 
+                    winOut -> writeChars( FMT_STR_DETAILS, 
                         cmdHelpTab[ i ].cmdSyntaxStr, cmdHelpTab[ i ].helpStr );
                 }
             }
@@ -1340,7 +1340,7 @@ void SimCommandsWin::resetCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::runCmd( ) {
     
-    winOut -> printChars( "RUN command to come ... \n");
+    winOut -> writeChars( "RUN command to come ... \n");
 }
 
 //----------------------------------------------------------------------------------------
@@ -1414,21 +1414,21 @@ void SimCommandsWin::writeLineCmd( ) {
             
         case TYP_BOOL: {
             
-            if ( rExpr.u.bVal == true ) winOut -> printChars( "TRUE\n" );
-            else                        winOut -> printChars( "FALSE\n" );
+            if ( rExpr.u.bVal == true ) winOut -> writeChars( "TRUE\n" );
+            else                        winOut -> writeChars( "FALSE\n" );
             
         } break;
             
         case TYP_NUM: {
             
             displayWord( rExpr.u.val, rdx );
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
             
         } break;
             
         case TYP_STR: {
             
-            winOut -> printChars( "\"%s\"\n", rExpr.u.str );
+            winOut -> writeChars( "\"%s\"\n", rExpr.u.str );
             
         } break;
             
@@ -1464,7 +1464,7 @@ void SimCommandsWin::histCmd( ) {
         char *cmdLine = hist -> getCmdLine( i, &cmdRef );
         
         if ( cmdLine != nullptr )
-            winOut -> printChars( "[%d]: %s\n", cmdRef, cmdLine );
+            winOut -> writeChars( "[%d]: %s\n", cmdRef, cmdLine );
     }
 }
 
@@ -1859,7 +1859,7 @@ void SimCommandsWin::displayTLBCmd( ) {
     if (( index > tlbSize ) || ( index + len > tlbSize )) throw ( ERR_TLB_SIZE_EXCEEDED );
     
   //   displayTlbEntries( tPtr, index, len, rdx );
-    winOut -> printChars( "\n" );
+    winOut -> writeChars( "\n" );
 }
 
 //----------------------------------------------------------------------------------------

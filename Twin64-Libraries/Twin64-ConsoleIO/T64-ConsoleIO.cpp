@@ -267,12 +267,14 @@ int SimConsoleIO::readChar( ) {
 // prints one character at a time.
 //
 //----------------------------------------------------------------------------------------
-void SimConsoleIO::writeChar( char ch  ) {
+int SimConsoleIO::writeChar( char ch  ) {
     
 #if __APPLE__
     write( STDOUT_FILENO, &ch, 1 );
+    return( 1 );
 #else
     _putch( int(ch) );
+    return( 1 );
 #endif
     
 }
@@ -293,36 +295,51 @@ int SimConsoleIO::writeChars( const char *format, ... ) {
     return( len );
 }
 
+
+//****************************************************************************************
+//****************************************************************************************
+//
+// Console IO Formatter routines.
+//
+//----------------------------------------------------------------------------------------
+// The Simulator features two distinct ways of text output. The first is the console
+// I/O where a character will make its way directly to the terminal screen of the 
+// application. The second output mode is a buffered I/O where all characters are 
+// placed in an output buffer consisting of lines of text. When the command or console
+// window is drawn, the text is taken form the this output buffer. Common to both
+// output methods is the formatter.
+//----------------------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------------------
 // Escape code functions.
 //
 //----------------------------------------------------------------------------------------
-void SimConsoleIO::eraseChar( ) {
+void SimFormatter::eraseChar( ) {
     
     writeChars( "\033[D \033[P" );
 }
 
-void SimConsoleIO::writeCursorLeft( ) {
+void SimFormatter::writeCursorLeft( ) {
     
     writeChars( "\033[D" );
 }
 
-void SimConsoleIO::writeCursorRight( ) {
+void SimFormatter::writeCursorRight( ) {
     
     writeChars( "\033[C" );
 }
 
-void SimConsoleIO::writeScrollUp( int n ) {
+void SimFormatter::writeScrollUp( int n ) {
     
     writeChars( "\033[%dS", n );
 }
 
-void SimConsoleIO::writeScrollDown( int n ) {
+void SimFormatter::writeScrollDown( int n ) {
     
     writeChars( "\033[%dT", n );
 }
 
-void SimConsoleIO::writeCarriageReturn( ) {
+void SimFormatter::writeCarriageReturn( ) {
 
     #if __APPLE__
         writeChars( "\n" );
@@ -331,51 +348,41 @@ void SimConsoleIO::writeCarriageReturn( ) {
     #endif
 }
 
-void SimConsoleIO::writeCharAtLinePos( int ch, int pos ) {
+void SimFormatter::writeCharAtLinePos( int ch, int pos ) {
     
     writeChars( "\033[%dG\033[1@%c", pos, ch );
 }
 
-void SimConsoleIO::clearScreen( ) {
+void SimFormatter::clearScreen( ) {
     
     writeChars((char *) "\x1b[2J" );
     writeChars((char *) "\x1b[3J" );
 }
 
-void SimConsoleIO::clearLine( ) {
+void SimFormatter::clearLine( ) {
     
     writeChars((char *) "\x1b[2K" );
 }
 
-void SimConsoleIO::setAbsCursor( int row, int col ) {
+void SimFormatter::setAbsCursor( int row, int col ) {
     
     writeChars((char *) "\x1b[%d;%dH", row, col );
 }
 
-void SimConsoleIO::setWindowSize( int row, int col ) {
+void SimFormatter::setWindowSize( int row, int col ) {
     
     writeChars((char *) "\x1b[8;%d;%dt", row, col );
 }
 
-void SimConsoleIO::setScrollArea( int start, int end ) {
+void SimFormatter::setScrollArea( int start, int end ) {
     
     writeChars((char *) "\x1b[%d;%dr", start, end );
 }
 
-void SimConsoleIO::clearScrollArea( ) {
+void SimFormatter::clearScrollArea( ) {
     
     writeChars((char *) "\x1b[r" );
 }
-
-
-
-
-
-
-
-
-// ??? maybe no the best place ... I need to be able to serve the output buffer...
-
 
 //----------------------------------------------------------------------------------------
 // Console output is also used to print out window forms. A window will consist of lines
@@ -385,7 +392,7 @@ void SimConsoleIO::clearScrollArea( ) {
 // are with their attributes.
 //
 //----------------------------------------------------------------------------------------
-void SimConsoleIO::setFmtAttributes( uint32_t fmtDesc ) {
+void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
     
     if ( fmtDesc != 0 ) {
         
@@ -416,7 +423,7 @@ void SimConsoleIO::setFmtAttributes( uint32_t fmtDesc ) {
 // Just emit blanks.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::printBlanks( int len ) {
+int SimFormatter::printBlanks( int len ) {
 
     for ( int i = 0; i < len; i++ ) writeChar( ' ' );
     return( len );
@@ -427,7 +434,7 @@ int SimConsoleIO::printBlanks( int len ) {
 // range of what the text size could be.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::printText( char *text, int maxLen ) {
+int SimFormatter::printText( char *text, int maxLen ) {
     
     if ( strlen( text ) < maxLen ) {
         
@@ -457,7 +464,7 @@ int SimConsoleIO::printText( char *text, int maxLen ) {
 // with asterisks instead of numbers.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
+int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
 
     switch (( fmtDesc >> 8 ) & 0xF ) {
 
@@ -584,7 +591,7 @@ int SimConsoleIO::printNumber( T64Word val, uint32_t fmtDesc ) {
 // routine returns based on value and format the necessary field length.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
+int SimFormatter::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
 
     switch (( fmtDesc >> 8 ) & 0xF ) {
 
@@ -618,6 +625,3 @@ int SimConsoleIO::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
         default: return( 0 );
     }
 }
-
-
-

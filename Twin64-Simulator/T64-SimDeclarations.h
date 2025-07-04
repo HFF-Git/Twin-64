@@ -115,10 +115,11 @@
 //
 //----------------------------------------------------------------------------------------
 const int MAX_CMD_HIST_BUF_SIZE     = 32;
-const int MAX_WIN_OUT_LINES         = 256;
-const int MAX_WIN_OUT_LINE_SIZE     = 256;
+
 const int MAX_WIN_CMD_LINES         = 64;
 const int CMD_LINE_BUF_SIZE         = 256;
+const int MAX_WIN_OUT_LINES         = 256;
+const int MAX_WIN_OUT_LINE_SIZE     = 256;
 
 const int TOK_STR_SIZE              = 256;
 const int MAX_TOKEN_NAME_SIZE       = 32;
@@ -768,7 +769,7 @@ struct SimCmdHistory {
 // is defined which is manipulated by the cursor up or down routines.
 //
 //----------------------------------------------------------------------------------------
-struct SimWinOutBuffer {
+struct SimWinOutBuffer : SimFormatter {
     
     public:
     
@@ -776,8 +777,8 @@ struct SimWinOutBuffer {
     
     void        initBuffer( );
     void        addToBuffer( const char *data );
-    int         printChars( const char *format, ... );
-    int         printChar( const char ch );
+    int         writeChars( const char *format, ... );
+    int         writeChar( const char ch );
     void        setScrollWindowSize( int size );
     
     void        resetLineCursor( );
