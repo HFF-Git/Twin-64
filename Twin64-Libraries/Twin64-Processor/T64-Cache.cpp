@@ -23,6 +23,21 @@
 //----------------------------------------------------------------------------------------
 #include "T64-Processor.h"
 
+// We:                          Them:
+//                              INV     SHARED      EXCL            MODIFIED                
+
+// READ:        (shared)        -       OK          flush, shared   -
+
+// READ MISS:   (shared)        -       OK          flush, shared   -
+
+// WRITE:       (excl)          -       Purge       flush, purge    flush, purge
+
+// WRITE MISS:  (excl)          -       purge       flush, purge    flush, purge
+
+// FLUSH:                       -
+
+// PRURGE:                      -
+
 //----------------------------------------------------------------------------------------
 //
 //

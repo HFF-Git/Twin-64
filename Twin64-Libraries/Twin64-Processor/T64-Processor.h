@@ -61,11 +61,26 @@ struct T64Cache {
     T64CacheLine    *getCacheLine( int index );
 };
 
+// ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
+
+// ??? createCache( int cacheNum, int cacheSets, int cacheSize, in cacheLineSize );
+
+// ??? for simulator windows
+// ??? readCacheLine( int cacheNum, int cacheSet, int cacheIndex, *cacheLine );
+
+// ??? for CPU
+// ??? readFromCache( int cacheNum, T64Word vAdr, T64Word pAdr, *data, int len );
+// ??? writeToCache( int cacheNum, T64Word vAdr, T64Word pAdr, *data, int len );
+
+// ??? purgeFromCache( int cacheNum, T64Word vAdr, T64Word pAdr );
+// ??? flushFromCache(  int cacheNum, T64Word vAdr, T64Word pAdr );
+
+
 //----------------------------------------------------------------------------------------
-// A CPU needs a TLB. It is vital for address translation. In teh Emulator, we only 
-// need one TLB for both instruction and data. In the real world, we need to mke sure
+// A CPU needs a TLB. It is vital for address translation. In the Emulator, we only 
+// need one TLB for both instruction and data. In the real world, we need to make sure
 // that we can access from both pipeline stages. Our TLB is a simple array of entries,
-// i.e. modelling a full associative array with a LRU replacement policy.
+// i.e. modeling a full associative array with a LRU replacement policy.
 //
 //----------------------------------------------------------------------------------------
 struct T64TlbEntry {
@@ -100,8 +115,16 @@ private:
     T64TlbEntry     *map = nullptr;
 };
 
+// ??? createTlb( int tlbNum, tlbSize ); 
+// ??? purgeTlbEntry( int tlbNum, int index );
+// ??? purgeTlbEntry( int tlbNum, T64Word vAdr );
+// ??? insertTlbEntry( int tlbNum, T64Word info1, T64Word info2 );
+
+
+// ??? can have more than one processor... it is a module too...
+
 //----------------------------------------------------------------------------------------
-// The CPU core executs the instructions.
+// The CPU core executes the instructions.
 //
 //----------------------------------------------------------------------------------------
 struct T64Processor : T64Module {
@@ -172,5 +195,19 @@ private:
     T64Word         cycleCount          = 0;
 };
 
+
+// ??? a call to "step" must run to completion:
+// 
+// STEP
+//      EXEC
+//          SYS.read
+//              ... cache / mem work
+//          end
+//
+//          ... other EXEC work
+//
+//      end
+//
+// end
 
 #endif // T64_Processor_h

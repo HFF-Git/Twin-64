@@ -42,5 +42,29 @@ struct T64Module {
 
 };
 
+// ??? ideas for registers: 
+
+// ??? module HPA has the seg of admin registers. First in HPA.
+
+// 0 - status
+// 1 - command
+// 2 - HPA address
+// 3 - SPA address
+// 4 - SPA len
+// 5 - number of I/O elements
+// 6 - module hardware version 
+// 7 - module software version
+// 8 - interrupt target ( when sending an interrupt -> processor + mask )
+
+// ?? the HPA also has a the IODC, a piece that describes the IO Module and 
+// code to execute module specific functions.
+
+// ??? I/O Element. Allocated in SPA space. Up to 128 bytes in size ->
+// ??? 16 Regs. 
+
+// ??? need for a larger I/O element ?
+
+// SPA can be USER mode too and directly mapped to user segments, etc.
+
 
 #endif // T64_Module_h

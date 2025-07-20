@@ -341,7 +341,7 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
 //----------------------------------------------------------------------------------------
 void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
     
-    // ??? How to distinguish between mem and io ?
+    // ??? How to distinguish between mem and I/O?
     
     try {
         
