@@ -75,6 +75,83 @@ enum logicalOpId : int {
     XOR_OP  = 2
 };
 
+
+//----------------------------------------------------------------------------------------
+// Signed 64-bit numeric operations and overflow check.
+//
+//----------------------------------------------------------------------------------------
+inline bool willAddOverflow( T64Word a, T64Word b ) {
+    
+    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
+    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
+    return false;
+}
+
+inline T64Word addOp( T64Word a, T64Word b ) {
+
+    if ( willAddOverflow( a, b )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a + b );
+}
+
+inline bool willSubOverflow( T64Word a, T64Word b ) {
+    
+    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
+    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
+    return false;
+}
+
+inline T64Word subOp( T64Word a, T64Word b ) {
+
+    if ( willSubOverflow( a, b )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a - b );
+}
+
+inline bool willMultOverflow( T64Word a, T64Word b ) {
+
+    if (( a == 0 ) ||( b == 0 )) return ( false );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+    if (( b == INT64_MIN ) && ( a == -1 )) return ( true );
+
+    if ( a > 0 ) {
+
+        if ( b > 0 ) return ( a > INT64_MAX / b );
+        else         return ( b < INT64_MIN / a );
+    }
+    else {
+
+        if ( b > 0 ) return ( a < INT64_MIN / b );
+        else         return ( a < INT64_MAX / b );
+    }
+}
+
+inline T64Word multOp( T64Word a, T64Word b ) {
+
+    if ( willMultOverflow( a, b )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a * b );
+}
+
+inline bool willDivOverflow( T64Word a, T64Word b ) {
+
+    if ( b == 0 ) return ( true );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+
+    return ( false );
+}
+
+inline T64Word divOp( T64Word a, T64Word b ) {
+
+    if ( willDivOverflow( a, b )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a / b );
+}
+
+inline T64Word modOp( T64Word a, T64Word b ) {
+
+    if ( willDivOverflow( a, b )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a % b );
+}
+
 //----------------------------------------------------------------------------------------
 // Add operation.
 //
@@ -87,7 +164,14 @@ void addOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> u.val += lExpr -> u.val; break;
+                case TYP_NUM: {
+                    
+                    if ( willAddOverflow( rExpr -> u.val, lExpr -> u.val ))
+                        throw ( ERR_NUMERIC_OVERFLOW );
+
+                    rExpr -> u.val += lExpr -> u.val; 
+                    
+                } break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -110,7 +194,14 @@ void subOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> u.val -= lExpr -> u.val; break;
+                case TYP_NUM: {
+                
+                    if ( willSubOverflow( rExpr -> u.val, lExpr -> u.val ))
+                        throw ( ERR_NUMERIC_OVERFLOW );
+
+                    rExpr -> u.val -= lExpr -> u.val; 
+                
+                } break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -133,7 +224,14 @@ void multOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> u.val *= lExpr -> u.val; break;
+                case TYP_NUM: { 
+                    
+                    if ( willMultOverflow( rExpr -> u.val, lExpr -> u.val ))
+                        throw ( ERR_NUMERIC_OVERFLOW );
+
+                    rExpr -> u.val *= lExpr -> u.val;
+                    
+                } break;
                     
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -156,7 +254,14 @@ void divOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> u.val /= lExpr -> u.val; break;
+                case TYP_NUM: { 
+
+                    if ( willDivOverflow( rExpr -> u.val, lExpr -> u.val ))
+                        throw ( ERR_NUMERIC_OVERFLOW );
+                    
+                    rExpr -> u.val /= lExpr -> u.val; 
+                    
+                } break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }
@@ -179,7 +284,14 @@ void modOp( SimExpr *rExpr, SimExpr *lExpr ) {
             
             switch ( lExpr -> typ ) {
                     
-                case TYP_NUM: rExpr -> u.val %= lExpr -> u.val; break;
+                case TYP_NUM: { 
+                    
+                    if ( willDivOverflow( rExpr -> u.val, lExpr -> u.val ))
+                        throw ( ERR_NUMERIC_OVERFLOW );
+
+                    rExpr -> u.val %= lExpr -> u.val; 
+                    
+                } break;
                 
                 default: throw ( ERR_EXPR_TYPE_MATCH );
             }

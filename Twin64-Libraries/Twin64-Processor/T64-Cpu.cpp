@@ -74,6 +74,10 @@ inline T64Word shiftRight128( T64Word hi, T64Word lo, int shift ) {
     else return( lo );
 }
 
+//----------------------------------------------------------------------------------------
+// Signed 64-bit numeric operations overflow check.
+//
+//----------------------------------------------------------------------------------------
 inline bool willAddOverflow( T64Word a, T64Word b ) {
     
     if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
@@ -86,6 +90,34 @@ inline bool willSubOverflow( T64Word a, T64Word b ) {
     if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
     if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
     return false;
+}
+
+inline bool willMultOverflow( T64Word a, T64Word b ) {
+
+    if (( a == 0 ) ||( b == 0 )) return ( false );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+    if (( b == INT64_MIN ) && ( a == -1 )) return ( true );
+
+    if ( a > 0 ) {
+
+        if ( b > 0 ) return ( a > INT64_MAX / b );
+        else         return ( b < INT64_MIN / a );
+    }
+    else {
+
+        if ( b > 0 ) return ( a < INT64_MIN / b );
+        else         return ( a < INT64_MAX / b );
+    }
+}
+
+inline bool willDivOverflow( T64Word a, T64Word b ) {
+
+    if ( b == 0 ) return ( true );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+
+    return ( false );
 }
 
 inline bool willShiftLftOverflow( T64Word val, int shift ) {

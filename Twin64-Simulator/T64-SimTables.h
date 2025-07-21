@@ -254,6 +254,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
     
     {   .errNum = ERR_INVALID_CMD,                
       .errStr = (char *) "Invalid command, use help" },
+
+    {   .errNum = ERR_NUMERIC_OVERFLOW,                
+      .errStr = (char *) "Numeric overflow in expression" },
     
     {   .errNum = ERR_INVALID_CHAR_IN_TOKEN_LINE, 
       .errStr = (char *) "Invalid char in input line" },
@@ -306,7 +309,7 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
     { .errNum = ERR_INVALID_CMD_ID,             
       .errStr = (char *) "Invalid command Id" },
 
-    
+
     { .errNum = ERR_EXPECTED_INSTR_VAL,         
       .errStr = (char *) "Expected the instruction value" },
 
@@ -758,7 +761,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WD,
         .cmdNameStr     = (char *)  "wd",
         .cmdSyntaxStr   = (char *)  "wd [ <wNum> ]",
-        .helpStr        = (char *)  "disable user defined windowf display"
+        .helpStr        = (char *)  "disable user defined window display"
     },
     
     {
@@ -877,15 +880,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
                                     "PC   - " "program code memory window" "\n"
                                     "TX   - " "text window" "\n"
                                     "CW   - " "command line window" "\n"
-        
-                                    "ICR  - " "instruction cache controller register window" "\n"
-                                    "DCR  - " "data cache controller register window" "\n"
-                                    "UCR  - " "unified cache controller register window" "\n"
-                                    "MCR  - " "physical memory controller register window" "\n"
-                                    "ITR  - " "instruction tlb controller register window" "\n"
-                                    "DTR  - " "data tlb controller register window" "\n"
-                                    "PCR  - " "PDC memory controller register window" "\n"
-                                    "IOR  - " "IO memory controller register window" "\n"
     },
     
     {

@@ -78,6 +78,7 @@ enum ErrId : int {
     ERR_UNEXPECTED_EOS              = 35,
    
     ERR_EXPR_TYPE_MATCH             = 40,
+    ERR_NUMERIC_OVERFLOW            = 41,
     ERR_IMM_VAL_RANGE               = 42,
     ERR_DUPLICATE_INSTR_OPT         = 43
 };
@@ -99,6 +100,7 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_EXTRA_TOKEN_IN_STR,       (char *) "Extra tokens in input line" },
     { ERR_INVALID_CHAR_IN_IDENT,    (char *) "Invalid char in input line" },
     { ERR_INVALID_EXPR,             (char *) "Invalid expression" },
+    { ERR_NUMERIC_OVERFLOW,         (char *) "Numeric overflow" },
     { ERR_INVALID_NUM,              (char *) "Invalid number" },
     { ERR_INVALID_OP_CODE,          (char *) "Invalid OpCode" },
     { ERR_INVALID_INSTR_MODE,       (char *) "Invalid instruction mode" },
@@ -111,9 +113,9 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_EXPECTED_LPAREN,          (char *) "Expected a left parenthesis" },
     { ERR_EXPECTED_RPAREN,          (char *) "Expected a right parenthesis" },
     { ERR_EXPECTED_STR,             (char *) "Expected a string" },
-    { ERR_EXPECTED_OPCODE,          (char *) "Epected an opCode" },
+    { ERR_EXPECTED_OPCODE,          (char *) "Expected an opCode" },
     { ERR_EXPECTED_INSTR_OPT,       (char *) "Expected an instruction option" },
-    { ERR_EXPECTED_DIAG_OP,         (char *) "Expcted the DIAG opCode" },
+    { ERR_EXPECTED_DIAG_OP,         (char *) "Expected the DIAG opCode" },
     { ERR_EXPECTED_GENERAL_REG,     (char *) "Expected a general register" },
     { ERR_EXPECTED_POS_ARG,         (char *) "Expected a position argument" },
     { ERR_EXPECTED_LEN_ARG,         (char *) "Expected a length argument" },
@@ -215,7 +217,7 @@ enum TokId : int {
     //------------------------------------------------------------------------------------
     // Synthetic OP Code Tokens.
     //
-    // ??? tdb
+    // ??? tbd
     //------------------------------------------------------------------------------------
    
 };
@@ -398,7 +400,7 @@ const Token AsmTokTab[ ] = {
     { .name = "C15",    .typ = TYP_CREG,    .tid = TOK_CR_15,   .val = 15   },
 
     //------------------------------------------------------------------------------------
-    // Runtime architcture register names for general registers.
+    // Runtime architecture register names for general registers.
     //
     //------------------------------------------------------------------------------------
     { .name = "T0",     .typ = TYP_GREG,    .tid = TOK_GR_1,    .val =  1   },
@@ -426,7 +428,7 @@ const Token AsmTokTab[ ] = {
     { .name = "SAR",    .typ = TYP_GREG,    .tid = TOK_GR_1,    .val =  1   },
     
     //------------------------------------------------------------------------------------
-    // Assembler mnemonics. Like all other tokens, we habe the name, the type and the 
+    // Assembler mnemonics. Like all other tokens, we have the name, the type and the 
     // token Id. In addition, the ".val" field contains the initial instruction mask
     // with opCode group, opCode family and the bits set in the first option field to
     // further qualify the instruction.
@@ -555,7 +557,7 @@ const Token AsmTokTab[ ] = {
         .tid = TOK_OP_DIAG,     .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
     //------------------------------------------------------------------------------------
-    // Assembler synthetioc mnemonics. They ar like the assembler mnemonics, except 
+    // Assembler synthetic mnemonics. They ar like the assembler mnemonics, except 
     // that they pre decode some bits settings in the option fields and reduce the 
     // ".<opt>" notation settings through meaningful instruction mnemonics.
     //
@@ -655,6 +657,92 @@ void nextChar( ) {
         currentCharIndex ++;
     }
     else currentChar = EOS_CHAR;
+}
+
+//----------------------------------------------------------------------------------------
+// Signed 64-bit numeric operations and overflow check.
+//
+//----------------------------------------------------------------------------------------
+inline bool willAddOverflow( T64Word a, T64Word b ) {
+    
+    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
+    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
+    return false;
+}
+
+inline bool willSubOverflow( T64Word a, T64Word b ) {
+    
+    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
+    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
+    return false;
+}
+
+inline bool willMultOverflow( T64Word a, T64Word b ) {
+
+    if (( a == 0 ) ||( b == 0 )) return ( false );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+    if (( b == INT64_MIN ) && ( a == -1 )) return ( true );
+
+    if ( a > 0 ) {
+
+        if ( b > 0 ) return ( a > INT64_MAX / b );
+        else         return ( b < INT64_MIN / a );
+    }
+    else {
+
+        if ( b > 0 ) return ( a < INT64_MIN / b );
+        else         return ( a < INT64_MAX / b );
+    }
+}
+
+inline bool willDivOverflow( T64Word a, T64Word b ) {
+
+    if ( b == 0 ) return ( true );
+
+    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
+
+    return ( false );
+}
+
+T64Word addOp( Expr *a, Expr *b ) {
+
+    if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( willAddOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a -> val + b -> val );
+}
+
+T64Word subOp( Expr *a, Expr *b ) {
+
+    if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( willSubOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a -> val - b -> val );
+}
+
+T64Word multOp( Expr *a, Expr *b ) {
+
+    if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( willMultOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a -> val * b -> val );
+}
+
+T64Word divOp( Expr *a, Expr *b ) {
+
+    if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( willDivOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a -> val / b -> val );
+}
+
+T64Word modOp( Expr *a, Expr *b ) {
+
+    if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
+    if ( willDivOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
+    return( a -> val % b -> val );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1091,11 +1179,11 @@ void parseTerm( Expr *rExpr ) {
         if ( rExpr -> typ != lExpr.typ ) throw ( ERR_EXPR_TYPE_MATCH );
         
         switch( op ) {
-                
-            case TOK_MULT:   rExpr -> val = rExpr -> val * lExpr.val; break;
-            case TOK_DIV:    rExpr -> val = rExpr -> val / lExpr.val; break;
-            case TOK_MOD:    rExpr -> val = rExpr -> val % lExpr.val; break;
-            case TOK_AND:    rExpr -> val = rExpr -> val & lExpr.val; break;
+
+            case TOK_MULT: rExpr -> val = multOp( rExpr, &lExpr );  break;
+            case TOK_DIV:  rExpr -> val = divOp( rExpr, &lExpr );   break;
+            case TOK_MOD:  rExpr -> val = modOp( rExpr, &lExpr );   break;
+            case TOK_AND:  rExpr -> val = rExpr -> val & lExpr.val; break;
         }
     }
 }
@@ -1122,7 +1210,7 @@ void parseExpr( Expr *rExpr ) {
         
         nextToken( );
         parseTerm( rExpr );
-        
+
         if ( rExpr -> typ == TYP_NUM ) rExpr -> val = - rExpr -> val;
         else throw ( ERR_EXPECTED_NUMERIC );
     }
@@ -1141,11 +1229,11 @@ void parseExpr( Expr *rExpr ) {
         if ( rExpr -> typ != lExpr.typ ) throw ( ERR_EXPR_TYPE_MATCH );
         
         switch ( op ) {
-                
-            case TOK_PLUS:   rExpr -> val = rExpr -> val + lExpr.val; break;
-            case TOK_MINUS:  rExpr -> val = rExpr -> val - lExpr.val; break;
-            case TOK_OR:     rExpr -> val = rExpr -> val | lExpr.val; break;
-            case TOK_XOR:    rExpr -> val = rExpr -> val ^ lExpr.val; break;
+   
+            case TOK_PLUS:  rExpr -> val = addOp( rExpr, &lExpr );      break;
+            case TOK_MINUS: rExpr -> val = subOp( rExpr, &lExpr );      break;
+            case TOK_OR:    rExpr -> val = rExpr -> val | lExpr.val;    break;
+            case TOK_XOR:   rExpr -> val = rExpr -> val ^ lExpr.val;    break;
         }
     }
 }
@@ -1261,7 +1349,7 @@ inline void replaceInstrGroupField( uint32_t *instr, uint32_t instrMask ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Set the codition field for compare type instructions based on the instruction flags.
+// Set the condition field for compare type instructions based on the instruction flags.
 //
 //----------------------------------------------------------------------------------------
 void setInstrCondField( uint32_t *instr, uint32_t instrFlags ) {
@@ -1412,6 +1500,15 @@ void acceptRegB( uint32_t *instr ) {
     parseExpr( &rExpr );
     if (  rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
     else throw ( ERR_EXPECTED_GENERAL_REG );
+}
+
+void acceptCregB( uint32_t *instr ) {
+
+    Expr rExpr = INIT_EXPR;
+
+    parseExpr( &rExpr );
+    if (  rExpr.typ == TYP_CREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
+    else throw ( ERR_EXPECTED_CONTROL_REG );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1581,8 +1678,8 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrDEP" parses the deposit instruction. The instruction has zwo basic 
-// formats. When the "I" option is set, the value to deposti is an immediate value, 
+// "parseInstrDEP" parses the deposit instruction. The instruction has two basic 
+// formats. When the "I" option is set, the value to deposit is an immediate value, 
 // else the data comes from a general register. When "SAR" is specified instead of a 
 // bit position, the "A" bit is encoded in the instruction. When the value to deposit 
 // is a numeric value, the "I" bit is set.
@@ -1683,8 +1780,8 @@ void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The SHLA instruction performs a shift left of "B" by the instruction encided shift 
-// amount and adds the "A" register to it. If the ".I" optin is set, the RegA field is
+// The SHLA instruction performs a shift left of "B" by the instruction encoded shift 
+// amount and adds the "A" register to it. If the ".I" option is set, the RegA field is
 // interpreted as a number.
 //
 //      SHLxA       <targetReg> "," <sourceRegB> "," <sourceRegA>
@@ -1839,11 +1936,11 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 //       LD  [.B/H/W/D/M ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
 //       LD  [.B/H/W/D/M ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       ST  [.B/H/W/D/M ] <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D/M ] <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //       ST  [.B/H/W/D/M ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
 //       LDR               <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
-//       STC               <soureceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       STC               <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1964,7 +2061,7 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseOpBV" is the vectored branch. We add RegB and Regx, which form the target 
+// "parseOpBV" is the vectored branch. We add RegB and RegX, which form the target 
 // offset. Optionally, we can specify a return link register.
 //
 //      BV <regB>, <RegX> [ "," <regR> ]
@@ -2025,7 +2122,7 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseOpCBR" performa a copare and a branch based on the condition.
+// "parseOpCBR" performa a compare and a branch based on the condition.
 //
 //      CBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
 //
@@ -2060,7 +2157,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrMBR" move the source reg to teh target reg and vranches on the condition
+// "parseInstrMBR" move the source reg to the target reg and branches on the condition
 // specified.
 //
 //      MBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
@@ -2099,8 +2196,8 @@ void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 // "parseInstrMxCR" copies a control register to a general register and vice versa.
 //
-//      MFCR <RegR> "," <Creg>
-//      MTCR <Rreg> "," <CegB>
+//      MFCR <RegR> "," <RegB>
+//      MTCR <RegR> "," <RegB>
 //
 //----------------------------------------------------------------------------------------
 void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2108,7 +2205,8 @@ void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-    acceptRegB( instr );
+
+    acceptCregB( instr );
     acceptEOS( );
 }
 
@@ -2167,7 +2265,7 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrTlbOp" insert or removs a translation in the TLB. RegB contains the 
+// "parseInstrTlbOp" insert or removes a translation in the TLB. RegB contains the 
 // virtual address. For TLB inserts RegA contains the info on access rights and 
 // physical address. The result is in RegR.
 //
@@ -2244,7 +2342,7 @@ void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrDIAG" is the general purpose diagnotsic instruction. It accepts two 
+// "parseInstrDIAG" is the general purpose diagnostic instruction. It accepts two 
 // registers and returns a result in the target register.
 //
 //      DIAG <RegR> "," <val> "," <RegB> "," <RegA"
@@ -2274,7 +2372,7 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrTrapOp" assmbles the trap operations.
+// "parseInstrTrapOp" assembles the trap operations.
 //
 //      Generic. TRAP <info1> "," RegB "," RegA "," <info2> "," <val>
 //

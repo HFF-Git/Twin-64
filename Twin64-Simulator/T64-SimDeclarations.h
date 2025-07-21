@@ -365,6 +365,7 @@ enum SimErrMsgId : uint16_t {
     ERR_NOT_IN_WIN_MODE             = 2,
     ERR_TOO_MANY_ARGS_CMD_LINE      = 3,
     ERR_EXTRA_TOKEN_IN_STR          = 4,
+    ERR_NUMERIC_OVERFLOW            = 5,
     
     ERR_INVALID_CMD                 = 10,
     ERR_INVALID_ARG                 = 11,
