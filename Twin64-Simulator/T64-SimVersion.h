@@ -6,7 +6,7 @@
 // The whole purpose of  this file is to define the current version String.
 // We also set a constant to use for APPle vs. Windows specific coding. We use
 // it in the command handler. It is not designed for compiling different code
-// sequence, but rather make logical decisions on some ouput specifics, such
+// sequence, but rather make logical decisions on some output specifics, such
 // as carriage return handling.
 //
 //------------------------------------------------------------------------------

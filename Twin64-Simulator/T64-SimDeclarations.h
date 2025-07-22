@@ -70,14 +70,12 @@
 //
 //  Global Window commands:
 //
-//  WON, WOFF   -> on, off
-//  WRED        -> Redraw
-//  WDEF        -> window defaults, show initial screen.
+//  WON, WOFF       -> on, off
+//  WDEF            -> window defaults, show initial screen.
 //
 //  Stacks:
 //
 //  WSE, WSD        -> winStackEnable/Disable
-//  UWSA, UWSB      -> setUserWinStack
 //
 //  Window:
 //
@@ -93,20 +91,13 @@
 //
 //  Windows:
 //
-//  Program Regs    -> PS
-//  General Regs    -> GR
-//  Special Regs    -> CR
-//  Statistics      -> ST
+//  Processor State -> PS
+//. TLB Window      -> TL
+//  Cache Window    -> CA
 //  Program Code    -> PC
-//  TLB             -> IT, DT
-//  Cache           -> IC, DC, UC
 //  Text Window     -> TX
 //  User Defined    -> UW
 //  Commands        -> n/a
-//
-//  Combine the window command with the window to form the command to type.
-//  Example: PSE -> enable general regs window.
-//  Note: not all combinations are possible...
 //
 //----------------------------------------------------------------------------------------
 
@@ -133,14 +124,15 @@ const int MAX_ENV_VARIABLES         = 256;
 const int MAX_TEXT_FIELD_LEN    = 132;
 const int MAX_TEXT_LINE_SIZE    = 256;
 
+const int MAX_WIN_NAME_SIZE     = 8;
 const int MAX_WIN_ROW_SIZE      = 64;
 const int MAX_WIN_COL_SIZE      = 256;
 const int MAX_WINDOWS           = 32;
 const int MAX_WIN_STACKS        = 4;
 
 //----------------------------------------------------------------------------------------
-// Windows have a type. The type is primarily used to specify what type of 
-//window to create.
+// Windows have a type. The type is primarily used to specify what type of window to
+// create.
 //
 //----------------------------------------------------------------------------------------
 enum SimWinType : int {
@@ -149,30 +141,11 @@ enum SimWinType : int {
     WT_CMD_WIN      = 1,
     WT_CONSOLE_WIN  = 2,
     WT_TEXT_WIN     = 3,
-    
-    WT_GR_WIN       = 10,
-    WT_PS_WIN       = 11,
-    WT_CR_WIN       = 12,
-    WT_PL_WIN       = 13,
-    WT_ST_WIN       = 14,
-    WT_PM_WIN       = 15,
-    WT_PC_WIN       = 16,
-    
-    WT_ITLB_WIN     = 20,
-    WT_DTLB_WIN     = 21,
-    WT_ITLB_S_WIN   = 22,
-    WT_DTLB_S_WIN   = 23,
-    
-    WT_ICACHE_WIN   = 30,
-    WT_ICACHE_S_WIN = 31,
-    WT_DCACHE_WIN   = 32,
-    WT_DCACHE_S_WIN = 33,
-    WT_UCACHE_WIN   = 43,
-    WT_UCACHE_S_WIN = 44,
-    
-    WT_MEM_S_WIN    = 50,
-    WT_PDC_S_WIN    = 51,
-    WT_IO_S_WIN     = 52,
+    WT_PROC_WIN     = 4,
+    WT_TLB_WIN      = 5,
+    WT_CACHE_WIN    = 6,
+    WT_MEM_WIN      = 7,
+    WT_CODE_WIN     = 8  
 };
 
 //----------------------------------------------------------------------------------------
@@ -183,6 +156,7 @@ enum SimWinType : int {
 // time. An index starting with the first user index is used for dynamically 
 // created windows.
 //
+// ??? this may go away completely....
 //----------------------------------------------------------------------------------------
 enum SimWinIndex : int {
     
@@ -194,25 +168,22 @@ enum SimWinIndex : int {
     LAST_UWIN       = 31
 };
 
-
 //----------------------------------------------------------------------------------------
 // Command line tokens and expression have a type.
 //
 //----------------------------------------------------------------------------------------
 enum SimTokTypeId : uint16_t {
 
-    TYP_NIL                 = 0,    
+    TYP_NIL             = 0,    
 
-    TYP_NUM                 = 1,    TYP_STR        = 2,       
-    TYP_BOOL                = 3,   
+    TYP_NUM             = 1,    TYP_STR             = 2,    TYP_BOOL            = 3, 
+    TYP_SYM             = 4,    TYP_IDENT           = 5, 
 
-    TYP_CMD                 = 5,    TYP_WCMD       = 6,
-    TYP_WTYP                = 7,    TYP_P_FUNC     = 8,    
+    TYP_CMD             = 10,   TYP_WCMD            = 11,
+    TYP_WTYP            = 12,   TYP_P_FUNC          = 13,    
     
-    TYP_REG                 = 10,   TYP_RSET       = 11, 
-    TYP_SYM                 = 12,   TYP_IDENT      = 13,   
-    TYP_GREG                = 14,   TYP_CREG       = 15,
-    TYP_PSTATE_PREG         = 16,      
+    TYP_REG             = 20,   TYP_RSET            = 21,   
+    TYP_GREG            = 22,   TYP_CREG            = 23,   TYP_PSTATE_PREG     = 24,    
 };
 
 //----------------------------------------------------------------------------------------
@@ -241,31 +212,21 @@ enum SimTokId : uint16_t {
     TOK_LE                  = 22,       TOK_GE                  = 23,
     
     //------------------------------------------------------------------------------------
-    // Token symbols. They are just reserved names used in commands and 
-    // functions. Their type and optional value is defined in the token tables.
+    // Token symbols. They are just reserved names used in commands and functions. Their
+    // type and optional value is defined in the token tables.
     //
     //------------------------------------------------------------------------------------
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
-    TOK_STR                 = 102,      TOK_CPU                 = 103,      
-    TOK_MEM                 = 104,      TOK_STATS               = 105,
-    
-    TOK_C                   = 108,      TOK_D                   = 109,      
-    TOK_F                   = 110,      TOK_I                   = 111,      
-    TOK_T                   = 112,      TOK_U                   = 113,
-    
-    TOK_PM                  = 114,      TOK_PC                  = 115,      
-    TOK_IT                  = 116,      TOK_DT                  = 117,      
-    TOK_IC                  = 118,      TOK_DC                  = 119,
-    TOK_UC                  = 120,      TOK_TX                  = 121,      
-    
-    TOK_PCR                 = 206,      TOK_IOR                 = 207,
+    TOK_STR                 = 102, 
+
+    TOK_DEF                 = 400,      TOK_ALL                 = 402,
+    TOK_CPU                 = 103,      TOK_TLB                 = 104, 
+    TOK_CACHE               = 105,      TOK_MEM                 = 107,      
+    TOK_STATS               = 108,      TOK_TEXT                = 121, 
     
     TOK_DEC                 = 300,      TOK_HEX                 = 302,
-    TOK_CODE                = 303,
-    
-    TOK_DEF                 = 400,
-    TOK_INV                 = 401,      TOK_ALL                 = 402,
-    
+    TOK_CODE                = 303,      
+
     //------------------------------------------------------------------------------------
     // Line Commands.
     //
@@ -476,6 +437,10 @@ const char ENV_RDX_DEFAULT [ ]          = "RDX_DEFAULT";
 const char ENV_WORDS_PER_LINE [ ]       = "WORDS_PER_LINE";
 const char ENV_SHOW_PSTAGE_INFO[ ]      = "SHOW_PSTAGE_INFO";
 const char ENV_STEP_IN_CLOCKS[ ]        = "STEP_IN_CLOCKS";
+const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
+const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
+
+// ??? replace by predefined functions ?
 
 const char ENV_I_TLB_SETS[ ]            = "I_TLB_SETS";
 const char ENV_I_TLB_SIZE[ ]            = "I_TLB_SIZE";
@@ -495,8 +460,7 @@ const char ENV_MEM_SIZE[ ]              = "MEM_SIZE";
 const char ENV_MEM_BANKS[ ]             = "MEM_BANKS";
 const char ENV_MEM_BANK_SIZE[ ]         = "MEM_BANK_SIZE";
 
-const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
-const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
+
 
 //----------------------------------------------------------------------------------------
 // Forward declaration of the globals structure. Every object will have access to the
@@ -555,7 +519,6 @@ struct SimToken {
 // Tokenizer object. The command line interface parse their input buffer line. The 
 // tokenizer will return the tokens found in the line. The tokenizer raises exceptions.
 //
-// ??? check the assembler version ....
 //----------------------------------------------------------------------------------------
 struct SimTokenizer {
 
@@ -599,7 +562,6 @@ struct SimTokenizer {
 // Expression value. The analysis of an expression results in a value. Depending on 
 // the expression type, the values are simple scalar values or a structured values.
 //
-// ??? cleanup ... what do we need...
 //----------------------------------------------------------------------------------------
 struct SimExpr {
     
@@ -635,6 +597,7 @@ struct SimExprEvaluator {
     void            parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );
     
     // ??? rework... we need some to deal with the numeric sizes...
+    // ??? add functions for processor attributes, such as cache size, etc.
     void            pFuncS32( SimExpr *rExpr );
     void            pFuncU32( SimExpr *rExpr );
     
@@ -795,7 +758,7 @@ struct SimWinOutBuffer : SimFormatter {
     char        buffer[ MAX_WIN_OUT_LINES ] [ MAX_WIN_OUT_LINE_SIZE ];
     int         topIndex    = 0; // Index of the next line to use.
     int         cursorIndex = 0; // Index of the last line currently shown.
-    int         screenSize  = 0; // Number of lines displayed in the window.
+    int         screenLines = 0; // Number of lines displayed in the window.
     int         charPos     = 0; // Current character position in the line.
 };
 
@@ -831,7 +794,7 @@ struct SimWin {
     void            setRows( int arg );
     int             getRows( );
     
-    void            setDefColumns( int arg, int rdx = 16 );
+    void            setDefColumns( int rdx10, int rdx16 );
     int             getDefColumns( int rdx = 16 );
     
     void            setColumns( int arg );
@@ -845,6 +808,14 @@ struct SimWin {
     
     int             getWinStack( );
     void            setWinStack( int wStack );
+
+    void            setWinToggleLimit( int limit );
+    int             getWinToggleLimit( );
+    
+    int             getWinToggleVal( );
+    void            setWinToggleVal( int val );
+    
+    char            *getWinName( );
     
     void            printNumericField(  T64Word val,
                                         uint32_t fmtDesc = 0,
@@ -865,6 +836,7 @@ struct SimWin {
     
     void            printWindowIdField( int stack,
                                         int index,
+                                        char *name,
                                         bool current = false,
                                         uint32_t fmtDesc = 0,
                                         int row = 0,
@@ -887,24 +859,26 @@ struct SimWin {
    
     private:
     
-    int             winType             = TOK_NIL;
+    int             winType             = WT_NIL;
     int             winUserIndex        = 0;
     
     bool            winEnabled          = false;
-    bool            winCurrent          = false;
-    
     int             winRadix            = 16;
     int             winStack            = 0;
     int             winRows             = 0;
     int             winColumns          = 0;
     int             winDefColumnsHex    = 0;
-    int             winDefColumnsOct    = 0;
     int             winDefColumnsDec    = 0;
     
     int             winAbsCursorRow     = 0;
     int             winAbsCursorCol     = 0;
     int             lastRowPos          = 0;
     int             lastColPos          = 0;
+
+    int             winToggleLimit      = 0;
+    int             winToggleVal        = 0;
+
+    char            winName[ MAX_WIN_NAME_SIZE + 1 ] = { 0 };
 };
 
 //----------------------------------------------------------------------------------------
@@ -968,22 +942,6 @@ struct SimWinProgState : SimWin {
 };
 
 //----------------------------------------------------------------------------------------
-// Special Register Window. This window holds the control registers.
-//
-//----------------------------------------------------------------------------------------
-struct SimWinSpecialRegs : SimWin {
-    
-    public:
-    
-    SimWinSpecialRegs( SimGlobals *glb );
-    
-    void setDefaults( );
-    void setRadix( int rdx );
-    void drawBanner( );
-    void drawBody( );
-};
-
-//----------------------------------------------------------------------------------------
 // Absolute Memory Window. A memory window will show the absolute memory content
 // starting with the current address followed by a number of data words. The number
 // of words shown is the number of lines of the window times the number of items, 
@@ -992,7 +950,7 @@ struct SimWinSpecialRegs : SimWin {
 //----------------------------------------------------------------------------------------
 struct SimWinAbsMem : SimWinScrollable {
     
-        public:
+    public:
     
     SimWinAbsMem( SimGlobals *glb );
     
@@ -1037,10 +995,6 @@ struct SimWinTlb : SimWinScrollable {
     void setRadix( int rdx );
     void drawBanner( );
     void drawLine( T64Word index );
-    
-    private:
-    
-    int winType = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1057,14 +1011,8 @@ struct SimWinCache : SimWinScrollable {
     
     void setDefaults( );
     void setRadix( int rdx );
-    void toggleWin( );
     void drawBanner( );
     void drawLine( T64Word index );
-    
-    private:
-    
-    int     winType         = 0;
-    int     winToggleVal    = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1157,13 +1105,8 @@ private:
     void            acceptLparen( );
     void            acceptRparen( );
     
-    void            displayInvalidWord( int rdx );
-
-    void            displayWord( uint32_t val, int rdx = 16 );   // ??? remove ?
-    void            displayHalfWord( uint32_t val, int rdx = 16 );
-    
-    void            displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx = 16 );
-    void            displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, int rdx = 16 );
+    void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
+    void            displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx = 16 );
     
     #if 0 // to do ...
     void            displayTlbEntry( TlbEntry *entry, int rdx = 16 );
@@ -1193,6 +1136,7 @@ private:
     
     void            displayCacheCmd( );
     void            purgeCacheCmd( );
+    void            flushCacheCmd( );
     
     void            displayTLBCmd( );
     void            insertTLBCmd( );
@@ -1227,7 +1171,6 @@ private:
     SimTokenizer        *tok            = nullptr;
     SimExprEvaluator    *eval           = nullptr;
     SimWinOutBuffer     *winOut         = nullptr;
-    SimCommandsWin      *cmdWin         = nullptr;
     T64Assemble         *inlineAsm      = nullptr;
     T64DisAssemble      *disAsm         = nullptr;   
     SimTokId            currentCmd      = TOK_NIL;
@@ -1280,12 +1223,12 @@ public:
     void            windowSetStack( int winStack, int winNumStart, int winNumEnd = 0 );
     
     int             getCurrentUserWindow( );
-    void            setCurrentUserWindow( int num );
+    void            setCurrentUserWindow( int winNum );
     int             getFirstUserWinIndex( );
     int             getLastUserWinIndex( );
-    bool            validWindowNum( int num );
-    bool            validUserWindowNum( int num );
-    bool            validWindowStackNum( int num );
+    bool            validWindowNum( int winNum );
+    bool            validUserWindowNum( int winNum );
+    bool            validWindowStackNum( int winNum );
     bool            validUserWindowType( SimTokId winType );
     bool            isCurrentWin( int winNum );
     bool            isWinEnabled( int winNum );

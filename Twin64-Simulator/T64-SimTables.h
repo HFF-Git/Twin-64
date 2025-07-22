@@ -44,12 +44,15 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
     { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                },
+
+    #if 0
     { .name = "C",          .typ = TYP_SYM,     .tid = TOK_C                  },
     { .name = "D",          .typ = TYP_SYM,     .tid = TOK_D                  },
     { .name = "F",          .typ = TYP_SYM,     .tid = TOK_F                  },
     { .name = "I",          .typ = TYP_SYM,     .tid = TOK_I                  },
     { .name = "T",          .typ = TYP_SYM,     .tid = TOK_T                  },
     { .name = "U",          .typ = TYP_SYM,     .tid = TOK_U                  },
+    #endif
     
     { .name = "DEC",        .typ = TYP_SYM,     .tid = TOK_DEC,   .u.val = 10 },
     { .name = "HEX",        .typ = TYP_SYM,     .tid = TOK_HEX,   .u.val = 16 },
@@ -98,6 +101,7 @@ const SimToken cmdTokTab[ ] = {
     
     { .name = "DCA",        .typ = TYP_CMD,     .tid = CMD_D_CACHE            },
     { .name = "PCA",        .typ = TYP_CMD,     .tid = CMD_P_CACHE            },
+    { .name = "FCA",        .typ = TYP_CMD,     .tid = CMD_F_CACHE            },
     
     //--------------------------------------------------------------------------
     // Window command tokens.
@@ -108,23 +112,15 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WDEF",       .typ = TYP_WCMD,    .tid = CMD_WDEF               },
     { .name = "WSE",        .typ = TYP_WCMD,    .tid = CMD_WSE                },
     { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                },
+
+
     
     { .name = "PSE",        .typ = TYP_WCMD,    .tid = CMD_PSE                },
     { .name = "PSD",        .typ = TYP_WCMD,    .tid = CMD_PSD                },
     { .name = "PSR",        .typ = TYP_WCMD,    .tid = CMD_PSR                },
+  
     
-    { .name = "SRE",        .typ = TYP_WCMD,    .tid = CMD_SRE                },
-    { .name = "SRD",        .typ = TYP_WCMD,    .tid = CMD_SRD                },
-    { .name = "SRR",        .typ = TYP_WCMD,    .tid = CMD_SRR                },
-    
-    { .name = "PLE",        .typ = TYP_WCMD,    .tid = CMD_PLE                },
-    { .name = "PLD",        .typ = TYP_WCMD,    .tid = CMD_PLD                },
-    { .name = "PLR",        .typ = TYP_WCMD,    .tid = CMD_PLR                },
-    
-    { .name = "SWE",        .typ = TYP_WCMD,    .tid = CMD_SWE                },
-    { .name = "SWD",        .typ = TYP_WCMD,    .tid = CMD_SWD                },
-    { .name = "SWR",        .typ = TYP_WCMD,    .tid = CMD_SWR                },
-    
+
     { .name = "CWL",        .typ = TYP_WCMD,    .tid = CMD_CWL                },
     
     { .name = "WE",         .typ = TYP_WCMD,    .tid = CMD_WE                 },
@@ -142,17 +138,11 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WT",         .typ = TYP_WCMD,    .tid = CMD_WT                 },
     { .name = "WX",         .typ = TYP_WCMD,    .tid = CMD_WX                 },
     
-    { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_PM                 },
-    { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_PC                 },
-    { .name = "IT",         .typ = TYP_SYM,     .tid = TOK_IT                 },
-    { .name = "DT",         .typ = TYP_SYM,     .tid = TOK_DT                 },
-    { .name = "IC",         .typ = TYP_SYM,     .tid = TOK_IC                 },
-    { .name = "DC",         .typ = TYP_SYM,     .tid = TOK_DC                 },
-    { .name = "UC",         .typ = TYP_SYM,     .tid = TOK_UC                 },
-    
-    { .name = "PCR",        .typ = TYP_SYM,     .tid = TOK_PCR                },
-    { .name = "IOR",        .typ = TYP_SYM,     .tid = TOK_IOR                },
-    { .name = "TX",         .typ = TYP_SYM,     .tid = TOK_TX                 },
+    { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_MEM                },
+    { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_CODE               },
+
+   
+    { .name = "TX",         .typ = TYP_SYM,     .tid = TOK_TEXT               },
   
     //--------------------------------------------------------------------------
     // General registers.
@@ -232,6 +222,9 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ASM",        .typ = TYP_P_FUNC, .tid = PF_ASSEMBLE, .u.val = 0 },
     { .name = "DISASM",     .typ = TYP_P_FUNC, .tid = PF_DIS_ASSEMBLE, .u.val = 0   },
     { .name = "HASH",       .typ = TYP_P_FUNC, .tid = PF_HASH,   .u.val = 0   },
+
+    // ??? tons of more predefines....
+
     { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,    .u.val = 0   },
     
 };
@@ -562,8 +555,8 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_STEP,
         .cmdNameStr     = (char *) "step",
-        .cmdSyntaxStr   = (char *) "s [ <steps> ] [ , 'I' | 'C' ]",
-        .helpStr        = (char *) "single step for instruction or clock cycle"
+        .cmdSyntaxStr   = (char *) "s [ <steps> ]",
+        .helpStr        = (char *) "single step"
     },
     
     {
@@ -576,7 +569,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DR,
         .cmdNameStr     = (char *) "dr",
-        .cmdSyntaxStr   = (char *) "dr [ ( <regSet>| <reg> ) ] [ , <fmt> ]",
+        .cmdSyntaxStr   = (char *) "dr [ ( <regSet> | <reg> ) ] [ , <fmt> ]",
         .helpStr        = (char *) "display register or register sets"
     },
     
@@ -604,35 +597,44 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_D_CACHE,
         .cmdNameStr     = (char *) "dca",
-        .cmdSyntaxStr   = (char *) "dca ( 'I' | 'D' | 'U' ) <index> [ , <len> [ , <fmt> ]] ",
+        .cmdSyntaxStr   = (char *) "pca <proc>, <cache>, <set>, "
+                                   " <index> [ , <len> [ , <fmt> ]] ",
         .helpStr        = (char *) "display cache content"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_CACHE,
         .cmdNameStr     = (char *) "pca",
-        .cmdSyntaxStr   = (char *) "pca ('I' | 'D' | 'U' ) <index> [ , <set> [, 'F' ]]",
+        .cmdSyntaxStr   = (char *) "pca <proc>, <cache>, <set>, <index>",
+        .helpStr        = (char *) "flushes and purges cache data"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_F_CACHE,
+        .cmdNameStr     = (char *) "fca",
+        .cmdSyntaxStr   = (char *) "fca <proc>, <cache>, <set>, <index>",
         .helpStr        = (char *) "flushes and purges cache data"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_D_TLB,
         .cmdNameStr     = (char *) "dtlb",
-        .cmdSyntaxStr   = (char *) "dtlb ( 'I' | 'D' ) <index> [ , <len> [ , <rdx> ]]",
+        .cmdSyntaxStr   = (char *) "dtlb <proc>, <tlb>, <set>, "
+                                   "<index> [ , <len> [ , <rdx> ]]",
         .helpStr        = (char *) "display TLB content"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_I_TLB,
         .cmdNameStr     = (char *) "itlb",
-        .cmdSyntaxStr   = (char *) "itlb ( 'I' | 'D' ) <extAdr> <argAcc> <argAdr>",
+        .cmdSyntaxStr   = (char *) "itlb <proc>, <tlb>, <set>, <info1> <info2>",
         .helpStr        = (char *) "inserts an entry into the TLB"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_TLB,
         .cmdNameStr     = (char *) "ptlb",
-        .cmdSyntaxStr   = (char *) "ptlb ( 'I' | 'D' ) <extAdr>",
+        .cmdSyntaxStr   = (char *) "itlb <proc>, <tlb>, <set>, <vAdr>",
         .helpStr        = (char *) "purges an entry from the TLB"
     },
     
@@ -649,17 +651,8 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdSyntaxStr   = (char *) "",
         .helpStr        = (char *) "\n" "\n"
                                     "GR   - " "general register set" "\n"
-                                    "SR   - " "segment register set" "\n"
                                     "CR   - " "control register set" "\n"
                                     "PS   - " "program state" "\n"
-                                    "PLFD - " "Pipeline FD stage input register set" "\n"
-                                    "PLMA - " "Pipeline MA stage input register set" "\n"
-                                    "PLEX - " "Pipeline EX stage input register set" "\n"
-                                    "ICl1 - " "I-Cache control register set" "\n"
-                                    "DCl1 - " "D-Cache control register set" "\n"
-                                    "UCl2 - " "U-Cache control register set" "\n"
-                                    "ITLB - " "I-TLB control register set" "\n"
-                                    "DTLB - " "D-TLB control register set" "\n"
     },
     
     //--------------------------------------------------------------------------------------------------------
@@ -859,7 +852,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
         .cmdNameStr     = (char *)  "wn",
         .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
-        .helpStr        = (char *)  "create a user defined window ( PM, PC, IT, DT, IC, ICR, DCR, MCR, TX )"
+        .helpStr        = (char *)  "create a user defined window ( PS, PM, PC, TX )"
     },
         
     {
@@ -868,14 +861,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdSyntaxStr   = (char *)  "",
         .helpStr        = (char *)  "\n" "\n"
                                     "PS   - " "program state window" "\n"
-                                    "SR   - " "special register window" "\n"
-                                    "PL   - " "pipeline register window" "\n"
-                                    "ST   - " "statistics window" "\n"
-                                    "IT   - " "instruction tlb window" "\n"
-                                    "DT   - " "data tlb window" "\n"
-                                    "IC   - " "instruction cache window" "\n"
-                                    "DC   - " "data cache window" "\n"
-                                    "UC   - " "unified cache window" "\n"
                                     "PM   - " "physical memory window" "\n"
                                     "PC   - " "program code memory window" "\n"
                                     "TX   - " "text window" "\n"
@@ -900,6 +885,9 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     // Predefined Functions.
     //
     //--------------------------------------------------------------------------------------------------------
+   
+    // ??? a ton of functions for processor attributes ....
+   
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_S32,
         .cmdNameStr     = (char *) "s32",

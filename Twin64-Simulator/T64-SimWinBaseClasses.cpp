@@ -3,7 +3,10 @@
 // Twin64 - A 64-bit CPU - Simulator Windows Base Classes
 //
 //----------------------------------------------------------------------------------------
-// The simulator ....
+// The simulator use a set of windows to show the system state. No, don't think of
+// modern windows. We have a terminal screen and use escape sequences to build windows.
+// See the declaration include file for more details. This file contains the window
+// base classes.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -31,16 +34,6 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
-//----------------------------------------------------------------------------------------
-// "setRadix" ensures that we passed in a valid radix value. The default is a
-// decimal number.
-//
-//----------------------------------------------------------------------------------------
-int setRadix( int rdx ) {
-    
-    return((( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
-}
-
 }; // namespace
 
 
@@ -54,39 +47,88 @@ int setRadix( int rdx ) {
 // definable windows.
 //
 //----------------------------------------------------------------------------------------
-SimWin::SimWin( SimGlobals *glb ) { this -> glb = glb; }
+SimWin::SimWin( SimGlobals *glb ) { 
+    
+    this -> glb = glb; 
+}
+
 SimWin:: ~SimWin( ) { }
 
 //----------------------------------------------------------------------------------------
 // Getter/Setter methods for window attributes.
 //
 //----------------------------------------------------------------------------------------
-int  SimWin::getWinType( )              { return( winType ); }
-void SimWin::setWinType( int arg )      { winType = arg; }
+int  SimWin::getWinType( ) { 
+    
+    return( winType ); 
+}
 
-int SimWin::getWinIndex( )              { return( winUserIndex ); }
-void SimWin::setWinIndex( int arg )     { winUserIndex = arg; }
+void SimWin::setWinType( int arg ) { 
+    
+    winType = arg; 
+}
 
-bool SimWin::isEnabled( )               { return( winEnabled ); }
-void SimWin::setEnable( bool arg )      { winEnabled = arg; }
+int SimWin::getWinIndex( ) { 
+    
+    return( winUserIndex ); 
+}
 
-int SimWin::getRows( )                  { return( winRows ); }
-void SimWin::setRows( int arg )         { 
+void SimWin::setWinIndex( int arg ) { 
+    
+    winUserIndex = arg; 
+}
+
+bool SimWin::isEnabled( ) { 
+    
+    return( winEnabled ); 
+}
+
+void SimWin::setEnable( bool arg ) { 
+    
+    winEnabled = arg; 
+}
+
+int SimWin::getRows( ) { 
+    
+    return( winRows ); 
+}
+
+void SimWin::setRows( int arg ) { 
     
     winRows = (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
 }
 
-int SimWin::getColumns( )               { return( winColumns ); }
-void SimWin::setColumns( int arg )      { 
+int SimWin::getColumns( ) { 
+    
+    return( winColumns ); 
+}
+
+void SimWin::setColumns( int arg ) { 
     
     winColumns = (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
 }
 
-int SimWin::getRadix( )                 { return( winRadix ); }
-void SimWin::setRadix( int rdx )        { winRadix = ::setRadix( rdx ); }
+int SimWin::getRadix( ) { 
+    
+    return( winRadix ); 
+}
 
-int SimWin::getWinStack( )              {  return( winStack ); }
-void SimWin::setWinStack( int wCol )    { winStack = wCol; }
+void SimWin::setRadix( int rdx ) { 
+    
+    if      ( rdx == 10 )   winRadix = 10;
+    else if ( rdx == 16 )   winRadix = 16;
+    else                    winRadix = 10;
+}
+
+int SimWin::getWinStack( ) {  
+    
+    return( winStack ); 
+}
+
+void SimWin::setWinStack( int wCol ) { 
+    
+    winStack = wCol; 
+}
 
 int SimWin::getDefColumns( int rdx ) {
     
@@ -98,21 +140,53 @@ int SimWin::getDefColumns( int rdx ) {
     }
 }
 
-void SimWin::setDefColumns( int arg, int rdx ) {
-    
-    switch ( rdx ) {
-            
-        case 16:    winDefColumnsHex = arg; break;
-        case 10:    winDefColumnsDec = arg; break;
-        default:    winDefColumnsHex = winDefColumnsDec = arg;
-    }
+void SimWin::setDefColumns( int rdx10, int rdx16 ) {
+
+    winDefColumnsDec = rdx10;
+    winDefColumnsHex = rdx16;
+}
+
+char *SimWin::getWinName( ) {
+
+    return ( winName );
 }
 
 //----------------------------------------------------------------------------------------
-// "setWinOrigin" sets the absolute cursor position for the terminal screen. We
-// maintain absolute positions, which only may change when the terminal screen
-// is redrawn with different window sizes. The window relative rows and column 
-// cursor position are set at (1,1).
+// Each window allows perhaps toggling through different content. The implementation 
+// of this capability is entirely up to the specific window. On the "WT" command, these
+// functions are used.
+//
+//----------------------------------------------------------------------------------------
+void SimWin::setWinToggleLimit( int limit ) { 
+    
+    winToggleLimit = limit; 
+}
+
+int SimWin::getWinToggleLimit( ) { 
+    
+    return ( winToggleLimit ); 
+}
+
+void SimWin::setWinToggleVal( int val ) { 
+    
+    winToggleVal = ( val > winToggleLimit ) ? winToggleLimit : val; 
+}
+
+int  SimWin::getWinToggleVal( ) { 
+    
+    return ( winToggleVal ); 
+}
+
+void SimWin::toggleWin( ) { 
+    
+    winToggleVal = ( winToggleVal + 1 ) % winToggleLimit; 
+}
+
+//----------------------------------------------------------------------------------------
+// "setWinOrigin" sets the absolute cursor position for the terminal screen. We maintain
+// absolute positions, which only may change when the terminal screen is redrawn with 
+// different window sizes. The window relative rows and column cursor position are set at
+// (1,1).
 //
 //----------------------------------------------------------------------------------------
 void SimWin::setWinOrigin( int row, int col ) {
@@ -168,14 +242,12 @@ void SimWin::padField( int dLen, int fLen ) {
 // format descriptor. If the field length is larger than the positions needed to print
 // the data in the field, the data will be printed left or right justified in the field.
 //
-// ??? use print number .... 
-// ??? what to do about the radix ?
 //----------------------------------------------------------------------------------------
-void SimWin::printNumericField( T64Word val, 
-                                uint32_t fmtDesc, 
-                                int fLen, 
-                                int row, 
-                                int col ) {
+void SimWin::printNumericField( T64Word     val, 
+                                uint32_t    fmtDesc, 
+                                int         fLen, 
+                                int         row, 
+                                int         col ) {
     
     if ( row == 0 )                     row     = lastRowPos;
     if ( col == 0 )                     col     = lastColPos;
@@ -214,11 +286,11 @@ void SimWin::printNumericField( T64Word val,
 // If the data is larger than the field, it will be truncated.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::printTextField( char *text, 
-                             uint32_t fmtDesc, 
-                             int fLen, 
-                             int row, 
-                             int col ) {
+void SimWin::printTextField( char       *text, 
+                             uint32_t   fmtDesc, 
+                             int        fLen, 
+                             int        row, 
+                             int        col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
@@ -243,7 +315,6 @@ void SimWin::printTextField( char *text,
             
             glb -> console -> printText( text, dLen );
             padField( dLen, fLen );
-           
         }
         else {
             
@@ -286,7 +357,7 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
             
         case 10: printTextField((char *) "dec", fmtDesc, 3, row, col); break;
         case 16: printTextField((char *) "hex", fmtDesc, 3, row, col); break;
-        default: ;
+        default: printTextField((char *) "***", fmtDesc, 3, row, col);
     }
 }
 
@@ -295,29 +366,34 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 // the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::printWindowIdField( int stack, 
-                                 int index, 
-                                 bool current, 
-                                 uint32_t fmtDesc, 
-                                 int row, 
-                                 int col ) {
+void SimWin::printWindowIdField( int        stack, 
+                                 int        index, 
+                                 char       *name,
+                                 bool       current, 
+                                 uint32_t   fmtDesc, 
+                                 int        row, 
+                                 int        col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if (( index >= 0   ) && ( index <= 10 ))  
-        glb -> console -> writeChars((char *) "(%1d:%1d)  ", stack, index );
-    else if (( index >= 10  ) && ( index <= 99 ))   
-        glb -> console -> writeChars((char *) "(%1d:%2d) ", stack, index );
+    if (( index >= 10  ) && ( index <= 99 ))   
+        glb -> console -> writeChars((char *) "(%1d:%02d)  ", stack, index );
     else                                            
         glb -> console -> writeChars((char *) "-***-" );
     
     glb -> console -> writeChars((( current ) ? (char *) "* " : (char *) "  " ));
-    
+
     lastRowPos  = row;
     lastColPos  = col + 9;
+
+    if ( strlen( getWinName( )) > 0 ) {
+
+        glb -> console -> writeChars( "\"%8s\"", getWinName( ));
+        lastColPos = lastColPos + strlen( getWinName( ) + 2 );
+    } 
 }
 
 //----------------------------------------------------------------------------------------
@@ -362,13 +438,6 @@ void SimWin::reDraw( ) {
     }
 }
 
-//----------------------------------------------------------------------------------------
-// Each window allows perhaps toggling through different content. The implementation 
-// of this capability is entirely up to the specific window. On the "WT" command, this
-// function will be called.
-//
-//----------------------------------------------------------------------------------------
-void SimWin::toggleWin( ) { }
 
 //****************************************************************************************
 //****************************************************************************************
@@ -385,18 +454,45 @@ SimWinScrollable::SimWinScrollable( SimGlobals *glb ) : SimWin( glb ) { }
 // Getter/Setter methods for scrollable window attributes.
 //
 //----------------------------------------------------------------------------------------
-T64Word SimWinScrollable::getHomeItemAdr( )                 { return( homeItemAdr ); }
-void    SimWinScrollable::setHomeItemAdr( T64Word adr )     { homeItemAdr = adr; }
+T64Word SimWinScrollable::getHomeItemAdr( ) { 
+    
+    return( homeItemAdr ); 
+}
 
-T64Word SimWinScrollable::getCurrentItemAdr( )              { return( currentItemAdr ); }
-void    SimWinScrollable::setCurrentItemAdr( T64Word adr )  { currentItemAdr = adr; }
+void SimWinScrollable::setHomeItemAdr( T64Word adr ) { 
+    
+    homeItemAdr = adr; 
+}
 
-T64Word SimWinScrollable::getLimitItemAdr( )                { return( limitItemAdr ); }
-void    SimWinScrollable::setLimitItemAdr( T64Word adr )    { limitItemAdr = adr; }
+T64Word SimWinScrollable::getCurrentItemAdr( ) { 
+    
+    return( currentItemAdr ); 
+}
 
-T64Word SimWinScrollable::getLineIncrement( )               { return( lineIncrement ); }
-void    SimWinScrollable::setLineIncrement( T64Word arg )   { lineIncrement = arg; }
+void SimWinScrollable::setCurrentItemAdr( T64Word adr ) { 
+    
+    currentItemAdr = adr; 
+}
 
+T64Word SimWinScrollable::getLimitItemAdr( ) { 
+    
+    return( limitItemAdr ); 
+}
+
+void SimWinScrollable::setLimitItemAdr( T64Word adr ) { 
+    
+    limitItemAdr = adr; 
+}
+
+T64Word SimWinScrollable::getLineIncrement( ) { 
+    
+    return( lineIncrement ); 
+}
+
+void SimWinScrollable::setLineIncrement( T64Word arg ) { 
+    
+    lineIncrement = arg; 
+}
 
 //----------------------------------------------------------------------------------------
 // The scrollable window inherits from the general window. While the banner part of
@@ -487,6 +583,7 @@ void SimWinScrollable::winBackward( T64Word amt ) {
     else currentItemAdr = 0;
 }
 
+
 //****************************************************************************************
 //****************************************************************************************
 //
@@ -509,7 +606,7 @@ void SimWinOutBuffer::initBuffer( ) {
     topIndex     = 0;
     cursorIndex  = 0;
     charPos      = 0;
-    screenSize   = 0;
+    screenLines   = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -600,7 +697,7 @@ void SimWinOutBuffer::scrollUp( int lines ) {
     int oldestValid   = ( topIndex - ( MAX_WIN_OUT_LINES - lines ) + MAX_WIN_OUT_LINES )
                           % MAX_WIN_OUT_LINES;
 
-    int scrollUpLimit = ( oldestValid + screenSize ) % MAX_WIN_OUT_LINES;
+    int scrollUpLimit = ( oldestValid + screenLines ) % MAX_WIN_OUT_LINES;
     
     if ( cursorIndex != scrollUpLimit ) {
         
@@ -650,6 +747,6 @@ void SimWinOutBuffer::resetLineCursor( ) {
 
 void SimWinOutBuffer::setScrollWindowSize( int size ) {
     
-    screenSize = size;
+    screenLines = size;
 }
 

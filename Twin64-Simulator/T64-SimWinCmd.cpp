@@ -367,7 +367,7 @@ void SimCommandsWin::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setRows( 21 );
     setColumns( 128 );
-    setDefColumns( 128 );
+    setDefColumns( 128, 128 );
     setWinType( WT_CMD_WIN );
     setEnable( true );
 }
@@ -715,7 +715,7 @@ void SimCommandsWin::acceptRparen( ) {
 }
 
 
-
+#if 0
 // ??? phase out ....
 //----------------------------------------------------------------------------------------
 // "displayInvalidWord" shows a set of "*" when we cannot get a value for word. We 
@@ -764,59 +764,42 @@ void SimCommandsWin::displayHalfWord( uint32_t val, int rdx ) {
     }
     else winOut -> writeChars( "**num**" );
 }
-
+#endif
 
 
 //----------------------------------------------------------------------------------------
 // Display absolute memory content. We will show the memory starting with offset. The 
 // words per line is an environmental variable setting. The offset is rounded down to 
-// the next 4-byte boundary, the limit is rounded up to the next 4-byte boundary. We 
+// the next 8-byte boundary, the limit is rounded up to the next 8-byte boundary. We 
 // display the data in words. The absolute memory address range currently consist of
 // three memory objects. There is main physical memory, PDC memory and IO memory. This
 // routine will make the appropriate call.
 //
 //----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx ) {
+void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) {
     
-    uint32_t    index           = ( ofs / 4 ) * 4;
-    uint32_t    limit           = ((( index + len ) + 3 ) / 4 ) * 4;
-    int         wordsPerLine    = glb -> env -> getEnvVarInt((char *) ENV_WORDS_PER_LINE );
+    T64Word index           = ( ofs / sizeof( T64Word )) * sizeof( T64Word );
+    T64Word limit           = ((( index + len ) + 7 ) / sizeof( T64Word ) ) * sizeof( T64Word );
+    int     wordsPerLine    = glb -> env -> getEnvVarInt((char *) ENV_WORDS_PER_LINE );
 
-    #if 0
-    CpuMem      *physMem        = glb -> cpu -> physMem;
-    CpuMem      *pdcMem         = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem          = glb -> cpu -> ioMem;
-    #endif
+    // ??? get the memory object ..
 
     while ( index < limit ) {
-        
-        displayWord( index, rdx );
+
+        winOut -> printNumber( index, FMT_HEX_2_4_4 );
         winOut -> writeChars( ": " );
         
         for ( uint32_t i = 0; i < wordsPerLine; i++ ) {
             
             if ( index < limit ) {
+
+                // ??? check if valid address...
+                // ??? print words... 
                 
-                #if 0
-                if ((physMem != nullptr ) && ( physMem -> validAdr( index ))) {
-                    
-                    displayWord( physMem -> getMemDataWord( index ), rdx );
-                }
-                else if (( pdcMem != nullptr ) && ( pdcMem -> validAdr( index ))) {
-                    
-                    displayWord( pdcMem -> getMemDataWord( index ), rdx );
-                }
-                else if (( ioMem != nullptr ) && ( ioMem -> validAdr( index ))) {
-                    
-                    displayWord( ioMem -> getMemDataWord( index ), rdx );
-                }
-                else displayInvalidWord( rdx );
-                #endif
             }
             
             winOut -> writeChars( " " );
-            
-            index += 4;
+            index += 4; // ??? words per line ?
         }
         
         winOut -> writeChars( "\n" );
@@ -830,7 +813,7 @@ void  SimCommandsWin::displayAbsMemContent( uint32_t ofs, uint32_t len, int rdx 
 // word per line.
 //
 //----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, int rdx ) {
+void  SimCommandsWin::displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx ) {
     
     T64Word index           = ( ofs / 4 ) * 4;
     uint32_t    limit           = ((( index + len ) + 3 ) / 4 );
@@ -843,7 +826,7 @@ void  SimCommandsWin::displayAbsMemContentAsCode( uint32_t ofs, uint32_t len, in
 
     while ( index < limit ) {
         
-        displayWord( index, rdx );
+       //  displayWord( index, rdx ); 
         winOut -> writeChars( ": " );
         
         #if 0
@@ -1024,7 +1007,7 @@ void SimCommandsWin::printWelcome( ) {
     
     if ( glb -> console -> isConsole( )) {
         
-        winOut -> writeChars( "VCPU-32 Simulator, Version: %s, Patch Level: %d\n",
+        winOut -> writeChars( "Twin-64 Simulator, Version: %s, Patch Level: %d\n",
                              glb -> env -> getEnvVarStr((char *) ENV_PROG_VERSION ),
                              glb -> env -> getEnvVarStr((char *) ENV_PATCH_LEVEL ));
         
@@ -1313,9 +1296,10 @@ void SimCommandsWin::resetCmd( ) {
               //  glb -> cpu -> physMem -> reset( );
                 
             } break;
-                
+
             case TOK_STATS: {
-                
+
+
             } break;
                 
             case TOK_ALL: {
@@ -1347,14 +1331,13 @@ void SimCommandsWin::runCmd( ) {
 // Step command. The command will execute one instruction. Default is one instruction.
 // There is an ENV variable that will set the default to be a single clock step.
 //
-//  S [ <steps> ] [ , 'I' | 'C' ]
+//  S [ <steps> ]
 //
 //
 // ??? we need to handle the console window. It should be enabled before we pass control
 // to the CPU.
 // ??? make it the current window, saving the previous current window.
-// ??? put the console mode into non-blocking.
-// ??? hand over to the CPU.
+// ??? put the console mode into non-blocking and hand over to the CPU.
 // ??? on return from the CPU steps, enable blocking mode again and restore the current window.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::stepCmd( ) {
@@ -1366,26 +1349,13 @@ void SimCommandsWin::stepCmd( ) {
         numOfSteps = acceptNumExpr( ERR_EXPECTED_STEPS );
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
-        
-        tok -> nextToken( );
-        if      ( tok -> tokId( ) == TOK_I ) 
-            ; // glb -> cpu -> instrStep( numOfSteps );
-        else if ( tok -> tokId( ) == TOK_C ) 
-            ; // glb -> cpu -> clockStep( numOfSteps );
-        else throw ( ERR_INVALID_STEP_OPTION );
-    }
-    
     checkEOS( );
     
-    if ( glb -> env -> getEnvVarBool((char *) ENV_STEP_IN_CLOCKS )) 
-        ; //glb -> cpu -> clockStep( 1 );
-    else                                                            
-        ; // glb -> cpu -> instrStep( 1 );
+    // ??? system call ...
 }
 
 //----------------------------------------------------------------------------------------
-// Write line command.
+// Write line command. We analyze the expression and ping out the result.
 //
 //  W <expr> [ , <rdx> ]
 //
@@ -1393,7 +1363,7 @@ void SimCommandsWin::stepCmd( ) {
 void SimCommandsWin::writeLineCmd( ) {
     
     SimExpr  rExpr;
-    int      rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int      rdx;
     
     eval -> parseExpr( &rExpr );
     
@@ -1407,6 +1377,7 @@ void SimCommandsWin::writeLineCmd( ) {
         }
         else throw ( ERR_INVALID_FMT_OPT );
     }
+    else rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
     checkEOS( );
     
@@ -1420,8 +1391,10 @@ void SimCommandsWin::writeLineCmd( ) {
         } break;
             
         case TYP_NUM: {
+
+            winOut -> printNumber( rExpr.u.val, 16 ); // ??? fix ....
             
-            displayWord( rExpr.u.val, rdx );
+           // displayWord( rExpr.u.val, rdx );
             winOut -> writeChars( "\n" );
             
         } break;
@@ -1525,21 +1498,20 @@ void SimCommandsWin::redoCmd( ) {
 //----------------------------------------------------------------------------------------
 // Modify register command. This command modifies a register within a register set.
 //
-// MR <reg> <val>
+// MR <reg> <val> [ <proc> ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
     
+    int             proc        = 0;
     SimTokTypeId    regSetId    = TYP_GREG;
-    SimTokId        regId       = TOK_NIL;
     int             regNum      = 0;
-    uint32_t        val         = 0;
+    T64Word         val         = 0;
     
     if (( tok -> tokTyp( ) == TYP_GREG )        ||
         ( tok -> tokTyp( ) == TYP_CREG )        ||
         ( tok -> tokTyp( ) == TYP_PSTATE_PREG )) {
         
         regSetId    = tok -> tokTyp( );
-        regId       = tok -> tokId( );
         regNum      = tok -> tokVal( );
         tok -> nextToken( );
     }
@@ -1548,13 +1520,27 @@ void SimCommandsWin::modifyRegCmd( ) {
     if ( tok -> tokId( ) == TOK_EOS ) throw( ERR_EXPECTED_NUMERIC );
 
     val = acceptNumExpr( ERR_INVALID_NUM );
+
+    // ??? figure out which Processor...
     
     switch( regSetId ) {
+
+        case TYP_PSTATE_PREG: {
+
+
+        } break;
             
-        case TYP_GREG:  // glb -> cpu -> setReg( RC_GEN_REG_SET, regNum, val );   
-         break;
-        case TYP_CREG:   //glb -> cpu -> setReg( RC_CTRL_REG_SET, regNum, val );  
-        break;
+        case TYP_GREG: {
+
+            // glb -> cpu -> setReg( RC_GEN_REG_SET, regNum, val );   
+        
+        } break;
+
+        case TYP_CREG: {
+
+            //glb -> cpu -> setReg( RC_CTRL_REG_SET, regNum, val );
+        
+        } break;
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1573,8 +1559,8 @@ void SimCommandsWin::modifyRegCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayAbsMemCmd( ) {
     
-    uint32_t    ofs     = 0;
-    uint32_t    len     = 4;
+    T64Word     ofs     = 0;
+    T64Word     len     = sizeof( T64Word );
     int         rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     bool        asCode  = false;
 
@@ -1583,15 +1569,8 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     if ( tok -> tokId( ) == TOK_COMMA ) {
         
         tok -> nextToken( );
-        
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            len = 4;
-        }
-        else {
-
-            len = acceptNumExpr( ERR_EXPECTED_LEN );
-        }
+        if ( tok -> isToken( TOK_COMMA )) len = sizeof( T64Word );
+        else                              len = acceptNumExpr( ERR_EXPECTED_LEN );
     }
     
     if ( tok -> tokId( ) == TOK_COMMA ) {
@@ -1600,10 +1579,20 @@ void SimCommandsWin::displayAbsMemCmd( ) {
         switch(  tok -> tokId( )) {
 
             case TOK_HEX: 
-            case TOK_DEC:  rdx    = tok -> tokVal( ); break;
-            case TOK_CODE: asCode = true; break;
-            case TOK_EOS:  rdx    = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
-            default:       throw ( ERR_INVALID_FMT_OPT );
+            case TOK_DEC:  {
+                
+                rdx = tok -> tokVal( ); 
+                
+            } break;
+            
+            case TOK_CODE: {
+                
+                asCode = true; 
+            
+            } break;
+            
+            case TOK_EOS: 
+            default:        throw ( ERR_INVALID_FMT_OPT );
         }
 
         tok -> nextToken( );
@@ -1613,12 +1602,8 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     
     if (((uint64_t) ofs + len ) <= UINT32_MAX ) {
         
-        if ( asCode ) {
-            
-            displayAbsMemContentAsCode( ofs, len, 
-                glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-        }
-        else displayAbsMemContent( ofs, len, rdx );
+        if ( asCode ) displayAbsMemContentAsCode( ofs, len, rdx );
+        else          displayAbsMemContent( ofs, len, rdx );
     }
     else throw ( ERR_OFS_LEN_LIMIT_EXCEEDED );
 }
@@ -1636,50 +1621,20 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
     T64Word val = acceptNumExpr( ERR_INVALID_NUM );
 
     checkEOS( );
-
-    #if 0
-    CpuMem      *physMem    = glb -> cpu -> physMem;
-    CpuMem      *pdcMem     = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem      = glb -> cpu -> ioMem;
-    CpuMem      *mem        = nullptr;
-   
-    if      (( physMem != nullptr ) && ( physMem -> validAdr( ofs ))) mem = physMem;
-    else if (( pdcMem  != nullptr ) && ( pdcMem  -> validAdr( ofs ))) mem = pdcMem;
-    else if (( ioMem   != nullptr ) && ( ioMem   -> validAdr( ofs ))) mem = ioMem;
-
-    if (( ofs + 4 ) > UINT32_MAX ) throw ( ERR_OFS_LEN_LIMIT_EXCEEDED );
-
-    mem -> putMemDataWord( ofs, val );
-
-    #endif  
+    
+    // ??? call the system memory ...
 }
 
 //----------------------------------------------------------------------------------------
 // Display cache entries command.
 //
-//  DCA ( 'I' | 'D' | 'U' ) <index> [ , <len> [ , <fmt> ]]
+//  DCA <proc> <cache> <set> <index> [ , <len> [ , <fmt> ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayCacheCmd( ) {
     
    //  CpuMem      *cPtr           = nullptr;
    
     int rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
-
-    if ( tok -> tokId( ) == TOK_I ) {
-        
-    //    cPtr = glb -> cpu -> iCacheL1;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_D ) {
-        
-   //     cPtr = glb -> cpu -> dCacheL1;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_U ) {
-        
-            tok -> nextToken( );
-    }
-    else throw ( ERR_CACHE_TYPE );
     
     int index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     int len   = 1;
@@ -1713,30 +1668,14 @@ void SimCommandsWin::displayCacheCmd( ) {
     
     checkEOS( );
 
-     
+    // ??? do the work .... 
     
-    #if 0
-    if ( cPtr != nullptr ) {
-        
-        uint32_t blockEntries = cPtr -> getBlockEntries( );
-        
-        if (( index > blockEntries ) || ( index + len > blockEntries )) {
-            
-            throw ( ERR_CACHE_SIZE_EXCEEDED );
-        }
-        
-        if ( len == 0 ) len = blockEntries;
-        
-        displayCacheEntries( cPtr, index, len, rdx );
-        winOut -> printChars( "\n" );
-    }
-    #endif
 }
 
 //----------------------------------------------------------------------------------------
 // Purges a cache line from the cache.
 //
-//  PCA ('I' | 'D' | 'U' ) <index> [ , <set> [, 'F' ]]",
+//  DCA <proc> <cache> <set> <index>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
@@ -1744,22 +1683,6 @@ void SimCommandsWin::purgeCacheCmd( ) {
     uint32_t    index           = 0;
     uint32_t    set             = 0;
     bool        flush           = false;
-    
-    if ( tok -> tokId( ) == TOK_I ) {
-        
-       // cPtr = glb -> cpu -> iCacheL1;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_D ) {
-        
-      //  cPtr = glb -> cpu -> dCacheL1;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_U ) {
-        
-       
-    }
-    else throw ( ERR_CACHE_TYPE );
 
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
@@ -1769,60 +1692,51 @@ void SimCommandsWin::purgeCacheCmd( ) {
         set = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
+    checkEOS( );
+
+    // ??? do the work ...
+
+}
+
+//----------------------------------------------------------------------------------------
+// Flushes a cache line from the cache.
+//
+// FCA <proc> <cache> <set> <index>
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::flushCacheCmd( ) {
+    
+  //  CpuMem      *cPtr           = nullptr;
+    uint32_t    index           = 0;
+    uint32_t    set             = 0;
+    bool        flush           = false;
+    
+    index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+    
     if ( tok -> tokId( ) == TOK_COMMA ) {
         
         tok -> nextToken( );
-        
-        if ( tok -> isToken( TOK_F )) flush = true;
-        else throw ( ERR_INVALID_ARG );
-        
-        tok -> nextToken( );
+        set = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
     checkEOS( );
     
-    #if 0
-    if ( cPtr != nullptr ) {
-        
-        if ( set > cPtr -> getBlockSets( ) - 1 ) throw ( ERR_CACHE_SET_NUM );
-        
-        MemTagEntry  *tagEntry = cPtr -> getMemTagEntry( index, set );
-        if ( tagEntry != nullptr ) {
-            
-            tagEntry -> valid = false;
-        }
-        else throw ( ERR_CACHE_PURGE_OP );
-    }
-    #endif
+    
+    // ??? do the work ....
 }
 
 //----------------------------------------------------------------------------------------
 // Display TLB entries command.
 //
-//  DTLB ( 'I' | 'D' ) <index> [ , <len> [ , <rdx> ]]
+//  DTLB <proc> <tlb> <set> <index> [ , <len> [ , <rdx> ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayTLBCmd( ) {
     
     uint32_t    index       = 0;
     uint32_t    len         = 0;
     uint32_t    tlbSize     = 0;
-  //  CpuTlb      *tPtr       = nullptr;
+  
     int         rdx         = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
-    if ( tok -> tokId( ) == TOK_I ) {
-        
-      //  tlbSize = glb -> cpu -> iTlb -> getTlbSize( );
-     //   tPtr    = glb -> cpu -> iTlb;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_D ) {
-        
-     //   tlbSize = glb -> cpu -> dTlb -> getTlbSize( );
-     //   tPtr    = glb -> cpu -> dTlb;
-        tok -> nextToken( );
-    }
-    else throw ( ERR_TLB_TYPE );
-
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
     if ( tok -> tokId( ) == TOK_COMMA ) {
@@ -1865,39 +1779,14 @@ void SimCommandsWin::displayTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 // Insert into TLB command.
 //
-//  ITLB ( 'I' | 'D' ) <extAdr> <argAcc> <argAdr>
+//  ITLB <proc> <tlb> <info1> <info2>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
     
     SimExpr     rExpr;
-  //  CpuTlb      *tPtr           = nullptr;
-    uint32_t    seg             = 0;
-    uint32_t    ofs             = 0;
-    uint32_t    argAcc          = 0;
-    uint32_t    argAdr          = 0;
+ 
     
     #if 0
-    if ( tok -> tokId( ) == TOK_I ) {
-        
-        tPtr = glb -> cpu -> iTlb;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_D ) {
-        
-        tPtr = glb -> cpu -> dTlb;
-        tok -> nextToken( );
-    }
-    else throw ( ERR_TLB_TYPE );
-    
-    eval -> parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_EXT_ADR ) {
-        
-        seg = rExpr.seg;
-        ofs = rExpr.ofs;
-    }
-    else throw ( ERR_EXPECTED_EXT_ADR );
-    
     eval -> parseExpr( &rExpr );
     
     if ( rExpr.typ == TYP_NUM ) argAcc = rExpr.u.val;
@@ -1915,7 +1804,8 @@ void SimCommandsWin::insertTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 // Purge from TLB command.
 //
-//  PTLB ( 'I' | 'D' ) <extAdr>"
+//  PTLB <proc> <tlb> <adr>
+//  
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
     
@@ -2523,6 +2413,7 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                         
                     case CMD_D_CACHE:       displayCacheCmd( );             break;
                     case CMD_P_CACHE:       purgeCacheCmd( );               break;
+                    case CMD_F_CACHE:       flushCacheCmd( );               break;
                         
                     case CMD_WON:           winOnCmd( );                    break;
                     case CMD_WOFF:          winOffCmd( );                   break;

@@ -28,21 +28,6 @@
 #include "T64-SimDeclarations.h"
 
 //----------------------------------------------------------------------------------------
-//
-//  Windows:
-//
-//  Program Regs    -> PS
-//  General Regs    -> GR
-//  Special Regs    -> CR
-//  Program Code    -> PC
-//  TLB             -> IT, DT
-//  Cache           -> IC, DC, UC
-//  Text Window     -> TX
-//  User Defined    -> UW
-//
-//----------------------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.
 //
 //----------------------------------------------------------------------------------------
@@ -151,13 +136,17 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
                         
                         while ( escSeqStart < src ) *dst++ = *escSeqStart++;
                         
-                    } else continue;
+                    } 
+                    else continue;
                     
-                } else break;
+                } 
+                else break;
                 
-            } else *dst++ = *src++;
+            } 
+            else *dst++ = *src++;
             
-        } else *dst++ = *src++;
+        } 
+        else *dst++ = *src++;
     }
     
     *dst = '\0';
@@ -169,7 +158,7 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 //****************************************************************************************
 //****************************************************************************************
 //
-// Methods for the Program State Window class.
+// Methods for the Program State Window class. This is the main window for a processor.
 //
 //----------------------------------------------------------------------------------------
 // Object creator.
@@ -184,14 +173,16 @@ SimWinProgState::SimWinProgState( SimGlobals *glb ) : SimWin( glb ) { }
 //----------------------------------------------------------------------------------------
 void SimWinProgState::setDefaults( ) {
     
+    setWinType( WT_PROC_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 12 + ( 4 * 21 ), 16 );
-    setDefColumns( 12 + ( 4 * 21 ), 10 );
+    setDefColumns(( 12 + ( 4 * 21 )), ( 12 + ( 4 * 21 )));
     setRadix( 16 );
     setRows( 4 );
-
-    setWinType( WT_PS_WIN );
+    setWinToggleLimit( 1 );
+    setWinToggleVal( 0 );
     setEnable( true );
+
+    // ??? what other fields for proc ?
 }
 
 //----------------------------------------------------------------------------------------
@@ -210,43 +201,27 @@ void SimWinProgState::setRadix( int rdx ) {
 // inverse and contains summary or head data for the window. The program state banner
 // lists the instruction address and the status word.
 //
+// Format:
+//
+//  <winId> Proc: n IA: 0x00_0000_0000 ST: [xxxxxxx] <rdx>
+//
 //----------------------------------------------------------------------------------------
 void SimWinProgState::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE | FMT_ALIGN_LFT ;
     
     setWinCursor( 1, 1 );
-    printTextField((char *) "Program State", ( fmtDesc ), 16 );
-    
-    printTextField((char *) "Seg:", fmtDesc, 5 );
 
-    printTextField((char *) "Ofs:", fmtDesc, 5 );
+    printTextField((char *) "Proc: ", fmtDesc );
+    printNumericField( 0, fmtDesc | FMT_DEC );
 
-    printTextField((char *) "ST:", fmtDesc, 4 );
+    printTextField((char *) "IA: ", fmtDesc );
+    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
-    #if 0
-    // IA Seg: 0x0_0000, Ofs: 0x0000_0000_0000_0000, ST: .........
-   
-    printNumericField( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_0 ) & 0xFFFF, fmtDesc | FMT_HALF_WORD, 8 );
-    
-    printNumericField( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1 ), fmtDesc, 12 );
-    
-    uint32_t stat = glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_0 );
-    
-    printTextField(( getBit( stat, ST_MACHINE_CHECK )) ? (char *) "M" : (char *) "m", fmtDesc );
-    printTextField(( getBit( stat, ST_EXECUTION_LEVEL )) ? (char *) "X" : (char *) "x", fmtDesc );
-    printTextField(( getBit( stat, ST_CODE_TRANSLATION_ENABLE )) ? (char *) "C" : (char *) "c", fmtDesc );
-    printTextField(( getBit( stat, ST_NULLIFY )) ? (char *) "N" : (char *) "n", fmtDesc );
-    printTextField(( getBit( stat, ST_DIVIDE_STEP )) ? (char *) "V" : (char *) "v", fmtDesc );
-    printTextField(( getBit( stat, ST_CARRY )) ? (char *) "C" : (char *) "c", fmtDesc );
-    
-    printTextField(( getBit( stat, ST_REC_COUNTER )) ? (char *) "R" : (char *) "r", fmtDesc );
-    printTextField(( getBit( stat, ST_SINGLE_STEP )) ? (char *) "Z" : (char *) "z", fmtDesc );
-    printTextField(( getBit( stat, ST_DATA_TRANSLATION_ENABLE )) ? (char *) "D" : (char *) "d", fmtDesc );
-    printTextField(( getBit( stat, ST_PROTECT_ID_CHECK_ENABLE )) ? (char *) "P" : (char *) "p", fmtDesc );
-    printTextField(( getBit( stat, ST_INTERRUPT_ENABLE )) ? (char *) "E" : (char *) "e", fmtDesc );
-    #endif
-    
+    printTextField((char *) "ST: [", fmtDesc );
+    // ??? print status bits ...
+    printTextField((char *) "]", fmtDesc );
+
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }
@@ -255,157 +230,78 @@ void SimWinProgState::drawBanner( ) {
 // Each window consist of a banner and a body. The body lines are displayed after the
 // banner line. The program state window body lists the general registers.
 //
+// Format:
+//
+//  R0:  0x0000_0000_0000_0000 0x... 0x... 0x...
+//  R4:  0x0000_0000_0000_0000 0x... 0x... 0x...
+//  R8:  0x0000_0000_0000_0000 0x... 0x... 0x...
+//  R12: 0x0000_0000_0000_0000 0x... 0x... 0x...
+//
+//  PID: 0x0000_0000_0000_0000 0x... 0x... 0x...
+//
+// The window supports the toggle concept. We should as default only the GRs.
+// Toggle to CRs. Perhaps toggle to more formatted screens...
+// 
 //----------------------------------------------------------------------------------------
 void SimWinProgState::drawBody( ) {
     
     uint32_t fmtDesc = FMT_DEF_ATTR;
     
-    setWinCursor( 2, 1 );
-    printTextField((char *) "GR0=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 0; i < 4; i++ ) {
+    if ( getWinToggleVal( ) == 0 ) {
 
-        // ??? issue. these routines do not know anything about the cursor pos---
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
+        setWinCursor( 2, 1 );
+        printTextField((char *) "GR0=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+    
+        for ( int i = 0; i < 4; i++ ) {
+
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+        }
+
+        padLine( fmtDesc );
+
+        setWinCursor( 3, 1 );
+        printTextField((char *) "G4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+    
+        for ( int i = 4; i < 7; i++ ) {
+
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+        }
+
+        padLine( fmtDesc );
+
+        setWinCursor( 4, 1 );
+        printTextField((char *) "GR8=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+    
+        for ( int i = 8; i < 12; i++ ) {
+
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+        }
+
+        padLine( fmtDesc );
+
+        setWinCursor( 5, 1 );
+        printTextField((char *) "GR12=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+    
+        for ( int i = 12; i < 16; i++ ) {
+
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+        }
+
+        padLine( fmtDesc );
+    } 
+    else if ( getWinToggleVal( ) == 1 ) {
+
+        // ??? other toggle windows to come ...
+
     }
+    else {
 
-    padLine( fmtDesc );
-    setWinCursor( 3, 1 );
-    printTextField((char *) "GR4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 4; i < 8; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
+        // ??? internal error ???
     }
-
-    padLine( fmtDesc );
-    setWinCursor( 4, 1 );
-    printTextField((char *) "GR8=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 8; i < 12; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
-    setWinCursor( 5, 1 );
-    printTextField((char *) "GR12=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 12; i < 16; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
-}
-
-//****************************************************************************************
-//****************************************************************************************
-//
-// Methods for the special register window class.
-//
-//----------------------------------------------------------------------------------------
-// Object constructor.
-//
-//----------------------------------------------------------------------------------------
-SimWinSpecialRegs::SimWinSpecialRegs( SimGlobals *glb )  : SimWin( glb ) { }
-
-//----------------------------------------------------------------------------------------
-// The default values are the initial settings when windows is brought up the first 
-// time, or for the WDEF command.
-//
-//----------------------------------------------------------------------------------------
-void SimWinSpecialRegs::setDefaults( ) {
-    
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 12 + ( 4 * 21 ), 16 );
-    setDefColumns( 12 + ( 4 * 21 ), 10 );
-    setRadix( 16 );
-    setRows( 5 );
-
-    setWinType( WT_CR_WIN );
-    setEnable( false );
-}
-
-//----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the
-// radix chosen.
-//
-//----------------------------------------------------------------------------------------
-void SimWinSpecialRegs::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( getRadix( )));
-}
-
-//----------------------------------------------------------------------------------------
-// The banner line for the special register window.
-//
-//----------------------------------------------------------------------------------------
-void SimWinSpecialRegs::drawBanner( ) {
-    
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-    
-    setWinCursor( 1, 1 );
-    printTextField((char *) "Special Reg", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    padLine( fmtDesc );
-    printRadixField( fmtDesc | FMT_LAST_FIELD );
-}
-
-//----------------------------------------------------------------------------------------
-// Each window consist of a banner and a body. The body lines are displayed after the
-// banner line. We currently just display all control registers. A later version may 
-// print the registers a bit more formatted with respect to their content.
-//
-//----------------------------------------------------------------------------------------
-void SimWinSpecialRegs::drawBody( ) {
-    
-    uint32_t fmtDesc = FMT_DEF_ATTR;
-    
-    setWinCursor( 2, 1 );
-    printTextField((char *) "SR0=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 0; i < 4; i++ ) {
-
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
-    setWinCursor( 3, 1 );
-    printTextField((char *) "SR4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 4; i < 8; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
-    setWinCursor( 4, 1 );
-    printTextField((char *) "SR8=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 8; i < 12; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
-    setWinCursor( 5, 1 );
-    printTextField((char *) "SR12=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
-    
-    for ( int i = 12; i < 16; i++ ) {
-        
-        glb -> console -> printNumber( 0, fmtDesc );
-        glb -> console -> printBlanks( 2 );
-    }
-
-    padLine( fmtDesc );
 }
 
 //****************************************************************************************
@@ -419,9 +315,9 @@ void SimWinSpecialRegs::drawBody( ) {
 SimWinAbsMem::SimWinAbsMem( SimGlobals *glb ) : SimWinScrollable( glb ) { }
 
 //----------------------------------------------------------------------------------------
-// The default values are the initial settings when windows is brought up the first time, or for the WDEF
-// command. The memory window is a window where the number of lines to display can be set. However, the
-// minimum is the default number of lines.
+// The default values are the initial settings when windows is brought up the first time,
+// or for the WDEF command. The memory window is a window where the number of lines to 
+// display can be set. However, the minimum is the default number of lines.
 //
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::setDefaults( ) {
@@ -431,7 +327,7 @@ void SimWinAbsMem::setDefaults( ) {
     setDefColumns( 12 + ( 8 * 11 ), 10 );
     setColumns( getDefColumns( getRadix( )));
     
-    setWinType( WT_PM_WIN );
+    setWinType( WT_MEM_WIN );
     setEnable( false );
     setRows( 5 );
     setHomeItemAdr( 0 );
@@ -463,30 +359,12 @@ void SimWinAbsMem::drawBanner( ) {
     uint32_t    currentAdr  = getCurrentItemAdr( );
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
 
-    #if 0
-    CpuMem      *physMem    = glb -> cpu -> physMem;
-    CpuMem      *pdcMem     = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem      = glb -> cpu -> ioMem;
-    #endif
-
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
-    
-    #if 0
-    if (( physMem != nullptr ) && ( physMem -> validAdr( currentAdr ))) {
-        
-        printTextField((char *) "Main Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    }
-    else if (( pdcMem != nullptr ) && ( pdcMem -> validAdr( currentAdr ))) {
-        
-        printTextField((char *) "PDC Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    }
-    else if (( ioMem != nullptr ) && ( ioMem -> validAdr( currentAdr ))) {
-        
-        printTextField((char *) "IO Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    }
-    else printTextField((char *) "**** Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    #endif
+    printWindowIdField( getWinStack( ), 
+                        getWinIndex( ), 
+                        getWinName( ), 
+                        isCurrent,
+                        fmtDesc );
     
     printTextField((char *) "Current " );
     printNumericField( getCurrentItemAdr( ));
@@ -574,7 +452,7 @@ void SimWinCode::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setColumns( 84 );
-    setDefColumns( 84 );
+    setDefColumns( 84, 84 );
     setRows( 9 );
     setHomeItemAdr( 0 );
 
@@ -583,7 +461,7 @@ void SimWinCode::setDefaults( ) {
 
     setLineIncrement( 4 );
     setLimitItemAdr( UINT_MAX );
-    setWinType( WT_PC_WIN );
+    setWinType( WT_CODE_WIN );
     setEnable( false );
 }
 
@@ -613,10 +491,12 @@ void SimWinCode::drawBanner( ) {
         else if ( currentIaOfs < currentIa )       winJump( currentIaOfs );
     }
     
-    // ??? do we show seg and offset ?
-
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( getWinStack( ), 
+                        getWinIndex( ), 
+                        getWinName( ), 
+                        fmtDesc );
+
     printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
     printTextField((char *) "Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4_4 );
@@ -702,9 +582,10 @@ void SimWinCode::drawLine( T64Word itemAdr ) {
 // Object constructor. All we do is to remember what kind of TLB this is.
 //
 //----------------------------------------------------------------------------------------
-SimWinTlb::SimWinTlb( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) {
-    
-    this -> winType = winType;
+SimWinTlb::SimWinTlb( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) { 
+
+    setWinType( winType );
+    setDefaults( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -721,24 +602,22 @@ void SimWinTlb::setDefaults( ) {
     setDefColumns( 102, 8 );
     setDefColumns( 84, 10 );
     setColumns( getDefColumns( getRadix( )));
-    setWinType( winType );
     setEnable( false );
     setRows( 5 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
     setLimitItemAdr( 0 );
-    
-    #if 0
-    if      ( winType == WT_ITLB_WIN ) tlb = glb -> cpu -> iTlb;
-    else if ( winType == WT_DTLB_WIN ) tlb = glb -> cpu -> dTlb;
-    #endif
-
+    setWinToggleLimit( 0 );
+    setWinToggleVal( 0 );
+  
+    // ??? what to set for proc, tlb-num, etc.
 }
 
 //----------------------------------------------------------------------------------------
 // The window overrides the setRadix method to set the column width according to the
 // radix chosen.
 //
+// ??? can be factored out ?
 //----------------------------------------------------------------------------------------
 void SimWinTlb::setRadix( int rdx ) {
     
@@ -752,78 +631,75 @@ void SimWinTlb::setRadix( int rdx ) {
 // item address limit. As this can change with some commands outside the windows system,
 // better set it every time.
 //
+// Format:
+//
+//  <windId> Proc: n Tlb: n Set: n Current: 0x0000.  <rdx>
+// 
 //----------------------------------------------------------------------------------------
 void SimWinTlb::drawBanner( ) {
     
     uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
+
+    setLimitItemAdr( 1000 ); // fix ....
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
-    
-    if      ( winType == WT_ITLB_WIN ) printTextField((char *) "I-TLB ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    else if ( winType == WT_DTLB_WIN ) printTextField((char *) "D-TLB ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    else                               printTextField((char *) "***** ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    
+    printWindowIdField( getWinStack( ), 
+                        getWinIndex( ), 
+                        getWinName( ), 
+                        isCurrent,
+                        fmtDesc );
+
+    printTextField((char *) "Proc: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+
+    printTextField((char *) "Tlb: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+
+    printTextField((char *) "Set: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+
     printTextField((char *) "Current: " );
-    printNumericField( getCurrentItemAdr( ));
-    printTextField((char *) "  Home: " );
-    printNumericField(  getHomeItemAdr( ));
+    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4 );
+
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
-    
-    // setLimitItemAdr( tlb -> getTlbSize( ));
-    setLimitItemAdr( 1000 );
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a banner and a body. The body lines are displayed after the banner line. The
-// number of lines can vary. A line represents an entry in the respective TLB.
+// Each window consist of a banner and a body. The body lines are displayed after the 
+// banner line. The number of lines can vary. A line represents an entry in the respective
+// TLB.
 //
+// Format:
+//
+//  (0x0000) [xxxx][xx] : va: 0x00_0000_0000_0000 pa: 0x00_0000_0000 Pid: 0x0000_0000
 //----------------------------------------------------------------------------------------
 void SimWinTlb::drawLine( T64Word index ) {
 
-    // Format:
-//
-// (0x0000) [xxxx][xx] ∏: 0x0_0000_0000_0000 pa: 0x00_0000_0000 Pid: 0x0000_0000
-
-    
     uint32_t  fmtDesc = FMT_DEF_ATTR;
-    
-    printNumericField( index, fmtDesc );
-    printTextField((char *) ":[", fmtDesc );
-    
-    #if 0
-    if ( index > tlb -> getTlbSize( )) {
-  
-        printTextField((char *) "Invalid TLB index", fmtDesc );
-        printTextField((char *) "]", fmtDesc );
-        padLine( );
-    }
-    else {
-        
-        TlbEntry   *tEntry  = tlb -> getTlbEntry( index );
-        char            tmpBuf[ 32 ];
-        
-        printTextField((( tEntry -> tValid( )) ? (char *) "V" : (char *) "v" ), fmtDesc );
-        printTextField((( tEntry -> tDirty( )) ? (char *) "D" : (char *) "d" ), fmtDesc );
-        printTextField((( tEntry -> tTrapPage( )) ? (char *) "P" : (char *) "p" ), fmtDesc );
-        printTextField((( tEntry -> tTrapDataPage( )) ? (char *) "D" : (char *) "d" ), fmtDesc );
-        printTextField((char *) "]", fmtDesc );
-        
-        buildAccessRightsStr( tmpBuf, 32, tEntry ->tPageType( ), tEntry -> tPrivL1( ), tEntry -> tPrivL2( ));
-        printTextField((char *) " ACC:", fmtDesc );
-        printTextField( tmpBuf, fmtDesc );
-        printTextField((char *) " PID:", fmtDesc );
-        printNumericField( tEntry -> tSegId( ), fmtDesc| FMT_HALF_WORD );
-        printTextField((char *) " VPN:", fmtDesc );
-        printNumericField( tEntry -> vpnHigh, fmtDesc );
-        printTextField((char *) ".", fmtDesc );
-        printNumericField( tEntry -> vpnLow, fmtDesc );
-        printTextField((char *) " PPN:", fmtDesc );
-        printNumericField( tEntry -> tPhysPage( ), fmtDesc );
-    }
-    #endif
+
+    // ??? get the entry ....
+
+    printTextField((char *) "(", fmtDesc );
+    printNumericField( index, fmtDesc | FMT_HEX_4 );
+    printTextField((char *) "):[", fmtDesc );
+
+    printTextField((char *) "][", fmtDesc );
+
+    printTextField((char *) "]", fmtDesc );
+
+    printTextField((char *) "va: ", fmtDesc );
+
+    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
+
+    printTextField((char *) "pa: ", fmtDesc );
+
+    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
+
+    printTextField((char *) "pid: ", fmtDesc );
+
+    printNumericField( 0, fmtDesc | FMT_HEX_4_4 );
 }
 
 //****************************************************************************************
@@ -835,9 +711,10 @@ void SimWinTlb::drawLine( T64Word index ) {
 // Object constructor. All we do is to remember what kind of Cache this is.
 //
 //----------------------------------------------------------------------------------------
-SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) {
-    
-    this -> winType = winType;
+SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) { 
+
+    setWinType( winType );
+    setDefaults( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -849,12 +726,6 @@ SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb
 //----------------------------------------------------------------------------------------
 void SimWinCache::setDefaults( ) {
     
-    #if 0
-    if      ( winType == WT_ICACHE_WIN )    cPtr = glb -> cpu -> iCacheL1;
-    else if ( winType == WT_DCACHE_WIN )    cPtr = glb -> cpu -> dCacheL1;
-    else if ( winType == WT_UCACHE_WIN )    cPtr = glb -> cpu -> uCacheL2;
-    #endif
-
     // uint32_t wordsPerBlock = cPtr -> getBlockSize( ) / 4;
     uint32_t wordsPerBlock = 4;
     
@@ -864,34 +735,25 @@ void SimWinCache::setDefaults( ) {
     setDefColumns( 36 + ( wordsPerBlock * 11 ), 10 );
     setColumns( getDefColumns( getRadix( )));
     setRows( 6 );
-    setWinType( winType );
     setEnable( false );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
     setLimitItemAdr( 0 );
-    winToggleVal = 0;
+    setWinToggleLimit( 0 );  // ??? fix: use number of sets
+    setWinToggleVal( 0 );
+
+    // ??? what fields for proc, cache-num, etc. ???
 }
 
 //----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the radix chosen.
+// The window overrides the setRadix method to set the column width according to the 
+// radix chosen.
 //
 //----------------------------------------------------------------------------------------
 void SimWinCache::setRadix( int rdx ) {
     
     SimWin::setRadix( rdx );
     setColumns( getDefColumns( getRadix( )));
-}
-
-//----------------------------------------------------------------------------------------
-// We allow for toggling through the sets if the cache is an n-way associative cache.
-//
-//----------------------------------------------------------------------------------------
-void SimWinCache::toggleWin( ) {
-    
-    // uint32_t blockSize   = cPtr -> getBlockSets( );
-    int blockSize = 4;
-
-    winToggleVal = ( winToggleVal + 1 ) % blockSize;
 }
     
 //----------------------------------------------------------------------------------------
@@ -900,80 +762,78 @@ void SimWinCache::toggleWin( ) {
 // item address limit. As this can change with some commands outside the windows system,
 // better set it every time.
 //
+// Format:
+//
+//  <windId> Proc: n Cache: n Set: n Current: 0x0000.  <rdx>
+//
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawBanner( ) {
     
     uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
+
+    setLimitItemAdr( 1000 ); // ??? needed for scrolling ... fix
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( getWinStack( ), 
+                        getWinIndex( ), 
+                        getWinName( ),
+                        isCurrent, 
+                        fmtDesc );
+
+    printTextField((char *) "Proc: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+
+    printTextField((char *) "Cache: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Set: " );
+    printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) " Current: " );
-
-    printTextField((char *) "  Home: " );
+    printTextField((char *) "Current: " );
+    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4 );
 
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
-    
-    #if 0
-    if      ( winType == WT_ICACHE_WIN ) printTextField((char *) "I-Cache (L1) ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    else if ( winType == WT_DCACHE_WIN ) printTextField((char *) "D-Cache (L1)", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    else if ( winType == WT_UCACHE_WIN ) printTextField((char *) "U-Cache (L2)", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-    else                                 printTextField((char *) "******* ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
-  
-    setLimitItemAdr( cPtr -> getBlockEntries( ));
-    
-    printNumericField( winToggleVal, ( fmtDesc | FMT_HALF_WORD ));
-    
-    printNumericField( getCurrentItemAdr( ));
-    
-    printNumericField(  getHomeItemAdr( ));
-  
-    #endif 
 }
 
 //----------------------------------------------------------------------------------------
 // The draw line methods for the cache lists a cache entry. There are various cache
 // line sizes. And there are up to two sets of cache data.
 //
+// Format:
+//
+//  (0x0000): [xxx] [0x00_00000_0000] 0x0000_0000_0000_0000 0x... 0x... 0x... 
+// 
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawLine( T64Word index ) {
     
-    uint32_t  fmtDesc   = FMT_DEF_ATTR;
- 
-    #if 0
-    if ( index > cPtr -> getBlockEntries( )) {
+    uint32_t fmtDesc = FMT_DEF_ATTR;
+
+    printTextField((char *) "(", fmtDesc );
+    printNumericField( index, fmtDesc );
+    printTextField((char *) "): ", fmtDesc );
+
+    if ( index > 100 ) { // ??? fix ....
   
-        printNumericField( index, fmtDesc );
-        printTextField((char *) ":[", fmtDesc );
+        printTextField((char *) "[", fmtDesc );
         printTextField((char *) "Invalid Cache index", fmtDesc );
         printTextField((char *) "]", fmtDesc );
         padLine( );
     }
     else {
-        
-        MemTagEntry *tagPtr         = cPtr -> getMemTagEntry( index, winToggleVal );
-        uint32_t    *dataPtr        = (uint32_t *) cPtr -> getMemBlockEntry( index, winToggleVal );
-        uint32_t    wordsPerBlock   = cPtr -> getBlockSize( ) / 4;
-      
-        printNumericField( index, fmtDesc );
-        printTextField((char *) ":[", fmtDesc );
-        printTextField((( tagPtr -> valid ) ? (char *) "V" : (char *) "v" ), fmtDesc );
-        printTextField((( tagPtr -> dirty ) ? (char *) "D" : (char *) "d" ), fmtDesc );
-        printTextField((char *) "] (", fmtDesc );
-        printNumericField( tagPtr -> tag, fmtDesc );
-        printTextField((char *) ") ", fmtDesc );
-        
-        for ( uint32_t i = 0; i < wordsPerBlock; i++ ) {
-          
-            printNumericField( dataPtr[ i ], fmtDesc );
+
+        printTextField((char *) "[", fmtDesc );
+        printTextField((char *) "][", fmtDesc );
+        printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
+        printTextField((char *) "] ", fmtDesc );
+
+        for ( int i = 0; i < 4; i++ ) { // ??? fix ...
+            
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
             printTextField((char *) " " );
         }
     }
-    #endif
 }
 
 //****************************************************************************************
@@ -1011,8 +871,7 @@ void SimWinText::setDefaults( ) {
     
     int txWidth = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_LINE_WIDTH );
     setRadix( txWidth );
-    setDefColumns( txWidth );
-    
+    setDefColumns( txWidth, txWidth );
     setRadix( 10 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
@@ -1034,7 +893,11 @@ void SimWinText::drawBanner( ) {
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( getWinStack( ), 
+                        getWinIndex( ), 
+                        getWinName( ), 
+                        fmtDesc );
+
     printTextField((char *) "Text: ", ( fmtDesc | FMT_ALIGN_LFT ));
     printTextField((char *) fileName, ( fmtDesc | FMT_ALIGN_LFT | FMT_TRUNC_LFT ), 48 );
     printTextField((char *) "  Line: " );
@@ -1171,7 +1034,7 @@ void SimWinConsole::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setRows( 11 );
     setColumns( 80 );
-    setDefColumns( 80 );
+    setDefColumns( 80, 80 );
     setWinType( WT_CONSOLE_WIN );
     setEnable( true );
 }
