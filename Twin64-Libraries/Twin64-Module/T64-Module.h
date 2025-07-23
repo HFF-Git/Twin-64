@@ -26,6 +26,14 @@
 
 #include "T64-Common.h"
 
+enum T64ModuleType {
+
+    MT_NIL  = 0,
+    MT_PROC = 1,
+    MT_MEM  = 2,
+    MT_IO   = 3
+};
+
 //----------------------------------------------------------------------------------------
 //
 //
@@ -37,6 +45,7 @@ struct T64Module {
     T64Module( );
 
     virtual void reset( );
+    virtual void step( int steps = 0 );
 
     private:
 

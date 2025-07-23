@@ -3,7 +3,9 @@
 // Twin-64 - System
 //
 //----------------------------------------------------------------------------------------
-// This ...
+// "T64System" is the system we simulate. It consist of a set of modules. A module
+// represents a processor, a memory unit, and so on. This of the system as a bus where
+// the modules are plugged into.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -23,121 +25,84 @@
 //----------------------------------------------------------------------------------------
 #include "T64-System.h"
 
-Twin64System::Twin64System( ) {
+//----------------------------------------------------------------------------------------
+// The T64System object.
+//
+//----------------------------------------------------------------------------------------
+T64System::T64System( ) {
 
-    
-}
+    moduleTabHwm = 0;
 
+    for ( int i = 0; i < MAX_MODULES; i++ ) {
 
-// ??? quick sketch for the module address resolution....
-
-
-#define MAX_RANGES 64
-
-typedef struct {
-
-    // ??? add type 
-
-    uint64_t start;
-    uint64_t len;
-    void *ptr;
-} RangeEntry;
-
-typedef struct {
-    RangeEntry entries[MAX_RANGES];
-    size_t hwm;
-} RangeTable;
-
-void range_table_init(RangeTable *table) {
-    table->hwm = 0;
-}
-
-bool insert_range(RangeTable *table, uint64_t start, uint64_t len, void *ptr) {
-
-    if (table->hwm >= MAX_RANGES || len == 0) return false;
-
-    uint64_t end = start + len;
-
-    size_t i;
-    for (i = 0; i < table->hwm; ++i) {
-        uint64_t s = table->entries[i].start;
-        uint64_t e = s + table->entries[i].len;
-
-        if (end <= s) {
-            break;  // No overlap, insert before
-        } else if (start >= e) {
-            continue; // No overlap, check next
-        } else {
-            return false; // Overlap found
-        }
+        T64SystemMapEntry e;
+        moduleTab[ i ] = e;
     }
+}
+
+//----------------------------------------------------------------------------------------
+// Register a module in the module table. This is typically done at simulator start. The
+// modules are sorted by their SPA address range they are responsible for.
+//
+//----------------------------------------------------------------------------------------
+int T64System::registerModule(  int             mId,
+                                T64ModuleType   mType,
+                                T64Word         hpaAdr,
+                                T64Word         hpaLen,
+                                T64Word         spaAdr,
+                                T64Word         spaLen,
+                                T64Module       *handler
+                              ) {
+
+
+    if ( moduleTabHwm >= MAX_MODULES ) return( -1 );
+    if ( spaLen == 0 ) return( -1 );
+
+    T64Word spaEnd = spaAdr + spaLen;
+
+    int i;
+
+    for ( i = 0; i < moduleTabHwm; ++i ) {
+
+        T64Word  s = moduleTab[ i ].moduleSPA;
+        T64Word  e = s + moduleTab[ i ].moduleSPALen;
+
+        if      ( spaEnd <= s ) break;      // No overlap, insert before    
+        else if ( spaAdr >= e ) continue;   // No overlap, check next
+        else return ( -1 );                 // Overlap found
+    }
+
+    // ??? also check for overlapping HPA ?
 
     // Shift to make space
-    for (size_t j = table->hwm; j > i; --j) {
-        table->entries[j] = table->entries[j - 1];
+    for ( int j = moduleTabHwm; j > i; --j ) {
+
+        moduleTab[ j ] = moduleTab[ j - 1 ];
     }
 
-    table->entries[i].start = start;
-    table->entries[i].len = len;
-    table->entries[i].ptr = ptr;
-    table->hwm++;
-    return true;
+    moduleTab[ i ].moduleTyp        = mType;
+    moduleTab[ i ].moduleNum        = mId;
+    moduleTab[ i ].moduleHPA        = hpaAdr;    
+    moduleTab[ i ].moduleHPALen     = hpaLen;
+    moduleTab[ i ].moduleSPA        = spaAdr;
+    moduleTab[ i ].moduleSPALen     = spaLen;
+    moduleTab[ i ].moduleHandler    = handler;
+
+    moduleTabHwm++;
+    return ( 0 );
 }
 
-void *find_range(RangeTable *table, uint64_t value) {
-    if (table->hwm == 0)
-        return NULL;
-
-    RangeEntry *first = &table->entries[0];
-    if (value >= first->start && value < first->start + first->len)
-        return first->ptr;
-
-    for (size_t i = 1; i < table->hwm; ++i) {
-        uint64_t s = table->entries[i].start;
-        uint64_t e = s + table->entries[i].len;
-        if (value >= s && value < e)
-            return table->entries[i].ptr;
-    }
-    return NULL;
-}
-
-// Remove range with exact matching 'start'. Returns true on success.
-bool remove_range(RangeTable *table, uint64_t start) {
-    for (size_t i = 0; i < table->hwm; ++i) {
-        if (table->entries[i].start == start) {
-            // Shift down
-            for (size_t j = i + 1; j < table->hwm; ++j) {
-                table->entries[j - 1] = table->entries[j];
-            }
-            table->hwm--;
-            return true;
-        }
-    }
-    return false;
-}
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int T64System::unregisterModule( int moduleNum ) {
 
 
 
-// Returns index of the entry containing 'value', or -1 if not found
-int find_range_index(RangeTable *table, uint64_t value) {
-    if (table->hwm == 0)
-        return -1;
-
-    RangeEntry *first = &table->entries[0];
-    if (value >= first->start && value < first->start + first->len)
-        return 0;
-
-    for (size_t i = 1; i < table->hwm; ++i) {
-        uint64_t s = table->entries[i].start;
-        uint64_t e = s + table->entries[i].len;
-        if (value >= s && value < e)
-            return (int)i;
-    }
-    return -1;
-}
-
-// Removes entry at index. Returns true on success.
-bool remove_range_by_index(RangeTable *table, size_t index) {
+    #if 0
+    // Removes entry at index. Returns true on success.
+    bool remove_range_by_index(RangeTable *table, size_t index) {
     if (index >= table->hwm)
         return false;
 
@@ -146,9 +111,93 @@ bool remove_range_by_index(RangeTable *table, size_t index) {
     }
     table->hwm--;
     return true;
+    }
+    #endif
+
+    return ( 0 );
 }
 
+//----------------------------------------------------------------------------------------
+// Find the module handler based on module Id. 
+//
+//----------------------------------------------------------------------------------------
+T64Module *T64System::lookupByNum( int modNum ) {
 
+    if ( moduleTabHwm == 0 ) return ( nullptr );
 
+    for ( int i = 0; i < moduleTabHwm; i++ ) {
 
+         if ( moduleTab[ i ].moduleNum == modNum ) 
+            return ( moduleTab[ i ].moduleHandler );
+    }
 
+    return( nullptr );
+}
+    
+//----------------------------------------------------------------------------------------
+// Find the module handler based on the physical address. There ate HPA and SPA ranges
+// to check.
+//
+//----------------------------------------------------------------------------------------
+T64Module *T64System::lookupByAdr( T64Word adr ) {
+
+    if ( moduleTabHwm == 0 ) return ( nullptr );
+
+    for ( int i = 0; i < moduleTabHwm; i++ ) {
+
+        T64SystemMapEntry *p = &moduleTab[ i ];
+
+        if (( adr >= p -> moduleSPA ) && 
+            ( adr <= ( p -> moduleSPA + p -> moduleSPALen ))) {
+
+            return( p -> moduleHandler );
+        }
+
+        if (( adr >= p -> moduleHPA ) && 
+            ( adr <= ( p -> moduleHPA + p -> moduleHPALen ))) {
+
+            return( p -> moduleHandler );
+        }
+    }
+
+    return( nullptr );
+}
+
+//----------------------------------------------------------------------------------------
+// Reset the system. We just invoke the handler for each registered module.
+//
+//----------------------------------------------------------------------------------------
+void T64System::reset( ) {
+
+    if ( moduleTabHwm == 0 ) return;
+
+    for ( int i = 0; i < moduleTabHwm; i++ ) {
+
+        moduleTab[ i ].moduleHandler -> reset( );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// RUN. The simulator can just run the system. We just enter an endless loop which 
+// single steps.
+//
+//----------------------------------------------------------------------------------------
+void T64System::run( ) {
+
+    while ( true ) step( 1 );
+}
+
+//----------------------------------------------------------------------------------------
+// Single step. 
+//
+// ??? crucial what tor do here.... explain.
+//----------------------------------------------------------------------------------------
+void T64System::step( int steps ) {
+
+    if ( moduleTabHwm == 0 ) return;
+
+    for ( int i = 0; i < moduleTabHwm; i++ ) {
+
+        moduleTab[ i ].moduleHandler -> step( );
+    }
+}

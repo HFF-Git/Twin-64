@@ -38,7 +38,6 @@
 
 // ??? we also need to handle interrupts too...
 
-// ??? describe module concept...
 
 // ??? sequence: create SYSTEM. Register Modules. RESET.
 
@@ -46,37 +45,61 @@
 //
 //
 //------------------------------------------------------------------------------
-struct Twin64System {
+const int MAX_MODULES = 16;
 
-    public: 
+//------------------------------------------------------------------------------
+// A module entry in the module table. A module has a number and physical 
+// address ranges it handles. The handler is the reference to managing object.
+//
+//------------------------------------------------------------------------------
+struct T64SystemMapEntry {
 
-    Twin64System( );
-
-    void            reset( );
-    void            step( int steps = 1 );
-
-    T64Processor    *getProcessor( );
-    T64Memory       *getMemory( );
-    
-   // ?? an array of modules ? 
-
-
-   void registerModule( int moduleNum,
-                        int moduleType,
-                        int spaSize
-                        // ??? object handler  
-                        );
+    T64ModuleType   moduleTyp       = MT_NIL;
+    int             moduleNum       = 0;
+    T64Word         moduleHPA       = 0;
+    T64Word         moduleHPALen    = 0;
+    T64Word         moduleSPA       = 0;
+    T64Word         moduleSPALen    = 0;
+    T64Module       *moduleHandler  = nullptr;
 
 };
 
-// ??? locate the responsible module and invoke the handler...
+//------------------------------------------------------------------------------
+// A T64 system is a bus where you plug in modules. A module represents an
+// entity such as a processor, a memory module, an I/O module and so on. At
+// program start we create the module objects and register them. Two routines
+// are used to lookup the module object for a module number of managed address.
+//
+//------------------------------------------------------------------------------
+struct T64System {
 
-// ??? readBlock( T64Word pAdr, uint8_t *buf );
-// ??? writeBlock( T64Word pAdr, uint8_t *buf );
+    public: 
 
-// ??? readWord T64Word pAdr, T64Word *word );
-// ??? writeWord( T64Word pAdr, T64Word word );
+    T64System( );
 
+    int         registerModule( int             mId,
+                                T64ModuleType   mType,
+                                T64Word         hpaAdr,
+                                T64Word         hpaLen,
+                                T64Word         spaAdr,
+                                T64Word         spaLen,
+                                T64Module       *handler
+                              );
 
+    int         unregisterModule( int moduleNum );
+
+    T64Module   *lookupByNum( int modNum );
+    T64Module   *lookupByAdr( T64Word adr ); 
+
+    void        reset( );
+    void        run( );
+    void        step( int steps = 1 );
+                
+    private:
+
+    T64SystemMapEntry   moduleTab[ MAX_MODULES ];
+    int                 moduleTabHwm = 0;
+
+};
 
 #endif
