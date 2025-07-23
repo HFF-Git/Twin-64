@@ -162,8 +162,6 @@ T64Processor::T64Processor( ) {
 //----------------------------------------------------------------------------------------
 void T64Processor::reset( ) {
 
-    T64Module::reset( );
-    
     for ( int i = 0; i < MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
     for ( int i = 0; i < MAX_GREGS; i++ ) genRegFile[ i ] = 0;
     
@@ -1299,16 +1297,12 @@ void T64Processor::instrExecute( ) {
 // instructions.
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::step( int steps ) {
+void T64Processor::step( ) {
     
     try {
         
-        while ( steps > 0 ) {
-            
             instrRead( );
             instrExecute( );
-            steps --;
-        }
     }
     
     catch ( const T64Trap t ) {
@@ -1316,14 +1310,7 @@ void T64Processor::step( int steps ) {
     }
 }
 
-//----------------------------------------------------------------------------------------
-// The run routine will just let the CPU run.
-//
-// ??? should have a catcher for a looping CPU ?
-//----------------------------------------------------------------------------------------
-void T64Processor::run( ) {
-    
-    int steps = 9999; // ??? some high number... configurable ?
-    
-    step( steps );
+void T64Processor::event( T64ModuleEvent evt ) {
+
+
 }

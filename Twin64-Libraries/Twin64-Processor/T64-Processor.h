@@ -25,6 +25,7 @@
 #define T64_Processor_h
 
 #include "T64-Common.h"
+#include "T64-System.h"
 #include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
@@ -133,9 +134,9 @@ public:
     
     T64Processor(  );
     
-    void            reset( ) override;
-    void            step( int steps = 1 );
-    void            run( );
+    void            reset( );
+    void            step( );
+    void            event( T64ModuleEvent evt );
 
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );

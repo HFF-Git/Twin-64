@@ -1285,7 +1285,7 @@ void SimCommandsWin::resetCmd( ) {
         
         switch( tok -> tokId( )) {
                 
-            case TOK_CPU: {
+            case TOK_PROC: {
                 
               //  glb -> cpu -> reset( );
                 
@@ -1502,7 +1502,6 @@ void SimCommandsWin::redoCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
     
-    int             proc        = 0;
     SimTokTypeId    regSetId    = TYP_GREG;
     int             regNum      = 0;
     T64Word         val         = 0;
@@ -1617,7 +1616,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyAbsMemCmd( ) {
     
-    T64Word ofs = acceptNumExpr( ERR_EXPECTED_OFS );
+    T64Word adr = acceptNumExpr( ERR_EXPECTED_OFS );
     T64Word val = acceptNumExpr( ERR_INVALID_NUM );
 
     checkEOS( );
@@ -1682,7 +1681,6 @@ void SimCommandsWin::purgeCacheCmd( ) {
   //  CpuMem      *cPtr           = nullptr;
     uint32_t    index           = 0;
     uint32_t    set             = 0;
-    bool        flush           = false;
 
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
@@ -1708,8 +1706,7 @@ void SimCommandsWin::flushCacheCmd( ) {
   //  CpuMem      *cPtr           = nullptr;
     uint32_t    index           = 0;
     uint32_t    set             = 0;
-    bool        flush           = false;
-    
+
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
     if ( tok -> tokId( ) == TOK_COMMA ) {
@@ -1783,10 +1780,8 @@ void SimCommandsWin::displayTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
     
-    SimExpr     rExpr;
- 
-    
     #if 0
+    SimExpr     rExpr;
     eval -> parseExpr( &rExpr );
     
     if ( rExpr.typ == TYP_NUM ) argAcc = rExpr.u.val;
@@ -1883,7 +1878,7 @@ void SimCommandsWin::winStacksDisable( ) {
 //  <win>E [ <winNum> ]
 //  <win>D [ <winNum> ]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winEnableCmd( SimTokId winCmd ) {
+void SimCommandsWin::winEnableCmd( ) {
     
     int winNum = 0;
     
@@ -1896,13 +1891,13 @@ void SimCommandsWin::winEnableCmd( SimTokId winCmd ) {
     
     if ( glb -> winDisplay -> validWindowNum( winNum )) {
         
-        glb -> winDisplay -> windowEnable( winCmd, winNum, true );
+        glb -> winDisplay -> windowEnable( winNum, true );
         glb -> winDisplay -> reDraw( true );
     }
     else throw ( ERR_INVALID_WIN_ID );
 }
 
-void SimCommandsWin::winDisableCmd( SimTokId winCmd ) {
+void SimCommandsWin::winDisableCmd( ) {
     
     int winNum = 0;
     
@@ -1915,7 +1910,7 @@ void SimCommandsWin::winDisableCmd( SimTokId winCmd ) {
     
     if ( glb -> winDisplay -> validWindowNum( winNum )) {
         
-        glb -> winDisplay -> windowEnable( winCmd, winNum, false );
+        glb -> winDisplay -> windowEnable( winNum, false );
         glb -> winDisplay -> reDraw( true );
     }
     else throw ( ERR_INVALID_WIN_ID );
@@ -1928,7 +1923,7 @@ void SimCommandsWin::winDisableCmd( SimTokId winCmd ) {
 //
 //  <win>R [ <radix> [ "," <winNum>]]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winSetRadixCmd( SimTokId winCmd ) {
+void SimCommandsWin::winSetRadixCmd( ) {
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
@@ -1937,7 +1932,7 @@ void SimCommandsWin::winSetRadixCmd( SimTokId winCmd ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        glb -> winDisplay -> windowRadix( winCmd, rdx, winNum );
+        glb -> winDisplay -> windowRadix( rdx, winNum );
         return;
     }
     
@@ -1962,7 +1957,7 @@ void SimCommandsWin::winSetRadixCmd( SimTokId winCmd ) {
     checkEOS( );
     
     if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    glb -> winDisplay -> windowRadix( winCmd, rdx, winNum );
+    glb -> winDisplay -> windowRadix( rdx, winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1975,13 +1970,13 @@ void SimCommandsWin::winSetRadixCmd( SimTokId winCmd ) {
 //  <win>F [ <amt> [ , <winNum> ]]
 //  <win>B [ <amt> [ , <winNum> ]]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winForwardCmd( SimTokId winCmd ) {
+void SimCommandsWin::winForwardCmd( ) {
   
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowForward( winCmd, 0, 0 );
+        glb -> winDisplay -> windowForward( 0, 0 );
     }
     else {
 
@@ -2000,17 +1995,17 @@ void SimCommandsWin::winForwardCmd( SimTokId winCmd ) {
         if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
         
-        glb -> winDisplay -> windowForward( winCmd, winItems, winNum  );
+        glb -> winDisplay -> windowForward( winItems, winNum );
     }
 }
 
-void SimCommandsWin::winBackwardCmd( SimTokId winCmd ) {
+void SimCommandsWin::winBackwardCmd( ) {
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowBackward( winCmd, 0, 0  );
+        glb -> winDisplay -> windowBackward( 0, 0  );
     }
     else {
 
@@ -2028,7 +2023,7 @@ void SimCommandsWin::winBackwardCmd( SimTokId winCmd ) {
         if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
     
-        glb -> winDisplay -> windowBackward( winCmd, winItems, winNum  );
+        glb -> winDisplay -> windowBackward( winItems, winNum  );
     }
 }
 
@@ -2040,13 +2035,13 @@ void SimCommandsWin::winBackwardCmd( SimTokId winCmd ) {
 //
 //  <win>H [ <pos> [ "," <winNum> ]]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winHomeCmd( SimTokId winCmd ) {
+void SimCommandsWin::winHomeCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowHome( winCmd, 0, 0  );
+        glb -> winDisplay -> windowHome( 0, 0 );
         return;
     }
     else {
@@ -2064,7 +2059,7 @@ void SimCommandsWin::winHomeCmd( SimTokId winCmd ) {
     
         if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-        glb -> winDisplay -> windowHome( winCmd, winPos, winNum  );
+        glb -> winDisplay -> windowHome( winPos, winNum  );
     }
 }
 
@@ -2075,13 +2070,13 @@ void SimCommandsWin::winHomeCmd( SimTokId winCmd ) {
 //
 //  <win>J [ <pos> [ "," <winNum> ]]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winJumpCmd( SimTokId winCmd ) {
+void SimCommandsWin::winJumpCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowHome( winCmd, 0, 0  );
+        glb -> winDisplay -> windowHome( 0, 0 );
     }
     else {
 
@@ -2098,7 +2093,7 @@ void SimCommandsWin::winJumpCmd( SimTokId winCmd ) {
     
         if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-        glb -> winDisplay -> windowJump( winCmd, winPos, winNum  );
+        glb -> winDisplay -> windowJump( winPos, winNum );
     }
 }
 
@@ -2107,15 +2102,15 @@ void SimCommandsWin::winJumpCmd( SimTokId winCmd ) {
 // includes the banner line. If the "lines" argument is omitted, the window default 
 // value will be used. The window number is optional, used for user definable windows.
 //
-//  <win>L [ <lines> [ "," <winNum> ]]
+//  WL [ <lines> [ "," <winNum> ]]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::winSetRowsCmd( SimTokId winCmd ) {
+void SimCommandsWin::winSetRowsCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowHome( winCmd, 0, 0  );
+        glb -> winDisplay -> windowHome( 0, 0  );
     }
     else {
 
@@ -2133,9 +2128,32 @@ void SimCommandsWin::winSetRowsCmd( SimTokId winCmd ) {
         if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
     
-        glb -> winDisplay -> windowSetRows( winCmd, winLines, winNum );
+        glb -> winDisplay -> windowSetRows( winLines, winNum );
         glb -> winDisplay -> reDraw( true );
     }    
+}
+
+//----------------------------------------------------------------------------------------
+// Set command window lines. This command sets the the number of rows for the command
+// window. The number includes the banner line. If the "lines" argument is omitted, the
+// window default value will be used. 
+//
+//  CWL [ <lines> ]
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::winSetCmdWinRowsCmd( ) {
+
+    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
+
+    if ( tok -> tokId( ) == TOK_EOS ) {
+
+        glb -> winDisplay -> windowSetCmdWinRows( 10 ); // fix .... default..
+    }
+    else {
+
+        int winLines = acceptNumExpr( ERR_INVALID_NUM );
+        glb -> winDisplay -> windowSetCmdWinRows( winLines );
+        checkEOS( );
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -2174,7 +2192,7 @@ void  SimCommandsWin::winToggleCmd( ) {
    
     if ( tok -> isToken( TOK_EOS )) {
         
-        glb -> winDisplay -> windowToggle( glb -> winDisplay -> getCurrentUserWindow( ));
+        glb -> winDisplay -> windowToggle( glb -> winDisplay -> getCurrentWindow( ));
     }
     else {
 
@@ -2238,7 +2256,7 @@ void SimCommandsWin::winNewWinCmd( ) {
         }
         #endif
         
-        if ( ! glb -> winDisplay -> validUserWindowType( winType ))
+        if ( ! glb -> winDisplay -> validWindowType( winType ))
             throw ( ERR_INVALID_WIN_TYPE );
         
         tok -> nextToken( );
@@ -2274,7 +2292,7 @@ void SimCommandsWin::winKillWinCmd( ) {
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        winNumStart = glb -> winDisplay -> getCurrentUserWindow( );
+        winNumStart = glb -> winDisplay -> getCurrentWindow( );
         winNumEnd   = winNumStart;
     }
     else {
@@ -2283,8 +2301,8 @@ void SimCommandsWin::winKillWinCmd( ) {
     
         if ( winNumStart == -1 ) {
             
-            winNumStart = glb -> winDisplay -> getFirstUserWinIndex( );
-            winNumEnd   = glb -> winDisplay -> getLastUserWinIndex( );
+            winNumStart = 0;
+            winNumEnd   = MAX_WINDOWS;
         }
         else {
 
@@ -2328,7 +2346,7 @@ void SimCommandsWin::winSetStackCmd( ) {
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        winNumStart = glb -> winDisplay -> getCurrentUserWindow( );
+        winNumStart = glb -> winDisplay -> getCurrentWindow( );
         winNumEnd   = winNumStart;
     }
     else if ( tok -> tokId( ) == TOK_COMMA ) {
@@ -2427,32 +2445,15 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_WS:            winSetStackCmd( );              break;
                     case CMD_WT:            winToggleCmd( );                break;
                     case CMD_WX:            winExchangeCmd( );              break;
-                        
-                    case CMD_WF:            winForwardCmd( currentCmd );    break;
-                    case CMD_WB:            winBackwardCmd( currentCmd );   break;
-                    case CMD_WH:            winHomeCmd( currentCmd );       break;
-                    case CMD_WJ:            winJumpCmd( currentCmd );       break;
-                        
-                    case CMD_PSE:
-                    case CMD_SRE:
-                    case CMD_PLE:
-                    case CMD_SWE:
-                    case CMD_WE:            winEnableCmd( currentCmd );     break;
-                        
-                    case CMD_PSD:
-                    case CMD_SRD:
-                    case CMD_PLD:
-                    case CMD_SWD:
-                    case CMD_WD:            winDisableCmd( currentCmd );    break;
-                        
-                    case CMD_PSR:
-                    case CMD_SRR:
-                    case CMD_PLR:
-                    case CMD_SWR:
-                    case CMD_WR:            winSetRadixCmd( currentCmd );   break;
-                        
-                    case CMD_CWL:
-                    case CMD_WL:            winSetRowsCmd( currentCmd );    break;
+                    case CMD_WF:            winForwardCmd( );               break;
+                    case CMD_WB:            winBackwardCmd( );              break;
+                    case CMD_WH:            winHomeCmd( );                  break;
+                    case CMD_WJ:            winJumpCmd( );                  break;
+                    case CMD_WE:            winEnableCmd( );                break;
+                    case CMD_WD:            winDisableCmd( );               break;
+                    case CMD_WR:            winSetRadixCmd( );              break;    
+                    case CMD_CWL:           winSetCmdWinRowsCmd( );         break;
+                    case CMD_WL:            winSetRowsCmd( );               break;
                         
                     default:                throw ( ERR_INVALID_CMD );
                 }

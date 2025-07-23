@@ -117,6 +117,15 @@ int T64System::unregisterModule( int moduleNum ) {
     return ( 0 );
 }
 
+ void T64System::broadCastEvent( T64ModuleEvent evt ) {
+
+    if ( moduleTabHwm > 0 ) {
+
+        for ( int i = 1; i < moduleTabHwm; i++ ) 
+            moduleTab[ i ].moduleHandler -> event( evt );
+    }
+ }
+
 //----------------------------------------------------------------------------------------
 // Find the module handler based on module Id. 
 //

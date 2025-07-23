@@ -517,7 +517,8 @@ void SimWinCode::drawBanner( ) {
 void SimWinCode::drawLine( T64Word itemAdr ) {
     
     uint32_t    fmtDesc         = FMT_DEF_ATTR;
-    bool        plWinEnabled    = glb -> winDisplay -> isWinEnabled( PL_REG_WIN );
+    bool        plWinEnabled    = 
+        glb -> winDisplay -> isWinEnabled( 0 );
 
     #if 0
     CpuMem      *physMem        = glb -> cpu -> physMem;

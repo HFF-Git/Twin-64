@@ -27,6 +27,9 @@
 #include "T64-Common.h"
 #include "T64-ConsoleIO.h"
 #include "T64-InlineAsm.h"
+#include "T64-System.h"
+#include "T64-Processor.h"
+#include "T64-Memory.h"
 
 //----------------------------------------------------------------------------------------
 // General screen structure:
@@ -91,12 +94,11 @@
 //
 //  Windows:
 //
-//  Processor State -> PS
-//. TLB Window      -> TL
-//  Cache Window    -> CA
-//  Program Code    -> PC
-//  Text Window     -> TX
-//  User Defined    -> UW
+//  Processor State -> PROC
+//. TLB Window      -> TLB
+//  Cache Window    -> CACHE
+//  Program Code    -> CODE
+//  Text Window     -> TEXT
 //  Commands        -> n/a
 //
 //----------------------------------------------------------------------------------------
@@ -148,6 +150,7 @@ enum SimWinType : int {
     WT_CODE_WIN     = 8  
 };
 
+#if 0
 //----------------------------------------------------------------------------------------
 // Predefined windows are displayed in a fixed order when enabled. The 
 // following constants are the index of these windows in the window table. The
@@ -167,6 +170,7 @@ enum SimWinIndex : int {
     FIRST_UWIN      = 4,
     LAST_UWIN       = 31
 };
+#endif
 
 //----------------------------------------------------------------------------------------
 // Command line tokens and expression have a type.
@@ -220,7 +224,7 @@ enum SimTokId : uint16_t {
     TOK_STR                 = 102, 
 
     TOK_DEF                 = 400,      TOK_ALL                 = 402,
-    TOK_CPU                 = 103,      TOK_TLB                 = 104, 
+    TOK_PROC                = 103,      TOK_TLB                 = 104, 
     TOK_CACHE               = 105,      TOK_MEM                 = 107,      
     TOK_STATS               = 108,      TOK_TEXT                = 121, 
     
@@ -1149,21 +1153,22 @@ private:
     void            winStacksDisable( );
 
     void            winCurrentCmd( );
-    void            winEnableCmd( SimTokId winCmd );
-    void            winDisableCmd( SimTokId winCmd );
-    void            winSetRadixCmd( SimTokId winCmd );
+    void            winEnableCmd( );
+    void            winDisableCmd( );
+    void            winSetRadixCmd( );
     
-    void            winForwardCmd( SimTokId winCmd );
-    void            winBackwardCmd( SimTokId winCmd );
-    void            winHomeCmd( SimTokId winCmd );
-    void            winJumpCmd( SimTokId winCmd );
-    void            winSetRowsCmd( SimTokId winCmd );
+    void            winForwardCmd( );
+    void            winBackwardCmd( );
+    void            winHomeCmd( );
+    void            winJumpCmd( );
+    void            winSetRowsCmd( );
+    void            winSetCmdWinRowsCmd( );
     void            winNewWinCmd( );
     void            winKillWinCmd( );
     void            winSetStackCmd( );
     void            winToggleCmd( );
     void            winExchangeCmd( );
-    
+
     private:
     
     SimGlobals          *glb            = nullptr;
@@ -1207,32 +1212,31 @@ public:
     void            windowsOff( );
     void            windowDefaults( );
     void            windowCurrent( int winNum = 0 );
-    void            windowEnable( SimTokId winCmd, int winNum = 0, bool show = true );
+    void            windowEnable( int winNum = 0, bool show = true );
     void            winStacksEnable( bool arg );
-    void            windowRadix( SimTokId winCmd, int rdx, int winNum = 0 );
-    void            windowSetRows( SimTokId winCmd, int rows, int winNum = 0 );
+    void            windowRadix( int rdx, int winNum = 0 );
+    void            windowSetRows( int rows, int winNum = 0 );
+    void            windowSetCmdWinRows( int rows );
     
-    void            windowHome( SimTokId winCmd, int amt, int winNum = 0 );
-    void            windowForward( SimTokId winCmd, int amt, int winNum = 0 );
-    void            windowBackward( SimTokId winCmd, int amt, int winNum = 0 );
-    void            windowJump( SimTokId winCmd, int amt, int winNum = 0 );
+    void            windowHome( int amt, int winNum = 0 );
+    void            windowForward( int amt, int winNum = 0 );
+    void            windowBackward( int amt, int winNum = 0 );
+    void            windowJump( int amt, int winNum = 0 );
     void            windowToggle( int winNum = 0 );
     void            windowExchangeOrder( int winNum );
     void            windowNew( SimTokId winType = TOK_NIL, char *argStr = nullptr );
     void            windowKill( int winNumStart, int winNumEnd = 0  );
     void            windowSetStack( int winStack, int winNumStart, int winNumEnd = 0 );
     
-    int             getCurrentUserWindow( );
-    void            setCurrentUserWindow( int winNum );
-    int             getFirstUserWinIndex( );
-    int             getLastUserWinIndex( );
-    bool            validWindowNum( int winNum );
-    bool            validUserWindowNum( int winNum );
-    bool            validWindowStackNum( int winNum );
-    bool            validUserWindowType( SimTokId winType );
+    int             getCurrentWindow( );
+    void            setCurrentWindow( int winNum );
     bool            isCurrentWin( int winNum );
     bool            isWinEnabled( int winNum );
-    
+
+    bool            validWindowType( SimTokId winType );
+    bool            validWindowNum( int winNum );
+    bool            validWindowStackNum( int winNum );
+
 private:
     
     int             computeColumnsNeeded( int winStack );
@@ -1240,7 +1244,7 @@ private:
     void            setWindowColumns( int winStack, int columns );
     void            setWindowOrigins( int winStack, int rowOfs = 1, int colOfs = 1 );
    
-    int             currentUserWinNum           = -1;
+    int             currentWinNum               = -1;
     bool            winStacksOn                 = true;
     bool            winModeOn                   = true;
 
@@ -1267,6 +1271,8 @@ struct SimGlobals {
 
     T64Assemble         *inlineAsm      = nullptr;
     T64DisAssemble      *disAsm         = nullptr;
+
+
 
   //  CpuCore             *cpu            = nullptr;
 };

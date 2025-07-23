@@ -41,6 +41,8 @@ public:
     T64Word     read( T64Word pAdr, int len, bool signExtend = false );
     void        write( T64Word pAdr, T64Word arg, int len );
 
+    void        event( T64ModuleEvent evt ) override;
+
     // ??? separate routines for monitor display ?
     // int getWord( T64Word adr, uint32_t *data );
     // int putWord( T64Word adr, uint32_t data );

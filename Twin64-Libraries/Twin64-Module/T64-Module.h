@@ -34,6 +34,17 @@ enum T64ModuleType {
     MT_IO   = 3
 };
 
+//------------------------------------------------------------------------------
+// 
+//
+//------------------------------------------------------------------------------
+enum T64ModuleEvent {
+
+    EVT_NIL = 0,
+    EVT_READ_SHARED = 1,
+    EVT_READ_ECLUSIVE = 2
+};
+
 //----------------------------------------------------------------------------------------
 //
 //
@@ -44,8 +55,9 @@ struct T64Module {
 
     T64Module( );
 
-    virtual void reset( );
-    virtual void step( int steps = 0 );
+    virtual void reset( ) = 0;
+    virtual void step( ) = 0;
+    virtual void event( T64ModuleEvent evt ) = 0;
 
     private:
 

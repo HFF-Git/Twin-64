@@ -12,6 +12,7 @@ add_library( ${PROJECT_NAME} STATIC
 
 target_link_libraries( ${PROJECT_NAME} PUBLIC 
 
+    Twin64-Module
     Twin64-Processor 
     Twin64-Memory 
     Twin64-Common 

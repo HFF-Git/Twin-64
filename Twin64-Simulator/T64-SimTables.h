@@ -42,18 +42,11 @@ const SimToken cmdTokTab[ ] = {
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u.val = 0  },
     
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
-    { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
+    { .name = "PROC",       .typ = TYP_SYM,     .tid = TOK_PROC               },
+    { .name = "CACHE",      .typ = TYP_SYM,     .tid = TOK_CACHE              },
     { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                },
+    { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT               },
 
-    #if 0
-    { .name = "C",          .typ = TYP_SYM,     .tid = TOK_C                  },
-    { .name = "D",          .typ = TYP_SYM,     .tid = TOK_D                  },
-    { .name = "F",          .typ = TYP_SYM,     .tid = TOK_F                  },
-    { .name = "I",          .typ = TYP_SYM,     .tid = TOK_I                  },
-    { .name = "T",          .typ = TYP_SYM,     .tid = TOK_T                  },
-    { .name = "U",          .typ = TYP_SYM,     .tid = TOK_U                  },
-    #endif
-    
     { .name = "DEC",        .typ = TYP_SYM,     .tid = TOK_DEC,   .u.val = 10 },
     { .name = "HEX",        .typ = TYP_SYM,     .tid = TOK_HEX,   .u.val = 16 },
     { .name = "CODE",       .typ = TYP_SYM,     .tid = TOK_CODE               },
@@ -112,15 +105,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WDEF",       .typ = TYP_WCMD,    .tid = CMD_WDEF               },
     { .name = "WSE",        .typ = TYP_WCMD,    .tid = CMD_WSE                },
     { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                },
-
-
     
-    { .name = "PSE",        .typ = TYP_WCMD,    .tid = CMD_PSE                },
-    { .name = "PSD",        .typ = TYP_WCMD,    .tid = CMD_PSD                },
-    { .name = "PSR",        .typ = TYP_WCMD,    .tid = CMD_PSR                },
-  
-    
-
     { .name = "CWL",        .typ = TYP_WCMD,    .tid = CMD_CWL                },
     
     { .name = "WE",         .typ = TYP_WCMD,    .tid = CMD_WE                 },
@@ -141,9 +126,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_MEM                },
     { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_CODE               },
 
-   
-    { .name = "TX",         .typ = TYP_SYM,     .tid = TOK_TEXT               },
-  
     //--------------------------------------------------------------------------
     // General registers.
     //

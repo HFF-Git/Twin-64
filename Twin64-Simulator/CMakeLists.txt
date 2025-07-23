@@ -14,9 +14,9 @@ add_executable( ${PROJECT_NAME}
     T64-SimExprEvaluator.cpp
     T64-SimEnvVars.cpp
     T64-SimWinBaseClasses.cpp
-   T64-SimWinClasses.cpp
-   T64-SimWinCmd.cpp
-   T64-SimWinDisplay.cpp
+    T64-SimWinClasses.cpp
+    T64-SimWinCmd.cpp
+    T64-SimWinDisplay.cpp
 )
 
 target_link_libraries( ${PROJECT_NAME} PRIVATE 
@@ -24,5 +24,7 @@ target_link_libraries( ${PROJECT_NAME} PRIVATE
     Twin64-Common 
     Twin64-ConsoleIO 
     Twin64-InlineAsm 
+    Twin64-System
     Twin64-Processor
-)
+    Twin64-Memory
+    )

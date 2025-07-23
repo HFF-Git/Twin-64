@@ -26,26 +26,19 @@
 
 #include "T64-Common.h"
 #include "T64-Module.h"
-#include "T64-Processor.h"
-#include "T64-Memory.h"
-
 
 // ??? on a step, all processor modules advance.
-// ??? not clear if other modules need a "step" too..
-
 // ??? after that each module is give a change to do processing. I.e. check for
 // a key pressed, etc.
-
 // ??? we also need to handle interrupts too...
-
-
-// ??? sequence: create SYSTEM. Register Modules. RESET.
 
 //------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------
 const int MAX_MODULES = 16;
+
+
 
 //------------------------------------------------------------------------------
 // A module entry in the module table. A module has a number and physical 
@@ -90,6 +83,8 @@ struct T64System {
 
     T64Module   *lookupByNum( int modNum );
     T64Module   *lookupByAdr( T64Word adr ); 
+
+    void        broadCastEvent( T64ModuleEvent evt );
 
     void        reset( );
     void        run( );

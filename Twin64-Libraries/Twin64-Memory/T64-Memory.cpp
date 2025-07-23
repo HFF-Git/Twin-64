@@ -61,7 +61,7 @@ inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
 //----------------------------------------------------------------------------------------
 T64Memory::T64Memory( T64Word size ) {
     
-    this -> size = roundup( size, 16 ); // ??? what is teh roundup level ?
+    this -> size = roundup( size, 16 ); // ??? what is the roundup level ?
     this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
 }
 
@@ -176,4 +176,12 @@ void T64Memory::write( T64Word adr, T64Word arg, int len ) {
 // ??? separate routines for monitor display ?
 // int getWord( T64Word adr, uint32_t *data );
 // int putWord( T64Word adr, uint32_t data );
+
+
+
+void T64Memory::event( T64ModuleEvent evt ) {
+
+    
+}
+
 
