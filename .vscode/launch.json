@@ -1,11 +1,25 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
     {
       "name": "Debug Twin64-AsmTest",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/Twin64-AsmTest",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,    // Opens a separate terminal window for input/output
+      "MIMode": "lldb",           // Use "gdb" on Linux, "lldb" on macOS; on Windows, defaults to "cppvsdbg"
+      "preLaunchTask": "build"   // Optional: runs build task before debugging
+    },
+    {
+      "name": "Debug Twin64-Simulator",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/Twin64-Simulator",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

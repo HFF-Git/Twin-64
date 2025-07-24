@@ -591,7 +591,8 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
 }
 
 //----------------------------------------------------------------------------------------
-// The banner line for command window. For now, we just label the banner line.
+// The banner line for command window. For now, we just label the banner line and show
+// a little indicate whether we are in WIN mode or not.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBanner( ) {
@@ -599,10 +600,12 @@ void SimCommandsWin::drawBanner( ) {
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
     
     setWinCursor( 1, 1 );
-    printTextField((char *) "Commands ", ( fmtDesc | FMT_ALIGN_LFT ));
-    padLine( fmtDesc );
-}
+    printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ));
+    padLine( fmtDesc ); 
 
+    if ( glb -> winDisplay -> isWindowsOn( )) 
+    printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
+}
 
 //----------------------------------------------------------------------------------------
 // The body lines of the command window are displayed after the banner line. The window
@@ -985,11 +988,7 @@ void SimCommandsWin::helpCmd( ) {
     }
     else if (( tok -> isTokenTyp( TYP_CMD  )) ||
              ( tok -> isTokenTyp( TYP_WCMD )) ||
-             ( tok -> isTokenTyp( TYP_WTYP )) ||
-             ( tok -> isTokenTyp( TYP_RSET )) ||
              ( tok -> isTokenTyp( TYP_P_FUNC ))) {
-
-        #if 0
 
         if (( tok -> isToken( CMD_SET )) ||
              ( tok -> isToken( WCMD_SET )) ||
@@ -997,7 +996,7 @@ void SimCommandsWin::helpCmd( ) {
              ( tok -> isToken( WTYPE_SET )) ||
              ( tok -> isToken( PF_SET ))) {
 
-                for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
+            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
                     if ( cmdHelpTab[ i ].helpTypeId == tok -> tokTyp( )) {
 
@@ -1018,80 +1017,6 @@ void SimCommandsWin::helpCmd( ) {
                 }
             }
         }
-
-        #else
-        if ( tok -> isToken( CMD_SET )) {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_CMD ) {
-
-                    winOut -> writeChars( FMT_STR_SUMMARY, 
-                                          cmdHelpTab[ i ].cmdNameStr, 
-                                          cmdHelpTab[ i ].helpStr );
-                }
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-        else if ( tok -> isToken( WCMD_SET )) {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_WCMD )
-                    winOut -> writeChars( FMT_STR_SUMMARY, 
-                        cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-        else if ( tok -> isToken( REG_SET )) {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_RSET )
-                    
-                    winOut -> writeChars( FMT_STR_SUMMARY, 
-                        cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-        else if ( tok -> isToken( WTYPE_SET )) {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_WTYP )
-                    
-                    winOut -> writeChars( FMT_STR_SUMMARY, 
-                        cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-        else if ( tok -> isToken( PF_SET )) {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_P_FUNC )
-                    winOut -> writeChars( FMT_STR_SUMMARY, 
-                        cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-        else {
-            
-            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
-                
-                if ( cmdHelpTab[ i ].helpTokId == tok -> tokId( )) {
-                    
-                    winOut -> writeChars( FMT_STR_DETAILS, 
-                        cmdHelpTab[ i ].cmdSyntaxStr, cmdHelpTab[ i ].helpStr );
-                }
-            }
-        }
-        #endif
     }
     else throw ( ERR_INVALID_ARG );
 }

@@ -152,6 +152,11 @@ bool SimWinDisplay::isWinEnabled( int winNum ) {
     return(( validWindowNum( winNum )) && ( windowList[ winNum ]->isEnabled( )));
 }
 
+ bool SimWinDisplay::isWindowsOn( ) {
+
+    return( winModeOn );
+ }
+
 //----------------------------------------------------------------------------------------
 // Before drawing the screen content after the execution of a command line, we need 
 // to check whether the number of columns needed for a stack of windows has changed. 
@@ -389,7 +394,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
 //
 //-----------------------------------------------------------------------------------------------------------
 void SimWinDisplay::windowsOn( ) {
-    
+
     winModeOn = true;
     reDraw( true );
 }
@@ -401,7 +406,6 @@ void SimWinDisplay::windowsOff( ) {
     glb -> console -> clearScreen( );
     
     cmdWin -> setDefaults( );
-    
     reDraw( true );
 }
 

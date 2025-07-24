@@ -29,17 +29,27 @@
 #include <ctype.h>
 
 #include "T64-Common.h"
-#include "T64-Processor.h"
+#include "T64-System.h"
+#include "T64-SimDeclarations.h"
 
-T64Processor *proc;
+
 
 //------------------------------------------------------------------------------
 //
 //
 //------------------------------------------------------------------------------
-void setupProcssor( ) {
+void setup( ) {
 
-    proc = new T64Processor( );
+SimGlobals *glb     = new SimGlobals( );
+
+glb -> console      = new SimConsoleIO( );
+glb -> env          = new SimEnv( 100 );
+glb -> winDisplay   = new SimWinDisplay( glb );
+glb -> system       = new T64System( );  
+
+glb -> winDisplay -> windowsOff( );
+glb -> winDisplay -> cmdWin -> cmdInterpreterLoop( );
+
 }
 
 //------------------------------------------------------------------------------
@@ -47,12 +57,11 @@ void setupProcssor( ) {
 //
 //------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
-
-    setupProcssor( );
-
-    proc -> reset( );
    
     printf( "Twin64 - Simulator MAIN - test\n");
 
+    setup( );
+
+    
     return 0;
 }

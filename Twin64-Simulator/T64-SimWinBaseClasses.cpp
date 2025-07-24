@@ -633,7 +633,8 @@ void SimWinOutBuffer::addToBuffer( const char *buf ) {
                 topIndex                    = ( topIndex + 1 ) % MAX_WIN_OUT_LINES;
                 buffer[ topIndex ] [ 0 ]    = '\0'; // Clear the new line
                 
-            } else currentLine[ charPos++ ] = buf[ i ];
+            } 
+            else currentLine[ charPos++ ] = buf[ i ];
         }
     }
     

@@ -8,9 +8,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Run Twin64-Monitor",
+      "label": "Run Twin64-Simulator",
       "type": "shell",
-      "command": "open -a Terminal \"${workspaceFolder}/bin/Twin64-Monitor\"",
+      "command": "open -a Terminal \"${workspaceFolder}/bin/Twin64-Simulator\"",
       "problemMatcher": []
     },
     {

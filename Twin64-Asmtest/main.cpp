@@ -123,7 +123,7 @@ int main( int argc, const char * argv[] ) {
         if ( strcmp( cmd, "A" ) == 0 ) {
             
             if ( arg != nullptr ) assemble( arg );
-            else printf( "Expexted assembler input string\n" );
+            else printf( "Expected assembler input string\n" );
         }
         else if ( strcmp( cmd, "D" ) == 0 ) {
             
@@ -137,7 +137,7 @@ int main( int argc, const char * argv[] ) {
         else if ( strcmp( cmd, "T" ) == 0 ) {
         
             if ( arg != nullptr ) testAsmDisAsm( arg );
-            else printf( "Expexted assembler input string\n" );
+            else printf( "Expected assembler input string\n" );
         }  
         else if ( strcmp( cmd, "E" ) == 0 ) {
         

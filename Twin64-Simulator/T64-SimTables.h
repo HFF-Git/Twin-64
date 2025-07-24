@@ -58,8 +58,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "COMMANDS",   .typ = TYP_CMD,     .tid = CMD_SET                },
     { .name = "WCOMMANDS",  .typ = TYP_WCMD,    .tid = WCMD_SET               },
     { .name = "PREDEFINED", .typ = TYP_P_FUNC,  .tid = PF_SET                 },
-    { .name = "REGSET",     .typ = TYP_RSET,    .tid = REG_SET                },
-    { .name = "WTYPES",     .typ = TYP_WTYP,    .tid = WTYPE_SET              },
     
     //------------------------------------------------------------------------------------
     // Command Line tokens.
@@ -635,22 +633,12 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpStr        = (char *) "enables windows mode / redraw"
     },
 
-    {
-        .helpTypeId = TYP_RSET,  .helpTokId  = REG_SET,
-        .cmdNameStr     = (char *) "regset",
-        .cmdSyntaxStr   = (char *) "",
-        .helpStr        = (char *) "\n" "\n"
-                                    "GR   - " "general register set" "\n"
-                                    "CR   - " "control register set" "\n"
-                                    "PS   - " "program state" "\n"
-    },
-    
     //------------------------------------------------------------------------------------
-    // Window commands and types.
+    // Window commands.
     //
     //------------------------------------------------------------------------------------
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_WON,
+        .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WON,
         .cmdNameStr     = (char *) "woff",
         .cmdSyntaxStr   = (char *) "woff",
         .helpStr        = (char *) "disables windows mode"
@@ -758,11 +746,12 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
         .cmdNameStr     = (char *)  "wn",
         .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
-        .helpStr        = (char *)  "create a new window of type"
+        .helpStr        = (char *)  "create a new window " 
+                                    "( CPU, TLB, CACHE, MEM, CODE, TEXT )"
     },
 
      {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WK,
         .cmdNameStr     = (char *)  "wk",
         .cmdSyntaxStr   = (char *)  "wk [ <start> [ , <end> ]] | 'ALL'",
         .helpStr        = (char *)  "removes a range of windows"
@@ -775,26 +764,13 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpStr        = (char *)  "moves a range of user windows into stack <stackNum>"
     },
 
-     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WL,
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWL,
         .cmdNameStr     = (char *)  "cwl",
         .cmdSyntaxStr   = (char *)  "cwl <lines>",
         .helpStr        = (char *)  "set command window lines including banner line"
     },
-        
-    {
-        .helpTypeId     = TYP_WTYP, .helpTokId  = WTYPE_SET,
-        .cmdNameStr     = (char *)  "window types",
-        .cmdSyntaxStr   = (char *)  "",
-        .helpStr        = (char *)  "\n" "\n"
-                                    "PROC   - " "Cpu window" "\n"
-                                    "TLB    - " "Tlb window" "\n"
-                                    "CACHE  - " "Cache window" "\n"
-                                    "MEM    - " "memory window" "\n"
-                                    "TEXT   - " "text window" "\n"
-                                    "CMD    - " "command line window" "\n"
-    },
-    
+
     //------------------------------------------------------------------------------------
     // Predefined Functions.
     //

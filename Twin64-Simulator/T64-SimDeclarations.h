@@ -161,10 +161,9 @@ enum SimTokTypeId : uint16_t {
     TYP_NUM             = 1,    TYP_STR             = 2,    TYP_BOOL            = 3, 
     TYP_SYM             = 4,    TYP_IDENT           = 5, 
 
-    TYP_CMD             = 10,   TYP_WCMD            = 11,
-    TYP_WTYP            = 12,   TYP_P_FUNC          = 13,    
+    TYP_CMD             = 10,   TYP_WCMD            = 11,   TYP_P_FUNC          = 14,    
     
-    TYP_REG             = 20,   TYP_RSET            = 21,   
+    TYP_REG             = 20,   
     TYP_GREG            = 22,   TYP_CREG            = 23,   TYP_PSTATE_PREG     = 24,    
 };
 
@@ -1179,12 +1178,13 @@ public:
     void            setCurrentWindow( int winNum );
     bool            isCurrentWin( int winNum );
     bool            isWinEnabled( int winNum );
+    bool            isWindowsOn( );
 
     bool            validWindowType( SimTokId winType );
     bool            validWindowNum( int winNum );
     bool            validWindowStackNum( int winNum );
 
-private:
+    private:
     
     int             computeColumnsNeeded( int winStack );
     int             computeRowsNeeded( int winStack );
@@ -1196,8 +1196,12 @@ private:
     bool            winModeOn                   = true;
 
     SimGlobals      *glb                        = nullptr;
-    SimCommandsWin  *cmdWin                     = nullptr;
+   
     SimWin          *windowList[ MAX_WINDOWS ]  = { nullptr };
+
+    public: 
+     
+    SimCommandsWin  *cmdWin                     = nullptr;
     
 };
 

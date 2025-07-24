@@ -436,7 +436,7 @@ int SimFormatter::printBlanks( int len ) {
 //----------------------------------------------------------------------------------------
 int SimFormatter::printText( char *text, int maxLen ) {
     
-    if ( strlen( text ) < maxLen ) {
+    if ( strlen( text ) <= maxLen ) {
         
         return( writeChars((char *) "%s", text ));
     }
