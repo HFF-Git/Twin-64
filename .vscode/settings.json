@@ -18,7 +18,10 @@
         ]
     },
     "files.associations": {
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "istream": "cpp",
+        "locale": "cpp",
+        "streambuf": "cpp"
     },
     "spellright.language": [
         "en"

@@ -471,7 +471,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 1: { // HEX_2
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x""**" ));
+                return ( writeChars((char *) "0x""**" ));
             else
                 return ( writeChars((char *) "0x%2x", val & 0xFF ));
 
@@ -480,7 +480,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 2: { // HEX_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x""****" ));
+                return ( writeChars((char *) "0x""****" ));
             else
                 return ( writeChars((char *) "0x%4x", val & 0xFFFF ));
 
@@ -489,7 +489,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 3: { // HEX_8
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x""****""****" ));
+                return ( writeChars((char *) "0x""****""****" ));
             else
                 return ( writeChars((char *) "0x%8x", val & 0xFFFFFFFF ));
 
@@ -498,7 +498,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 4: { // HEX_16
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x""****""****""****""****" ));
+                return ( writeChars((char *) "0x""****""****""****""****" ));
             else
                 return ( writeChars((char *) "0x%16x", val ));
 
@@ -507,7 +507,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 5: { // FMT_HEX_2_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x**_****" ));
+                return ( writeChars((char *) "0x**_****" ));
             else
                 return ( writeChars((char *) "0x%02x_%04x", 
                                     (( val >> 4 ) & 0xFF   ),
@@ -518,7 +518,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 6: { // FMT_HEX_4_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x****_****" ));
+                return ( writeChars((char *) "0x****_****" ));
             else
                 return ( writeChars((char *) "0x%04x_%04x", 
                                     (( val >> 4 ) & 0xFFFF ),
@@ -529,7 +529,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 7: { // FMT_HEX_2_4_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x**_****_****" ));
+                return ( writeChars((char *) "0x**_****_****" ));
             else
                 return ( writeChars((char *) "0x%02x_%04x_%04x", 
                                     (( val >> 8 ) & 0xFF   ),
@@ -541,7 +541,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 8: { // FMT_HEX_4_4_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x****_****_****" ));
+                return ( writeChars((char *) "0x****_****_****" ));
             else
                 return ( writeChars((char *) "0x%04x_%04x_%04x", 
                                     (( val >> 8 ) & 0xFFFF ),
@@ -553,7 +553,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 9: { // FMT_HEX_2_4_4_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x**_****_****_****" ));
+                return ( writeChars((char *) "0x**_****_****_****" ));
             else
                 return ( writeChars((char *) "0x%02X_%04x_%04x_%04x", 
                                     (( val >> 12 ) & 0xFF   ),
@@ -566,7 +566,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
         case 10: { // FMT_HEX_4_4_4_4
 
             if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( printf((char *) "0x****_****_****_****" ));
+                return ( writeChars((char *) "0x****_****_****_****" ));
             else
                 return ( writeChars((char *) "0x%04x_%04x_%04x_%04x", 
                                     (( val >> 12 ) & 0xFFFF ),
@@ -576,13 +576,19 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
 
         } break;
 
-        case 11: { // DEC as is
+        case 11: { // HEX as is
+
+            return ( writeChars((char *) "0x%x", val));
+
+        } break;
+
+        case 12: { // DEC as is
 
             return ( writeChars((char *) "%ll", val));
 
         } break;
 
-        default: return ( printf ((char *) "*NN*" ));
+        default: return ( writeChars ((char *) "*NN*" ));
     }
 }
 

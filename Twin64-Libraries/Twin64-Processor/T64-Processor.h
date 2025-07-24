@@ -105,9 +105,10 @@ public:
     void            reset( );
     T64TlbEntry     *lookupTlb( T64Word vAdr );
     
-    void            insertTlb( T64Word vAdr, T64Word info );
+    void            insertTlb( T64Word info1, T64Word info2 );
     void            purgeTlb( T64Word vAdr );
     
+    int             getTlbSize( );
     T64TlbEntry     *getTlbEntry( int index );
    
 private:
@@ -121,8 +122,6 @@ private:
 // ??? purgeTlbEntry( int tlbNum, T64Word vAdr );
 // ??? insertTlbEntry( int tlbNum, T64Word info1, T64Word info2 );
 
-
-// ??? can have more than one processor... it is a module too...
 
 //----------------------------------------------------------------------------------------
 // The CPU core executes the instructions.
@@ -144,8 +143,8 @@ public:
     T64Word         getControlReg( int index );
     void            setControlReg( int index, T64Word val );
 
-    void            addTlbEntry( T64Word vAdr, T64Word info );
-    void            removeTlbEntry( T64Word vAdr, T64Word info );
+    void            addTlbEntry( T64Word info1, T64Word info2 );
+    void            removeTlbEntry( T64Word vAdr );
     T64TlbEntry     *getTlbEntry( int index );
 
     void            flushCache( T64Word vAdr );

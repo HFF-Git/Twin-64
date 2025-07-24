@@ -440,25 +440,6 @@ void SimEnv::setupPredefined( ) {
     
     enterVar((char *) ENV_RDX_DEFAULT, (T64Word) 16, true, false );
     enterVar((char *) ENV_WORDS_PER_LINE, (T64Word) 8, true, false );
-    enterVar((char *) ENV_SHOW_PSTAGE_INFO, false, true, false );
-    enterVar((char *) ENV_STEP_IN_CLOCKS, false, true, false );
-    
-    enterVar((char *) ENV_I_TLB_SETS, (T64Word) 1, true, false );
-    enterVar((char *) ENV_I_TLB_SIZE, (T64Word) 1024, true, false );
-    enterVar((char *) ENV_D_TLB_SETS, (T64Word) 1, true, false );
-    enterVar((char *) ENV_D_TLB_SIZE, (T64Word) 1024, true, false );
-    
-    enterVar((char *) ENV_I_CACHE_SETS, (T64Word) 1, true, false );
-    enterVar((char *) ENV_I_CACHE_SIZE, (T64Word) 1024, true, false );
-    enterVar((char *) ENV_I_CACHE_LINE_SIZE, (T64Word) 4, true, false );
-    
-    enterVar((char *) ENV_D_CACHE_SETS, (T64Word) 1, true, false );
-    enterVar((char *) ENV_D_CACHE_SIZE, (T64Word) 1024, true, false );
-    enterVar((char *) ENV_D_CACHE_LINE_SIZE, (T64Word) 4, true, false );
-    
-    enterVar((char *) ENV_MEM_SIZE, (T64Word) 9999, true, false ); // ??? fix
-    enterVar((char *) ENV_MEM_BANKS, (T64Word) 1, true, false );
-    enterVar((char *) ENV_MEM_BANK_SIZE, (T64Word) 9999, true, false );
     
     enterVar((char *) ENV_WIN_MIN_ROWS, (T64Word) 24, true, false );
     enterVar((char *) ENV_WIN_TEXT_LINE_WIDTH, (T64Word) 90, true, false );

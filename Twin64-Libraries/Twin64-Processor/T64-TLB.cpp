@@ -115,3 +115,9 @@ T64TlbEntry *T64Tlb::getTlbEntry( int index ) {
     if ( isInRange( index, 0, size - 1 ))   return( &map[ index ] );
     else                                    return( nullptr );
 }
+
+
+int T64Tlb::getTlbSize( ) {
+
+    return ( size );
+}

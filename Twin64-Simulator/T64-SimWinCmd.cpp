@@ -40,8 +40,6 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
-// char outputBuffer[ MAX_WIN_OUT_LINE_SIZE ];
-
 //----------------------------------------------------------------------------------------
 // Little helper functions.
 //
@@ -58,7 +56,7 @@ void upshiftStr( char *str ) {
 
 int setRadix( int rdx ) {
     
-    return((( rdx == 8 ) || ( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
+    return((( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
 }
 
 bool isEscapeChar( int ch ) {
@@ -238,6 +236,7 @@ T64Word acceptNumExpr( SimErrMsgId errCode ) {
 }
 
 }; // namespace
+
 
 //****************************************************************************************
 //****************************************************************************************
@@ -714,59 +713,6 @@ void SimCommandsWin::acceptRparen( ) {
     else throw ( ERR_EXPECTED_LPAREN );
 }
 
-
-#if 0
-// ??? phase out ....
-//----------------------------------------------------------------------------------------
-// "displayInvalidWord" shows a set of "*" when we cannot get a value for word. We 
-// make the length of the "*" string according to the current radix.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayInvalidWord( int rdx ) {
-    
-    if      ( rdx == 10 )   winOut -> writeChars( "**********" );
-    else if ( rdx == 16 )   winOut -> writeChars( "**********" );
-    else                    winOut -> writeChars( "**num**" );
-}
-
-// ??? phase out ....
-//----------------------------------------------------------------------------------------
-// "displayWord" lists out a 32-bit machine word in the specified number base. If the
-// format parameter is omitted or set to "default", the environment variable for the
-// base number is used.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayWord( uint32_t val, int rdx ) {
-    
-    if      ( rdx == 10 )  winOut -> writeChars( "%10d", val );
-    else if ( rdx == 16 )  {
-        
-        if ( val == 0 ) winOut -> writeChars( "0x00000000" );
-        else winOut -> writeChars( "%#010x", val );
-    }
-    else winOut -> writeChars( "**num**" );
-}
-
-// ??? phase out ....
-//----------------------------------------------------------------------------------------
-// "displayHalfWord" lists out a 12-bit word in the specified number base. If the 
-// format parameter is omitted or set to "default", the environment variable for the
-// base number is used.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayHalfWord( uint32_t val, int rdx ) {
-    
-    if      ( rdx == 10 )  winOut -> writeChars( "%5d", val );
-    else if ( rdx == 16 )  {
-        
-        if ( val == 0 ) winOut -> writeChars( "0x0000" );
-        else            winOut -> writeChars( "%#05x", val );
-    }
-    else winOut -> writeChars( "**num**" );
-}
-#endif
-
-
 //----------------------------------------------------------------------------------------
 // Display absolute memory content. We will show the memory starting with offset. The 
 // words per line is an environmental variable setting. The offset is rounded down to 
@@ -775,6 +721,8 @@ void SimCommandsWin::displayHalfWord( uint32_t val, int rdx ) {
 // three memory objects. There is main physical memory, PDC memory and IO memory. This
 // routine will make the appropriate call.
 //
+// ??? drop the words per line concept ?
+// ?? what about the damn decimal rdx ?
 //----------------------------------------------------------------------------------------
 void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) {
     
@@ -813,37 +761,17 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
 // word per line.
 //
 //----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx ) {
+void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len, int rdx ) {
     
-    T64Word index           = ( ofs / 4 ) * 4;
-    uint32_t    limit           = ((( index + len ) + 3 ) / 4 );
-
-    #if 0
-    CpuMem      *physMem        = glb -> cpu -> physMem;
-    CpuMem      *pdcMem         = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem          = glb -> cpu -> ioMem;
-    #endif
+    T64Word index   = ( adr / 4 ) * 4;
+    T64Word limit   = ((( index + len ) + 3 ) / 4 );
 
     while ( index < limit ) {
-        
-       //  displayWord( index, rdx ); 
+
+        winOut -> printNumber( index, FMT_HEX_4 );
         winOut -> writeChars( ": " );
-        
-        #if 0
-        if (( physMem != nullptr ) && ( physMem -> validAdr( index ))) {
-            
-            disAsm -> displayInstr( physMem -> getMemDataWord( index ), rdx );
-        }
-        else if (( pdcMem != nullptr ) && ( pdcMem -> validAdr( index ))) {
-            
-            disAsm -> displayInstr( pdcMem -> getMemDataWord( index ), rdx );
-        }
-        else if (( ioMem != nullptr ) && ( ioMem -> validAdr( index ))) {
-            
-            disAsm -> displayInstr( ioMem -> getMemDataWord( index ), rdx );
-        }
-        else displayInvalidWord( rdx );
-        #endif
+
+        // ??? get the data word....
         
         winOut -> writeChars( "\n" );
         
@@ -853,138 +781,83 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word ofs, T64Word len, int 
     winOut -> writeChars( "\n" );
 }
 
-#if 0
+
 //----------------------------------------------------------------------------------------
 // This routine will print a TLB entry with each field formatted.
 //
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::displayTlbEntry( TlbEntry *entry, int rdx ) {
+void SimCommandsWin::displayTlbEntry( T64TlbEntry *entry, int rdx ) {
     
-    winOut -> printChars( "[" );
-    if ( entry -> tValid( ))            winOut -> printChars( "V" );
-    else winOut -> printChars( "v" );
-    if ( entry -> tDirty( ))            winOut -> printChars( "D" );
-    else winOut -> printChars( "d" );
-    if ( entry -> tTrapPage( ))         winOut -> printChars( "P" );
-    else winOut -> printChars( "p" );
-    if ( entry -> tTrapDataPage( ))     winOut -> printChars( "D" );
-    else winOut -> printChars( "d" );
-    winOut -> printChars( "]" );
+    winOut -> writeChars( "[" );
+
+    winOut -> writeChars( "TLB flags " );
     
-    winOut -> printChars( " Acc: (%d,%d,%d)", entry -> tPageType( ), entry -> tPrivL1( ), entry -> tPrivL2( ));
+    winOut -> writeChars( "]" );
+
+    winOut -> writeChars( "[" );
+
+    winOut -> writeChars( "ACC " );
     
-    winOut -> printChars( " Pid: " );
-    displayHalfWord( entry -> tSegId( ), rdx );
+    winOut -> writeChars( "]" );
     
-    winOut -> printChars( " Vpn-H: " );
-    displayWord( entry -> vpnHigh, rdx );
+    winOut -> writeChars( " Vpn: " );
     
-    winOut -> printChars( " Vpn-L: " );
-    displayWord( entry -> vpnLow, rdx );
-    
-    winOut -> printChars( " PPN: " );
-    displayHalfWord( entry -> tPhysPage( ), rdx  );
+    winOut -> writeChars( " Ppn: " );
+
+     winOut -> writeChars( " Pid: " );
 }
 
 //----------------------------------------------------------------------------------------
 // "displayTlbEntries" displays a set of TLB entries, line by line.
 //
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::displayTlbEntries( CpuTlb *tlb, uint32_t index, uint32_t len, int rdx ) {
+void SimCommandsWin::displayTlbEntries( T64Tlb *tlb, int index, int len, int rdx ) {
     
     if ( index + len <= tlb -> getTlbSize( )) {
         
         for ( uint32_t i = index; i < index + len; i++  ) {
+
+            winOut -> writeChars( "0x%4x:", 0 );
             
-            displayWord( i, rdx  );
-            winOut -> printChars( ": " );
-            
-            TlbEntry *ptr = tlb -> getTlbEntry( i );
+            T64TlbEntry *ptr = tlb -> getTlbEntry( i );
             if ( ptr != nullptr ) displayTlbEntry( ptr, rdx );
             
-            winOut -> printChars( "\n" );
+            winOut -> writeChars( "\n" );
         }
         
-    } else winOut -> printChars( "index + len out of range\n" );
+    } else winOut -> writeChars( "index + len out of range\n" );
 }
 
 //----------------------------------------------------------------------------------------
-// "displayCacheEntries" displays a list of cache line entries. Since we have a coupe of block sizes and
-// perhaps one or more sets, the display is rather complex.
+//
 //
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::displayCacheEntries( CpuMem *cPtr, uint32_t index, uint32_t len, int rdx ) {
-    
-    uint32_t    blockSets       = cPtr -> getBlockSets( );
-    uint32_t    wordsPerBlock   = cPtr -> getBlockSize( ) / 4;
-    uint32_t    wordsPerLine    = 4;
-    uint32_t    linesPerBlock   = wordsPerBlock / wordsPerLine;
-    
-    if ( index + len >=  cPtr -> getBlockEntries( )) {
-        
-        winOut -> printChars( " cache index + len out of range\n" );
-        return;
-    }
-    
-    for ( uint32_t lineIndex = index; lineIndex < index + len; lineIndex++  ) {
-        
-        displayWord( lineIndex, rdx  );
-        winOut -> printChars( ": " );
-        
-        if ( blockSets >= 1 ) {
-            
-            MemTagEntry *tagPtr     = cPtr -> getMemTagEntry( lineIndex, 0 );
-            uint32_t    *dataPtr    = (uint32_t *) cPtr -> getMemBlockEntry( lineIndex, 0 );
-            
-            winOut -> printChars( "(0)[" );
-            if ( tagPtr -> valid )  winOut -> printChars( "V" ); else winOut -> printChars( "v" );
-            if ( tagPtr -> dirty )  winOut -> printChars( "D" ); else winOut -> printChars( "d" );
-            winOut -> printChars( "] (" );
-            displayWord( tagPtr -> tag, rdx );
-            winOut -> printChars( ") \n" );
-            
-            for ( int i = 0; i < linesPerBlock; i++  ) {
-                
-                winOut -> printChars( "            (" );
-                
-                for ( int j = 0; j < wordsPerLine; j++ ) {
-                    
-                    displayWord( dataPtr[ ( i * wordsPerLine ) + j ], rdx );
-                    if ( i < 3 ) winOut -> printChars( " " );
-                }
-                
-                winOut -> printChars( ") \n" );
-            }
-        }
-        
-        if ( blockSets >= 2 ) {
-            
-            MemTagEntry *tagPtr     = cPtr -> getMemTagEntry( lineIndex, 0 );
-            uint32_t    *dataPtr    = (uint32_t *) cPtr -> getMemBlockEntry( lineIndex, 1 );
-            
-            winOut -> printChars( "            (1)[" );
-            if ( tagPtr -> valid )  winOut -> printChars( "V" ); else winOut -> printChars( "v" );
-            if ( tagPtr -> dirty )  winOut -> printChars( "D" ); else winOut -> printChars( "d" );
-            winOut -> printChars( "] (" );
-            displayWord( tagPtr -> tag, rdx );
-            winOut -> printChars( ")\n" );
-            
-            for ( int i = 0; i < linesPerBlock; i++  ) {
-                
-                winOut -> printChars( "            (" );
-                
-                for ( int j = 0; j < wordsPerLine; j++ ) {
-                    
-                    displayWord( dataPtr[ ( i * wordsPerLine ) + j ], rdx );
-                    if ( i < 3 ) winOut -> printChars( " " );
-                }
-                
-                winOut -> printChars( ") \n" );
-            }
-        }
+void SimCommandsWin::displayCacheLine( T64CacheLine *line, int rdx ) {
+
+    winOut -> writeChars( "[" );
+    winOut -> writeChars( "xxx" );
+    winOut -> writeChars( "][" );
+    winOut ->printNumber( 0, FMT_HEX_2_4_4 );
+    winOut -> writeChars( "] " );
+
+    for ( int i = 0; i < 4; i++ ) { // ??? fix cache line size...
+
+        winOut ->printNumber( 0, FMT_HEX_4_4_4_4 );
+        winOut -> writeChars( "  " );
     }
 }
-#endif
+
+//----------------------------------------------------------------------------------------
+// "displayCacheEntries" displays a list of cache line entries. Since we have a couple
+// of block sizes and  perhaps one or more sets, the display is rather complex.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::displayCacheEntries( T64Cache *cPtr, int index, int len, int rdx ) {
+
+   // ??? get cache size and number of sets
+   // ??? for each index print index and setId 
+   // ??? printCacheLine
+}
 
 //----------------------------------------------------------------------------------------
 // Return the current command entered.
@@ -996,9 +869,9 @@ SimTokId SimCommandsWin::getCurrentCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Our friendly welcome message with the actual program version. We also set some of the environment variables
-// to an initial value. Especially string variables need to be set as they are not initialized from the
-// environment variable table.
+// Our friendly welcome message with the actual program version. We also set some of the
+// environment variables to an initial value. Especially string variables need to be set 
+// as they are not initialized from the environment variable table.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::printWelcome( ) {
@@ -1028,7 +901,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
             
         return( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
-                           glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
+                           (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
         }
     else return( snprintf( promptStr, promptStrLen, "->" ));
 }
@@ -1115,14 +988,48 @@ void SimCommandsWin::helpCmd( ) {
              ( tok -> isTokenTyp( TYP_WTYP )) ||
              ( tok -> isTokenTyp( TYP_RSET )) ||
              ( tok -> isTokenTyp( TYP_P_FUNC ))) {
-        
+
+        #if 0
+
+        if (( tok -> isToken( CMD_SET )) ||
+             ( tok -> isToken( WCMD_SET )) ||
+             ( tok -> isToken( REG_SET )) ||
+             ( tok -> isToken( WTYPE_SET )) ||
+             ( tok -> isToken( PF_SET ))) {
+
+                for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
+                
+                    if ( cmdHelpTab[ i ].helpTypeId == tok -> tokTyp( )) {
+
+                        winOut -> writeChars( FMT_STR_SUMMARY, 
+                                              cmdHelpTab[ i ].cmdNameStr, 
+                                              cmdHelpTab[ i ].helpStr );
+                    }
+            }
+        }
+        else {
+
+            for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
+                
+                if ( cmdHelpTab[ i ].helpTokId == tok -> tokId( )) {
+                    
+                    winOut -> writeChars( FMT_STR_DETAILS, 
+                        cmdHelpTab[ i ].cmdSyntaxStr, cmdHelpTab[ i ].helpStr );
+                }
+            }
+        }
+
+        #else
         if ( tok -> isToken( CMD_SET )) {
             
             for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
-                if ( cmdHelpTab[ i ].helpTypeId == TYP_CMD )
+                if ( cmdHelpTab[ i ].helpTypeId == TYP_CMD ) {
+
                     winOut -> writeChars( FMT_STR_SUMMARY, 
-                        cmdHelpTab[ i ].cmdNameStr, cmdHelpTab[ i ].helpStr );
+                                          cmdHelpTab[ i ].cmdNameStr, 
+                                          cmdHelpTab[ i ].helpStr );
+                }
             }
             
             winOut -> writeChars( "\n" );
@@ -1184,6 +1091,7 @@ void SimCommandsWin::helpCmd( ) {
                 }
             }
         }
+        #endif
     }
     else throw ( ERR_INVALID_ARG );
 }
@@ -1209,10 +1117,11 @@ void SimCommandsWin::exitCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// ENV command. The test driver has a few global environment variables for data format, command count and so
-// on. The ENV command list them all, one in particular and also modifies one if a value is specified. If the
-// ENV variable dos not exist, it will be allocated with the type of the value. A value of the token NIL will
-// remove a user defined variable.
+// ENV command. The test driver has a few global environment variables for data format, 
+// command count and so on. The ENV command list them all, one in particular and also
+// modifies one if a value is specified. If the ENV variable dos not exist, it will be
+// allocated with the type of the value. A value of the token NIL will remove a user
+//  defined variable.
 //
 //  ENV [ <var> [ <val> ]]",
 //----------------------------------------------------------------------------------------
@@ -1269,10 +1178,11 @@ void SimCommandsWin::execFileCmd( ) {
 //----------------------------------------------------------------------------------------
 // Reset command.
 //
-//  RESET [ ( 'CPU' | 'MEM' | 'STATS' | 'ALL' ) ]
+//  RESET [ ( 'PROC' | 'MEM' | 'STATS' | 'ALL' ) ]
+//
+// ??? rethink what we want ... reset the SYSTEM ? all CPUs ?
 //
 // ??? when and what statistics to also reset ?
-// ??? what if there is a unified cache outside the CPU ?
 // ??? what execution mode will put the CPU ? halted ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::resetCmd( ) {
@@ -1333,7 +1243,6 @@ void SimCommandsWin::runCmd( ) {
 //
 //  S [ <steps> ]
 //
-//
 // ??? we need to handle the console window. It should be enabled before we pass control
 // to the CPU.
 // ??? make it the current window, saving the previous current window.
@@ -1392,9 +1301,10 @@ void SimCommandsWin::writeLineCmd( ) {
             
         case TYP_NUM: {
 
-            winOut -> printNumber( rExpr.u.val, 16 ); // ??? fix ....
-            
-           // displayWord( rExpr.u.val, rdx );
+            if      ( rdx == 16 )   winOut -> printNumber( rExpr.u.val, FMT_HEX );
+            else if ( rdx == 10 )   winOut -> printNumber( rExpr.u.val, FMT_DEC );
+            else                    winOut -> writeChars( "Invalid Radix" );
+        
             winOut -> writeChars( "\n" );
             
         } break;

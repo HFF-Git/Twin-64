@@ -150,28 +150,6 @@ enum SimWinType : int {
     WT_CODE_WIN     = 8  
 };
 
-#if 0
-//----------------------------------------------------------------------------------------
-// Predefined windows are displayed in a fixed order when enabled. The 
-// following constants are the index of these windows in the window table. The
-// first entries are used by the fixed windows and their order is determined by
-// the index number assigned. All these windows are created at program start 
-// time. An index starting with the first user index is used for dynamically 
-// created windows.
-//
-// ??? this may go away completely....
-//----------------------------------------------------------------------------------------
-enum SimWinIndex : int {
-    
-    PS_REG_WIN      = 0,
-    CTRL_REG_WIN    = 1,
-    PL_REG_WIN      = 2,
-    STATS_WIN       = 3,
-    FIRST_UWIN      = 4,
-    LAST_UWIN       = 31
-};
-#endif
-
 //----------------------------------------------------------------------------------------
 // Command line tokens and expression have a type.
 //
@@ -241,10 +219,11 @@ enum SimTokId : uint16_t {
     CMD_DO                  = 1003,     CMD_REDO                = 1004,     
     CMD_HIST                = 1005,     CMD_ENV                 = 1006,     
     CMD_XF                  = 1007,     CMD_WRITE_LINE          = 1008,
+    CMD_DM                  = 1009,
     
     CMD_RESET               = 1009,     CMD_RUN                 = 1010,     
     CMD_STEP                = 1011,
-    
+
     CMD_DR                  = 1012,     CMD_MR                  = 1013,
     CMD_DA                  = 1014,     CMD_MA                  = 1015,
     
@@ -253,7 +232,7 @@ enum SimTokId : uint16_t {
 
     CMD_D_CACHE             = 1019,     CMD_F_CACHE             = 1020,
     CMD_P_CACHE             = 1021,
-    
+
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
     //
@@ -263,15 +242,6 @@ enum SimTokId : uint16_t {
     CMD_WON                 = 2002,     CMD_WOFF                = 2003,     
     CMD_WDEF                = 2004,     CMD_CWL                 = 2005,     
     CMD_WSE                 = 2006,     CMD_WSD                 = 2007,
-    
-    CMD_PSE                 = 2010,     CMD_PSD                 = 2011,     
-    CMD_PSR                 = 2012,
-    CMD_SRE                 = 2015,     CMD_SRD                 = 2016,     
-    CMD_SRR                 = 2017,
-    CMD_PLE                 = 2020,     CMD_PLD                 = 2021,     
-    CMD_PLR                 = 2022,
-    CMD_SWE                 = 2025,     CMD_SWD                 = 2026,    
-    CMD_SWR                 = 2027,
     
     CMD_WE                  = 2050,     CMD_WD                  = 2051,     
     CMD_WR                  = 2052,     CMD_WF                  = 2053,     
@@ -439,32 +409,8 @@ const char ENV_EXIT_CODE [ ]            = "EXIT_CODE";
 
 const char ENV_RDX_DEFAULT [ ]          = "RDX_DEFAULT";
 const char ENV_WORDS_PER_LINE [ ]       = "WORDS_PER_LINE";
-const char ENV_SHOW_PSTAGE_INFO[ ]      = "SHOW_PSTAGE_INFO";
-const char ENV_STEP_IN_CLOCKS[ ]        = "STEP_IN_CLOCKS";
 const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
 const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
-
-// ??? replace by predefined functions ?
-
-const char ENV_I_TLB_SETS[ ]            = "I_TLB_SETS";
-const char ENV_I_TLB_SIZE[ ]            = "I_TLB_SIZE";
-
-const char ENV_D_TLB_SETS[ ]            = "D_TLB_SETS";
-const char ENV_D_TLB_SIZE[ ]            = "D_TLB_SIZE";
-
-const char ENV_I_CACHE_SETS[ ]          = "I_CACHE_SETS";
-const char ENV_I_CACHE_SIZE[ ]          = "I_CACHE_SIZE";
-const char ENV_I_CACHE_LINE_SIZE[ ]     = "I_CACHE_LINE_SIZE";
-
-const char ENV_D_CACHE_SETS[ ]          = "D_CACHE_SETS";
-const char ENV_D_CACHE_SIZE[ ]          = "D_CACHE_SIZE";
-const char ENV_D_CACHE_LINE_SIZE[ ]     = "D_CACHE_LINE_SIZE";
-
-const char ENV_MEM_SIZE[ ]              = "MEM_SIZE";
-const char ENV_MEM_BANKS[ ]             = "MEM_BANKS";
-const char ENV_MEM_BANK_SIZE[ ]         = "MEM_BANK_SIZE";
-
-
 
 //----------------------------------------------------------------------------------------
 // Forward declaration of the globals structure. Every object will have access to the
@@ -598,19 +544,18 @@ struct SimExprEvaluator {
     
     void            parseTerm( SimExpr *rExpr );
     void            parseFactor( SimExpr *rExpr );
-    void            parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );
-    
-    // ??? rework... we need some to deal with the numeric sizes...
-    // ??? add functions for processor attributes, such as cache size, etc.
-    void            pFuncS32( SimExpr *rExpr );
-    void            pFuncU32( SimExpr *rExpr );
-    
+
+    void            parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );    
     void            pFuncAssemble( SimExpr *rExpr );
     void            pFuncDisAssemble( SimExpr *rExpr );
     void            pFuncHash( SimExpr *rExpr );
+    void            pFuncS32( SimExpr *rExpr );
+    void            pFuncU32( SimExpr *rExpr );
     
     SimGlobals      *glb        = nullptr;
     SimTokenizer    *tok        = nullptr;
+    T64Assemble     *inlineAsm  = nullptr;
+    T64DisAssemble  *disAsm     = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -654,6 +599,7 @@ struct SimEnv {
     void            setEnvVar( char *name, T64Word val );
     void            setEnvVar( char *name, bool val );
     void            setEnvVar( char *name, char *str );
+    void            removeEnvVar( char *name );
     
     bool            getEnvVarBool( char *name,bool def = false );
     T64Word         getEnvVarInt( char *name, T64Word def = 0 );
@@ -663,8 +609,6 @@ struct SimEnv {
     bool            isValid( char *name );
     bool            isReadOnly( char *name );
     bool            isPredefined( char *name );
-    
-    void            removeEnvVar( char *name );
     
     private:
     
@@ -773,7 +717,7 @@ struct SimWinOutBuffer : SimFormatter {
 // is an instance of a specific window class with this class as the base class. There
 // are routines common to all windows to enable/ disable, set the lines displayed and
 // so on. There are also abstract methods that the inheriting class needs to implement.
-// Examples are to initialize a window,  redraw and so on.
+// Examples are to initialize a window, redraw and so on.
 //
 //----------------------------------------------------------------------------------------
 struct SimWin {
@@ -864,7 +808,7 @@ struct SimWin {
     private:
     
     int             winType             = WT_NIL;
-    int             winUserIndex        = 0;
+    int             winIndex            = 0;
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -873,14 +817,13 @@ struct SimWin {
     int             winColumns          = 0;
     int             winDefColumnsHex    = 0;
     int             winDefColumnsDec    = 0;
+    int             winToggleLimit      = 0;
+    int             winToggleVal        = 0;
     
     int             winAbsCursorRow     = 0;
     int             winAbsCursorCol     = 0;
     int             lastRowPos          = 0;
     int             lastColPos          = 0;
-
-    int             winToggleLimit      = 0;
-    int             winToggleVal        = 0;
 
     char            winName[ MAX_WIN_NAME_SIZE + 1 ] = { 0 };
 };
@@ -904,20 +847,24 @@ struct SimWinScrollable : SimWin {
     
     void            setHomeItemAdr( T64Word adr );
     T64Word         getHomeItemAdr( );
+
     void            setCurrentItemAdr( T64Word adr );
     T64Word         getCurrentItemAdr( );
+    
     void            setLimitItemAdr( T64Word adr );
     T64Word         getLimitItemAdr( );
-    void            setLineIncrement( T64Word arg );
-    T64Word         getLineIncrement( );
+    
+    void            setLineIncrement( int arg );
+    int             getLineIncrement( );
+
+    void            winHome( T64Word pos = 0 );
+    void            winJump( T64Word pos );
+    void            winForward( T64Word amt );
+    void            winBackward( T64Word amt );
+   
     
     virtual void    drawBody( );
     virtual void    drawLine( T64Word index ) = 0;
-    
-    void            winHome( T64Word pos = 0 );
-    void            winForward( T64Word amt );
-    void            winBackward( T64Word amt );
-    void            winJump( T64Word pos );
     
     private:
     
@@ -975,6 +922,7 @@ struct SimWinCode : SimWinScrollable {
     public:
     
     SimWinCode( SimGlobals *glb );
+    ~ SimWinCode( );
     
     void setDefaults( );
     void drawBanner( );
@@ -1112,11 +1060,10 @@ private:
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx = 16 );
     
-    #if 0 // to do ...
-    void            displayTlbEntry( TlbEntry *entry, int rdx = 16 );
-    void            displayTlbEntries( CpuTlb *tlb, uint32_t index, uint32_t len, int rdx = 16 );
-    void            displayCacheEntries( CpuMem *cache, uint32_t index, uint32_t len, int rdx = 16 );
-    #endif 
+    void            displayTlbEntry( T64TlbEntry *entry, int rdx = 16 );
+    void            displayTlbEntries( T64Tlb *tlb, int index, int len, int rdx = 16 );
+    void            displayCacheLine( T64CacheLine *line, int rdx = 16 );
+    void            displayCacheEntries( T64Cache *cache, int index, int len, int rdx = 16 );
 
     void            exitCmd( );
     void            helpCmd( );
@@ -1255,26 +1202,17 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// The globals, accessible to all objects. Turns out that all main objects need to 
-// access data from all the individual objects of the simulator. Also, the command
-// interpreter consists of several objects. To ease the passing around there is the
+// The globals, accessible to all objects. To ease the passing around there is the
 // idea a global structure with a reference to all the individual objects.
 //
-// ??? they also could be globals in the "main.cpp" with externals in the 
-// "cmd" files.... simplify ?
 //----------------------------------------------------------------------------------------
 struct SimGlobals {
     
     SimConsoleIO        *console        = nullptr;
     SimEnv              *env            = nullptr;
     SimWinDisplay       *winDisplay     = nullptr;
-
-    T64Assemble         *inlineAsm      = nullptr;
-    T64DisAssemble      *disAsm         = nullptr;
-
-
-
-  //  CpuCore             *cpu            = nullptr;
+    
+    T64System           *system         = nullptr;
 };
 
 #endif  // Sim_Declarations_h

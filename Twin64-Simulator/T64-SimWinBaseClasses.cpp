@@ -70,12 +70,12 @@ void SimWin::setWinType( int arg ) {
 
 int SimWin::getWinIndex( ) { 
     
-    return( winUserIndex ); 
+    return( winIndex ); 
 }
 
 void SimWin::setWinIndex( int arg ) { 
     
-    winUserIndex = arg; 
+    winIndex = arg; 
 }
 
 bool SimWin::isEnabled( ) { 
@@ -484,12 +484,12 @@ void SimWinScrollable::setLimitItemAdr( T64Word adr ) {
     limitItemAdr = adr; 
 }
 
-T64Word SimWinScrollable::getLineIncrement( ) { 
+int SimWinScrollable::getLineIncrement( ) { 
     
     return( lineIncrement ); 
 }
 
-void SimWinScrollable::setLineIncrement( T64Word arg ) { 
+void SimWinScrollable::setLineIncrement( int arg ) { 
     
     lineIncrement = arg; 
 }

@@ -34,15 +34,26 @@ enum T64ModuleType {
     MT_IO   = 3
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
+// The processor can communicate events during their instruction execution. The most 
+// important ones are the cache coherency events. They will be handled by any other
+// module that has a cache right away. For example, of a processor wants to modify a 
+// cache line, it will send a "read exclusive" event, which tells the other modules
+// to invalidate their cache line, and perhaps flush it first if they have an exclusive
+// copy. This protocol is not very efficient, but will guarantee a consistent memory
+// copy.
 // 
+// Events triggered must also run to completion. A processor broadcasting an event 
+// will cause the system to invoke each module. Thus there is also a priority. When 
+// two processor for example want to obtain an exclusive copy of a cache line, the 
+// latter wins. 
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 enum T64ModuleEvent {
 
-    EVT_NIL = 0,
-    EVT_READ_SHARED = 1,
-    EVT_READ_ECLUSIVE = 2
+    EVT_NIL             = 0,
+    EVT_READ_SHARED     = 1,
+    EVT_READ_EXCLUSIVE  = 2
 };
 
 //----------------------------------------------------------------------------------------
@@ -62,6 +73,15 @@ struct T64Module {
     private:
 
 };
+
+//----------------------------------------------------------------------------------------
+// A module is an entity on the imaginary system bus. It "listens" to three physical 
+// memory address area. The hard physical address range, the soft physical address range
+// configured and the broadcast address range. 
+//
+//----------------------------------------------------------------------------------------
+
+
 
 // ??? ideas for registers: 
 

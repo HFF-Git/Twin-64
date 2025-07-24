@@ -432,14 +432,17 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 //
 //----------------------------------------------------------------------------------------
 // Object constructor. We create a disassembler object for displaying the decoded 
-// instructions.
+// instructions and also need to remove it when the window is killed. 
 //
-// ??? check math for window scrolling, debug: 0xf000000 + forward ....
-// ??? need to rework for virtual addresses ? We need to work with segment and offset !!!!
 //----------------------------------------------------------------------------------------
 SimWinCode::SimWinCode( SimGlobals *glb ) : SimWinScrollable( glb ) {
 
     disAsm = new T64DisAssemble( );
+}
+
+SimWinCode::  ~  SimWinCode( ) {
+
+    if ( disAsm != nullptr ) delete ( disAsm );
 }
 
 //----------------------------------------------------------------------------------------
@@ -517,33 +520,11 @@ void SimWinCode::drawBanner( ) {
 void SimWinCode::drawLine( T64Word itemAdr ) {
     
     uint32_t    fmtDesc         = FMT_DEF_ATTR;
-    bool        plWinEnabled    = 
-        glb -> winDisplay -> isWinEnabled( 0 );
+    bool        plWinEnabled    = glb -> winDisplay -> isWinEnabled( 0 );
 
-    #if 0
-    CpuMem      *physMem        = glb -> cpu -> physMem;
-    CpuMem      *pdcMem         = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem          = glb -> cpu -> ioMem;
-    #endif
-
-    uint32_t    instr           = 0xFFFFFFFF;
-    char        buf[ 128 ]      = { 0 };
+    uint32_t    instr                       = 0xFFFFFFFF;
+    char        buf[ MAX_TEXT_LINE_SIZE ]   = { 0 };
     
-    #if 0
-    if (( physMem != nullptr ) && ( physMem -> validAdr( itemAdr ))) {
-        
-        instr = physMem -> getMemDataWord( itemAdr );
-    }
-    else if (( pdcMem != nullptr ) && ( pdcMem -> validAdr( itemAdr ))) {
-        
-        instr = pdcMem -> getMemDataWord( itemAdr );
-    }
-    else if (( ioMem != nullptr ) && ( ioMem -> validAdr( itemAdr ))) {
-        
-        instr = ioMem -> getMemDataWord( itemAdr );
-    }
-    #endif
-
     printNumericField( itemAdr, fmtDesc | FMT_ALIGN_LFT, 12 );
   
     #if 0

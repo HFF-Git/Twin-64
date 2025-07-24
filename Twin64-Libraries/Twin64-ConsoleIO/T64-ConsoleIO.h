@@ -139,7 +139,8 @@ enum FmtDescOptions : uint32_t {
     FMT_HEX_2_4_4_4     = 0x00000900,
     FMT_HEX_4_4_4_4     = 0x00000A00,
      
-    FMT_DEC             = 0x00000B00,
+    FMT_HEX             = 0x00000B00,
+    FMT_DEC             = 0x00000C00,
 
     FMT_BOLD            = 0x00010000,
     FMT_BLINK           = 0x00020000,
