@@ -3,22 +3,25 @@
 // Twin-64 - System
 //
 //----------------------------------------------------------------------------------------
-// This ...
+// The T64-System represent the system consisting of several modules. Modules are for
+// example processor, memory and I/O modules. The simulator is connected to the system
+// which handles all module functions. A program start, the individual modules are 
+// registered to the system. Think of a kind of bus where you plug in boards.  
 //
 //----------------------------------------------------------------------------------------
 //
 //  Twin-64 - System
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program. If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #ifndef T64_System_h
@@ -33,9 +36,9 @@
 // ??? we also need to handle interrupts too...
 
 //----------------------------------------------------------------------------------------
-// The architecture defines 64 module on the system bus so far. Typically the
-// number of imaginary boards is much smaller. However, a board could have
-// m
+// The architecture defines 64 module on the system bus so far. Typically the number
+// of imaginary boards is much smaller. However, a board could have several modules on
+// one board. To the software this transparent.
 //
 //----------------------------------------------------------------------------------------
 const int MAX_MODULES = 16;
@@ -58,10 +61,10 @@ struct T64SystemMapEntry {
 };
 
 //----------------------------------------------------------------------------------------
-// A T64 system is a bus where you plug in modules. A module represents an
-// entity such as a processor, a memory module, an I/O module and so on. At
-// program start we create the module objects and register them. Two routines
-// are used to lookup the module object for a module number of managed address.
+// A T64 system is a bus where you plug in modules. A module represents an entity such
+// as a processor, a memory module, an I/O module and so on. At program start we create
+// the module objects and register them. Two routines are used to lookup the module 
+// object for a module number of managed address.
 //
 //----------------------------------------------------------------------------------------
 struct T64System {
@@ -89,7 +92,47 @@ struct T64System {
     void        reset( );
     void        run( );
     void        step( int steps = 1 );
-                
+
+    // ??? ideas for routines used by the simulator...
+    // ??? perhaps also used by the processor in some parts...
+    // ??? general logic: lookup module and invoke the module specific function.
+
+    int         readGeneralReg( int proc, int reg, T64Word *val );
+    int         writeGeneralReg( int proc, int reg, T64Word val );
+
+    int         readControlReg( int proc, int reg, T64Word *val );
+    int         writeControllReg( int proc, int reg, T64Word val );
+
+    int         readPswReg( int proc, int reg, T64Word *val );
+    int         writePswReg( int proc, int reg, T64Word val );
+
+    int         readTlbEntry( int proc, int tlb, int index, 
+                                T64Word *info1, T64Word *info2 );
+
+    int         insertTlbEntry( int proc, int tlb, int index, 
+                                T64Word *info1, T64Word *info2 );
+
+    int         purgeTlbEntry( int proc, int tlb, int index );
+
+    int         readCacheLine( int proc, int cache, int set, int index,
+                                T64Word *line );
+
+    int         flushCacheLine( int proc, int cache, int set, int index );
+
+    int         purgeCacheLine( int proc, int cache, int set, int index );
+
+    int         readMemWord( T64Word adr, T64Word *val );
+    int         writeMemWord( T64Word adr, int reg, T64Word val );
+
+    int         readMemBlock( T64Word adr, T64Word *blk );
+    int         writeMemBlock( T64Word adr, int reg, T64Word *blk );
+
+    int         getHpaStartAdr( int module, T64Word *val );
+    int         getHpaSize( int module, T64Word *val );
+
+    int         getSpaStartAdr( int module, T64Word *val );
+    int         getSpaSize( int module, T64Word *val );
+ 
     private:
 
     T64SystemMapEntry   moduleTab[ MAX_MODULES ];

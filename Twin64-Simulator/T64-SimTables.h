@@ -10,15 +10,15 @@
 // Twin64 - A 64-bit CPU Simulator - Simulator Tables
 // Copyright (C) 2024 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #ifndef SimTables_h
@@ -172,7 +172,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "RL",         .typ = TYP_GREG,    .tid = GR_14,    .u.val =  14 },
     { .name = "SP",         .typ = TYP_GREG,    .tid = GR_15,    .u.val =  15 },
     
-
     //------------------------------------------------------------------------------------
     // Control registers.
     //
@@ -198,14 +197,13 @@ const SimToken cmdTokTab[ ] = {
     // Predefined functions.
     //
     //------------------------------------------------------------------------------------
-   
     { .name = "ASM",        .typ = TYP_P_FUNC, .tid = PF_ASSEMBLE, .u.val = 0 },
-    { .name = "DISASM",     .typ = TYP_P_FUNC, .tid = PF_DIS_ASSEMBLE, .u.val = 0   },
-    { .name = "HASH",       .typ = TYP_P_FUNC, .tid = PF_HASH,   .u.val = 0   },
+    { .name = "DISASM",     .typ = TYP_P_FUNC, .tid = PF_DIS_ASM,  .u.val = 0 },
+    { .name = "HASH",       .typ = TYP_P_FUNC, .tid = PF_HASH,     .u.val = 0 },
 
     // ??? tons of more predefines....
 
-    { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,    .u.val = 0   },
+    { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,      .u.val = 0 },
     
 };
 
@@ -783,7 +781,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
     
     {
-        .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_DIS_ASSEMBLE,
+        .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_DIS_ASM,
         .cmdNameStr     = (char *) "disasm",
         .cmdSyntaxStr   = (char *) "disasm ( <instr> )",
         .helpStr        = (char *) "returns the assemble string for an instruction value"

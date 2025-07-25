@@ -10,43 +10,25 @@
 // Twin-64 - A 64-bit CPU - Physical memory
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program. If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Memory.h"
+#include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------------------------
 namespace {
-
-inline T64Word roundup( T64Word arg, int round ) {
-    
-    if ( round == 0 ) return ( arg );
-    return ((( arg + round - 1 ) / round ) * round );
-}
-
-inline bool isAligned( T64Word adr, int align ) {
-    
-    return (( adr & ( align - 1 )) == 0 );
-}
-
-inline T64Word extractSignedField( T64Word arg, int bitpos, int len ) {
-    
-    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-    
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-    else             return ( field );
-}
 
 } // namespace
 
@@ -84,7 +66,7 @@ T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
     if ( len == 1 ) {
         
         T64Word val= mem[ adr ];
-        if ( signExtend ) val = extractSignedField( val, 63, 8 );
+        if ( signExtend ) val = extractSignedField64( val, 63, 8 );
         return( val );
     }
     else if ( len == 2 ) {
@@ -94,7 +76,7 @@ T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
         T64Word val = 0;
         val |= (int16_t) mem[ adr ] << 8;
         val |= (int16_t) mem[ adr + 1 ];
-        if ( signExtend ) val = extractSignedField( val, 63, 16 );
+        if ( signExtend ) val = extractSignedField64( val, 63, 16 );
         return( val );
     }
     else if ( len == 4 ) {
@@ -106,7 +88,7 @@ T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
         val |= (int32_t) mem[ adr + 1 ] << 16;
         val |= (int32_t) mem[ adr + 2 ] << 8;
         val |= (int32_t) mem[ adr + 3 ];
-        if ( signExtend ) val = extractSignedField( val, 63, 32 );
+        if ( signExtend ) val = extractSignedField64( val, 63, 32 );
         return( val );
         
     }

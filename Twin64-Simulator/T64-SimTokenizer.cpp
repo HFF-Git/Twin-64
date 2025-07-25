@@ -1,78 +1,51 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Command line tokenizer
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The tokenizer will accept an input line and return one token at a time. 
 // Upon an error, the tokenizer will raise an exception.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Command line tokenizer
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 namespace {
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 const int   TOK_INPUT_LINE_SIZE = 256;
 const int   TOK_NAME_SIZE       = 32;
 const char  EOS_CHAR            = 0;
 
-//------------------------------------------------------------------------------
-// A little helper function to upshift a string in place.
-//
-//------------------------------------------------------------------------------
-void upshiftStr( char *str ) {
-    
-    size_t len = strlen( str );
-    
-    if ( len > 0 ) {
-        
-        for ( size_t i = 0; i < len; i++ ) {
-            
-            str[ i ] = (char) toupper((int) str[ i ] );
-        }
-    }
-}
-
-void addChar( char *buf, int size, char ch ) {
-    
-    size_t len = strlen( buf );
-    
-    if ( len + 1 < size ) {
-        
-        buf[ len ]     = ch;
-        buf[ len + 1 ] = 0;
-    }
-}
-
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The lookup function. We just do a linear search for now.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 int lookupToken( char *inputStr, SimToken *tokTab ) {
     
     if (( strlen( inputStr ) == 0 ) || 
@@ -88,19 +61,18 @@ int lookupToken( char *inputStr, SimToken *tokTab ) {
 
 }; // namespace
 
-
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The object constructor, nothing to do for now.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 SimTokenizer::SimTokenizer( ) { }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // We initialize a couple of globals that represent the current state of the 
 // parsing process. This call is the first before any other method can be 
 // called.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
     
     strncpy( tokenLine, lineBuf, strlen( lineBuf ) + 1 );
@@ -113,10 +85,10 @@ void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
 
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // helper functions for the current token.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 bool SimTokenizer::isToken( SimTokId tokId ) { 
     
     return( currentToken.tid == tokId ); 
@@ -162,10 +134,10 @@ char *SimTokenizer::tokenLineStr( ) {
     return( tokenLine ); 
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "nextChar" returns the next character from the token line string.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::nextChar( ) {
     
     if ( currentCharIndex < currentLineLen ) {
@@ -176,12 +148,12 @@ void SimTokenizer::nextChar( ) {
     else currentChar = EOS_CHAR;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "parseNum" will parse a number. We accept decimals and hexadecimals. The 
 // numeric string can also contain "_" characters for a better readable string. 
 // Hex numbers start with a "0x", decimals just with the numeric digits.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::parseNum( ) {
     
     currentToken.tid    = TOK_NUM;
@@ -246,14 +218,14 @@ void SimTokenizer::parseNum( ) {
     currentToken.u.val = tmpVal;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "parseString" gets a string. We manage special characters inside the string 
 // with the "\" prefix. Right now, we do not use strings, so the function is 
 // perhaps for the future. We will just parse it, but record no result. One day,
 // the entire simulator might use the lexer functions. Then we need it.
 //
 // ??? changes...
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::parseString( ) {
     
     currentToken.tid        = TOK_STR;
@@ -301,7 +273,7 @@ void SimTokenizer::parseString( ) {
     nextChar( );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "parseIdent" parses an identifier. It is a sequence of characters starting 
 // with an alpha character. An identifier found in the token table will assume 
 // the type and value of the token found. Any other identifier is just an 
@@ -310,7 +282,7 @@ void SimTokenizer::parseString( ) {
 // numeric value. During the character analysis, We first check for these kind
 //  of qualifiers and if found hand over to parse a number.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::parseIdent( ) {
     
     currentToken.tid    = TOK_IDENT;
@@ -419,11 +391,11 @@ void SimTokenizer::parseIdent( ) {
     else currentToken = tokTab[ index ];
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // "nextToken" is the entry point to the token business. It returns the next 
 // token from the input string.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimTokenizer::nextToken( ) {
 
     currentToken.typ    = TYP_NIL;
@@ -452,6 +424,12 @@ void SimTokenizer::nextToken( ) {
         
         currentToken.typ   = TYP_SYM;
         currentToken.tid   = TOK_PERIOD;
+        nextChar( );
+    }
+    else if ( currentChar == ':' ) {
+        
+        currentToken.typ   = TYP_SYM;
+        currentToken.tid   = TOK_COLON;
         nextChar( );
     }
     else if ( currentChar == '+' ) {

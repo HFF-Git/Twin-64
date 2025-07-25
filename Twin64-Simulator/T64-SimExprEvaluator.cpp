@@ -11,18 +11,19 @@
 // Twin64 - A 64-bit CPU - Simulator Command line expression parser
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
@@ -40,8 +41,9 @@
 //      <factor> -> <number>                        |
 //                  <string>                        |
 //                  <envId>                         |
-//                  <gregId>                        |
-//                  <cregId>                        |
+//                  <pswId>  [ ":" <proc> ]         |     
+//                  <gregId> [ ":" <proc> ]         |
+//                  <cregId> [ ":" <proc> ]         |
 //                  "~" <factor>                    |
 //                  "(" <expr> ")"
 //
@@ -61,7 +63,6 @@
 //
 //----------------------------------------------------------------------------------------
 
-
 //----------------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.
 //
@@ -74,53 +75,6 @@ enum logicalOpId : int {
     OR_OP   = 1,
     XOR_OP  = 2
 };
-
-
-//----------------------------------------------------------------------------------------
-// Signed 64-bit numeric operations and overflow check.
-//
-//----------------------------------------------------------------------------------------
-inline bool willAddOverflow( T64Word a, T64Word b ) {
-    
-    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
-    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
-    return false;
-}
-
-inline bool willSubOverflow( T64Word a, T64Word b ) {
-    
-    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
-    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
-    return false;
-}
-
-inline bool willMultOverflow( T64Word a, T64Word b ) {
-
-    if (( a == 0 ) ||( b == 0 )) return ( false );
-
-    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
-    if (( b == INT64_MIN ) && ( a == -1 )) return ( true );
-
-    if ( a > 0 ) {
-
-        if ( b > 0 ) return ( a > INT64_MAX / b );
-        else         return ( b < INT64_MIN / a );
-    }
-    else {
-
-        if ( b > 0 ) return ( a < INT64_MIN / b );
-        else         return ( a < INT64_MAX / b );
-    }
-}
-
-inline bool willDivOverflow( T64Word a, T64Word b ) {
-
-    if ( b == 0 ) return ( true );
-
-    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
-
-    return ( false );
-}
 
 //----------------------------------------------------------------------------------------
 // Add operation.
@@ -335,16 +289,17 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseFactor" parses the factor syntax part of an expression.
+// "parseFactor" parses the factor syntax part of an expression. The expression directly
+// ties into the value providers, i.e. a register of a processor or an environment 
+// variable.
 //
 //      <factor> -> <number>                        |
-//                  <gregId>                        |
-//                  <sregId>                        |
-//                  <cregId>                        |
+//                  <pswRegId>  [ ":" <proc> ]      |
+//                  <gRegId>    [ ":" <proc> ]      |
+//                  <cRegId>    [ ":" <proc> ]      |
 //                  "~" <factor>                    |
 //                  "(" <expr> ")"
 //
-// ??? what registers ? use a concept of "current PROC ?"
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
@@ -365,43 +320,54 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     }
     else if ( tok -> isTokenTyp( TYP_GREG ))  {
         
-        rExpr -> typ    = TYP_NUM;
-       //  rExpr -> numVal = glb -> cpu -> getReg( RC_GEN_REG_SET, tok -> tokVal( ));
+        int regId   = tok -> tokVal( );
+        int procId  = 0;
+
         tok -> nextToken( );
+        if ( tok -> isToken( TOK_COLON )) {
+
+            tok -> nextToken( );
+            if ( tok -> isTokenTyp( TYP_NUM )) procId = tok -> tokVal( );
+            else throw ( 999 );
+
+            tok -> nextToken( );
+        }
+        else {
+
+            procId = 0; // fix ??? get actual current proc...
+        } 
+
+        // ??? read the register from system into rExpr -> u.val;
+
+        rExpr -> typ    = TYP_NUM;
     }
     else if ( tok -> isTokenTyp( TYP_CREG ))  {
         
-        rExpr -> typ    = TYP_CREG;
-      //  rExpr -> numVal = glb -> cpu -> getReg( RC_CTRL_REG_SET, tok -> tokVal( ));
+        
+        int regId   = tok -> tokVal( );
+        int procId  = 0;
+        
         tok -> nextToken( );
+        if ( tok -> isToken( TOK_COLON )) {
+
+            tok -> nextToken( );
+            if ( tok -> isTokenTyp( TYP_NUM )) procId = tok -> tokVal( );
+            else throw ( 999 );
+
+            tok -> nextToken( );
+        } 
+        else {
+
+            procId = 0; // fix ??? get actual current proc...
+        } 
+
+        // ??? read the register from system into rExpr -> u.val;
+
+         rExpr -> typ    = TYP_NUM;
     }
     else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
         
         parsePredefinedFunction( tok -> token( ), rExpr );
-    }
-    else if ( tok -> isToken( TOK_IDENT )) {
-        
-        #if 0 // fix .....
-        SimEnvTabEntry *entry = glb -> env -> getEnvVarEntry ( tok -> tokStr( ));
-        
-        if ( entry != nullptr ) {
-            
-            rExpr -> typ = entry -> typ;
-            
-            switch( rExpr -> typ ) {
-                    
-                case TYP_BOOL:  rExpr -> bVal       =  entry -> u.bVal;           break;
-                case TYP_NUM:   rExpr -> numVal     =  entry -> u.iVal;           break;
-              
-                case TYP_STR:   strcpy( rExpr -> str, entry -> u.str );     break;
-                
-                default: fprintf( stdout, "**** un-captured type in factor, fix ... \n" );
-            }
-        }
-        else throw( ERR_ENV_VAR_NOT_FOUND );
-        #endif
-        
-        tok -> nextToken( );
     }
     else if ( tok -> isToken( TOK_NEG )) {
         
@@ -416,6 +382,26 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
             
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
+    }
+    else if ( tok -> isToken( TOK_IDENT )) {
+    
+        SimEnvTabEntry *entry = glb -> env -> getEnvEntry( tok -> tokStr( ));
+        
+        if ( entry != nullptr ) {
+            
+            rExpr -> typ = entry -> typ;
+            
+            switch( rExpr -> typ ) {
+                    
+                case TYP_BOOL:  rExpr -> u.bVal     =  entry -> u.bVal;         break;
+                case TYP_NUM:   rExpr -> u.val      =  entry -> u.iVal;         break;
+                case TYP_STR:   strcpy( rExpr -> u.str, entry -> u.strVal );    break;
+                default: throw( 9999 );
+            }
+        }
+        else throw( ERR_ENV_VAR_NOT_FOUND );
+       
+        tok -> nextToken( );
     }
     else if (( tok -> tokTyp( ) == TYP_NIL ) && 
              ( tok -> tokId( ) == TOK_EOS )) {

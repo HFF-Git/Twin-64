@@ -12,18 +12,19 @@
 // Twin64 - A 64-bit CPU - Simulator window classes
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 
@@ -32,28 +33,6 @@
 //
 //----------------------------------------------------------------------------------------
 namespace {
-
-//----------------------------------------------------------------------------------------
-// Little bit field helpers.
-//
-//----------------------------------------------------------------------------------------
-inline uint32_t extractBit( T64Word arg, int bitpos ) {
-    
-    return ( arg >> bitpos ) & 1;
-}
-
-inline uint32_t extractField( T64Word arg, int bitpos, int len) {
-    
-    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
-}
-
-inline int extractSignedField( T64Word arg, int bitpos, int len ) {
-    
-    int field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-    
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-    else             return ( field );
-}
 
 //----------------------------------------------------------------------------------------
 // Routine for creating the access rights string. It consists of the page access and 

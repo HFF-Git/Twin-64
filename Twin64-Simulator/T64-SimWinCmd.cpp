@@ -18,18 +18,19 @@
 // Twin64 - A 64-bit CPU -Simulator command window
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
@@ -44,16 +45,6 @@ namespace {
 // Little helper functions.
 //
 //----------------------------------------------------------------------------------------
-void upshiftStr( char *str ) {
-    
-    size_t len = strlen( str );
-    
-    if ( len > 0 ) {
-        
-        for ( size_t i = 0; i < len; i++ ) str[ i ] = (char) toupper((int) str[ i ] );
-    }
-}
-
 int setRadix( int rdx ) {
     
     return((( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
@@ -1343,7 +1334,7 @@ void SimCommandsWin::modifyRegCmd( ) {
     
     if (( tok -> tokTyp( ) == TYP_GREG )        ||
         ( tok -> tokTyp( ) == TYP_CREG )        ||
-        ( tok -> tokTyp( ) == TYP_PSTATE_PREG )) {
+        ( tok -> tokTyp( ) == TYP_PSW_PREG )) {
         
         regSetId    = tok -> tokTyp( );
         regNum      = tok -> tokVal( );
@@ -1359,7 +1350,7 @@ void SimCommandsWin::modifyRegCmd( ) {
     
     switch( regSetId ) {
 
-        case TYP_PSTATE_PREG: {
+        case TYP_PSW_PREG: {
 
 
         } break;

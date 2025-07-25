@@ -1,36 +1,36 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Environment Variables
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // The simulator environment has a set of environment variables. They are simple
 // "name = value" pairs for integers, booleans and strings.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Environment Variables
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+/// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 #include "T64-Common.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.  
 // None so far.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 namespace {
 
 }; // namespace
@@ -44,21 +44,21 @@ namespace {
 //******************************************************************************
 //******************************************************************************
 
-//------------------------------------------------------------------------------
-// There predefined and user defined variables. Predefined variables are 
-// created at program start and initialized. They are marked predefined and 
-// optional readonly by the ENV command. Also, their type cannot be changed 
-// by a new value of a different type.
+//----------------------------------------------------------------------------------------
+// There predefined and user defined variables. Predefined variables are created at 
+// program start and initialized. They are marked predefined and optional readonly by 
+// the ENV command. Also, their type cannot be changed by a new value of a different 
+// type.
 //
-// User defined variables can be changed in type and value. They are by 
-// definition read and write enabled and can also be removed.
-//------------------------------------------------------------------------------
+// User defined variables can be changed in type and value. They are by definition 
+// read and write enabled and can also be removed.
+//----------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-// The ENV variable object. The table is dynamically allocated, the HWM and 
-// limit pointer are used to manage the search, add and remove functions.
+//----------------------------------------------------------------------------------------
+// The ENV variable object. The table is dynamically allocated, the HWM and limit 
+// pointer are used to manage the search, add and remove functions.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 SimEnv::SimEnv( int size ) {
    
     table       = (SimEnvTabEntry *) calloc( size, sizeof( SimEnvTabEntry ));
@@ -66,16 +66,15 @@ SimEnv::SimEnv( int size ) {
     limit       = &table[ size ];
 }
 
-//------------------------------------------------------------------------------
-// "setEnvVar" is a set of function signatures that modify an ENV variable 
-// value. If the variable is a predefined variable, the readOnly option is 
-// checked as well as that the variable type matches. A user defined variable 
-// is by definition read/write enabled and the type changes based on the type 
-// of the value set. If the variable is not found, a new variable will be 
-// allocated. One more thing. If the ENV variable type is string and we set a
-// value, the old string is deallocated.
+//----------------------------------------------------------------------------------------
+// "setEnvVar" is a set of function signatures that modify an ENV variable value. If 
+// the variable is a predefined variable, the readOnly option is checked as well as 
+// that the variable type matches. A user defined variable is by definition read/write 
+// enabled and the type changes based on the type of the value set. If the variable is
+// not found, a new variable will be allocated. One more thing. If the ENV variable 
+// type is string and we set a value, the old string is deallocated.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::setEnvVar( char *name, T64Word val ) {
     
     int index = lookupEntry( name );
@@ -149,11 +148,11 @@ void SimEnv::setEnvVar( char *name, char *str )  {
     else enterVar( name, str );
 }
 
-//------------------------------------------------------------------------------
-// Environment variables getter functions. Just look up the entry and return 
-// the value. If the entry does not exist, we return an optional default.
+//----------------------------------------------------------------------------------------
+// Environment variables getter functions. Just look up the entry and return the value.
+// If the entry does not exist, we return an optional default.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 bool SimEnv::getEnvVarBool( char *name, bool def ) {
     
     int index = lookupEntry( name );
@@ -178,13 +177,12 @@ char *SimEnv::getEnvVarStr( char *name, char *def ) {
     else                return (def );
 }
 
-//------------------------------------------------------------------------------
-// Remove a user defined ENV variable. If the ENV variable is predefined it is
-// an error. If the ENV variable type is a string, free the string space. The
-// entry is marked invalid, i.e. free. Finally, if the entry was at the high 
-// water mark, adjust the HWM.
+//----------------------------------------------------------------------------------------
+// Remove a user defined ENV variable. If the ENV variable is predefined it is an error.
+// If the ENV variable type is a string, free the string space. The entry is marked 
+// invalid, i.e. free. Finally, if the entry was at the high water mark, adjust the HWM.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::removeEnvVar( char *name ) {
     
     int index = lookupEntry( name );
@@ -207,12 +205,12 @@ void SimEnv::removeEnvVar( char *name ) {
     } 
 }
 
-//------------------------------------------------------------------------------
-// A set of helper function to enter a variable. The variable can be a user or
-// predefined one. If it is a predefined variable, the readonly flag marks the
-// variable read only for the ENV command.
+//----------------------------------------------------------------------------------------
+// A set of helper function to enter a variable. The variable can be a user or predefined
+// one. If it is a predefined variable, the readonly flag marks the variable read only 
+// for the ENV command.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::enterVar( char *name, 
                           T64Word val, 
                           bool predefined, 
@@ -271,10 +269,10 @@ void SimEnv::enterVar( char *name, char *str, bool predefined, bool rOnly ) {
     else throw( ERR_ENV_TABLE_FULL );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Utility functions to return variable attributes.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 bool SimEnv::isValid( char *name ) {
     
     int index = lookupEntry( name );
@@ -306,11 +304,11 @@ SimEnvTabEntry *SimEnv::getEnvEntry( char *name ) {
     else return( nullptr );
 }
 
-//------------------------------------------------------------------------------
-// Look a variable. We just do a linear search up to the HWM. If not found,
-// a -1 is returned. Straightforward.
+//----------------------------------------------------------------------------------------
+// Look a variable. We just do a linear search up to the HWM. If not found, a -1 is 
+// returned. Straightforward.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 int SimEnv::lookupEntry( char *name ) {
     
     SimEnvTabEntry *entry = table;
@@ -325,12 +323,12 @@ int SimEnv::lookupEntry( char *name ) {
     return( -1 );
 }
 
-//------------------------------------------------------------------------------
-// Find a free slot for a variable. First we look for a free entry in the range
-// up to the HWM. If there is none, we try to increase the HWM. If all fails, 
-// the table is full.
+//----------------------------------------------------------------------------------------
+// Find a free slot for a variable. First we look for a free entry in the range up to 
+// the HWM. If there is none, we try to increase the HWM. If all fails, the table is
+// full.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 int SimEnv::findFreeEntry( ) {
     
     SimEnvTabEntry *entry = table;
@@ -349,10 +347,10 @@ int SimEnv::findFreeEntry( ) {
     else throw( ERR_ENV_TABLE_FULL );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // List the entire ENV table up to the high water mark.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::displayEnvTable( ) {
     
     SimEnvTabEntry *entry = table;
@@ -364,10 +362,10 @@ void SimEnv::displayEnvTable( ) {
     }
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Display a ENV entry by name.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::displayEnvTableEntry( char *name ) {
     
     int index = lookupEntry( name );
@@ -376,10 +374,10 @@ void SimEnv::displayEnvTableEntry( char *name ) {
     else throw( 99 );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Display the ENV entry. 
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::displayEnvEntry( SimEnvTabEntry *entry ) {
     
     fprintf( stdout, "%-32s", entry -> name );
@@ -420,10 +418,10 @@ void SimEnv::displayEnvEntry( SimEnvTabEntry *entry ) {
     fprintf( stdout, "\n" );
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 // Enter the predefined entries.
 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimEnv::setupPredefined( ) {
     
     enterVar((char *) ENV_TRUE, (bool) true, true, true );

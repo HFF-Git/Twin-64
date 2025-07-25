@@ -1,18 +1,14 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin64 - A 64-bit CPU Simulator Version ID
+//  Twin64 - A 64-bit CPU Simulator - Common utility functions
 //
 //----------------------------------------------------------------------------------------
-// The whole purpose of  this file is to define the current version String.
-// We also set a constant to use for APPle vs. Windows specific coding. We use
-// it in the command handler. It is not designed for compiling different code
-// sequence, but rather make logical decisions on some output specifics, such
-// as carriage return handling.
+// Helper functions that are not declared inline ....
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator Version ID
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Twin64 - A 64-bit CPU Simulator - Common Declarations
+// Copyright (C) 2022 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
 // terms of the GNU General Public License as published by the Free Software Foundation,
@@ -25,17 +21,34 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef TWIN64_SimVersion_h
-#define TWIN64_SimVersion_h
+#include "T64-Util.h"
 
-const char SIM_VERSION[ ]   = "A.00.01";
-const char SIM_GIT_BRANCH[] = "main";
-const int  SIM_PATCH_LEVEL  = 1;
+//----------------------------------------------------------------------------------------
+//
+//
+//
+//----------------------------------------------------------------------------------------
+void upshiftStr( char *str ) {
+    
+    size_t len = strlen( str );
+    
+    if ( len > 0 ) {
+        
+        for ( size_t i = 0; i < len; i++ ) {
+            
+            str[ i ] = (char) toupper((int) str[ i ] );
+        }
+    }
+}
 
-#if __APPLE__
-const bool SIM_IS_APPLE = true;
-#else
-const bool SIM_IS_APPLE = false;
-#endif
 
-#endif // TWIN64_SimVersion_h
+void addChar( char *buf, int size, char ch ) {
+    
+    int len = (int) strlen( buf );
+    
+    if ( len + 1 < size ) {
+        
+        buf[ len ]     = ch;
+        buf[ len + 1 ] = 0;
+    }
+}

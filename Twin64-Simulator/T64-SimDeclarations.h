@@ -10,15 +10,15 @@
 // Twin64 - A 64-bit CPU Simulator - Declarations
 // Copyright (C) 2022 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #ifndef Sim_Declarations_h
@@ -156,15 +156,15 @@ enum SimWinType : int {
 //----------------------------------------------------------------------------------------
 enum SimTokTypeId : uint16_t {
 
-    TYP_NIL             = 0,    
+    TYP_NIL                 = 0,    
 
-    TYP_NUM             = 1,    TYP_STR             = 2,    TYP_BOOL            = 3, 
-    TYP_SYM             = 4,    TYP_IDENT           = 5, 
-
-    TYP_CMD             = 10,   TYP_WCMD            = 11,   TYP_P_FUNC          = 14,    
+    TYP_NUM                 = 1,        TYP_STR                 = 2,    
+    TYP_BOOL                = 3,        TYP_SYM                 = 4,       
+    TYP_IDENT               = 5,        TYP_CMD                 = 6,   
+    TYP_WCMD                = 7,        TYP_P_FUNC              = 8,    
     
-    TYP_REG             = 20,   
-    TYP_GREG            = 22,   TYP_CREG            = 23,   TYP_PSTATE_PREG     = 24,    
+    TYP_GREG                = 11,       TYP_CREG                = 12,   
+    TYP_PSW_PREG            = 13,    
 };
 
 //----------------------------------------------------------------------------------------
@@ -181,16 +181,18 @@ enum SimTokId : uint16_t {
     //------------------------------------------------------------------------------------
     TOK_NIL                 = 0,        TOK_ERR                 = 1,        
     TOK_EOS                 = 2,        TOK_COMMA               = 3,        
-    TOK_PERIOD              = 4,        TOK_LPAREN              = 5,
-    TOK_RPAREN              = 6,        TOK_QUOTE               = 7,        
-    TOK_PLUS                = 8,        TOK_MINUS               = 9,        
-    TOK_MULT                = 10,       TOK_DIV                 = 11,
-    TOK_MOD                 = 12,       TOK_REM                 = 13,       
-    TOK_NEG                 = 14,       TOK_AND                 = 15,       
-    TOK_OR                  = 16,       TOK_XOR                 = 17,
-    TOK_EQ                  = 18,       TOK_NE                  = 19,       
-    TOK_LT                  = 20,       TOK_GT                  = 21,       
-    TOK_LE                  = 22,       TOK_GE                  = 23,
+    TOK_PERIOD              = 4,        TOK_COLON               = 5,
+    TOK_LPAREN              = 6,        TOK_RPAREN              = 7,        
+    TOK_QUOTE               = 8,        
+
+    TOK_PLUS                = 10,       TOK_MINUS               = 11,        
+    TOK_MULT                = 12,       TOK_DIV                 = 13,
+    TOK_MOD                 = 14,       TOK_REM                 = 15,       
+    TOK_NEG                 = 16,       TOK_AND                 = 17,       
+    TOK_OR                  = 18,       TOK_XOR                 = 19,
+    TOK_EQ                  = 20,       TOK_NE                  = 21,       
+    TOK_LT                  = 22,       TOK_GT                  = 23,       
+    TOK_LE                  = 24,       TOK_GE                  = 25,
     
     //------------------------------------------------------------------------------------
     // Token symbols. They are just reserved names used in commands and functions. Their
@@ -255,7 +257,7 @@ enum SimTokId : uint16_t {
     //
     //------------------------------------------------------------------------------------
     PF_SET                  = 3000,
-    PF_ASSEMBLE             = 3001,     PF_DIS_ASSEMBLE         = 3002,     
+    PF_ASSEMBLE             = 3001,     PF_DIS_ASM         = 3002,     
 
     // ??? rethink... what is needed...
     PF_HASH                 = 3003,     PF_S32                  = 3005,   
@@ -410,6 +412,8 @@ const char ENV_RDX_DEFAULT [ ]          = "RDX_DEFAULT";
 const char ENV_WORDS_PER_LINE [ ]       = "WORDS_PER_LINE";
 const char ENV_WIN_MIN_ROWS[ ]          = "WIN_MIN_ROWS";
 const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
+
+const char ENV_CURRENT_PROC[ ]          = "CURRENT_PROC";
 
 //----------------------------------------------------------------------------------------
 // Forward declaration of the globals structure. Every object will have access to the

@@ -16,18 +16,19 @@
 // T64 - A 64-bit CPU - One Line Assembler
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program. If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-InlineAsm.h"
+#include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
@@ -440,121 +441,122 @@ const Token AsmTokTab[ ] = {
     {   .name   = "SUB",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_SUB,   .val = ( OPG_ALU | OPF_SUB    | OPM_FLD_0 ) },
 
-    {   .name = "AND",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_AND,      .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
+    {   .name   = "AND",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_AND,   .val = ( OPG_ALU | OPF_AND    | OPM_FLD_0 ) },
 
-    {   .name = "OR",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_OR,       .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
+    {   .name   = "OR",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_OR,    .val = ( OPG_ALU | OPF_OR     | OPM_FLD_0 ) },
     
-    {   .name = "XOR",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_XOR,      .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
+    {   .name   = "XOR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
     
-    {   .name = "CMP",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_CMP,      .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
+    {   .name   = "CMP",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
     
-    {   .name = "EXTR",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_EXTR,     .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
+    {   .name   = "EXTR",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
 
-    {   .name = "DEP",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_DEP,      .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_1 ) },
+    {   .name   = "DEP",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_DEP,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_1 ) },
 
-    {   .name = "DSR",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_DSR,      .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
+    {   .name   = "DSR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
     
-    {   .name = "SHL1A",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHL1A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
+    {   .name   = "SHL1A",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
 
-    {   .name = "SHL2A",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHL2A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
+    {   .name   = "SHL2A",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
 
-    {   .name = "SHL3A",        .typ = TYP_OP_CODE, 
+    {   .name   = "SHL3A",      .typ = TYP_OP_CODE, 
         .tid = TOK_OP_SHL3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_6 ) },
 
-    {   .name = "SHR1A",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHR1A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
+    {   .name   = "SHR1A",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
 
-    {   .name = "SHR2A",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHR2A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
+    {   .name   = "SHR2A",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
 
-    {   .name = "SHR3A",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHR3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
+    {   .name   = "SHR3A",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
     
-    {   .name = "LDI",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_LDI,      .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+    {   .name   = "LDI",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
 
-    {   .name = "ADDIL",        .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_ADDIL,    .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+    {   .name   = "ADDIL",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
 
-    {   .name = "LDO",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_LDO,      .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
+    {   .name   = "LDO",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
     
-    {   .name = "LD",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_LD,       .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
+    {   .name   = "LD",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
 
-    {   .name = "LDR",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_LDR,      .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
-    {   .name = "ST",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_ST,       .val = ( OPG_MEM | OPF_ST     | OPM_FLD_1 ) },
+    {   .name   = "LDR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
 
-    {   .name = "STC",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_STC,      .val = ( OPG_MEM | OPF_STC    | OPM_FLD_1 ) },
+    {   .name   = "ST",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_ST,    .val = ( OPG_MEM | OPF_ST     | OPM_FLD_1 ) },
+
+    {   .name   = "STC",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_STC,   .val = ( OPG_MEM | OPF_STC    | OPM_FLD_1 ) },
     
-    {   .name = "B",            .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_B,        .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
+    {   .name   = "B",          .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_B,     .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
 
-    {   .name = "BR",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_BR,       .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
+    {   .name   = "BR",         .typ = TYP_OP_CODE, 
+        .tid    =   TOK_OP_BR,  .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
 
-    {   .name = "BV",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_BV,       .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
+    {   .name   = "BV",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
 
-    {   .name = "BB",           .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_BB,       .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
+    {   .name   = "BB",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
     
-    {   .name = "CBR",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_CBR,      .val = ( OPG_BR  | OPF_CBR    | OPM_FLD_0 ) },
+    {   .name   = "CBR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_CBR,   .val = ( OPG_BR  | OPF_CBR    | OPM_FLD_0 ) },
 
-    {   .name = "MBR",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_MBR,      .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
+    {   .name   = "MBR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
     
-    {   .name = "MFCR",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_MFCR,     .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
+    {   .name   = "MFCR",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
 
-    {   .name = "MTCR",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_MTCR,     .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
+    {   .name   = "MTCR",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
     
-    {   .name = "LPA",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_LPA,      .val = ( OPG_SYS | OPF_LPA    | OPM_FLD_0 ) },
+    {   .name   = "LPA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA    | OPM_FLD_0 ) },
     
-    {   .name = "PRB",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_PRB,      .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
+    {   .name   = "PRB",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
 
-    {   .name = "ITLB",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_ITLB,     .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
+    {   .name   = "ITLB",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
 
-    {   .name = "PTLB",         .typ = TYP_OP_CODE,
-        .tid = TOK_OP_PTLB,     .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+    {   .name   = "PTLB",       .typ = TYP_OP_CODE,
+        .tid    = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
     
-    {   .name = "PCA",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_PCA,      .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
+    {   .name   = "PCA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
 
-    {   .name = "FCA",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_FCA,      .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
+    {   .name   = "FCA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
     
-    {   .name = "RSM",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_RSM,      .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
+    {   .name   = "RSM",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
 
-    {   .name = "SSM",          .typ = TYP_OP_CODE,
-        .tid = TOK_OP_SSM,      .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
+    {   .name   = "SSM",        .typ = TYP_OP_CODE,
+        .tid    = TOK_OP_SSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_1 ) },
     
-    {   .name = "TRAP",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_TRAP,     .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
+    {   .name   = "TRAP",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_TRAP,  .val = ( OPG_SYS | OPF_TRAP   | OPM_FLD_1 ) },
    
-    {   .name = "RFI",          .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_RFI,      .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
+    {   .name   = "RFI",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_RFI,   .val = ( OPG_SYS | OPF_RFI    | OPM_FLD_0 ) },
 
-    {   .name = "DIAG",         .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_DIAG,     .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
+    {   .name   = "DIAG",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
     //------------------------------------------------------------------------------------
     // Assembler synthetic mnemonics. They ar like the assembler mnemonics, except 
@@ -601,34 +603,6 @@ Token   currentToken;
 void parseExpr( Expr *rExpr );
 
 //----------------------------------------------------------------------------------------
-// Helper functions for the tokenizer.
-//
-//----------------------------------------------------------------------------------------
-void upshiftStr( char *str ) {
-    
-    size_t len = strlen( str );
-    
-    if ( len > 0 ) {
-        
-        for ( size_t i = 0; i < len; i++ ) {
-            
-            str[ i ] = (char) toupper((int) str[ i ] );
-        }
-    }
-}
-
-void addChar( char *buf, int size, char ch ) {
-    
-    int len = (int) strlen( buf );
-    
-    if ( len + 1 < size ) {
-        
-        buf[ len ]     = ch;
-        buf[ len + 1 ] = 0;
-    }
-}
-
-//----------------------------------------------------------------------------------------
 // The token lookup function. We just do a linear search.
 //
 //----------------------------------------------------------------------------------------
@@ -660,57 +634,15 @@ void nextChar( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Signed 64-bit numeric operations and overflow check.
+// Signed 64-bit numeric operations with checking.
 //
 //----------------------------------------------------------------------------------------
-inline bool willAddOverflow( T64Word a, T64Word b ) {
-    
-    if (( b > 0 ) && ( a > INT64_MAX - b )) return true;
-    if (( b < 0 ) && ( a < INT64_MIN - b )) return true;
-    return false;
-}
-
-inline bool willSubOverflow( T64Word a, T64Word b ) {
-    
-    if (( b < 0 ) && ( a > INT64_MAX + b )) return true;
-    if (( b > 0 ) && ( a < INT64_MIN + b )) return true;
-    return false;
-}
-
-inline bool willMultOverflow( T64Word a, T64Word b ) {
-
-    if (( a == 0 ) ||( b == 0 )) return ( false );
-
-    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
-    if (( b == INT64_MIN ) && ( a == -1 )) return ( true );
-
-    if ( a > 0 ) {
-
-        if ( b > 0 ) return ( a > INT64_MAX / b );
-        else         return ( b < INT64_MIN / a );
-    }
-    else {
-
-        if ( b > 0 ) return ( a < INT64_MIN / b );
-        else         return ( a < INT64_MAX / b );
-    }
-}
-
-inline bool willDivOverflow( T64Word a, T64Word b ) {
-
-    if ( b == 0 ) return ( true );
-
-    if (( a == INT64_MIN ) && ( b == -1 )) return ( true );
-
-    return ( false );
-}
-
 T64Word addOp( Expr *a, Expr *b ) {
 
     if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( willAddOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
-    return( a -> val + b -> val );
+    return ( a -> val + b -> val );
 }
 
 T64Word subOp( Expr *a, Expr *b ) {
@@ -718,7 +650,7 @@ T64Word subOp( Expr *a, Expr *b ) {
     if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( willSubOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
-    return( a -> val - b -> val );
+    return ( a -> val - b -> val );
 }
 
 T64Word multOp( Expr *a, Expr *b ) {
@@ -726,7 +658,7 @@ T64Word multOp( Expr *a, Expr *b ) {
     if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( willMultOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
-    return( a -> val * b -> val );
+    return ( a -> val * b -> val );
 }
 
 T64Word divOp( Expr *a, Expr *b ) {
@@ -734,7 +666,7 @@ T64Word divOp( Expr *a, Expr *b ) {
     if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( willDivOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
-    return( a -> val / b -> val );
+    return ( a -> val / b -> val );
 }
 
 T64Word modOp( Expr *a, Expr *b ) {
@@ -742,7 +674,7 @@ T64Word modOp( Expr *a, Expr *b ) {
     if ( a -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( b -> typ != TYP_NUM ) throw ( ERR_EXPECTED_NUMERIC );
     if ( willDivOverflow( a -> val, b -> val )) throw( ERR_NUMERIC_OVERFLOW );
-    return( a -> val % b -> val );
+    return ( a -> val % b -> val );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1242,92 +1174,49 @@ void parseExpr( Expr *rExpr ) {
 // Helper functions for instruction fields.
 //
 //----------------------------------------------------------------------------------------
-inline bool isInRangeForBitField( int val, int bitLen ) {
+inline void depositInstrFieldS( T64Instr *instr, int bitpos, int len, T64Word value ) {
     
-    int min = - ( 1 << (( bitLen - 1 ) % 64 ));
-    int max = ( 1 << (( bitLen - 1 ) % 64 )) - 1;
-    return (( val <= max ) && ( val >= min ));
-}
-
-inline bool isInRangeForBitFieldU( uint32_t val, int bitLen ) {
-    
-    uint32_t max = (( 1 << ( bitLen % 64 )) - 1 );
-    return ( val <= max );
-}
-
-inline void depositBitField( uint32_t *word, int bitpos, int len, T64Word value ) {
-    
-    uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
-    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
-inline T64Word extractBitField( T64Word arg, int bitpos, int len) {
-    
-    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
-}
-
-inline void depositInstrBit( uint32_t *word, int bitpos, bool value ) {
-    
-    uint32_t mask = 1 << bitpos;
-    *word = (( *word & ~mask ) | (( value << bitpos ) & mask ));
-}
-
-inline void depositInstrFieldS( uint32_t *instr, int bitpos, int len, uint32_t value ) {
-    
-    if ( isInRangeForBitField( value, len )) depositBitField( instr, bitpos, len, value );
+    if ( isInRangeForInstrBitField( value, len )) 
+        depositInstrField( instr, bitpos, len, value );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrFieldU( uint32_t *instr, int bitpos, int len, uint32_t value ) {
+inline void depositInstrFieldU( T64Instr *instr, int bitpos, int len, uint32_t value ) {
     
-    if ( isInRangeForBitFieldU( value, len )) depositBitField( instr, bitpos, len, value );
+    if ( isInRangeForInstrBitFieldU( value, len )) 
+        depositInstrField( instr, bitpos, len, value );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrRegR( uint32_t *instr, uint32_t regId ) {
+inline void depositInstrImm13( T64Instr *instr, int val ) {
     
-    depositBitField( instr, 22, 4, regId );
-}
-
-inline void depositInstrRegB( uint32_t *instr, uint32_t regId ) {
-    
-   depositBitField( instr, 15, 4, regId );
-}
-
-inline void depositInstrRegA( uint32_t *instr, uint32_t regId ) {
-    
-    depositBitField( instr, 9, 4, regId );
-}
-
-inline void depositInstrImm13( uint32_t *instr, int val ) {
-    
-    if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
+    if ( isInRangeForInstrBitField( val, 13 )) depositInstrField( instr, 0, 13, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrScaledImm13( uint32_t *instr, int val ) {
+inline void depositInstrScaledImm13( T64Instr *instr, int val ) {
    
-    val = val >> extractBitField( *instr, 13, 2 );
+    val = val >> extractInstrField( *instr, 13, 2 );
     
-    if ( isInRangeForBitField( val, 13 )) depositBitField( instr, 0, 13, val );
+    if ( isInRangeForInstrBitField( val, 13 )) depositInstrField( instr, 0, 13, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrImm15( uint32_t *instr, int val ) {
+inline void depositInstrImm15( T64Instr *instr, int val ) {
     
-    if ( isInRangeForBitField( val, 15 )) depositBitField( instr, 0, 15, val );
+    if ( isInRangeForInstrBitField( val, 15 )) depositInstrField( instr, 0, 15, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrImm19( uint32_t *instr, int val ) {
+inline void depositInstrImm19( T64Instr *instr, int val ) {
     
-    if ( isInRangeForBitField( val, 19 )) depositBitField( instr, 0, 19, val );
+    if ( isInRangeForInstrBitField( val, 19 )) depositInstrField( instr, 0, 19, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
-inline void depositInstrImm20U( uint32_t *instr, uint32_t val ) {
+inline void depositInstrImm20U( T64Instr *instr, uint32_t val ) {
     
-    if ( isInRangeForBitFieldU( val, 20 )) depositBitField( instr, 0, 20, val );
+    if ( isInRangeForInstrBitFieldU( val, 20 )) depositInstrField( instr, 0, 20, val );
     else throw ( ERR_IMM_VAL_RANGE );
 }
 
@@ -1337,12 +1226,7 @@ inline bool hasDataWidthFlags( uint32_t instrFlags ) {
             ( instrFlags & IF_W ) || ( instrFlags & IF_D ));
 }
 
-inline T64Word extractInstrOptField( uint32_t instr ) {
-    
-    return ( extractBitField( instr, 19, 3 ));
-}
-
-inline void replaceInstrGroupField( uint32_t *instr, uint32_t instrMask ) {
+inline void replaceInstrGroupField( T64Instr *instr, uint32_t instrMask ) {
     
     *instr &= 0x3FFFFFFF;
     *instr |= instrMask & 0xC0000000;
@@ -2258,7 +2142,7 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if      ( rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.val );
-    else if ( rExpr.typ == TYP_NUM  ) depositBitField( instr, 9, 2, rExpr.val );
+    else if ( rExpr.typ == TYP_NUM  ) depositInstrField( instr, 9, 2, rExpr.val );
     else throw ( ERR_EXPECTED_PRB_ARG );
     
     acceptEOS( );
@@ -2359,8 +2243,8 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-        depositBitField( instr, 19, 3, (uint32_t) rExpr.val >> 2 );
-        depositBitField( instr, 20, 2, (uint32_t) rExpr.val );
+        depositInstrField( instr, 19, 3, (uint32_t) rExpr.val >> 2 );
+        depositInstrField( instr, 20, 2, (uint32_t) rExpr.val );
     }
     else throw ( ERR_EXPECTED_DIAG_OP );
     
@@ -2518,7 +2402,7 @@ const char *T64Assemble::getErrStr( int errId ) {
     
     for ( int i = 0; i < MAX_ERR_MSG_TAB; i++ ) {
         
-        if ( ErrMsgTable[ i ].msgId == errId ) return( ErrMsgTable[ i ].msg );
+        if ( ErrMsgTable[ i ].msgId == errId ) return ( ErrMsgTable[ i ].msg );
     }
     
     return ( "Unknown Error Id" );

@@ -17,18 +17,19 @@
 // // Twin64 - A 64-bit CPU Monitor - Console IO
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under the 
+// terms of the GNU General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or any later version.
 //
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details. You should have received a copy of the GNU General Public
-// License along with this program. If not, see <http://www.gnu.org/licenses/>.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
+//  have received a copy of the GNU General Public License along with this program.  
+// If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-ConsoleIO.h"
 
 //----------------------------------------------------------------------------------------
@@ -50,19 +51,6 @@ char outputBuffer[ 1024 ];
 
 #if 0
 // ??? we move these routines to the simulator if needed ...
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-#if __APPLE__
-uint16_t toBigEndian16( uint16_t val ) { return ( __builtin_bswap16( val )); }
-uint16_t toBigEndian32( uint32_t val ) { return ( __builtin_bswap32( val )); }
-#else
-uint16_t toBigEndian16( uint16_t val ) { return ( _byteswap_ushort( val )); }
-uint16_t toBigEndian32( uint32_t val ) { return ( _byteswap_ulong( val )); }
-#endif
-
 //----------------------------------------------------------------------------------------
 // "removeChar" will remove a character from the input buffer at the cursor 
 // position and adjust the string size accordingly. If the cursor is at the end
