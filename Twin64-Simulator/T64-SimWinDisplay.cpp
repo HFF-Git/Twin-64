@@ -114,15 +114,16 @@ void SimWinDisplay::setCurrentWindow( int winNum ) {
 
 
 //----------------------------------------------------------------------------------------
-// A window number is the index into the window list. It is valid when the number is 
-// within bounds and the window list entry is actually used. A valid user window number
-// additionally tests that the number is within the list portion reserved for user 
-// defined windows.
+// Attribute functions on window Id, stack and type. A window number is the index into
+// the window list. It is valid when the number is within bounds and the window list 
+// entry is actually used. Window numbers start at 1.
 //
 //----------------------------------------------------------------------------------------
 bool SimWinDisplay::validWindowNum( int winNum ) {
     
-    return(( winNum <= MAX_WINDOWS ) && ( windowList[ winNum ] != nullptr ));
+    return( ( winNum >= 1 ) && 
+            ( winNum <= MAX_WINDOWS ) && 
+            ( windowList[ winNum - 1 ] != nullptr ));
 }
 
 bool SimWinDisplay::validWindowStackNum( int stackNum ) {
@@ -446,8 +447,8 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
     
-    if (( winNumStart < 0 ) || ( winNumEnd > MAX_WINDOWS )) return;
-    if ( winStack >= MAX_WIN_STACKS ) return;
+    if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS )) return;
+    if ( winStack > MAX_WIN_STACKS ) return;
     
     if ( winNumStart > winNumEnd ) {
         
@@ -458,10 +459,10 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
     
     for ( int i = winNumStart; i <= winNumEnd; i++ ) {
         
-        if ( windowList[ i ] != nullptr ) {
+        if ( windowList[ i - 1 ] != nullptr ) {
             
-            windowList[ i ] -> setWinStack( winStack );
-            setCurrentWindow( i );
+            windowList[ i - 1 ] -> setWinStack( winStack );
+            currentWinNum = i;
         }
     }
 }
@@ -475,12 +476,12 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowEnable( int winNum, bool show ) {
     
-    if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( winNum == 0 ) winNum = currentWinNum;
             
     if ( validWindowNum( winNum )) {
                 
-        windowList[ winNum ] -> setEnable( show );
-        setCurrentWindow( winNum );
+        windowList[ winNum - 1 ] -> setEnable( show );
+        currentWinNum = winNum;
     }
 }
 
@@ -494,12 +495,12 @@ void SimWinDisplay::windowEnable( int winNum, bool show ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowRadix( int rdx, int winNum ) {
 
-    if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( winNum == 0 ) winNum = currentWinNum;
             
     if ( validWindowNum( winNum )) {
                 
-        windowList[ winNum ] -> setRadix( rdx );
-        setCurrentWindow( winNum );
+        windowList[ winNum - 1 ] -> setRadix( rdx );
+        currentWinNum = winNum;
     }
     
     reDraw( true );
@@ -514,12 +515,12 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetRows( int rows, int winNum ) {
 
-    if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( winNum == 0 ) winNum = currentWinNum;
             
     if ( validWindowNum( winNum )) {
                 
-        windowList[ winNum ] -> setRows( rows );
-        setCurrentWindow( winNum );
+        windowList[ winNum - 1 ] -> setRows( rows );
+        currentWinNum = winNum;
     }
 }
 
@@ -640,12 +641,12 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 //----------------------------------------------------------------------------------------
 int SimWinDisplay::getFreeWindowSlot( ) {
 
-    for ( int i = 0; i <= MAX_WINDOWS; i++ ) {
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
         
         if ( windowList[ i ] == nullptr ) return( i );
     }
 
-    throw( 999 ); // ??? out of entries....
+    throw( ERR_OUT_OF_WINDOWS );
 }
 
 void SimWinDisplay::windowNewAbsMem( ) {
@@ -654,9 +655,9 @@ void SimWinDisplay::windowNewAbsMem( ) {
 
     windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 void SimWinDisplay::windowNewAbsCode( ){
@@ -665,9 +666,9 @@ void SimWinDisplay::windowNewAbsCode( ){
 
     windowList[ slot ] = (SimWin *) new SimWinCode( glb ); 
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 void SimWinDisplay::windowNewProgState( int procModuleNum ) {
@@ -676,9 +677,9 @@ void SimWinDisplay::windowNewProgState( int procModuleNum ) {
 
     windowList[ slot ] = (SimWin *) new SimWinProgState( glb, procModuleNum  );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
@@ -687,9 +688,9 @@ void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
 
     windowList[ slot ] = (SimWin *) new SimWinTlb( glb, WT_TLB_WIN );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
@@ -698,9 +699,9 @@ void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
 
     windowList[ slot ] = (SimWin *) new SimWinCache( glb, WT_CACHE_WIN );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 void SimWinDisplay::windowNewText( char *pathStr ) {
@@ -709,9 +710,9 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
 
     windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
-    setCurrentWindow( slot );
+    currentWinNum = slot + 1;
 }
 
 //----------------------------------------------------------------------------------------
@@ -724,24 +725,22 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
     
-    if (( winNumStart < 0 ) || ( winNumEnd > MAX_WINDOWS ))  return;
+    if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS ))  return;
     
     if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
     
-    for ( int i = winNumStart; i <= winNumEnd; i++ ) {
+    for ( int i = winNumStart - 1; i <= winNumEnd; i++ ) {
          
         delete ( SimWin * ) windowList[ i ];
         windowList[ i ] = nullptr;
                 
-        if ( getCurrentWindow( ) == i ) {
-                    
-            setCurrentWindow( 0 );
-                    
-            for ( int i = 0; i <= MAX_WINDOWS; i++ ) {
+        if ( currentWinNum == i ) {
+                 
+            for ( int i = 1; i <= MAX_WINDOWS; i++ ) {
                         
                 if ( validWindowNum( i )) {
                             
-                    setCurrentWindow( i );
+                    currentWinNum = i;
                     break;
                 }
             }

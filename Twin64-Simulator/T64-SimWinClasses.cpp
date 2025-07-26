@@ -189,12 +189,11 @@ void SimWinProgState::setRadix( int rdx ) {
 void SimWinProgState::drawBanner( ) {
     
     uint32_t fmtDesc    = FMT_BOLD | FMT_INVERSE;
-    bool     isCurrent  = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
-    
+   
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
-    printTextField((char *) " Proc: ", fmtDesc );
+    printTextField((char *) " P: ", fmtDesc );
     printNumericField( procModuleNum, fmtDesc | FMT_DEC );
 
     printTextField((char *) " IA: ", fmtDesc );
@@ -342,7 +341,7 @@ void SimWinAbsMem::drawBanner( ) {
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
 
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
     printTextField((char *) "Current " );
     printNumericField( getCurrentItemAdr( ));
@@ -462,7 +461,6 @@ void SimWinCode::drawBanner( ) {
     T64Word     currentIaOfs    = 0;
     
     SimTokId    currentCmd      = glb -> winDisplay -> getCurrentCmd( );
-    bool        isCurrent       = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
     bool        hasIaOfsAdr     = (( currentIaOfs >= currentIa ) && 
                                     ( currentIaOfs <= currentIaLimit ));
     
@@ -473,7 +471,7 @@ void SimWinCode::drawBanner( ) {
     }
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
     printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
     printTextField((char *) "Current: " );
@@ -595,15 +593,14 @@ void SimWinTlb::setRadix( int rdx ) {
 //----------------------------------------------------------------------------------------
 void SimWinTlb::drawBanner( ) {
     
-    uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
-    bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
-
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
+    
     setLimitItemAdr( 1000 ); // fix ....
     
     setWinCursor( 1, 1 );
-   printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
-    printTextField((char *) "Proc: " );
+    printTextField((char *) "P: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Tlb: " );
@@ -723,14 +720,13 @@ void SimWinCache::setRadix( int rdx ) {
 void SimWinCache::drawBanner( ) {
     
     uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
-    bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
 
     setLimitItemAdr( 1000 ); // ??? needed for scrolling ... fix
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
-    printTextField((char *) "Proc: " );
+    printTextField((char *) "P: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Cache: " );
@@ -838,11 +834,10 @@ void SimWinText::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimWinText::drawBanner( ) {
     
-    uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
-    bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+    printWindowIdField( fmtDesc );
 
     printTextField((char *) "Text: ", ( fmtDesc | FMT_ALIGN_LFT ));
     printTextField((char *) fileName, ( fmtDesc | FMT_ALIGN_LFT | FMT_TRUNC_LFT ), 48 );

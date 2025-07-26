@@ -783,10 +783,7 @@ struct SimWin {
                                      int row = 0,
                                      int col = 0 );
     
-    void            printWindowIdField( int stack,
-                                        int index,
-                                        bool current = false,
-                                        uint32_t fmtDesc = 0,
+    void            printWindowIdField( uint32_t fmtDesc = 0,
                                         int row = 0,
                                         int col = 0 );
     

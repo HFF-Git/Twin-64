@@ -361,24 +361,21 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 // the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::printWindowIdField( int        stack, 
-                                 int        index, 
-                                 bool       current, 
-                                 uint32_t   fmtDesc, 
-                                 int        row, 
-                                 int        col ) {
+void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
+
+    bool isCurrent = glb -> winDisplay -> isCurrentWin( winIndex );
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if ( index < MAX_WINDOWS )  
-        glb -> console -> writeChars((char *) "(%1d:%02d)  ", stack, index );
+    if ( winIndex < MAX_WINDOWS )  
+        glb -> console -> writeChars((char *) "(%1d:%02d)  ", winStack, winIndex );
     else                                            
         glb -> console -> writeChars((char *) "-***-" );
     
-    glb -> console -> writeChars((( current ) ? (char *) "* " : (char *) "  " ));
+    glb -> console -> writeChars((( isCurrent ) ? (char *) "* " : (char *) "  " ));
 
     lastRowPos  = row;
     lastColPos  = col + 9;
