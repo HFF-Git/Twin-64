@@ -766,8 +766,6 @@ struct SimWin {
     int             getWinToggleVal( );
     void            setWinToggleVal( int val );
     
-    char            *getWinName( );
-    
     void            printNumericField(  T64Word val,
                                         uint32_t fmtDesc = 0,
                                         int len = 0,
@@ -787,7 +785,6 @@ struct SimWin {
     
     void            printWindowIdField( int stack,
                                         int index,
-                                        char *name,
                                         bool current = false,
                                         uint32_t fmtDesc = 0,
                                         int row = 0,
@@ -827,8 +824,6 @@ struct SimWin {
     int             winAbsCursorCol     = 0;
     int             lastRowPos          = 0;
     int             lastColPos          = 0;
-
-    char            winName[ MAX_WIN_NAME_SIZE + 1 ] = { 0 };
 };
 
 //----------------------------------------------------------------------------------------
@@ -878,21 +873,25 @@ struct SimWinScrollable : SimWin {
 };
 
 //----------------------------------------------------------------------------------------
-// Program State Register Window. This window holds the programmer visible state with
-// the exception of the program relevant control register values. They are a separate
-// window.
+// Program State Register Window. This window holds the programmer visible state. The 
+// window is a toggle window, top show different sets of register data. The argStr
+// passed on object creation contains the processor module number.
 //
 //----------------------------------------------------------------------------------------
 struct SimWinProgState : SimWin {
     
     public:
     
-    SimWinProgState( SimGlobals *glb );
+    SimWinProgState( SimGlobals *glb, int procModuleNum );
     
     void setDefaults( );
     void setRadix( int rdx );
     void drawBanner( );
     void drawBody( );
+
+    private:
+
+    int procModuleNum;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1059,6 +1058,7 @@ private:
     void            acceptComma( );
     void            acceptLparen( );
     void            acceptRparen( );
+    T64Word         acceptNumExpr( SimErrMsgId errCode );
     
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx = 16 );
@@ -1174,7 +1174,14 @@ public:
     void            windowJump( int amt, int winNum = 0 );
     void            windowToggle( int winNum = 0 );
     void            windowExchangeOrder( int winNum );
-    void            windowNew( SimTokId winType = TOK_NIL, char *argStr = nullptr );
+    
+    void            windowNewAbsMem( );
+    void            windowNewAbsCode( );
+    void            windowNewProgState( int procModuleNum );
+    void            windowNewTlb( int procModuleNum, int tlbNum = 0 );
+    void            windowNewCache( int procModuleNum, int cacheNum = 0 );
+    void            windowNewText( char *pathStr );
+
     void            windowKill( int winNumStart, int winNumEnd = 0  );
     void            windowSetStack( int winStack, int winNumStart, int winNumEnd = 0 );
     
@@ -1190,14 +1197,15 @@ public:
 
     private:
     
+    int             getFreeWindowSlot( );
     int             computeColumnsNeeded( int winStack );
     int             computeRowsNeeded( int winStack );
     void            setWindowColumns( int winStack, int columns );
     void            setWindowOrigins( int winStack, int rowOfs = 1, int colOfs = 1 );
    
     int             currentWinNum               = -1;
-    bool            winStacksOn                 = true;
-    bool            winModeOn                   = true;
+    bool            winStacksOn                 = false;
+    bool            winModeOn                   = false;
 
     SimGlobals      *glb                        = nullptr;
    

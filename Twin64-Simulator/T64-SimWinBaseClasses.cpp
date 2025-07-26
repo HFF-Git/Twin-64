@@ -146,11 +146,6 @@ void SimWin::setDefColumns( int rdx10, int rdx16 ) {
     winDefColumnsHex = rdx16;
 }
 
-char *SimWin::getWinName( ) {
-
-    return ( winName );
-}
-
 //----------------------------------------------------------------------------------------
 // Each window allows perhaps toggling through different content. The implementation 
 // of this capability is entirely up to the specific window. On the "WT" command, these
@@ -368,7 +363,6 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 //----------------------------------------------------------------------------------------
 void SimWin::printWindowIdField( int        stack, 
                                  int        index, 
-                                 char       *name,
                                  bool       current, 
                                  uint32_t   fmtDesc, 
                                  int        row, 
@@ -379,7 +373,7 @@ void SimWin::printWindowIdField( int        stack,
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if (( index >= 10  ) && ( index <= 99 ))   
+    if ( index < MAX_WINDOWS )  
         glb -> console -> writeChars((char *) "(%1d:%02d)  ", stack, index );
     else                                            
         glb -> console -> writeChars((char *) "-***-" );
@@ -388,12 +382,6 @@ void SimWin::printWindowIdField( int        stack,
 
     lastRowPos  = row;
     lastColPos  = col + 9;
-
-    if ( strlen( getWinName( )) > 0 ) {
-
-        glb -> console -> writeChars( "\"%8s\"", getWinName( ));
-        lastColPos = lastColPos + strlen( getWinName( ) + 2 );
-    } 
 }
 
 //----------------------------------------------------------------------------------------

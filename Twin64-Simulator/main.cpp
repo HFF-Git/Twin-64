@@ -29,14 +29,13 @@
 #include <ctype.h>
 
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-System.h"
 #include "T64-SimDeclarations.h"
 
-
-
 //------------------------------------------------------------------------------
 //
-//
+// ??? setup is flaky.... cross check with vcpu32 ???
 //------------------------------------------------------------------------------
 void setup( ) {
 
@@ -47,6 +46,7 @@ glb -> env          = new SimEnv( 100 );
 glb -> winDisplay   = new SimWinDisplay( glb );
 glb -> system       = new T64System( );  
 
+glb -> console -> initConsoleIO( );
 glb -> winDisplay -> windowsOff( );
 glb -> winDisplay -> cmdWin -> cmdInterpreterLoop( );
 

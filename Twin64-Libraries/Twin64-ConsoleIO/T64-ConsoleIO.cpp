@@ -389,7 +389,7 @@ void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
         if ( fmtDesc & FMT_BLINK )   writeChars((char *) "\x1b[5m" );
         if ( fmtDesc & FMT_BOLD )    writeChars((char *) "\x1b[1m" );
         
-        switch ( fmtDesc & 0xF ) {
+        switch ( fmtDesc & 0xF ) { // BG Color
                 
             case 1:     writeChars((char *) "\x1b[41m"); break;
             case 2:     writeChars((char *) "\x1b[42m"); break;
@@ -397,7 +397,7 @@ void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
             default:    writeChars((char *) "\x1b[49m");
         }
         
-        switch (( fmtDesc >> 4 ) & 0xF ) {
+        switch (( fmtDesc >> 4 ) & 0xF ) { // FG Color
                 
             case 1:     writeChars((char *) "\x1b[31m"); break;
             case 2:     writeChars((char *) "\x1b[32m"); break;
@@ -572,7 +572,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
 
         case 12: { // DEC as is
 
-            return ( writeChars((char *) "%ll", val));
+            return ( writeChars((char *) "%d", val));
 
         } break;
 
@@ -601,6 +601,22 @@ int SimFormatter::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
         case 10:    return ( 21 );   // FMT_HEX_4_4_4_4
 
         case 11: {
+
+            int len = 3;
+
+            val = abs( val );
+            
+            while ( val & 0xF ) {
+
+                val >>= 4;
+                len ++;
+            }
+            
+            return( len );
+
+        } break;
+
+        case 12: {
 
             int len = (( val < 0 ) ? 2 : 1 );
 

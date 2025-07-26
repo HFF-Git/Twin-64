@@ -174,10 +174,6 @@ void SimTokenizer::parseNum( ) {
             maxDigits   = 16;
             nextChar( );
         }
-        else if ( currentChar == EOS_CHAR ) {
-
-            throw ( ERR_UNEXPECTED_EOS );
-        }
     }
     
     do {
@@ -392,8 +388,8 @@ void SimTokenizer::parseIdent( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "nextToken" is the entry point to the token business. It returns the next 
-// token from the input string.
+// "nextToken" is the entry point to the token business. It returns the next token from
+// the input string.
 //
 //----------------------------------------------------------------------------------------
 void SimTokenizer::nextToken( ) {
@@ -402,10 +398,14 @@ void SimTokenizer::nextToken( ) {
     currentToken.tid    = TOK_NIL;
     currentToken.u.val  = 0;
     
+    #if 0
     while (( currentChar == ' '  ) || 
            ( currentChar == '\n' ) || 
-           ( currentChar == '\n' )) nextChar( );
-    
+           ( currentChar == '\n' )) 
+    #endif
+
+    while ( currentChar == ' '  ) nextChar( );
+
     currentTokCharIndex = currentCharIndex - 1;
     
     if ( isalpha( currentChar )) {

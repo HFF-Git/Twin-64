@@ -143,7 +143,10 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 // Object creator.
 //
 //----------------------------------------------------------------------------------------
-SimWinProgState::SimWinProgState( SimGlobals *glb ) : SimWin( glb ) { }
+SimWinProgState::SimWinProgState( SimGlobals *glb, int procModuleNum ) : SimWin( glb ) { 
+
+    this -> procModuleNum = procModuleNum;
+}
 
 //----------------------------------------------------------------------------------------
 // The default values are the initial settings when windows is brought up the first 
@@ -154,14 +157,12 @@ void SimWinProgState::setDefaults( ) {
     
     setWinType( WT_PROC_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns(( 12 + ( 4 * 21 )), ( 12 + ( 4 * 21 )));
+    setDefColumns( 98, 98 );
     setRadix( 16 );
-    setRows( 4 );
+    setRows( 5 );
     setWinToggleLimit( 1 );
     setWinToggleVal( 0 );
     setEnable( true );
-
-    // ??? what other fields for proc ?
 }
 
 //----------------------------------------------------------------------------------------
@@ -187,17 +188,19 @@ void SimWinProgState::setRadix( int rdx ) {
 //----------------------------------------------------------------------------------------
 void SimWinProgState::drawBanner( ) {
     
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE | FMT_ALIGN_LFT ;
+    uint32_t fmtDesc    = FMT_BOLD | FMT_INVERSE;
+    bool     isCurrent  = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
     
     setWinCursor( 1, 1 );
+    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
 
-    printTextField((char *) "Proc: ", fmtDesc );
-    printNumericField( 0, fmtDesc | FMT_DEC );
+    printTextField((char *) " Proc: ", fmtDesc );
+    printNumericField( procModuleNum, fmtDesc | FMT_DEC );
 
-    printTextField((char *) "IA: ", fmtDesc );
+    printTextField((char *) " IA: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
-    printTextField((char *) "ST: [", fmtDesc );
+    printTextField((char *) " ST: [", fmtDesc );
     // ??? print status bits ...
     printTextField((char *) "]", fmtDesc );
 
@@ -209,7 +212,7 @@ void SimWinProgState::drawBanner( ) {
 // Each window consist of a banner and a body. The body lines are displayed after the
 // banner line. The program state window body lists the general registers.
 //
-// Format:
+// Format Ideas:
 //
 //  R0:  0x0000_0000_0000_0000 0x... 0x... 0x...
 //  R4:  0x0000_0000_0000_0000 0x... 0x... 0x...
@@ -238,18 +241,16 @@ void SimWinProgState::drawBody( ) {
         }
 
         padLine( fmtDesc );
-
         setWinCursor( 3, 1 );
-        printTextField((char *) "G4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+        printTextField((char *) "GR4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
     
-        for ( int i = 4; i < 7; i++ ) {
+        for ( int i = 4; i < 8; i++ ) {
 
             printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
             printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
         }
 
         padLine( fmtDesc );
-
         setWinCursor( 4, 1 );
         printTextField((char *) "GR8=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
     
@@ -260,7 +261,6 @@ void SimWinProgState::drawBody( ) {
         }
 
         padLine( fmtDesc );
-
         setWinCursor( 5, 1 );
         printTextField((char *) "GR12=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
     
@@ -272,14 +272,17 @@ void SimWinProgState::drawBody( ) {
 
         padLine( fmtDesc );
     } 
-    else if ( getWinToggleVal( ) == 1 ) {
+    else if ( getWinToggleVal( ) == 2 ) {
+
+        // ??? the control regs ?
 
         // ??? other toggle windows to come ...
 
     }
-    else {
+    else if ( getWinToggleVal( ) == 3 ) {
 
-        // ??? internal error ???
+        // ??? the general regs
+        // ??? selected control regs ?
     }
 }
 
@@ -339,12 +342,8 @@ void SimWinAbsMem::drawBanner( ) {
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
 
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), 
-                        getWinIndex( ), 
-                        getWinName( ), 
-                        isCurrent,
-                        fmtDesc );
-    
+    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
+
     printTextField((char *) "Current " );
     printNumericField( getCurrentItemAdr( ));
     printTextField((char *) "  Home: " );
@@ -474,10 +473,7 @@ void SimWinCode::drawBanner( ) {
     }
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), 
-                        getWinIndex( ), 
-                        getWinName( ), 
-                        fmtDesc );
+    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
 
     printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
     printTextField((char *) "Current: " );
@@ -605,11 +601,7 @@ void SimWinTlb::drawBanner( ) {
     setLimitItemAdr( 1000 ); // fix ....
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), 
-                        getWinIndex( ), 
-                        getWinName( ), 
-                        isCurrent,
-                        fmtDesc );
+   printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
 
     printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
@@ -736,11 +728,7 @@ void SimWinCache::drawBanner( ) {
     setLimitItemAdr( 1000 ); // ??? needed for scrolling ... fix
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), 
-                        getWinIndex( ), 
-                        getWinName( ),
-                        isCurrent, 
-                        fmtDesc );
+    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
 
     printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
@@ -854,10 +842,7 @@ void SimWinText::drawBanner( ) {
     bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
     
     setWinCursor( 1, 1 );
-    printWindowIdField( getWinStack( ), 
-                        getWinIndex( ), 
-                        getWinName( ), 
-                        fmtDesc );
+    printWindowIdField( getWinStack( ), getWinIndex( ), isCurrent, fmtDesc );
 
     printTextField((char *) "Text: ", ( fmtDesc | FMT_ALIGN_LFT ));
     printTextField((char *) fileName, ( fmtDesc | FMT_ALIGN_LFT | FMT_TRUNC_LFT ), 48 );

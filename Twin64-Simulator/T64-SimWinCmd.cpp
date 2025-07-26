@@ -219,13 +219,6 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
     *dst = '\0';
 }
 
-T64Word acceptNumExpr( SimErrMsgId errCode ) {
-
-     SimExpr     rExpr;
-     if ( rExpr.typ == TYP_NUM ) return ( rExpr.u.val );
-     else throw ( errCode );
-}
-
 }; // namespace
 
 
@@ -356,8 +349,8 @@ void SimCommandsWin::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setRows( 21 );
-    setColumns( 128 );
-    setDefColumns( 128, 128 );
+    setColumns( 98 );
+    setDefColumns( 98, 98 );
     setWinType( WT_CMD_WIN );
     setEnable( true );
 }
@@ -705,6 +698,18 @@ void SimCommandsWin::acceptRparen( ) {
     
     if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_LPAREN );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+T64Word SimCommandsWin::acceptNumExpr( SimErrMsgId errCode ) {
+
+     SimExpr rExpr;
+     eval -> parseExpr( &rExpr );
+     if ( rExpr.typ == TYP_NUM ) return ( rExpr.u.val );
+     else throw ( errCode );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2052,54 +2057,92 @@ void SimCommandsWin::winExchangeCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // This command creates a new user window. The window is assigned a free index form 
-// the windows list. This index is used in all the calls to this window. The window 
-// type allows to select from a code window, a physical memory window, a TLB and a
-// CACHE window.
+// the windows list. This index is used in all the calls to this window. Depending on 
+// the window type, there are optional arguments to pass to the window object constructor.
+// The general form is:
 //
-//  WN <winType> [ , <arg> ]
+//  WN <winType> [ "," <arg1> [ "," <arg2> ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winNewWinCmd( ) {
     
     SimTokId  winType = TOK_NIL;
-    char      *argStr = nullptr;
-    
+   
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     if ( tok -> tokTyp( ) == TYP_SYM ) {
         
         winType = tok -> tokId( );
-        
-        #if 0
-        if ((( winType == TOK_PM  ) && ( glb -> cpu -> physMem   == nullptr ))     ||
-            (( winType == TOK_PC  ) && ( glb -> cpu -> physMem   == nullptr ))     ||
-            (( winType == TOK_IT  ) && ( glb -> cpu -> iTlb      == nullptr ))     ||
-            (( winType == TOK_DT  ) && ( glb -> cpu -> dTlb      == nullptr ))     ||
-            (( winType == TOK_IC  ) && ( glb -> cpu -> iCacheL1  == nullptr ))     ||
-            (( winType == TOK_DC  ) && ( glb -> cpu -> dCacheL1  == nullptr ))     ||
-            (( winType == TOK_UC  ) && ( glb -> cpu -> uCacheL2  == nullptr ))) {
-            
-            throw ( ERR_WIN_TYPE_NOT_CONFIGURED );
-        }
-        #endif
-        
-        if ( ! glb -> winDisplay -> validWindowType( winType ))
-            throw ( ERR_INVALID_WIN_TYPE );
-        
         tok -> nextToken( );
     }
     else throw ( ERR_EXPECTED_WIN_ID );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    switch ( winType ) {
+
+        case TOK_MEM:    glb -> winDisplay -> windowNewAbsMem( ); break;
+        case TOK_CODE:   glb -> winDisplay -> windowNewAbsCode( ); break;
+
+        case TOK_PROC: {
+
+            acceptComma( );
+            int procNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            checkEOS( );
+
+            glb -> winDisplay -> windowNewProgState( procNum );
+
+        } break;
+
+        case TOK_TLB: {
+
+            acceptComma( );
+            int procNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            int tlbNum  = 0;
+ 
+            if ( tok -> isToken( TOK_COMMA )) {
+
+                tlbNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            }
+
+            checkEOS( );
+
+            glb -> winDisplay -> windowNewTlb( procNum, tlbNum );
+
+        } break;
+
+        case TOK_CACHE: {
+
+            acceptComma( );
+            int procNum     = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            int cacheNum    = 0;
+ 
+            if ( tok -> isToken( TOK_COMMA )) {
+
+                cacheNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            }
+
+            checkEOS( );
+
+            glb -> winDisplay -> windowNewCache( procNum, cacheNum );
+
+        } break;
+
+        case TOK_TEXT: {
+
+            acceptComma( );
         
-        tok -> nextToken( );
-        
-        if ( tok -> tokTyp( ) == TYP_STR ) argStr = tok -> tokStr( );
-        else throw ( ERR_INVALID_ARG );
+            char *argStr = nullptr;
+
+            if ( tok -> tokTyp( ) == TYP_STR ) argStr = tok -> tokStr( );
+            else throw ( ERR_INVALID_ARG );
+
+            checkEOS( );
+
+            glb -> winDisplay -> windowNewText( argStr );
+
+        } break;
+
+        default: throw( ERR_INVALID_WIN_TYPE );
     }
     
-    checkEOS( );
-    
-    glb -> winDisplay -> windowNew( winType, argStr );
     glb -> winDisplay -> reDraw( true );
 }
 

@@ -634,47 +634,84 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "Window New" creates a new window for certain window types. For example, it would 
-// be good to have multiple physical memory windows to see different locations 
-// simultaneously. The window object for the supported window types is created and 
-// added to the windows list. The newly created window also becomes the current user
-// window. The new window is made the current window.
+// "Window New" family of routines create a new window for certain window type. The 
+// newly created window also becomes the current user window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowNew( SimTokId winType, char *argStr ) {
-    
-    int i = 0;
-    
-    for ( i = 0; i <= MAX_WINDOWS; i++ ) {
+int SimWinDisplay::getFreeWindowSlot( ) {
+
+    for ( int i = 0; i <= MAX_WINDOWS; i++ ) {
         
-        if ( windowList[ i ] == nullptr ) break;
+        if ( windowList[ i ] == nullptr ) return( i );
     }
-    
-    if ( i <= MAX_WINDOWS ) {
-        
-        switch ( winType ) {
-                
-            case TOK_PROC: 
-                windowList[ i ] = (SimWin *) new SimWinProgState( glb ); break;
-            case TOK_MEM: 
-                windowList[ i ] = (SimWin *) new SimWinAbsMem( glb ); break;
-            case TOK_CODE: 
-                windowList[ i ] = (SimWin *) new SimWinCode( glb ); break;
-            case TOK_TLB: 
-                windowList[ i ] = (SimWin *) new SimWinTlb( glb, WT_TLB_WIN ); break;
-            case TOK_CACHE: 
-                windowList[ i ] = (SimWin *) new SimWinCache( glb, WT_CACHE_WIN ); break;
-            case TOK_TEXT: 
-                windowList[ i ] = (SimWin *) new SimWinText( glb, argStr ); break;
-            
-            default: return;
-        }
-        
-        windowList[ i ] -> setDefaults( );
-        windowList[ i ] -> setWinIndex( i );
-        windowList[ i ] -> setEnable( true );
-        setCurrentWindow( i );
-    }
+
+    throw( 999 ); // ??? out of entries....
+}
+
+void SimWinDisplay::windowNewAbsMem( ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
+}
+
+void SimWinDisplay::windowNewAbsCode( ){
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinCode( glb ); 
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
+}
+
+void SimWinDisplay::windowNewProgState( int procModuleNum ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinProgState( glb, procModuleNum  );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
+}
+
+void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, WT_TLB_WIN );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
+}
+
+void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinCache( glb, WT_CACHE_WIN );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
+}
+
+void SimWinDisplay::windowNewText( char *pathStr ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setEnable( true );
+    setCurrentWindow( slot );
 }
 
 //----------------------------------------------------------------------------------------
