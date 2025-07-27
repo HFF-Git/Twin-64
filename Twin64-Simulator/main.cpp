@@ -34,34 +34,22 @@
 #include "T64-SimDeclarations.h"
 
 //------------------------------------------------------------------------------
-//
-// ??? setup is flaky.... cross check with vcpu32 ???
-//------------------------------------------------------------------------------
-void setup( ) {
-
-SimGlobals *glb     = new SimGlobals( );
-
-glb -> console      = new SimConsoleIO( );
-glb -> env          = new SimEnv( 100 );
-glb -> winDisplay   = new SimWinDisplay( glb );
-glb -> system       = new T64System( );  
-
-glb -> console -> initConsoleIO( );
-glb -> winDisplay -> windowsOff( );
-glb -> winDisplay -> cmdWin -> cmdInterpreterLoop( );
-
-}
-
-//------------------------------------------------------------------------------
 // Here we go.
 //
 //------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
    
-    printf( "Twin64 - Simulator MAIN - test\n");
+    SimGlobals *glb     = new SimGlobals( );
 
-    setup( );
+    glb -> console      = new SimConsoleIO( );
+    glb -> env          = new SimEnv( 100 );
+    glb -> winDisplay   = new SimWinDisplay( glb );
+    glb -> system       = new T64System( );  
 
-    
+    glb -> console -> initConsoleIO( );
+    glb -> env -> setupPredefined( );
+    glb -> winDisplay -> setupWinDisplay( argc, argv );
+    glb -> winDisplay -> cmdWin -> cmdInterpreterLoop( );
+
     return 0;
 }
