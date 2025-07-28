@@ -45,11 +45,6 @@ namespace {
 // Little helper functions.
 //
 //----------------------------------------------------------------------------------------
-int setRadix( int rdx ) {
-    
-    return((( rdx == 10 ) || ( rdx == 16 )) ? rdx : 10 );
-}
-
 bool isEscapeChar( int ch ) {
     
     return ( ch == 27 );
@@ -349,8 +344,8 @@ void SimCommandsWin::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setRows( 21 );
-    setColumns( 98 );
-    setDefColumns( 98, 98 );
+    setColumns( 128 );
+    setDefColumns( 110, 110 );
     setWinType( WT_CMD_WIN );
     setEnable( true );
 }
@@ -706,7 +701,7 @@ void SimCommandsWin::acceptRparen( ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// We often expect a numeric value. A little helper function.
 //
 //----------------------------------------------------------------------------------------
 T64Word SimCommandsWin::acceptNumExpr( SimErrMsgId errCode ) {
@@ -732,8 +727,8 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
     
     T64Word index           = ( ofs / sizeof( T64Word )) * sizeof( T64Word );
     T64Word limit           = ((( index + len ) + 7 ) / sizeof( T64Word ) ) * sizeof( T64Word );
-    int     wordsPerLine    = glb -> env -> getEnvVarInt((char *) ENV_WORDS_PER_LINE );
-
+  
+   int  wordsPerLine = 4;
     // ??? get the memory object ..
 
     while ( index < limit ) {
@@ -745,13 +740,16 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
             
             if ( index < limit ) {
 
-                // ??? check if valid address...
+                // ??? hex ? dec ?
+                 // ??? check if valid address...
                 // ??? print words... 
-                
+
+                winOut -> printNumber( 0, FMT_HEX_4_4_4_4 );
+                winOut -> writeChars( " " );                
             }
             
             winOut -> writeChars( " " );
-            index += 4; // ??? words per line ?
+            index += sizeof( T64Word );
         }
         
         winOut -> writeChars( "\n" );
@@ -1781,7 +1779,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
         
         if      ( tok -> isToken( TOK_DEC )) rdx = 10;
         else if ( tok -> isToken( TOK_HEX )) rdx = 16;
-        else    rdx = ::setRadix( acceptNumExpr( ERR_INVALID_RADIX ));
+        else throw( ERR_INVALID_RADIX );
     }
     
     if ( tok -> tokId( ) == TOK_COMMA ) {
@@ -2271,8 +2269,8 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     ( currentCmd != CMD_REDO )) {
                     
                     hist -> addCmdLine( cmdBuf );
-                    glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
-                                            (T64Word) hist -> getCmdNum( ));
+                    glb -> env -> 
+                        setEnvVar((char *) ENV_CMD_CNT, (T64Word) hist -> getCmdNum( ));
                 }
                 
                 switch( currentCmd ) {
@@ -2368,7 +2366,7 @@ void SimCommandsWin::cmdInterpreterLoop( ) {
         
         buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
         int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
-        
+
         if ( cmdLen > 0 ) evalInputLine( cmdLineBuf );
         glb -> winDisplay -> reDraw( );
     }

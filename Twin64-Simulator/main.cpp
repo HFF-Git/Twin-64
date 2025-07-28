@@ -49,7 +49,7 @@ int main( int argc, const char * argv[] ) {
     glb -> console -> initConsoleIO( );
     glb -> env -> setupPredefined( );
     glb -> winDisplay -> setupWinDisplay( argc, argv );
-    glb -> winDisplay -> cmdWin -> cmdInterpreterLoop( );
+    glb -> winDisplay -> startWinDisplay( );
 
     return 0;
 }

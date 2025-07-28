@@ -385,7 +385,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     }
     else if ( tok -> isToken( TOK_IDENT )) {
     
-        SimEnvTabEntry *entry = glb -> env -> getEnvEntry( tok -> tokStr( ));
+        SimEnvTabEntry *entry = glb -> env -> getEnvEntry( tok -> tokName( ));
         
         if ( entry != nullptr ) {
             

@@ -217,22 +217,22 @@ const int MAX_CMD_TOKEN_TAB = sizeof( cmdTokTab ) / sizeof( SimToken );
 //----------------------------------------------------------------------------------------
 const SimErrMsgTabEntry errMsgTab [ ] = {
     
-    {   .errNum = NO_ERR,                         
+    { .errNum = NO_ERR,                         
       .errStr = (char *) "NO_ERR" },
 
-    {   .errNum = ERR_NOT_SUPPORTED,              
+    { .errNum = ERR_NOT_SUPPORTED,              
       .errStr = (char *) "Command or Function not supported (yet)" },
     
-    {   .errNum = ERR_INVALID_CMD,                
+    { .errNum = ERR_INVALID_CMD,                
       .errStr = (char *) "Invalid command, use help" },
 
-    {   .errNum = ERR_NUMERIC_OVERFLOW,                
+    { .errNum = ERR_NUMERIC_OVERFLOW,                
       .errStr = (char *) "Numeric overflow in expression" },
     
-    {   .errNum = ERR_INVALID_CHAR_IN_TOKEN_LINE, 
+    { .errNum = ERR_INVALID_CHAR_IN_TOKEN_LINE, 
       .errStr = (char *) "Invalid char in input line" },
     
-    {   .errNum = ERR_INVALID_ARG,                
+    { .errNum = ERR_INVALID_ARG,                
       .errStr = (char *) "Invalid argument for command" },
 
     { .errNum = ERR_INVALID_WIN_ID,             
@@ -255,6 +255,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_INVALID_EXPR,               
       .errStr = (char *) "Invalid expression" },
+
+    { .errNum = ERR_INVALID_NUM,
+      .errStr = (char *) "Invalid number" },
 
     { .errNum = ERR_INVALID_INSTR_OPT,          
       .errStr = (char *) "Invalid instruction option" },
@@ -279,7 +282,6 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_INVALID_CMD_ID,             
       .errStr = (char *) "Invalid command Id" },
-
 
     { .errNum = ERR_EXPECTED_INSTR_VAL,         
       .errStr = (char *) "Expected the instruction value" },

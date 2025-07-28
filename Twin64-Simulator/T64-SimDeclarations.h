@@ -294,7 +294,7 @@ enum SimTokId : uint16_t {
 //
 // ??? clean up, keep the ones we need...
 //----------------------------------------------------------------------------------------
-enum SimErrMsgId : uint16_t {
+enum SimErrMsgId : int {
     
     NO_ERR                          = 0,
     ERR_NOT_SUPPORTED               = 1,
@@ -488,6 +488,7 @@ struct SimTokenizer {
     SimToken        token( );
     SimTokTypeId    tokTyp( );
     SimTokId        tokId( );
+    char            *tokName( );
     T64Word         tokVal( );
     char            *tokStr( );
     

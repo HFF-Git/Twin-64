@@ -119,6 +119,11 @@ T64Word SimTokenizer::tokVal( ) {
     return( currentToken.u.val ); 
 }
 
+char *SimTokenizer::tokName( ) {
+
+    return( currentToken.name );
+}
+
 char *SimTokenizer::tokStr( ) { 
     
     return( currentToken.u.str );
@@ -173,6 +178,10 @@ void SimTokenizer::parseNum( ) {
             base        = 16;
             maxDigits   = 16;
             nextChar( );
+        }
+        else if ( !isdigit( currentChar )) {
+
+            return;
         }
     }
     
@@ -283,8 +292,7 @@ void SimTokenizer::parseIdent( ) {
     
     currentToken.tid    = TOK_IDENT;
     currentToken.typ    = TYP_IDENT;
-    currentToken.u.val  = 0;
-    
+
     char identBuf[ MAX_TOKEN_NAME_SIZE ] = "";
     
     if (( currentChar == 'L' ) || ( currentChar == 'l' )) {
@@ -379,10 +387,9 @@ void SimTokenizer::parseIdent( ) {
     
     if ( index == - 1 ) {
         
-        strcpy( currentToken.name, identBuf );
+        strncpy( currentToken.name, identBuf, sizeof( MAX_TOKEN_NAME_SIZE ));
         currentToken.typ    = TYP_IDENT;
         currentToken.tid    = TOK_IDENT;
-        currentToken.u.val  = 0;
     }
     else currentToken = tokTab[ index ];
 }
