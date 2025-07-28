@@ -1187,6 +1187,7 @@ public:
     bool            isCurrentWin( int winNum );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
+    bool            isWinStackOn( );
 
     bool            validWindowType( SimTokId winType );
     bool            validWindowNum( int winNum );

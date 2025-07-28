@@ -587,8 +587,13 @@ void SimCommandsWin::drawBanner( ) {
     printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ));
     padLine( fmtDesc ); 
 
-    if ( glb -> winDisplay -> isWindowsOn( )) 
-    printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
+    if ( glb -> winDisplay -> isWindowsOn( )) {
+
+        if ( glb -> winDisplay -> isWinStackOn( )) 
+            printTextField((char *) "WS", ( fmtDesc | FMT_LAST_FIELD ));
+        else 
+            printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -645,9 +650,9 @@ void SimCommandsWin::cmdLineError( SimErrMsgId errNum, char *argStr ) {
         }
     }
     
-    winOut -> writeChars( "Error: %d", errNum );
+    winOut -> writeChars( "CmdLine Error: %d", errNum );
     if ( argStr != nullptr )  winOut -> writeChars( "%32s", argStr );
-    winOut -> writeChars( "/n" );
+    winOut -> writeChars( "\n" );
 }
 
 //----------------------------------------------------------------------------------------

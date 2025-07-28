@@ -153,10 +153,15 @@ bool SimWinDisplay::isWinEnabled( int winNum ) {
     return(( validWindowNum( winNum )) && ( windowList[ winNum ]->isEnabled( )));
 }
 
- bool SimWinDisplay::isWindowsOn( ) {
+bool SimWinDisplay::isWindowsOn( ) {
 
     return( winModeOn );
- }
+}
+
+bool SimWinDisplay::isWinStackOn( ) {
+
+    return( winStacksOn );
+}
 
 //----------------------------------------------------------------------------------------
 // Before drawing the screen content after the execution of a command line, we need 

@@ -622,7 +622,7 @@ int SimFormatter::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
 
             val = abs( val );
             
-            while ( val > 10 ) {
+            while ( val >= 10 ) {
 
                 val /= 10;
                 len ++;
