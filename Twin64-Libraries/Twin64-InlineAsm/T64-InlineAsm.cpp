@@ -703,9 +703,9 @@ void parseNum( ) {
             maxDigits   = 16;
             nextChar( );
         }
-        else if ( currentChar == EOS_CHAR ) {
+        else if ( !isdigit( currentChar )) {
 
-            throw ( ERR_UNEXPECTED_EOS );
+            return;
         }
     }
     

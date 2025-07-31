@@ -1786,11 +1786,13 @@ void SimCommandsWin::winSetRadixCmd( ) {
         
         tok -> nextToken( );
         winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
+
+        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+            throw ( ERR_INVALID_WIN_ID );
     }
 
     checkEOS( );
     
-    if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
     glb -> winDisplay -> windowRadix( rdx, winNum );
 }
 
@@ -1807,58 +1809,53 @@ void SimCommandsWin::winSetRadixCmd( ) {
 void SimCommandsWin::winForwardCmd( ) {
   
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
-    if ( tok -> tokId( ) == TOK_EOS ) {
-        
-        glb -> winDisplay -> windowForward( 0, 0 );
-    }
-    else {
 
-        int winItems = acceptNumExpr( ERR_INVALID_NUM );
-        int winNum   = 0;
-        
+    T64Word winItems    = 0;
+    int     winNum      = 0;
+    
+    if ( tok -> tokId( ) != TOK_EOS ) {
+      
+        winItems = acceptNumExpr( ERR_INVALID_NUM );
+      
         if ( tok -> tokId( ) == TOK_COMMA ) {
             
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
-        }
-        else winNum = 0;
-        
-        checkEOS( );
-        
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+
+            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-        
-        glb -> winDisplay -> windowForward( winItems, winNum );
+        }
+      
+        checkEOS( );
     }
+
+    glb -> winDisplay -> windowForward( winItems, winNum );
 }
 
 void SimCommandsWin::winBackwardCmd( ) {
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
-        
-        glb -> winDisplay -> windowBackward( 0, 0  );
-    }
-    else {
-
-        int winItems = acceptNumExpr( ERR_INVALID_NUM );
-        int winNum   = 0;
+    T64Word winItems    = 0;
+    int     winNum      = 0;
     
+    if ( tok -> tokId( ) != TOK_EOS ) {
+      
+        winItems = acceptNumExpr( ERR_INVALID_NUM );
+      
         if ( tok -> tokId( ) == TOK_COMMA ) {
-
+            
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
-        }
 
-        checkEOS( );
-    
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-    
-        glb -> winDisplay -> windowBackward( winItems, winNum  );
+        }
+      
+        checkEOS( );
     }
+    
+    glb -> winDisplay -> windowBackward( winItems, winNum  );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1872,29 +1869,27 @@ void SimCommandsWin::winBackwardCmd( ) {
 void SimCommandsWin::winHomeCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
+
+    T64Word winPos  = 0;
+    int     winNum  = 0;
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
-        
-        glb -> winDisplay -> windowHome( 0, 0 );
-        return;
-    }
-    else {
-
-        int winPos = acceptNumExpr( ERR_INVALID_NUM );
-        int winNum = 0;
-  
+    if ( tok -> tokId( ) != TOK_EOS ) {
+      
+        winPos = acceptNumExpr( ERR_INVALID_NUM );
+      
         if ( tok -> tokId( ) == TOK_COMMA ) {
-
+            
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
-        }
-    
-        checkEOS( );
-    
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+
+            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-        glb -> winDisplay -> windowHome( winPos, winNum  );
+        }
+      
+        checkEOS( );
     }
+
+    glb -> winDisplay -> windowHome( winPos, winNum  );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1907,28 +1902,27 @@ void SimCommandsWin::winHomeCmd( ) {
 void SimCommandsWin::winJumpCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
-    if ( tok -> tokId( ) == TOK_EOS ) {
-        
-        glb -> winDisplay -> windowHome( 0, 0 );
-    }
-    else {
 
-        int winPos   = acceptNumExpr( ERR_INVALID_NUM );
-        int winNum   = 0;
+    T64Word winPos  = 0;
+    int     winNum  = 0;
     
+    if ( tok -> tokId( ) != TOK_EOS ) {
+      
+        winPos = acceptNumExpr( ERR_INVALID_NUM );
+      
         if ( tok -> tokId( ) == TOK_COMMA ) {
-        
+            
             tok -> nextToken( );
-            winNum = acceptNumExpr( ERR_INVALID_NUM );
-        }
+            winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
 
-        checkEOS( );
-    
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
             throw ( ERR_INVALID_WIN_ID );
-        glb -> winDisplay -> windowJump( winPos, winNum );
+        }
+      
+        checkEOS( );
     }
+    
+    glb -> winDisplay -> windowJump( winPos, winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2036,6 +2030,8 @@ void  SimCommandsWin::winToggleCmd( ) {
     
         glb -> winDisplay -> windowToggle( tok -> tokVal( ));
     }
+
+    glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2081,10 +2077,7 @@ void SimCommandsWin::winNewWinCmd( ) {
     
     switch ( winType ) {
 
-        case TOK_MEM:    glb -> winDisplay -> windowNewAbsMem( ); break;
-        case TOK_CODE:   glb -> winDisplay -> windowNewAbsCode( ); break;
-
-        case TOK_PROC: {
+        case TOK_CPU: {
 
             acceptComma( );
             int procNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
@@ -2102,6 +2095,7 @@ void SimCommandsWin::winNewWinCmd( ) {
  
             if ( tok -> isToken( TOK_COMMA )) {
 
+                tok -> nextToken( );
                 tlbNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             }
 
@@ -2127,6 +2121,11 @@ void SimCommandsWin::winNewWinCmd( ) {
             glb -> winDisplay -> windowNewCache( procNum, cacheNum );
 
         } break;
+
+
+        case TOK_MEM:    glb -> winDisplay -> windowNewAbsMem( ); break;
+        case TOK_CODE:   glb -> winDisplay -> windowNewAbsCode( ); break;
+
 
         case TOK_TEXT: {
 

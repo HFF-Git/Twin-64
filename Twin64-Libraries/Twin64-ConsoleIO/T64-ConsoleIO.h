@@ -128,19 +128,20 @@ enum FmtDescOptions : uint32_t {
     FMT_FG_COL_GREEN    = 0x00000030,
     FMT_FG_COL_YELLOW   = 0x00000040,
 
-    FMT_HEX_2           = 0x00000100,
-    FMT_HEX_4           = 0x00000200,
-    FMT_HEX_8           = 0x00000300,
-    FMT_HEX_16          = 0x00000400,
-    FMT_HEX_2_4         = 0x00000500,
-    FMT_HEX_4_4         = 0x00000600,
-    FMT_HEX_2_4_4       = 0x00000700,
-    FMT_HEX_4_4_4       = 0x00000800,
-    FMT_HEX_2_4_4_4     = 0x00000900,
-    FMT_HEX_4_4_4_4     = 0x00000A00,
-     
-    FMT_HEX             = 0x00000B00,
-    FMT_DEC             = 0x00000C00,
+    FMT_HEX             = 0x00000100,
+    FMT_HEX_2           = 0x00000200,
+    FMT_HEX_4           = 0x00000300,
+    FMT_HEX_8           = 0x00000400,
+    FMT_HEX_16          = 0x00000500,
+    FMT_HEX_2_4         = 0x00000600,
+    FMT_HEX_4_4         = 0x00000700,
+    FMT_HEX_2_4_4       = 0x00000800,
+    FMT_HEX_4_4_4       = 0x00000900,
+    FMT_HEX_2_4_4_4     = 0x00000A00,
+    FMT_HEX_4_4_4_4     = 0x00000B00, 
+    
+    FMT_DEC             = 0x00001000,
+    FMT_DEC_32          = 0x00002000,
 
     FMT_BOLD            = 0x00010000,
     FMT_BLINK           = 0x00020000,
@@ -184,7 +185,7 @@ struct SimFormatter {
     int             printBlanks( int len );
     int             printText( char *text, int len );
     int             printNumber( T64Word val, uint32_t fmtDesc );
-    int             numberFmtLen( T64Word val, uint32_t fmtDesc );
+    int             numberFmtLen( uint32_t fmtDesc, T64Word val = 0 );
 
 };
 

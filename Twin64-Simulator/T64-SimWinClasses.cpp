@@ -157,10 +157,10 @@ void SimWinProgState::setDefaults( ) {
     
     setWinType( WT_PROC_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 98, 98 );
+    setDefColumns( 110, 110 );
     setRadix( 16 );
     setRows( 5 );
-    setWinToggleLimit( 1 );
+    setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -193,14 +193,14 @@ void SimWinProgState::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) " P: ", fmtDesc );
+    printTextField((char *) " Proc: ", fmtDesc );
     printNumericField( procModuleNum, fmtDesc | FMT_DEC );
 
     printTextField((char *) " IA: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
     printTextField((char *) " ST: [", fmtDesc );
-    // ??? print status bits ...
+    printTextField((char *) "xxxxxxxx", fmtDesc );
     printTextField((char *) "]", fmtDesc );
 
     padLine( fmtDesc );
@@ -226,62 +226,110 @@ void SimWinProgState::drawBanner( ) {
 //----------------------------------------------------------------------------------------
 void SimWinProgState::drawBody( ) {
     
-    uint32_t fmtDesc = FMT_DEF_ATTR;
+    uint32_t fmtDesc = FMT_DEF_ATTR | FMT_ALIGN_LFT;
     
     if ( getWinToggleVal( ) == 0 ) {
 
+        int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
+        int      labelFlen      = 8;
+        uint32_t numFmtField    = fmtDesc | FMT_HEX_4_4_4_4;
+        uint32_t labelFmtField  = fmtDesc | FMT_BOLD;
+        
         setWinCursor( 2, 1 );
-        printTextField((char *) "GR0=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+        printTextField((char *) "GR0=", labelFmtField, labelFlen );
     
         for ( int i = 0; i < 4; i++ ) {
 
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+            printNumericField( 0, numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
         setWinCursor( 3, 1 );
-        printTextField((char *) "GR4=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+        printTextField((char *) "GR4=", labelFmtField, labelFlen );
     
         for ( int i = 4; i < 8; i++ ) {
 
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+            printNumericField( 0, numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
         setWinCursor( 4, 1 );
-        printTextField((char *) "GR8=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+        printTextField((char *) "GR8=", labelFmtField, labelFlen );
     
         for ( int i = 8; i < 12; i++ ) {
 
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+            printNumericField( 0, numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
         setWinCursor( 5, 1 );
-        printTextField((char *) "GR12=", ( fmtDesc | FMT_BOLD | FMT_ALIGN_LFT ), 6 );
+        printTextField((char *) "GR12=", labelFmtField, labelFlen );
     
         for ( int i = 12; i < 16; i++ ) {
 
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) "  ", ( fmtDesc | FMT_BOLD ));
+            printNumericField( 0, numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
     } 
-    else if ( getWinToggleVal( ) == 2 ) {
+    else if ( getWinToggleVal( ) == 1 ) {
+
+        int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
+        int      labelFlen      = 8;
+        uint32_t numFmtField    = fmtDesc | FMT_HEX_4_4_4_4;
+        uint32_t labelFmtField  = fmtDesc | FMT_BOLD;
+        
+        setWinCursor( 2, 1 );
+        printTextField((char *) "CR0=", labelFmtField, labelFlen );
+    
+        for ( int i = 0; i < 4; i++ ) {
+
+            printNumericField( 0, numFmtField, numFlen );
+        }
+
+        padLine( fmtDesc );
+        setWinCursor( 3, 1 );
+        printTextField((char *) "CR4=", labelFmtField, labelFlen );
+    
+        for ( int i = 4; i < 8; i++ ) {
+
+            printNumericField( 0, numFmtField, numFlen );
+        }
+
+        padLine( fmtDesc );
+        setWinCursor( 4, 1 );
+        printTextField((char *) "CR8=", labelFmtField, labelFlen );
+    
+        for ( int i = 8; i < 12; i++ ) {
+
+            printNumericField( 0, numFmtField, numFlen );
+        }
+
+        padLine( fmtDesc );
+        setWinCursor( 5, 1 );
+        printTextField((char *) "CR12=", labelFmtField, labelFlen );
+    
+        for ( int i = 12; i < 16; i++ ) {
+
+            printNumericField( 0, numFmtField, numFlen );
+        }
+
+        padLine( fmtDesc );
 
         // ??? the control regs ?
 
         // ??? other toggle windows to come ...
 
     }
-    else if ( getWinToggleVal( ) == 3 ) {
+    else if ( getWinToggleVal( ) == 2 ) {
 
-        // ??? the general regs
-        // ??? selected control regs ?
+        setWinCursor( 2, 1 );
+        printTextField((char *) "Toggle val 2", fmtDesc );
+    }
+     else if ( getWinToggleVal( ) == 3 ) {
+
+        setWinCursor( 2, 1 );
+        printTextField((char *) "Toggle val 3", fmtDesc );
     }
 }
 
@@ -289,6 +337,7 @@ void SimWinProgState::drawBody( ) {
 //****************************************************************************************
 //
 // Methods for the physical memory window class.
+//
 //----------------------------------------------------------------------------------------
 // Object constructor.
 //
@@ -304,17 +353,18 @@ SimWinAbsMem::SimWinAbsMem( SimGlobals *glb ) : SimWinScrollable( glb ) { }
 void SimWinAbsMem::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 12 + ( 8 * 11 ), 16 );
-    setDefColumns( 12 + ( 8 * 11 ), 10 );
+    setDefColumns( 116, 116 );
     setColumns( getDefColumns( getRadix( )));
     
     setWinType( WT_MEM_WIN );
     setEnable( false );
+    setWinToggleLimit( 3 );
+    setWinToggleVal( 0 );
     setRows( 5 );
     setHomeItemAdr( 0 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 8 * 4 );
-    setLimitItemAdr( 0 );
+    setLimitItemAdr( UINT_MAX );
 }
 
 //----------------------------------------------------------------------------------------
@@ -336,69 +386,68 @@ void SimWinAbsMem::setRadix( int rdx ) {
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawBanner( ) {
     
-    uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
-    uint32_t    currentAdr  = getCurrentItemAdr( );
-    bool        isCurrent   = glb -> winDisplay -> isCurrentWin( getWinIndex( ));
-
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
+    
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-
-    printTextField((char *) "Current " );
-    printNumericField( getCurrentItemAdr( ));
+    printTextField((char *) "Current: " );
+    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  Home: " );
-    printNumericField(  getHomeItemAdr( ));
+    printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 
-    setLimitItemAdr( UINT_MAX );  // ??? what is the value ?
+    setLimitItemAdr( UINT_MAX );  // ??? what is the actual value ?
 }
 
 //----------------------------------------------------------------------------------------
 // A scrollable window needs to implement a routine for displaying a row. We are passed
 // the item address and need to map this to the actual meaning of the particular window.
 // The "itemAdr" value is the byte offset into physical memory, the line increment is
-// 8 * 4 = 32 bytes. We show eight 32-bit words.
+// 8 * 4 = 32 bytes. We show eight 32-bit words or 4 64-bit words. The toggle value
+// will decide on the format:
+//
+// Toggle 0: (0x00_0000_0000) 0x0000_0000             ... 8 times HEX.
+// Toggle 1: (0x00_0000_0000) 0x0000_0000_0000_0000   ... 4 times HEX.
+// Toggle 2: (0x00_0000_0000)           0             ... 8 times DEC.
+// Toggle 3: ??? 
 //
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
-// Format:
-//
-// (0x00_0000_0000) 0x0000_0000 0x0000_0000 .... 8 times.
-
     uint32_t    fmtDesc     = FMT_DEF_ATTR;
     uint32_t    limit       = getLineIncrement( ) - 1;
 
-    #if 0
-    CpuMem      *physMem    = glb -> cpu -> physMem;
-    CpuMem      *pdcMem     = glb -> cpu -> pdcMem;
-    CpuMem      *ioMem      = glb -> cpu -> ioMem;
-    #endif 
-
+    printTextField((char *) "(", fmtDesc );
     printNumericField( itemAdr, fmtDesc | FMT_HEX_2_4_4 );
-    printTextField((char *) ": ", fmtDesc );
-    
-    for ( int i = 0; i < limit; i = i + 4 ) {
-        
-        uint32_t ofs = itemAdr + i;
-        
-        #if 0
-        if (( physMem != nullptr ) && ( physMem -> validAdr( ofs ))) {
-            
-            printNumericField( physMem -> getMemDataWord( ofs ), fmtDesc );
-        }
-        else if (( pdcMem != nullptr ) && ( pdcMem -> validAdr( ofs ))) {
-            
-            printNumericField( pdcMem -> getMemDataWord( ofs ), fmtDesc );
-        }
-        else if (( ioMem != nullptr ) && ( ioMem -> validAdr( ofs ))) {
-            
-            printNumericField( ioMem -> getMemDataWord( ofs ), fmtDesc );
-        }
-        else printNumericField( 0, fmtDesc | FMT_INVALID_NUM );
-        #endif 
+    printTextField((char *) "): ", fmtDesc );
 
-        printTextField((char *) " " );
+    if ( getWinToggleVal( ) == 0 ) {
+
+        for ( int i = 0; i < limit; i = i + 4 ) {
+        
+            T64Word ofs = itemAdr + i;
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4 );
+            printTextField((char *) " " );
+        }
+    }
+    else if ( getWinToggleVal( ) == 1 ) {
+
+        for ( int i = 0; i < limit; i = i + 8 ) {
+        
+            T64Word ofs = itemAdr + i;
+            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "   " );
+        }
+    }
+    else if ( getWinToggleVal( ) == 2 ) {
+
+        for ( int i = 0; i < limit; i = i + 4 ) {
+        
+            T64Word ofs = itemAdr + i;
+            printNumericField( 0, fmtDesc | FMT_DEC_32 );
+            printTextField((char *) " " );
+        }
     }
 }
 
@@ -429,19 +478,18 @@ SimWinCode::  ~  SimWinCode( ) {
 //
 //----------------------------------------------------------------------------------------
 void SimWinCode::setDefaults( ) {
-    
+     
+    setWinType( WT_CODE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setColumns( 84 );
-    setDefColumns( 84, 84 );
+    setColumns( 110 );
+    setDefColumns( 110, 110 );
     setRows( 9 );
     setHomeItemAdr( 0 );
-
-    // setCurrentItemAdr( glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1 ));
     setCurrentItemAdr( 0 );
-
     setLineIncrement( 4 );
     setLimitItemAdr( UINT_MAX );
-    setWinType( WT_CODE_WIN );
+    setWinToggleLimit( 0 );
+    setWinToggleVal( 0 );
     setEnable( false );
 }
 
@@ -456,8 +504,6 @@ void SimWinCode::drawBanner( ) {
     uint32_t    fmtDesc         = FMT_BOLD | FMT_INVERSE;
     T64Word     currentIa       = getCurrentItemAdr( );
     T64Word     currentIaLimit  = currentIa + (( getRows( ) - 1 ) * getLineIncrement( ));
-
-    // T64Word     currentIaOfs    = (int) glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1  );
     T64Word     currentIaOfs    = 0;
     
     SimTokId    currentCmd      = glb -> winDisplay -> getCurrentCmd( );
@@ -472,7 +518,6 @@ void SimWinCode::drawBanner( ) {
     
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-
     printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
     printTextField((char *) "Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4_4 );
@@ -500,32 +545,29 @@ void SimWinCode::drawLine( T64Word itemAdr ) {
     
     printNumericField( itemAdr, fmtDesc | FMT_ALIGN_LFT, 12 );
   
-    #if 0
-    if ( itemAdr == glb -> cpu -> getReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1 )) {
+    if ( itemAdr ==  0 ) {
         
         printTextField((char *) "    >", fmtDesc, 5 );
     }
     else printTextField((char *) "     ", fmtDesc, 5 );
    
-    printNumericField( instr, fmtDesc | FMT_ALIGN_LFT, 12 );
+    printNumericField( instr, fmtDesc | FMT_ALIGN_LFT | FMT_HEX_8, 12 );
     
     int pos          = getWinCursorCol( );
-    int opCodeField  = disAsm -> getOpCodeOptionsFieldWidth( );
-    int operandField = disAsm -> getOpCodeOptionsFieldWidth( );
+    int opCodeField  = disAsm -> getOpCodeFieldWidth( );
+    int operandField = disAsm -> getOperandsFieldWidth( );
     
     clearField( opCodeField );
-    disAsm -> formatOpCodeAndOptions( buf, sizeof( buf ), instr );
-    printText( buf, (int) strlen( buf ));
+    disAsm -> formatOpCode( buf, sizeof( buf ), instr );
+    printTextField( buf, fmtDesc, (int) strlen( buf ));
     setWinCursor( 0, pos + opCodeField );
     
     clearField( operandField );
-    disAsm -> formatTargetAndOperands( buf, sizeof( buf ), instr );
-    printText( buf, (int) strlen( buf ));
+    disAsm -> formatOperands( buf, sizeof( buf ), instr, 16 );
+    printTextField( buf, fmtDesc, (int) strlen( buf ));
     setWinCursor( 0, pos + opCodeField + operandField );
 
-    #endif
-
-    padLine( );
+    padLine( fmtDesc );
 }
 
 //****************************************************************************************
@@ -553,19 +595,15 @@ SimWinTlb::SimWinTlb( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) {
 void SimWinTlb::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 84, 16 );
-    setDefColumns( 102, 8 );
-    setDefColumns( 84, 10 );
+    setDefColumns( 110, 110 );
     setColumns( getDefColumns( getRadix( )));
     setEnable( false );
     setRows( 5 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
-    setLimitItemAdr( 0 );
+    setLimitItemAdr( UINT32_MAX );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
-  
-    // ??? what to set for proc, tlb-num, etc.
 }
 
 //----------------------------------------------------------------------------------------
@@ -590,27 +628,26 @@ void SimWinTlb::setRadix( int rdx ) {
 //
 //  <windId> Proc: n Tlb: n Set: n Current: 0x0000.  <rdx>
 // 
+// ??? set item limit adr...
 //----------------------------------------------------------------------------------------
 void SimWinTlb::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-    
-    setLimitItemAdr( 1000 ); // fix ....
-    
+   
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) "P: " );
+    printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Tlb: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Set: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+    printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Current: " );
-    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4 );
+    printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
 
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
@@ -634,22 +671,16 @@ void SimWinTlb::drawLine( T64Word index ) {
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
     printTextField((char *) "):[", fmtDesc );
-
+    printTextField((char *) "xx", fmtDesc );
     printTextField((char *) "][", fmtDesc );
-
+    printTextField((char *) "xxxxxx", fmtDesc );
     printTextField((char *) "]", fmtDesc );
 
     printTextField((char *) "va: ", fmtDesc );
-
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
     printTextField((char *) "pa: ", fmtDesc );
-
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
-
-    printTextField((char *) "pid: ", fmtDesc );
-
-    printNumericField( 0, fmtDesc | FMT_HEX_4_4 );
 }
 
 //****************************************************************************************
@@ -675,24 +706,17 @@ SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb
 //
 //----------------------------------------------------------------------------------------
 void SimWinCache::setDefaults( ) {
-    
-    // uint32_t wordsPerBlock = cPtr -> getBlockSize( ) / 4;
-    uint32_t wordsPerBlock = 4;
-    
+ 
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 36 + ( wordsPerBlock * 11 ), 16 );
-    setDefColumns( 36 + ( wordsPerBlock * 13 ), 8 );
-    setDefColumns( 36 + ( wordsPerBlock * 11 ), 10 );
+    setDefColumns( 110, 110 );
     setColumns( getDefColumns( getRadix( )));
     setRows( 6 );
     setEnable( false );
     setCurrentItemAdr( 0 );
-    setLineIncrement( 1 );
+    setLineIncrement( 4 );
     setLimitItemAdr( 0 );
-    setWinToggleLimit( 0 );  // ??? fix: use number of sets
+    setWinToggleLimit( 3 );  // ??? fix: use number of sets
     setWinToggleVal( 0 );
-
-    // ??? what fields for proc, cache-num, etc. ???
 }
 
 //----------------------------------------------------------------------------------------
@@ -716,17 +740,16 @@ void SimWinCache::setRadix( int rdx ) {
 //
 //  <windId> Proc: n Cache: n Set: n Current: 0x0000.  <rdx>
 //
+// ??? item Adr limit ...
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawBanner( ) {
     
     uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
 
-    setLimitItemAdr( 1000 ); // ??? needed for scrolling ... fix
-    
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) "P: " );
+    printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "Cache: " );
@@ -769,6 +792,7 @@ void SimWinCache::drawLine( T64Word index ) {
     else {
 
         printTextField((char *) "[", fmtDesc );
+        printTextField((char *) "xxx", fmtDesc );
         printTextField((char *) "][", fmtDesc );
         printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
         printTextField((char *) "] ", fmtDesc );
@@ -974,8 +998,8 @@ void SimWinConsole::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setRows( 11 );
-    setColumns( 80 );
-    setDefColumns( 80, 80 );
+    setColumns( 110 );
+    setDefColumns( 110, 110 );
     setWinType( WT_CONSOLE_WIN );
     setEnable( true );
 }

@@ -454,184 +454,214 @@ int SimFormatter::printText( char *text, int maxLen ) {
 //----------------------------------------------------------------------------------------
 int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
 
-    switch (( fmtDesc >> 8 ) & 0xF ) {
+    if ((( fmtDesc >> 8 ) & 0xF ) > 0 ) {
 
-        case 1: { // HEX_2
+        switch (( fmtDesc >> 8 ) & 0xF ) {
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x""**" ));
-            else
-                return ( writeChars((char *) "0x%2x", val & 0xFF ));
+            case 1: { // HEX as is
 
-        } break;
+                return ( writeChars((char *) "0x%x", val));
 
-        case 2: { // HEX_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x""****" ));
-            else
-                return ( writeChars((char *) "0x%4x", val & 0xFFFF ));
+            case 2: { // HEX_2
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x" "**" ));
+                else
+                    return ( writeChars((char *) "0x%02x", val & 0xFF ));
 
-        case 3: { // HEX_8
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x""****""****" ));
-            else
-                return ( writeChars((char *) "0x%8x", val & 0xFFFFFFFF ));
+            case 3: { // HEX_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x" "****" ));
+                else
+                    return ( writeChars((char *) "0x%04x", val & 0xFFFF ));
 
-        case 4: { // HEX_16
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x""****""****""****""****" ));
-            else
-                return ( writeChars((char *) "0x%16x", val ));
+            case 4: { // HEX_8
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x" "****" "****" ));
+                else
+                    return ( writeChars((char *) "0x%08x", val & 0xFFFFFFFF ));
 
-        case 5: { // FMT_HEX_2_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x**_****" ));
-            else
-                return ( writeChars((char *) "0x%02x_%04x", 
-                                    (( val >> 4 ) & 0xFF   ),
-                                    (( val      ) & 0xFFFF )));
+            case 5: { // HEX_16
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x" "****" "****" "****" "****" ));
+                else
+                    return ( writeChars((char *) "0x%016x", val ));
 
-        case 6: { // FMT_HEX_4_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x****_****" ));
-            else
-                return ( writeChars((char *) "0x%04x_%04x", 
-                                    (( val >> 4 ) & 0xFFFF ),
-                                    (( val      ) & 0xFFFF )));
+            case 6: { // FMT_HEX_2_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x**_****" ));
+                else
+                    return ( writeChars((char *) "0x%02x_%04x", 
+                                        (( val >> 16 ) & 0xFF   ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 7: { // FMT_HEX_2_4_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x**_****_****" ));
-            else
-                return ( writeChars((char *) "0x%02x_%04x_%04x", 
-                                    (( val >> 8 ) & 0xFF   ),
-                                    (( val >> 4 ) & 0xFFFF ),
-                                    (( val      ) & 0xFFFF )));
+            case 7: { // FMT_HEX_4_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x****_****" ));
+                else
+                    return ( writeChars((char *) "0x%04x_%04x", 
+                                        (( val >> 16 ) & 0xFFFF ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 8: { // FMT_HEX_4_4_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x****_****_****" ));
-            else
-                return ( writeChars((char *) "0x%04x_%04x_%04x", 
-                                    (( val >> 8 ) & 0xFFFF ),
-                                    (( val >> 4 ) & 0xFFFF ),
-                                    (( val      ) & 0xFFFF )));
+            case 8: { // FMT_HEX_2_4_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x**_****_****" ));
+                else
+                    return ( writeChars((char *) "0x%02x_%04x_%04x", 
+                                        (( val >> 32 ) & 0xFF   ),
+                                        (( val >> 16 ) & 0xFFFF ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 9: { // FMT_HEX_2_4_4_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x**_****_****_****" ));
-            else
-                return ( writeChars((char *) "0x%02X_%04x_%04x_%04x", 
-                                    (( val >> 12 ) & 0xFF   ),
-                                    (( val >> 8  ) & 0xFFFF ),
-                                    (( val >> 4  ) & 0xFFFF ),
-                                    (( val       ) & 0xFFFF )));
+            case 9: { // FMT_HEX_4_4_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x****_****_****" ));
+                else
+                    return ( writeChars((char *) "0x%04x_%04x_%04x", 
+                                        (( val >> 32 ) & 0xFFFF ),
+                                        (( val >> 16 ) & 0xFFFF ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 10: { // FMT_HEX_4_4_4_4
+            } break;
 
-            if ( fmtDesc & FMT_INVALID_NUM ) 
-                return ( writeChars((char *) "0x****_****_****_****" ));
-            else
-                return ( writeChars((char *) "0x%04x_%04x_%04x_%04x", 
-                                    (( val >> 12 ) & 0xFFFF ),
-                                    (( val >> 8  ) & 0xFFFF ),
-                                    (( val >> 4  ) & 0xFFFF ),
-                                    (( val       ) & 0xFFFF )));
+            case 10: { // FMT_HEX_2_4_4_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x**_****_****_****" ));
+                else
+                    return ( writeChars((char *) "0x%02X_%04x_%04x_%04x", 
+                                        (( val >> 48 ) & 0xFF   ),
+                                        (( val >> 32 ) & 0xFFFF ),
+                                        (( val >> 16 ) & 0xFFFF ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 11: { // HEX as is
+            } break;
 
-            return ( writeChars((char *) "0x%x", val));
+            case 11: { // FMT_HEX_4_4_4_4
 
-        } break;
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    return ( writeChars((char *) "0x****_****_****_****" ));
+                else
+                    return ( writeChars((char *) "0x%04x_%04x_%04x_%04x", 
+                                        (( val >> 48 ) & 0xFFFF ),
+                                        (( val >> 32 ) & 0xFFFF ),
+                                        (( val >> 16 ) & 0xFFFF ),
+                                        (( val       ) & 0xFFFF )));
 
-        case 12: { // DEC as is
+            } break;
 
-            return ( writeChars((char *) "%d", val));
-
-        } break;
-
-        default: return ( writeChars ((char *) "*NN*" ));
+            default: return ( writeChars ((char *) "*num*" ));
+        }
     }
+    else  if ((( fmtDesc >> 12 ) & 0xF ) > 0 ) {
+
+         switch (( fmtDesc >> 12 ) & 0xF ) {
+
+            case 1: { // DEC as is
+
+                return ( writeChars((char *) "%d", val));
+
+            } break;
+
+            case 2: { // DEC_32
+
+                return ( writeChars((char *) "%10d", val ));
+
+            } break;
+
+            default: return ( writeChars ((char *) "*num*" ));
+         }
+
+    }
+    else writeChars( "*num*" );
 }
 
 //----------------------------------------------------------------------------------------
 // The window system sometimes prints numbers in a field with a given length. This
-// routine returns based on value and format the necessary field length.
+// routine returns based format descriptor and optional value the necessary field length.
 //
 //----------------------------------------------------------------------------------------
-int SimFormatter::numberFmtLen( T64Word val, uint32_t fmtDesc ) {
+int SimFormatter::numberFmtLen( uint32_t fmtDesc, T64Word val ) {
+    
+    if ((( fmtDesc >> 8 ) & 0xF ) > 0 ) {
 
-    switch (( fmtDesc >> 8 ) & 0xF ) {
+        switch (( fmtDesc >> 8 ) & 0xF ) {
 
-        case 1:     return ( 4  );   // HEX_2
-        case 2:     return ( 6  );   // HEX_4
-        case 3:     return ( 10 );   // HEX_8
-        case 4:     return ( 18 );   // HEX_16
-        case 5:     return ( 9  );   // FMT_HEX_2_4
-        case 6:     return ( 11 );   // FMT_HEX_4_4
-        case 7:     return ( 14 );   // FMT_HEX_2_4_4
-        case 8:     return ( 16 );   // FMT_HEX_4_4_4
-        case 9:     return ( 19 );   // FMT_HEX_2_4_4_4
-        case 10:    return ( 21 );   // FMT_HEX_4_4_4_4
+            case 1: { // HEX
 
-        case 11: {
+                int len = 3;
 
-            int len = 3;
+                val = abs( val );
+                
+                while ( val & 0xF ) {
 
-            val = abs( val );
-            
-            while ( val & 0xF ) {
+                    val >>= 4;
+                    len ++;
+                }
+                
+                return( len );
 
-                val >>= 4;
-                len ++;
-            }
-            
-            return( len );
+            } break;
 
-        } break;
-
-        case 12: {
-
-            int len = (( val < 0 ) ? 2 : 1 );
-
-            val = abs( val );
-            
-            while ( val >= 10 ) {
-
-                val /= 10;
-                len ++;
-            }
-            
-            return( len );
-
-        } break;
-
-        default: return( 0 );
+            case 2:     return ( 4  );   // HEX_2
+            case 3:     return ( 6  );   // HEX_4
+            case 4:     return ( 10 );   // HEX_8
+            case 5:     return ( 18 );   // HEX_16
+            case 6:     return ( 9  );   // FMT_HEX_2_4
+            case 7:     return ( 11 );   // FMT_HEX_4_4
+            case 8:     return ( 14 );   // FMT_HEX_2_4_4
+            case 9:     return ( 16 );   // FMT_HEX_4_4_4
+            case 10:    return ( 19 );   // FMT_HEX_2_4_4_4
+            case 11:    return ( 21 );   // FMT_HEX_4_4_4_4
+            default:    return( 0 );
+        }
     }
+    else if ((( fmtDesc >> 12 ) & 0xF ) > 0 ) { 
+
+        switch (( fmtDesc >> 12 ) & 0xF ) {
+
+            case 1: { // DEC
+
+                int len = (( val < 0 ) ? 2 : 1 );
+
+                val = abs( val );
+                
+                while ( val >= 10 ) {
+
+                    val /= 10;
+                    len ++;
+                }
+                
+                return( len );
+
+            } break;
+
+            case 2: return( 10 ); // FMT_DEC_32
+
+            default: return( 0 );
+        }
+    }
+    else return ( 0 );
 }

@@ -549,7 +549,7 @@ void SimWinDisplay::windowHome( int pos, int winNum ) {
     
     if ( validWindowNum( winNum )) {
         
-        ((SimWinScrollable *) windowList[ winNum ] ) -> winHome( pos );
+        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winHome( pos );
         setCurrentWindow( winNum );
     }
 }
@@ -567,7 +567,7 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
     
     if ( validWindowNum( winNum )) {
         
-        ((SimWinScrollable *) windowList[ winNum ] ) -> winForward( amt );
+        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winForward( amt );
         setCurrentWindow( winNum );
     }
 }
@@ -585,7 +585,7 @@ void SimWinDisplay::windowBackward( int amt, int winNum ) {
     
     if ( validWindowNum( winNum )) {
         
-        ((SimWinScrollable *) windowList[ winNum ] ) -> winBackward( amt );
+        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winBackward( amt );
         setCurrentWindow( winNum );
     }
 }
@@ -602,7 +602,7 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
     
     if ( validWindowNum( winNum )) {
       
-        ((SimWinScrollable *) windowList[ winNum ] ) -> winJump( pos );
+        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winJump( pos );
         setCurrentWindow( winNum );
     }
 }
@@ -619,7 +619,7 @@ void SimWinDisplay::windowToggle( int winNum ) {
     
     if ( validWindowNum( winNum )) {
         
-        ((SimWinScrollable *) windowList[ winNum ] ) -> toggleWin( );
+        windowList[ winNum - 1 ] -> toggleWin( );
         setCurrentWindow( winNum );
     }
 }
@@ -636,7 +636,7 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
     if ( winNum == currentWindow ) return;
     if ( ! validWindowNum( winNum )) return;
     
-    std::swap( windowList[ winNum ], windowList[ currentWindow ]);
+    std::swap( windowList[ winNum - 1 ], windowList[ currentWindow ]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -734,14 +734,14 @@ void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
     
     if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
     
-    for ( int i = winNumStart - 1; i <= winNumEnd; i++ ) {
+    for ( int i = winNumStart - 1; i <= winNumEnd - 1; i++ ) {
          
         delete ( SimWin * ) windowList[ i ];
         windowList[ i ] = nullptr;
                 
-        if ( currentWinNum == i ) {
+        if ( currentWinNum == i + 1 ) {
                  
-            for ( int i = 1; i <= MAX_WINDOWS; i++ ) {
+            for ( int i = 1; i < MAX_WINDOWS; i++ ) {
                         
                 if ( validWindowNum( i )) {
                             

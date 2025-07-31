@@ -173,8 +173,10 @@ int  SimWin::getWinToggleVal( ) {
 }
 
 void SimWin::toggleWin( ) { 
-    
-    winToggleVal = ( winToggleVal + 1 ) % winToggleLimit; 
+
+    winToggleVal++;
+
+    if ( winToggleVal > winToggleLimit ) winToggleVal = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -248,7 +250,7 @@ void SimWin::printNumericField( T64Word     val,
     if ( col == 0 )                     col     = lastColPos;
     if ( fmtDesc & FMT_LAST_FIELD )     col     = winColumns - fLen;
 
-    int maxLen = glb -> console -> numberFmtLen( val, fmtDesc );
+    int maxLen = glb -> console -> numberFmtLen( fmtDesc, val );
    
     if ( fLen == 0 ) fLen = maxLen;
 
@@ -366,19 +368,22 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
 
-    bool isCurrent = glb -> winDisplay -> isCurrentWin( winIndex );
+    bool isCurrent  = glb -> winDisplay -> isCurrentWin( winIndex );
+    int  len        = 0;
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if ( winIndex < MAX_WINDOWS )  
-        glb -> console -> writeChars((char *) "(%1d:%02d)  ", winStack, winIndex );
-    else                                            
-        glb -> console -> writeChars((char *) "-***-" );
-    
-    glb -> console -> writeChars((( isCurrent ) ? (char *) "* " : (char *) "  " ));
+    if ( winIndex < MAX_WINDOWS ) {
 
+        len = glb -> console -> writeChars((char *) "(%1d:%02d", winStack, winIndex ); 
+
+        if ( isCurrent ) len += glb -> console -> writeChars((char *) "*) " ); 
+        else             len += glb -> console -> writeChars((char *) ")  " );
+    }    
+    else len = glb -> console -> writeChars((char *) "-***-" );
+   
     lastRowPos  = row;
-    lastColPos  = col + 9;
+    lastColPos  = col + len;
 }
 
 //----------------------------------------------------------------------------------------
