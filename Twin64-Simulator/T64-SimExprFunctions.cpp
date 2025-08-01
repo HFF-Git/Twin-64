@@ -204,6 +204,7 @@ void SimExprEvaluator::pFuncHash( SimExpr *rExpr ) {
     SimExpr     lExpr;
    
     tok -> nextToken( );
+    
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
     else throw ( ERR_EXPECTED_LPAREN );
         
@@ -225,7 +226,7 @@ void SimExprEvaluator::parsePredefinedFunction( SimToken funcId, SimExpr *rExpr 
     switch( funcId.tid ) {
             
         case PF_ASSEMBLE:       pFuncAssemble( rExpr );     break;
-        case PF_DIS_ASM:   pFuncDisAssemble( rExpr );  break;
+        case PF_DIS_ASM:        pFuncDisAssemble( rExpr );  break;
         case PF_HASH:           pFuncHash( rExpr );         break;
         case PF_S32:            pFuncS32( rExpr );          break;
             

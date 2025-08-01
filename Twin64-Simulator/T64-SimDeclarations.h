@@ -94,8 +94,8 @@
 //
 //  Windows:
 //
-//  Processor State -> PROC
-//. TLB Window      -> TLB
+//  Processor State -> CPU
+//  TLB Window      -> TLB
 //  Cache Window    -> CACHE
 //  Program Code    -> CODE
 //  Text Window     -> TEXT
@@ -107,8 +107,7 @@
 // General maximum size for commands, etc.
 //
 //----------------------------------------------------------------------------------------
-const int MAX_CMD_HIST_BUF_SIZE     = 32;
-
+const int MAX_CMD_HIST_BUF_SIZE     = 64;
 const int MAX_WIN_CMD_LINES         = 64;
 const int CMD_LINE_BUF_SIZE         = 256;
 const int MAX_WIN_OUT_LINES         = 256;
@@ -125,8 +124,6 @@ const int MAX_ENV_VARIABLES         = 256;
 //----------------------------------------------------------------------------------------
 const int MAX_TEXT_FIELD_LEN    = 132;
 const int MAX_TEXT_LINE_SIZE    = 256;
-
-const int MAX_WIN_NAME_SIZE     = 8;
 const int MAX_WIN_ROW_SIZE      = 64;
 const int MAX_WIN_COL_SIZE      = 256;
 const int MAX_WINDOWS           = 32;
@@ -143,7 +140,7 @@ enum SimWinType : int {
     WT_CMD_WIN      = 1,
     WT_CONSOLE_WIN  = 2,
     WT_TEXT_WIN     = 3,
-    WT_PROC_WIN     = 4,
+    WT_CPU_WIN      = 4,
     WT_TLB_WIN      = 5,
     WT_CACHE_WIN    = 6,
     WT_MEM_WIN      = 7,
@@ -496,6 +493,11 @@ struct SimTokenizer {
     
     int             tokCharIndex( );
     char            *tokenLineStr( );
+
+    void            checkEOS( );
+    void            acceptComma( );
+    void            acceptLparen( );
+    void             acceptRparen( );
 
     private:
     

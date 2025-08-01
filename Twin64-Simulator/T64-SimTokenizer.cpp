@@ -526,3 +526,30 @@ void SimTokenizer::nextToken( ) {
         }
     }
 }
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizer::checkEOS( ) {
+    
+    if ( ! isToken( TOK_EOS )) throw ( ERR_TOO_MANY_ARGS_CMD_LINE );
+}
+
+void SimTokenizer::acceptComma( ) {
+    
+    if ( isToken( TOK_COMMA )) nextToken( );
+    else throw ( ERR_EXPECTED_COMMA );
+}
+
+void SimTokenizer::acceptLparen( ) {
+    
+    if ( isToken( TOK_LPAREN )) nextToken( );
+    else throw ( ERR_EXPECTED_LPAREN );
+}
+
+void SimTokenizer::acceptRparen( ) {
+    
+    if ( isToken( TOK_RPAREN )) nextToken( );
+    else throw ( ERR_EXPECTED_LPAREN );
+}

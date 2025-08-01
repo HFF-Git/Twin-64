@@ -339,10 +339,9 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
 
         // ??? read the register from system into rExpr -> u.val;
 
-        rExpr -> typ    = TYP_NUM;
+        rExpr -> typ = TYP_NUM;
     }
     else if ( tok -> isTokenTyp( TYP_CREG ))  {
-        
         
         int regId   = tok -> tokVal( );
         int procId  = 0;
@@ -363,11 +362,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
 
         // ??? read the register from system into rExpr -> u.val;
 
-         rExpr -> typ    = TYP_NUM;
-    }
-    else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
-        
-        parsePredefinedFunction( tok -> token( ), rExpr );
+        rExpr -> typ = TYP_NUM;
     }
     else if ( tok -> isToken( TOK_NEG )) {
         
@@ -382,6 +377,13 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
             
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
+    }
+     else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
+
+        // ??? would be nicer if the functions are just identifier names...
+        // ??? how would we handle overwrite through ENVs ?
+        
+        parsePredefinedFunction( tok -> token( ), rExpr );
     }
     else if ( tok -> isToken( TOK_IDENT )) {
     
@@ -403,8 +405,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
        
         tok -> nextToken( );
     }
-    else if (( tok -> tokTyp( ) == TYP_NIL ) && 
-             ( tok -> tokId( ) == TOK_EOS )) {
+    else if ( tok -> isToken( TOK_EOS )) {
         
         rExpr -> typ = TYP_NIL;
     }

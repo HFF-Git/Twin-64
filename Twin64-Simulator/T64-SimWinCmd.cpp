@@ -100,7 +100,7 @@ int removeComment( char *cmdBuf ) {
         }
     }
     
-    return((int) strlen( cmdBuf ));
+    return ((int) strlen( cmdBuf ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -280,11 +280,11 @@ char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
             if ( history[ pos ].cmdId == cmdRef ) {
                 
                 if ( cmdId != nullptr ) *cmdId = history[ pos ].cmdId;
-                return( history[ pos ].cmdLine );
+                return ( history[ pos ].cmdLine );
             }
         }
         
-        return( nullptr );
+        return ( nullptr );
     }
     else {
         
@@ -295,7 +295,7 @@ char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
             if ( cmdId != nullptr ) *cmdId = history[ pos ].cmdId;
             return history[ pos ].cmdLine;
         }
-        else return( nullptr );
+        else return ( nullptr );
     }
 }
 
@@ -305,12 +305,12 @@ char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
 //----------------------------------------------------------------------------------------
 int SimCmdHistory::getCmdNum( ) {
     
-    return( nextCmdNum );
+    return ( nextCmdNum );
 }
 
 int  SimCmdHistory::getCmdCount( ) {
     
-    return( count );
+    return ( count );
 }
 
 
@@ -671,34 +671,7 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
     else ret = 0;
     
     winOut -> writeChars( "%s\n", buf );
-    return( ret );
-}
-
-//----------------------------------------------------------------------------------------
-// Token analysis helper functions.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::checkEOS( ) {
-    
-    if ( ! tok -> isToken( TOK_EOS )) throw ( ERR_TOO_MANY_ARGS_CMD_LINE );
-}
-
-void SimCommandsWin::acceptComma( ) {
-    
-    if ( tok -> isToken( TOK_COMMA )) tok -> nextToken( );
-    else throw ( ERR_EXPECTED_COMMA );
-}
-
-void SimCommandsWin::acceptLparen( ) {
-    
-    if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
-    else throw ( ERR_EXPECTED_LPAREN );
-}
-
-void SimCommandsWin::acceptRparen( ) {
-    
-    if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
-    else throw ( ERR_EXPECTED_LPAREN );
+    return ( ret );
 }
 
 //----------------------------------------------------------------------------------------
@@ -868,7 +841,7 @@ void SimCommandsWin::displayCacheEntries( T64Cache *cPtr, int index, int len, in
 //----------------------------------------------------------------------------------------
 SimTokId SimCommandsWin::getCurrentCmd( ) {
     
-    return( currentCmd );
+    return ( currentCmd );
 }
 
 //----------------------------------------------------------------------------------------
@@ -902,11 +875,11 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
     
     if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
             
-        return( snprintf( promptStr, promptStrLen,
+        return ( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
                            (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
         }
-    else return( snprintf( promptStr, promptStrLen, "->" ));
+    else return ( snprintf( promptStr, promptStrLen, "->" ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -1030,7 +1003,7 @@ void SimCommandsWin::helpCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::exitCmd( ) {
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
         
         int exitVal = glb -> env -> getEnvVarInt((char *) ENV_EXIT_CODE );
         exit(( exitVal > 255 ) ? 255 : exitVal );
@@ -1054,7 +1027,7 @@ void SimCommandsWin::envCmd( ) {
     
     SimEnv *env = glb -> env;
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
         
         env -> displayEnvTable( );
     }
@@ -1066,7 +1039,7 @@ void SimCommandsWin::envCmd( ) {
         upshiftStr( envName );
         
         tok -> nextToken( );
-        if ( tok -> tokId( ) == TOK_EOS ) {
+        if ( tok -> isToken( TOK_EOS )) {
             
             if ( env -> isValid( envName )) env -> displayEnvTableEntry( envName );
             else throw ( ERR_ENV_VAR_NOT_FOUND );
@@ -1183,7 +1156,7 @@ void SimCommandsWin::stepCmd( ) {
         numOfSteps = acceptNumExpr( ERR_EXPECTED_STEPS );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     // ??? system call ...
 }
@@ -1201,10 +1174,10 @@ void SimCommandsWin::writeLineCmd( ) {
     
     eval -> parseExpr( &rExpr );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        if (( tok -> tokId( ) == TOK_HEX ) || ( tok -> tokId( ) == TOK_DEC )) {
+        if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
             
             rdx = tok -> tokVal( );
             tok -> nextToken( );
@@ -1213,7 +1186,7 @@ void SimCommandsWin::writeLineCmd( ) {
     }
     else rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     switch ( rExpr.typ ) {
             
@@ -1351,7 +1324,7 @@ void SimCommandsWin::modifyRegCmd( ) {
     }
     else throw ( ERR_INVALID_REG_ID );
     
-    if ( tok -> tokId( ) == TOK_EOS ) throw( ERR_EXPECTED_NUMERIC );
+    if ( tok -> isToken( TOK_EOS )) throw( ERR_EXPECTED_NUMERIC );
 
     val = acceptNumExpr( ERR_INVALID_NUM );
 
@@ -1400,14 +1373,14 @@ void SimCommandsWin::displayAbsMemCmd( ) {
 
     ofs = acceptNumExpr( ERR_EXPECTED_START_OFS );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         if ( tok -> isToken( TOK_COMMA )) len = sizeof( T64Word );
         else                              len = acceptNumExpr( ERR_EXPECTED_LEN );
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         switch(  tok -> tokId( )) {
@@ -1432,7 +1405,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
         tok -> nextToken( );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     if (((uint64_t) ofs + len ) <= UINT32_MAX ) {
         
@@ -1454,7 +1427,7 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
     T64Word adr = acceptNumExpr( ERR_EXPECTED_OFS );
     T64Word val = acceptNumExpr( ERR_INVALID_NUM );
 
-    checkEOS( );
+    tok -> checkEOS( );
     
     // ??? call the system memory ...
 }
@@ -1473,11 +1446,11 @@ void SimCommandsWin::displayCacheCmd( ) {
     int index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     int len   = 1;
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             len = 1;
             tok -> nextToken( );
@@ -1488,11 +1461,11 @@ void SimCommandsWin::displayCacheCmd( ) {
         }
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         
-        if (( tok -> tokId( ) == TOK_HEX ) || ( tok -> tokId( ) == TOK_DEC )) {
+        if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
             
             rdx = tok -> tokVal( );
             tok -> nextToken( );
@@ -1500,7 +1473,7 @@ void SimCommandsWin::displayCacheCmd( ) {
         else throw ( ERR_INVALID_FMT_OPT );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
 
     // ??? do the work .... 
     
@@ -1519,13 +1492,13 @@ void SimCommandsWin::purgeCacheCmd( ) {
 
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         set = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
 
     // ??? do the work ...
 
@@ -1544,13 +1517,13 @@ void SimCommandsWin::flushCacheCmd( ) {
 
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         set = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     
     // ??? do the work ....
@@ -1571,11 +1544,11 @@ void SimCommandsWin::displayTLBCmd( ) {
     
     index = acceptNumExpr( ERR_EXPECTED_NUMERIC );
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             len = 1;
             tok -> nextToken( );
@@ -1586,11 +1559,11 @@ void SimCommandsWin::displayTLBCmd( ) {
         }
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         
-        if (( tok -> tokId( ) == TOK_HEX ) || ( tok -> tokId( ) == TOK_DEC )) {
+        if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
             
             rdx = tok -> tokVal( );
             tok -> nextToken( );
@@ -1598,7 +1571,7 @@ void SimCommandsWin::displayTLBCmd( ) {
         else throw ( ERR_INVALID_FMT_OPT );
     }
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     if ( len == 0 ) len = tlbSize;
     
@@ -1611,24 +1584,23 @@ void SimCommandsWin::displayTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 // Insert into TLB command.
 //
-//  ITLB <proc> <tlb> <info1> <info2>
+//  ITLB <proc>, <tlb>, <info1>, <info2>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
-    
-    #if 0
-    SimExpr     rExpr;
-    eval -> parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) argAcc = rExpr.u.val;
-    else throw ( ERR_TLB_ACC_DATA );
-    
-    eval -> parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_NUM ) argAcc = rExpr.u.val;
-    else throw ( ERR_TLB_ADR_DATA );
-    
-    if ( ! tPtr -> insertTlbEntryData( seg, ofs, argAcc, argAdr )) throw ( ERR_TLB_INSERT_OP );
-    #endif
+
+    int procNum = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> acceptComma( );
+
+    int tlbNum = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> acceptComma( );
+
+    T64Word info1 = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> acceptComma( );
+
+    T64Word info2 = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> checkEOS( );
+
+    // ??? call TLB code...
 }
 
 //----------------------------------------------------------------------------------------
@@ -1638,31 +1610,17 @@ void SimCommandsWin::insertTLBCmd( ) {
 //  
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
-    
-    #if 0
-    SimExpr     rExpr;
-    CpuTlb      *tPtr = nullptr;
-    
-    if ( tok -> tokId( ) == TOK_I ) {
-        
-        tPtr = glb -> cpu -> iTlb;
-        tok -> nextToken( );
-    }
-    else if ( tok -> tokId( ) == TOK_D ) {
-        
-        tPtr = glb -> cpu -> dTlb;
-        tok -> nextToken( );
-    }
-    else throw ( ERR_TLB_TYPE );
-    
-    eval -> parseExpr( &rExpr );
-    
-    if ( rExpr.typ == TYP_EXT_ADR ) {
-        
-        if ( ! tPtr -> purgeTlbEntryData( rExpr.seg, rExpr.ofs )) throw ( ERR_TLB_PURGE_OP );
-    }
-    else throw ( ERR_EXPECTED_EXT_ADR );
-    #endif
+
+     int procNum = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> acceptComma( );
+
+    int tlbNum = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> acceptComma( );
+
+    T64Word vAdr = acceptNumExpr( ERR_INVALID_NUM );
+    tok -> checkEOS( );
+
+    // ??? call TLB code...
 }
 
 //----------------------------------------------------------------------------------------
@@ -1723,6 +1681,8 @@ void SimCommandsWin::winEnableCmd( ) {
 
         winNum = acceptNumExpr( ERR_EXPECTED_WIN_ID );
     }
+
+    tok -> checkEOS( );
     
     if ( glb -> winDisplay -> validWindowNum( winNum )) {
         
@@ -1742,6 +1702,8 @@ void SimCommandsWin::winDisableCmd( ) {
 
         winNum = acceptNumExpr( ERR_EXPECTED_WIN_ID );
     }
+
+    tok -> checkEOS( );
     
     if ( glb -> winDisplay -> validWindowNum( winNum )) {
         
@@ -1771,7 +1733,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
         return;
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
         tok -> nextToken( );
@@ -1783,7 +1745,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
         else throw( ERR_INVALID_RADIX );
     }
     
-    if ( tok -> tokId( ) == TOK_COMMA ) {
+    if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
@@ -1792,7 +1754,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
             throw ( ERR_INVALID_WIN_ID );
     }
 
-    checkEOS( );
+    tok -> checkEOS( );
     
     glb -> winDisplay -> windowRadix( rdx, winNum );
 }
@@ -1818,7 +1780,7 @@ void SimCommandsWin::winForwardCmd( ) {
       
         winItems = acceptNumExpr( ERR_INVALID_NUM );
       
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
@@ -1827,7 +1789,7 @@ void SimCommandsWin::winForwardCmd( ) {
             throw ( ERR_INVALID_WIN_ID );
         }
       
-        checkEOS( );
+        tok -> checkEOS( );
     }
 
     glb -> winDisplay -> windowForward( winItems, winNum );
@@ -1844,7 +1806,7 @@ void SimCommandsWin::winBackwardCmd( ) {
       
         winItems = acceptNumExpr( ERR_INVALID_NUM );
       
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
@@ -1853,7 +1815,7 @@ void SimCommandsWin::winBackwardCmd( ) {
             throw ( ERR_INVALID_WIN_ID );
         }
       
-        checkEOS( );
+        tok -> checkEOS( );
     }
     
     glb -> winDisplay -> windowBackward( winItems, winNum  );
@@ -1878,7 +1840,7 @@ void SimCommandsWin::winHomeCmd( ) {
       
         winPos = acceptNumExpr( ERR_INVALID_NUM );
       
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
@@ -1887,7 +1849,7 @@ void SimCommandsWin::winHomeCmd( ) {
             throw ( ERR_INVALID_WIN_ID );
         }
       
-        checkEOS( );
+        tok -> checkEOS( );
     }
 
     glb -> winDisplay -> windowHome( winPos, winNum  );
@@ -1911,7 +1873,7 @@ void SimCommandsWin::winJumpCmd( ) {
       
         winPos = acceptNumExpr( ERR_INVALID_NUM );
       
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
@@ -1920,7 +1882,7 @@ void SimCommandsWin::winJumpCmd( ) {
             throw ( ERR_INVALID_WIN_ID );
         }
       
-        checkEOS( );
+        tok -> checkEOS( );
     }
     
     glb -> winDisplay -> windowJump( winPos, winNum );
@@ -1937,7 +1899,7 @@ void SimCommandsWin::winSetRowsCmd( ) {
    
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
         
         glb -> winDisplay -> windowSetRows( 0, 0 );
     }
@@ -1946,16 +1908,16 @@ void SimCommandsWin::winSetRowsCmd( ) {
         int winLines = acceptNumExpr( ERR_INVALID_NUM );
         int winNum      = 0;
     
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
         
             tok -> nextToken( );
             winNum = acceptNumExpr( ERR_INVALID_NUM );
+
+            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
+            throw ( ERR_INVALID_WIN_ID );
         }
 
-        checkEOS( );
-    
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
+        tok -> checkEOS( );
     
         glb -> winDisplay -> windowSetRows( winLines, winNum );
         glb -> winDisplay -> reDraw( true );
@@ -1973,7 +1935,7 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
 
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
 
         glb -> winDisplay -> windowSetCmdWinRows( 10 ); // fix .... default..
     }
@@ -1981,7 +1943,7 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
         int winLines = acceptNumExpr( ERR_INVALID_NUM );
         glb -> winDisplay -> windowSetCmdWinRows( winLines );
-        checkEOS( );
+        tok -> checkEOS( );
     }
 }
 
@@ -2000,7 +1962,7 @@ void SimCommandsWin::winCurrentCmd( ) {
 
     int winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
         throw ( ERR_INVALID_WIN_ID );
@@ -2049,7 +2011,7 @@ void SimCommandsWin::winExchangeCmd( ) {
 
     int winNum = acceptNumExpr( ERR_INVALID_WIN_ID );
     
-    checkEOS( );
+    tok -> checkEOS( );
     
     if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
     glb -> winDisplay -> windowExchangeOrder( winNum );
@@ -2080,9 +2042,9 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         case TOK_CPU: {
 
-            acceptComma( );
+            tok -> acceptComma( );
             int procNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            checkEOS( );
+            tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewProgState( procNum );
 
@@ -2090,7 +2052,7 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         case TOK_TLB: {
 
-            acceptComma( );
+            tok -> acceptComma( );
             int procNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             int tlbNum  = 0;
  
@@ -2100,7 +2062,7 @@ void SimCommandsWin::winNewWinCmd( ) {
                 tlbNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             }
 
-            checkEOS( );
+            tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewTlb( procNum, tlbNum );
 
@@ -2108,7 +2070,7 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         case TOK_CACHE: {
 
-            acceptComma( );
+            tok -> acceptComma( );
             int procNum     = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             int cacheNum    = 0;
  
@@ -2118,7 +2080,7 @@ void SimCommandsWin::winNewWinCmd( ) {
                 cacheNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             }
 
-            checkEOS( );
+            tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewCache( procNum, cacheNum );
 
@@ -2131,14 +2093,14 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         case TOK_TEXT: {
 
-            acceptComma( );
+            tok -> acceptComma( );
         
             char *argStr = nullptr;
 
             if ( tok -> tokTyp( ) == TYP_STR ) argStr = tok -> tokStr( );
             else throw ( ERR_INVALID_ARG );
 
-            checkEOS( );
+            tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewText( argStr );
 
@@ -2163,7 +2125,7 @@ void SimCommandsWin::winKillWinCmd( ) {
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
         
         winNumStart = glb -> winDisplay -> getCurrentWindow( );
         winNumEnd   = winNumStart;
@@ -2179,7 +2141,7 @@ void SimCommandsWin::winKillWinCmd( ) {
         }
         else {
 
-            if ( tok -> tokId( ) == TOK_COMMA ) {
+            if ( tok -> isToken( TOK_COMMA )) {
             
                 tok -> nextToken( );
                 winNumEnd = acceptNumExpr( ERR_EXPECTED_NUMERIC );     
@@ -2217,17 +2179,17 @@ void SimCommandsWin::winSetStackCmd( ) {
     if ( ! glb -> winDisplay -> validWindowStackNum( stackNum ))
         throw ( ERR_INVALID_WIN_STACK_ID );
     
-    if ( tok -> tokId( ) == TOK_EOS ) {
+    if ( tok -> isToken( TOK_EOS )) {
         
         winNumStart = glb -> winDisplay -> getCurrentWindow( );
         winNumEnd   = winNumStart;
     }
-    else if ( tok -> tokId( ) == TOK_COMMA ) {
+    else if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
         winNumStart = acceptNumExpr( ERR_EXPECTED_NUMERIC );
         
-        if ( tok -> tokId( ) == TOK_COMMA ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
             tok -> nextToken( );
             winNumEnd = acceptNumExpr( ERR_EXPECTED_NUMERIC );

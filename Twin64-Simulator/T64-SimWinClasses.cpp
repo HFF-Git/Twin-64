@@ -155,7 +155,7 @@ SimWinProgState::SimWinProgState( SimGlobals *glb, int procModuleNum ) : SimWin(
 //----------------------------------------------------------------------------------------
 void SimWinProgState::setDefaults( ) {
     
-    setWinType( WT_PROC_WIN );
+    setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 5 );
     setDefColumns( 110, 110 );
@@ -767,7 +767,7 @@ void SimWinCache::drawBanner( ) {
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Set: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+    printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4 );
