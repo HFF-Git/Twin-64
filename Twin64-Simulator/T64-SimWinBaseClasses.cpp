@@ -25,6 +25,7 @@
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 
@@ -108,16 +109,16 @@ void SimWin::setColumns( int arg ) {
     winColumns = (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
 }
 
-int SimWin::getRadix( ) { 
-    
-    return ( winRadix ); 
-}
-
 void SimWin::setRadix( int rdx ) { 
     
     if      ( rdx == 10 )   winRadix = 10;
     else if ( rdx == 16 )   winRadix = 16;
     else                    winRadix = 10;
+}
+
+int SimWin::getRadix( ) { 
+    
+    return ( winRadix ); 
 }
 
 int SimWin::getWinStack( ) {  
@@ -140,20 +141,14 @@ int SimWin::getDefRows( ) {
     return ( winDefRows );
 }
 
-int SimWin::getDefColumns( int rdx ) {
-    
-    switch ( rdx ) {
-            
-        case 16:    return ( winDefColumnsHex );
-        case 10:    return ( winDefColumnsDec );
-        default:    return ( winDefColumnsHex );
-    }
+void SimWin::setDefColumns( int rdx ) {
+
+    winDefColumns = rdx;
 }
 
-void SimWin::setDefColumns( int rdx10, int rdx16 ) {
+int SimWin::getDefColumns( ) {
 
-    winDefColumnsDec = rdx10;
-    winDefColumnsHex = rdx16;
+    return( winDefColumns );
 }
 
 //----------------------------------------------------------------------------------------
@@ -349,6 +344,33 @@ void SimWin::printTextField( char       *text,
 }
 
 //----------------------------------------------------------------------------------------
+// Print out a bit character. When the bit in the word is set, it is upper case, else
+// lower case.
+//
+//
+//----------------------------------------------------------------------------------------
+void SimWin::printBitField( T64Word val, 
+                            int pos,
+                            char printChar,
+                            uint32_t fmtDesc,
+                            int fLen,
+                            int row,
+                            int col ) {
+
+    if ( isInRange( pos, 0, 63 )) {
+        
+        char buf[ 4 ];
+        if (( val >> pos ) & 0x1 ) buf[ 0 ] = toupper( printChar );
+        else                       buf[ 0 ] = tolower( printChar );
+
+        buf[ 1 ] = '\0';
+
+        printTextField( buf, fmtDesc, fLen, row, col );
+    }
+    else printTextField((char *) "*", fmtDesc, fLen, row, col );
+}
+
+//----------------------------------------------------------------------------------------
 // It is a good idea to put the current radix into the banner line to show in what 
 // format the data in the body is presented. This field is when used always printed as
 // the last field in the banner line.
@@ -385,12 +407,12 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     
     if ( winIndex < MAX_WINDOWS ) {
 
-        len = glb -> console -> writeChars((char *) "(%1d:%02d", winStack, winIndex ); 
+        if ( isCurrent ) len += glb -> console -> writeChars((char *) "*(" ); 
+        else             len += glb -> console -> writeChars((char *) "(" );
 
-        if ( isCurrent ) len += glb -> console -> writeChars((char *) "*) " ); 
-        else             len += glb -> console -> writeChars((char *) ")  " );
+        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack, winIndex ); 
     }    
-    else len = glb -> console -> writeChars((char *) "-***-" );
+    else len = glb -> console -> writeChars((char *) "(-***-)" );
    
     lastRowPos  = row;
     lastColPos  = col + len;

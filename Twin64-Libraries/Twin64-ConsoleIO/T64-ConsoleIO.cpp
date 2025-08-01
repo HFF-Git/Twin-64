@@ -446,6 +446,21 @@ int SimFormatter::printText( char *text, int maxLen ) {
 }
 
 //----------------------------------------------------------------------------------------
+// We often need to print a bit of a machine word. If set in upper case, if cleared in 
+// lower case.
+// 
+//----------------------------------------------------------------------------------------
+char SimFormatter::printBit( T64Word val, int pos, char printChar ) {
+
+    if ( isInRange( pos, 0, 63 )) {
+
+        if (( val >> pos ) & 0x1 )  return ( toupper( printChar ));
+        else                        return ( tolower( printChar ));
+    }
+    else return ( '*' );
+}
+
+//----------------------------------------------------------------------------------------
 // "printNumber" will print the number in the selected format. There quite a few HEX
 // format to ease the printing of large numbers as we have in 64-bit system. If the 
 // "invalid number" option is set in addition to the number format, the format is filled 

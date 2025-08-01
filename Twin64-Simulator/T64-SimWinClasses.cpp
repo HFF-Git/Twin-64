@@ -158,23 +158,12 @@ void SimWinProgState::setDefaults( ) {
     setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 5 );
-    setDefColumns( 110, 110 );
+    setDefColumns( 110 );
     setRows( getDefRows( ));
     setRadix( 16 );
     setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
     setEnable( true );
-}
-
-//----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the
-// radix chosen.
-//
-//----------------------------------------------------------------------------------------
-void SimWinProgState::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( rdx ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -201,7 +190,12 @@ void SimWinProgState::drawBanner( ) {
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
     printTextField((char *) " ST: [", fmtDesc );
-    printTextField((char *) "xxxxxxxx", fmtDesc );
+    printBitField( 0, 63, 'A', fmtDesc );
+    printBitField( 0, 62, 'B', fmtDesc );
+    printBitField( 0, 61, 'C', fmtDesc );
+    printBitField( 0, 60, 'D', fmtDesc );
+    printBitField( 0, 59, 'E', fmtDesc );
+    printBitField( 0, 58, 'F', fmtDesc );
     printTextField((char *) "]", fmtDesc );
 
     padLine( fmtDesc );
@@ -356,9 +350,9 @@ void SimWinAbsMem::setDefaults( ) {
     setWinType( WT_MEM_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 5 );
-    setDefColumns( 116, 116 );
+    setDefColumns( 116 );
     setRows( getDefRows( ));
-    setColumns( getDefColumns( getRadix( )));
+    setColumns( getDefColumns( ));
     setEnable( false );
     setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
@@ -366,17 +360,6 @@ void SimWinAbsMem::setDefaults( ) {
     setCurrentItemAdr( 0 );
     setLineIncrement( 8 * 4 );
     setLimitItemAdr( UINT_MAX );
-}
-
-//----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the
-// radix chosen.
-//
-//----------------------------------------------------------------------------------------
-void SimWinAbsMem::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( getRadix( )));
 }
 
 //----------------------------------------------------------------------------------------
@@ -484,9 +467,9 @@ void SimWinCode::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setDefRows( 9 );
-    setDefColumns( 116, 116 );
+    setDefColumns( 116 );
     setRows( getDefRows( ));
-    setColumns( getDefColumns( getRadix( )));
+    setColumns( getDefColumns( ));
 
     setHomeItemAdr( 0 );
     setCurrentItemAdr( 0 );
@@ -602,27 +585,15 @@ void SimWinTlb::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setDefRows( 5 );
-    setDefColumns( 116, 116 );
+    setDefColumns( 116 );
     setRows( getDefRows( ));
-    setColumns( getDefColumns( getRadix( )));
+    setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
     setLimitItemAdr( UINT32_MAX );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
     setEnable( true );
-}
-
-//----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the
-// radix chosen.
-//
-// ??? can be factored out ?
-//----------------------------------------------------------------------------------------
-void SimWinTlb::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( getRadix( )));
 }
 
 //----------------------------------------------------------------------------------------
@@ -673,19 +644,21 @@ void SimWinTlb::drawLine( T64Word index ) {
 
     uint32_t  fmtDesc = FMT_DEF_ATTR;
 
-    // ??? get the entry ....
+    // ??? get the entry .... 
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
     printTextField((char *) "): [", fmtDesc );
-    printTextField((char *) "xx", fmtDesc );
+    printBitField( 0, 63, 'A', fmtDesc );
+    printBitField( 0, 62, 'B', fmtDesc );
+    printBitField( 0, 61, 'C', fmtDesc );
+    printBitField( 0, 60, 'D', fmtDesc );
+    printBitField( 0, 59, 'E', fmtDesc );
     printTextField((char *) "] [", fmtDesc );
-    printTextField((char *) "xxxxxx", fmtDesc );
+    printTextField((char *) "xx", fmtDesc ); // ??? page size.... decoded ?
     printTextField((char *) "]", fmtDesc );
-
     printTextField((char *) "  vAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
-
     printTextField((char *) "  pAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
 }
@@ -718,9 +691,9 @@ void SimWinCache::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setDefRows( 6 );
-    setDefColumns( 128, 128 );
+    setDefColumns( 128 );
     setRows( getDefRows( ));
-    setColumns( getDefColumns( getRadix( )));
+    setColumns( getDefColumns( ));
 
     setCurrentItemAdr( 0 );
     setLineIncrement( 4 );
@@ -730,17 +703,6 @@ void SimWinCache::setDefaults( ) {
     setEnable( true );
 }
 
-//----------------------------------------------------------------------------------------
-// The window overrides the setRadix method to set the column width according to the 
-// radix chosen.
-//
-//----------------------------------------------------------------------------------------
-void SimWinCache::setRadix( int rdx ) {
-    
-    SimWin::setRadix( rdx );
-    setColumns( getDefColumns( getRadix( )));
-}
-    
 //----------------------------------------------------------------------------------------
 // Each window consist of a headline and a body. The banner line is always shown in 
 // inverse and contains summary or head data for the window. We also need to set the 
@@ -851,9 +813,9 @@ void SimWinText::setDefaults( ) {
     setEnable( true );
 
     setDefRows( 11 );
-    setDefColumns( txWidth, txWidth );
+    setDefColumns( txWidth );
     setRows( getDefRows( ));
-    setColumns( getDefColumns( 10 ));
+    setColumns( getDefColumns( ));
     
     setRadix( 10 );
     setCurrentItemAdr( 0 );
@@ -1011,9 +973,12 @@ SimWinConsole::SimWinConsole( SimGlobals *glb ) : SimWin( glb ) {
 void SimWinConsole::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setRows( 11 );
-    setColumns( 110 );
-    setDefColumns( 110, 110 );
+    
+    setDefRows( 10 );
+    setDefColumns( 110 );
+    setRows( getDefRows( ));
+    setColumns( getDefColumns( ));
+    
     setWinType( WT_CONSOLE_WIN );
     setEnable( true );
 }

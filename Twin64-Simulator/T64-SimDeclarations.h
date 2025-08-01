@@ -374,6 +374,8 @@ enum SimErrMsgId : int {
     
     ERR_UNDEFINED_PFUNC             = 417,
 
+    ERR_NUMERIC_RANGE               = 420,
+
     ERR_TLB_TYPE                    = 500,
     ERR_TLB_PURGE_OP                = 501,
     ERR_TLB_INSERT_OP               = 502,
@@ -547,6 +549,9 @@ struct SimExprEvaluator {
     
     void            setTokenizer( SimTokenizer *tok );
     void            parseExpr( SimExpr *rExpr );
+    T64Word         acceptNumExpr( SimErrMsgId errCode, 
+                                    T64Word low = INT64_MIN, 
+                                    T64Word high = INT64_MAX );
     
     private:
     
@@ -744,8 +749,8 @@ struct SimWin {
     void            setEnable( bool arg );
     bool            isEnabled( );
     
-    virtual void    setRadix( int radix );
-    virtual int     getRadix( );
+    void            setRadix( int radix );
+    int             getRadix( );
     
     void            setRows( int arg );
     int             getRows( );
@@ -756,8 +761,8 @@ struct SimWin {
     void            setDefRows( int rows );
     int             getDefRows( );
 
-    void            setDefColumns( int rdx10, int rdx16 );
-    int             getDefColumns( int rdx = 16 );
+    void            setDefColumns( int rdx );
+    int             getDefColumns( );
     
     void            setWinOrigin( int row, int col );
     void            setWinCursor( int row, int col );
@@ -785,6 +790,14 @@ struct SimWin {
                                     int len = 0,
                                     int row = 0,
                                     int col = 0 );
+
+    void            printBitField(  T64Word val, 
+                                    int pos,
+                                    char printChar,
+                                    uint32_t fmtDesc = 0,
+                                    int len = 0,
+                                    int row = 0,
+                                    int col = 0 ); 
     
     void            printRadixField( uint32_t fmtDesc = 0,
                                      int len = 0,
@@ -821,8 +834,7 @@ struct SimWin {
     int             winRows             = 0;
     int             winColumns          = 0;
     int             winDefRows          = 0;
-    int             winDefColumnsHex    = 0;
-    int             winDefColumnsDec    = 0;
+    int             winDefColumns       = 0;
     int             winToggleLimit      = 0;
     int             winToggleVal        = 0;
     
@@ -866,7 +878,6 @@ struct SimWinScrollable : SimWin {
     void            winForward( T64Word amt );
     void            winBackward( T64Word amt );
    
-    
     virtual void    drawBody( );
     virtual void    drawLine( T64Word index ) = 0;
     
@@ -891,7 +902,6 @@ struct SimWinProgState : SimWin {
     SimWinProgState( SimGlobals *glb, int procModuleNum );
     
     void setDefaults( );
-    void setRadix( int rdx );
     void drawBanner( );
     void drawBody( );
 
@@ -914,7 +924,6 @@ struct SimWinAbsMem : SimWinScrollable {
     SimWinAbsMem( SimGlobals *glb );
     
     void setDefaults( );
-    void setRadix( int rdx );
     void drawBanner( );
     void drawLine( T64Word index );
 };
@@ -952,7 +961,6 @@ struct SimWinTlb : SimWinScrollable {
     SimWinTlb( SimGlobals *glb, int winType );
     
     void setDefaults( );
-    void setRadix( int rdx );
     void drawBanner( );
     void drawLine( T64Word index );
 };
@@ -970,7 +978,6 @@ struct SimWinCache : SimWinScrollable {
     SimWinCache( SimGlobals *glb, int winType );
     
     void setDefaults( );
-    void setRadix( int rdx );
     void drawBanner( );
     void drawLine( T64Word index );
 };
@@ -1060,12 +1067,6 @@ private:
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
   
-    void            checkEOS( );
-    void            acceptComma( );
-    void            acceptLparen( );
-    void            acceptRparen( );
-    T64Word         acceptNumExpr( SimErrMsgId errCode );
-    
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx = 16 );
     

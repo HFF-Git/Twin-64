@@ -181,8 +181,7 @@ int SimWinDisplay::computeColumnsNeeded( int winStack ) {
             ( windowList[ i ] -> isEnabled( )) &&
             ( windowList[ i ] -> getWinStack( ) == winStack )) {
             
-            int columns = 
-                    windowList[ i ] -> getDefColumns( windowList[ i ] -> getRadix( ));
+            int columns = windowList[ i ] -> getDefColumns( );
             
             if ( columns > columnSize ) columnSize = columns;
         }
@@ -285,6 +284,7 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // screen size changed, we just redraw the screen with the command screen going last. 
 // The command screen will have a columns size across all visible stacks.
 //
+// ??? sometimes the gap between the stacks has stale characters...
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( bool mustRedraw ) {
     
@@ -376,7 +376,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
     }
     
     if ( winModeOn ) {
-       
+
         for ( int i = 0; i < MAX_WINDOWS; i++ ) {
             
             if (( windowList[ i ] != nullptr ) && ( windowList[ i ] -> isEnabled( ))) {

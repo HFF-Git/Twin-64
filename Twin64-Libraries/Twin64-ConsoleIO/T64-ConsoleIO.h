@@ -186,6 +186,7 @@ struct SimFormatter {
     int             printText( char *text, int len );
     int             printNumber( T64Word val, uint32_t fmtDesc );
     int             numberFmtLen( uint32_t fmtDesc, T64Word val = 0 );
+    char            printBit( T64Word val, int pos, char printChar );
 
 };
 
