@@ -152,10 +152,9 @@ SimConsoleIO::~SimConsoleIO( ) {
 //
 //
 // ??? perhaps a place to save the previous settings and restore them ?
-// ??? Or just do all this in the object creator ?
 //----------------------------------------------------------------------------------------
 void SimConsoleIO::initConsoleIO( ) {
-    
+
 #if __APPLE__
     struct termios term;
     tcgetattr( fileno( stdin ), &term );
@@ -163,6 +162,7 @@ void SimConsoleIO::initConsoleIO( ) {
     term.c_cc[VMIN] = 1;
     term.c_cc[VTIME] = 0;
     tcsetattr( STDIN_FILENO, TCSANOW, &term );
+    tcflush( fileno( stdin ), TCIFLUSH );
 #endif
     
     blockingMode  = true;
@@ -595,7 +595,7 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
          }
 
     }
-    else writeChars( "*num*" );
+    else return( writeChars( "*num*" ));
 }
 
 //----------------------------------------------------------------------------------------

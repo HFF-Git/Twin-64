@@ -747,12 +747,15 @@ struct SimWin {
     
     void            setRows( int arg );
     int             getRows( );
-    
-    void            setDefColumns( int rdx10, int rdx16 );
-    int             getDefColumns( int rdx = 16 );
-    
+
     void            setColumns( int arg );
     int             getColumns( );
+    
+    void            setDefRows( int rows );
+    int             getDefRows( );
+
+    void            setDefColumns( int rdx10, int rdx16 );
+    int             getDefColumns( int rdx = 16 );
     
     void            setWinOrigin( int row, int col );
     void            setWinCursor( int row, int col );
@@ -815,6 +818,7 @@ struct SimWin {
     int             winStack            = 0;
     int             winRows             = 0;
     int             winColumns          = 0;
+    int             winDefRows          = 0;
     int             winDefColumnsHex    = 0;
     int             winDefColumnsDec    = 0;
     int             winToggleLimit      = 0;

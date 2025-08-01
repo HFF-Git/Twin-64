@@ -523,6 +523,8 @@ void SimWinDisplay::windowSetRows( int rows, int winNum ) {
     if ( winNum == 0 ) winNum = currentWinNum;
             
     if ( validWindowNum( winNum )) {
+
+        if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getDefRows( );
                 
         windowList[ winNum - 1 ] -> setRows( rows );
         currentWinNum = winNum;
@@ -530,6 +532,8 @@ void SimWinDisplay::windowSetRows( int rows, int winNum ) {
 }
 
 void SimWinDisplay::windowSetCmdWinRows( int rows ) {
+
+    if ( rows == 0 ) ; // ??? fix ....
 
     cmdWin -> setRows( rows );
 }

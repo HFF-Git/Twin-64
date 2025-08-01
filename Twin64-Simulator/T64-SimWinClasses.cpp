@@ -157,9 +157,10 @@ void SimWinProgState::setDefaults( ) {
     
     setWinType( WT_PROC_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
+    setDefRows( 5 );
     setDefColumns( 110, 110 );
+    setRows( getDefRows( ));
     setRadix( 16 );
-    setRows( 5 );
     setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
     setEnable( true );
@@ -352,15 +353,15 @@ SimWinAbsMem::SimWinAbsMem( SimGlobals *glb ) : SimWinScrollable( glb ) { }
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::setDefaults( ) {
     
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 116, 116 );
-    setColumns( getDefColumns( getRadix( )));
-    
     setWinType( WT_MEM_WIN );
+    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
+    setDefRows( 5 );
+    setDefColumns( 116, 116 );
+    setRows( getDefRows( ));
+    setColumns( getDefColumns( getRadix( )));
     setEnable( false );
     setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
-    setRows( 5 );
     setHomeItemAdr( 0 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 8 * 4 );
@@ -481,16 +482,19 @@ void SimWinCode::setDefaults( ) {
      
     setWinType( WT_CODE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setColumns( 110 );
-    setDefColumns( 110, 110 );
-    setRows( 9 );
+
+    setDefRows( 9 );
+    setDefColumns( 116, 116 );
+    setRows( getDefRows( ));
+    setColumns( getDefColumns( getRadix( )));
+
     setHomeItemAdr( 0 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 4 );
     setLimitItemAdr( UINT_MAX );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
-    setEnable( false );
+    setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -594,16 +598,19 @@ SimWinTlb::SimWinTlb( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) {
 //----------------------------------------------------------------------------------------
 void SimWinTlb::setDefaults( ) {
     
+    setWinType( WT_TLB_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 110, 110 );
+
+    setDefRows( 5 );
+    setDefColumns( 116, 116 );
+    setRows( getDefRows( ));
     setColumns( getDefColumns( getRadix( )));
-    setEnable( false );
-    setRows( 5 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
     setLimitItemAdr( UINT32_MAX );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
+    setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -640,13 +647,13 @@ void SimWinTlb::drawBanner( ) {
     printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Tlb: " );
+    printTextField((char *) "  Tlb: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Set: " );
+    printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Current: " );
+    printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
 
     padLine( fmtDesc );
@@ -670,16 +677,16 @@ void SimWinTlb::drawLine( T64Word index ) {
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
-    printTextField((char *) "):[", fmtDesc );
+    printTextField((char *) "): [", fmtDesc );
     printTextField((char *) "xx", fmtDesc );
-    printTextField((char *) "][", fmtDesc );
+    printTextField((char *) "] [", fmtDesc );
     printTextField((char *) "xxxxxx", fmtDesc );
     printTextField((char *) "]", fmtDesc );
 
-    printTextField((char *) "va: ", fmtDesc );
+    printTextField((char *) "  vAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
 
-    printTextField((char *) "pa: ", fmtDesc );
+    printTextField((char *) "  pAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
 }
 
@@ -707,16 +714,20 @@ SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb
 //----------------------------------------------------------------------------------------
 void SimWinCache::setDefaults( ) {
  
+    setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefColumns( 110, 110 );
+
+    setDefRows( 6 );
+    setDefColumns( 128, 128 );
+    setRows( getDefRows( ));
     setColumns( getDefColumns( getRadix( )));
-    setRows( 6 );
-    setEnable( false );
+
     setCurrentItemAdr( 0 );
     setLineIncrement( 4 );
-    setLimitItemAdr( 0 );
+    setLimitItemAdr( UINT32_MAX ); // ??? fix: use cache size
     setWinToggleLimit( 3 );  // ??? fix: use number of sets
     setWinToggleVal( 0 );
+    setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -752,13 +763,13 @@ void SimWinCache::drawBanner( ) {
     printTextField((char *) "Proc: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Cache: " );
+    printTextField((char *) "  Cache: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Set: " );
+    printTextField((char *) "  Set: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "Current: " );
+    printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4 );
 
     padLine( fmtDesc );
@@ -779,10 +790,10 @@ void SimWinCache::drawLine( T64Word index ) {
     uint32_t fmtDesc = FMT_DEF_ATTR;
 
     printTextField((char *) "(", fmtDesc );
-    printNumericField( index, fmtDesc );
+    printNumericField( index, fmtDesc | FMT_HEX_4 );
     printTextField((char *) "): ", fmtDesc );
 
-    if ( index > 100 ) { // ??? fix ....
+    if ( index > 100 ) { // ??? fix .... is cache size...
   
         printTextField((char *) "[", fmtDesc );
         printTextField((char *) "Invalid Cache index", fmtDesc );
@@ -793,14 +804,14 @@ void SimWinCache::drawLine( T64Word index ) {
 
         printTextField((char *) "[", fmtDesc );
         printTextField((char *) "xxx", fmtDesc );
-        printTextField((char *) "][", fmtDesc );
+        printTextField((char *) "] [", fmtDesc );
         printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
         printTextField((char *) "] ", fmtDesc );
 
-        for ( int i = 0; i < 4; i++ ) { // ??? fix ...
+        for ( int i = 0; i < 4; i++ ) { // ??? fix ... cache line size
             
             printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) " " );
+            printTextField((char *) "  " );
         }
     }
 }
@@ -833,14 +844,17 @@ SimWinText:: ~SimWinText( ) {
 //
 //----------------------------------------------------------------------------------------
 void SimWinText::setDefaults( ) {
+
+    int txWidth = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_LINE_WIDTH );
     
     setWinType( WT_TEXT_WIN );
     setEnable( true );
-    setRows( 11 );
-    
-    int txWidth = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_LINE_WIDTH );
-    setRadix( txWidth );
+
+    setDefRows( 11 );
     setDefColumns( txWidth, txWidth );
+    setRows( getDefRows( ));
+    setColumns( getDefColumns( 10 ));
+    
     setRadix( 10 );
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );

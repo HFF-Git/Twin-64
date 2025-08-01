@@ -60,7 +60,7 @@ SimWin:: ~SimWin( ) { }
 //----------------------------------------------------------------------------------------
 int  SimWin::getWinType( ) { 
     
-    return( winType ); 
+    return ( winType ); 
 }
 
 void SimWin::setWinType( int arg ) { 
@@ -70,7 +70,7 @@ void SimWin::setWinType( int arg ) {
 
 int SimWin::getWinIndex( ) { 
     
-    return( winIndex ); 
+    return ( winIndex ); 
 }
 
 void SimWin::setWinIndex( int arg ) { 
@@ -80,7 +80,7 @@ void SimWin::setWinIndex( int arg ) {
 
 bool SimWin::isEnabled( ) { 
     
-    return( winEnabled ); 
+    return ( winEnabled ); 
 }
 
 void SimWin::setEnable( bool arg ) { 
@@ -90,7 +90,7 @@ void SimWin::setEnable( bool arg ) {
 
 int SimWin::getRows( ) { 
     
-    return( winRows ); 
+    return ( winRows ); 
 }
 
 void SimWin::setRows( int arg ) { 
@@ -100,7 +100,7 @@ void SimWin::setRows( int arg ) {
 
 int SimWin::getColumns( ) { 
     
-    return( winColumns ); 
+    return ( winColumns ); 
 }
 
 void SimWin::setColumns( int arg ) { 
@@ -110,7 +110,7 @@ void SimWin::setColumns( int arg ) {
 
 int SimWin::getRadix( ) { 
     
-    return( winRadix ); 
+    return ( winRadix ); 
 }
 
 void SimWin::setRadix( int rdx ) { 
@@ -122,7 +122,7 @@ void SimWin::setRadix( int rdx ) {
 
 int SimWin::getWinStack( ) {  
     
-    return( winStack ); 
+    return ( winStack ); 
 }
 
 void SimWin::setWinStack( int wCol ) { 
@@ -130,13 +130,23 @@ void SimWin::setWinStack( int wCol ) {
     winStack = wCol; 
 }
 
+ void SimWin::setDefRows( int rows ) {
+
+    winDefRows = rows;
+ }
+
+int SimWin::getDefRows( ) {
+
+    return ( winDefRows );
+}
+
 int SimWin::getDefColumns( int rdx ) {
     
     switch ( rdx ) {
             
-        case 16:    return( winDefColumnsHex );
-        case 10:    return( winDefColumnsDec );
-        default:    return( winDefColumnsHex );
+        case 16:    return ( winDefColumnsHex );
+        case 10:    return ( winDefColumnsDec );
+        default:    return ( winDefColumnsHex );
     }
 }
 
@@ -216,8 +226,8 @@ void SimWin::setWinCursor( int row, int col ) {
     lastColPos = col;
 }
 
-int SimWin::getWinCursorRow( ) { return( lastRowPos ); }
-int SimWin::getWinCursorCol( ) { return( lastColPos ); }
+int SimWin::getWinCursorRow( ) { return ( lastRowPos ); }
+int SimWin::getWinCursorCol( ) { return ( lastColPos ); }
 
 //----------------------------------------------------------------------------------------
 // Fields that have a larger size than the actual argument length in the field need to
@@ -446,7 +456,7 @@ SimWinScrollable::SimWinScrollable( SimGlobals *glb ) : SimWin( glb ) { }
 //----------------------------------------------------------------------------------------
 T64Word SimWinScrollable::getHomeItemAdr( ) { 
     
-    return( homeItemAdr ); 
+    return ( homeItemAdr ); 
 }
 
 void SimWinScrollable::setHomeItemAdr( T64Word adr ) { 
@@ -456,7 +466,7 @@ void SimWinScrollable::setHomeItemAdr( T64Word adr ) {
 
 T64Word SimWinScrollable::getCurrentItemAdr( ) { 
     
-    return( currentItemAdr ); 
+    return ( currentItemAdr ); 
 }
 
 void SimWinScrollable::setCurrentItemAdr( T64Word adr ) { 
@@ -466,7 +476,7 @@ void SimWinScrollable::setCurrentItemAdr( T64Word adr ) {
 
 T64Word SimWinScrollable::getLimitItemAdr( ) { 
     
-    return( limitItemAdr ); 
+    return ( limitItemAdr ); 
 }
 
 void SimWinScrollable::setLimitItemAdr( T64Word adr ) { 
@@ -476,7 +486,7 @@ void SimWinScrollable::setLimitItemAdr( T64Word adr ) {
 
 int SimWinScrollable::getLineIncrement( ) { 
     
-    return( lineIncrement ); 
+    return ( lineIncrement ); 
 }
 
 void SimWinScrollable::setLineIncrement( int arg ) { 
@@ -667,7 +677,7 @@ int SimWinOutBuffer::writeChars( const char *format, ... ) {
         addToBuffer( lineBuf );
     }
     
-    return( len );
+    return ( len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -718,17 +728,17 @@ char *SimWinOutBuffer::getLineRelative( int lineBelowTop ) {
     int lineToGet = ( cursorIndex + MAX_WIN_OUT_LINES - lineBelowTop ) 
                     % MAX_WIN_OUT_LINES;
 
-    return( &buffer[ lineToGet ][ 0 ] );
+    return ( &buffer[ lineToGet ][ 0 ] );
 }
 
 int SimWinOutBuffer::getCursorIndex( ) {
     
-    return( cursorIndex );
+    return ( cursorIndex );
 }
 
 int SimWinOutBuffer::getTopIndex( ) {
     
-    return( topIndex );
+    return ( topIndex );
 }
 
 void SimWinOutBuffer::resetLineCursor( ) {

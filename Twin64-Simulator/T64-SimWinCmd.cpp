@@ -342,11 +342,12 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::setDefaults( ) {
     
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setRows( 21 );
-    setColumns( 128 );
-    setDefColumns( 110, 110 );
     setWinType( WT_CMD_WIN );
+    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
+    setDefRows( 21 );
+    setDefColumns( 128, 128 );
+    setRows( getDefRows( ));
+    setColumns( getDefColumns( ));
     setEnable( true );
 }
 
@@ -1938,7 +1939,7 @@ void SimCommandsWin::winSetRowsCmd( ) {
     
     if ( tok -> tokId( ) == TOK_EOS ) {
         
-        glb -> winDisplay -> windowHome( 0, 0  );
+        glb -> winDisplay -> windowSetRows( 0, 0 );
     }
     else {
 
@@ -2113,6 +2114,7 @@ void SimCommandsWin::winNewWinCmd( ) {
  
             if ( tok -> isToken( TOK_COMMA )) {
 
+                tok -> nextToken( );
                 cacheNum = acceptNumExpr( ERR_EXPECTED_NUMERIC );
             }
 
