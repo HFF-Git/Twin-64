@@ -101,7 +101,10 @@ struct T64System {
     int         writeGeneralReg( int proc, int reg, T64Word val );
 
     int         readControlReg( int proc, int reg, T64Word *val );
-    int         writeControllReg( int proc, int reg, T64Word val );
+    int         writeControlReg( int proc, int reg, T64Word val );
+
+    // ??? a but cumbersome when we want to modify an address only and leave the
+    // status part unchanged...
 
     int         readPswReg( int proc, int reg, T64Word *val );
     int         writePswReg( int proc, int reg, T64Word val );
@@ -109,8 +112,8 @@ struct T64System {
     int         readTlbEntry( int proc, int tlb, int index, 
                                 T64Word *info1, T64Word *info2 );
 
-    int         insertTlbEntry( int proc, int tlb, int index, 
-                                T64Word *info1, T64Word *info2 );
+    int         insertTlbEntry( int proc, int tlb, 
+                                T64Word info1, T64Word info2 );
 
     int         purgeTlbEntry( int proc, int tlb, int index );
 
@@ -121,11 +124,12 @@ struct T64System {
 
     int         purgeCacheLine( int proc, int cache, int set, int index );
 
+    // ??? also need BYTE, HALF, WORD, DOUBLE ?
     int         readMemWord( T64Word adr, T64Word *val );
-    int         writeMemWord( T64Word adr, int reg, T64Word val );
+    int         writeMemWord( T64Word adr, T64Word val );
 
     int         readMemBlock( T64Word adr, T64Word *blk );
-    int         writeMemBlock( T64Word adr, int reg, T64Word *blk );
+    int         writeMemBlock( T64Word adr, T64Word *blk );
 
     int         getHpaStartAdr( int module, T64Word *val );
     int         getHpaSize( int module, T64Word *val );

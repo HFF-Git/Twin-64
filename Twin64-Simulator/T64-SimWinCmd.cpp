@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------------------------
 // The command window is the last screen area below all enabled windows displayed. It
 // is actually not a window like the others in that it represents lines written to the
-// window as well as the command input line. It still as a window header and a line
+// window as well as the command input line. It still has a window header and a line
 // drawing area. To enable scrolling of this window, an output buffer needs to be 
 // implemented that stores all output in a circular buffer to use for text output. 
 // Just like a "real" terminal. The cursor up and down keys will perform the scrolling.
@@ -617,7 +617,7 @@ void SimCommandsWin::drawBody( ) {
         char *lineBufPtr = winOut -> getLineRelative( i );
         if ( lineBufPtr != nullptr ) {
             
-           sanitizeLine( lineBufPtr, lineOutBuf );
+            sanitizeLine( lineBufPtr, lineOutBuf );
             glb -> console -> clearLine( );
             glb -> console -> writeChars( "%s", lineBufPtr );
         }
@@ -678,20 +678,14 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
 // Display absolute memory content. We will show the memory starting with offset. The 
 // words per line is an environmental variable setting. The offset is rounded down to 
 // the next 8-byte boundary, the limit is rounded up to the next 8-byte boundary. We 
-// display the data in words. The absolute memory address range currently consist of
-// three memory objects. There is main physical memory, PDC memory and IO memory. This
-// routine will make the appropriate call.
+// display the data in words.
 //
-// ??? drop the words per line concept ?
-// ?? what about the damn decimal rdx ?
 //----------------------------------------------------------------------------------------
 void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) {
     
-    T64Word index           = ( ofs / sizeof( T64Word )) * sizeof( T64Word );
-    T64Word limit           = ((( index + len ) + 7 ) / sizeof( T64Word ) ) * sizeof( T64Word );
-  
-   int  wordsPerLine = 4;
-    // ??? get the memory object ..
+    T64Word index = ( ofs / sizeof( T64Word )) * sizeof( T64Word );
+    T64Word limit = ((( index + len ) + 7 ) / sizeof( T64Word ) ) * sizeof( T64Word );
+    int     wordsPerLine = 4;
 
     while ( index < limit ) {
 
@@ -702,11 +696,8 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
             
             if ( index < limit ) {
 
-                // ??? hex ? dec ?
-                 // ??? check if valid address...
-                // ??? print words... 
-
-                winOut -> printNumber( 0, FMT_HEX_4_4_4_4 );
+                T64Word val = glb -> system -> readMemWord( index, &val );
+                winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
                 winOut -> writeChars( " " );                
             }
             
@@ -725,102 +716,27 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
 // word per line.
 //
 //----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len, int rdx ) {
+void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
     
-    T64Word index   = ( adr / 4 ) * 4;
-    T64Word limit   = ((( index + len ) + 3 ) / 4 );
+    T64Word  index  = ( adr / 4 ) * 4;
+    T64Word  limit  = ((( index + len ) + 3 ) / 4 );
+    T64Word  instr  = 0;
+    char     buf[ MAX_TEXT_FIELD_LEN ];
 
     while ( index < limit ) {
 
-        winOut -> printNumber( index, FMT_HEX_4 );
+        winOut -> printNumber( index << 2, FMT_HEX_2_4_4 );
         winOut -> writeChars( ": " );
 
-        // ??? get the data word....
+        glb -> system -> readMemWord( index, &instr ); // ??? we have 32-bit instructions !!
+      
+        disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+        winOut -> writeChars( "%s\n", buf );
         
-        winOut -> writeChars( "\n" );
-        
-        index += 4;
+        index += sizeof( uint32_t );
     }
     
     winOut -> writeChars( "\n" );
-}
-
-
-//----------------------------------------------------------------------------------------
-// This routine will print a TLB entry with each field formatted.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayTlbEntry( T64TlbEntry *entry, int rdx ) {
-    
-    winOut -> writeChars( "[" );
-
-    winOut -> writeChars( "TLB flags " );
-    
-    winOut -> writeChars( "]" );
-
-    winOut -> writeChars( "[" );
-
-    winOut -> writeChars( "ACC " );
-    
-    winOut -> writeChars( "]" );
-    
-    winOut -> writeChars( " Vpn: " );
-    
-    winOut -> writeChars( " Ppn: " );
-
-     winOut -> writeChars( " Pid: " );
-}
-
-//----------------------------------------------------------------------------------------
-// "displayTlbEntries" displays a set of TLB entries, line by line.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayTlbEntries( T64Tlb *tlb, int index, int len, int rdx ) {
-    
-    if ( index + len <= tlb -> getTlbSize( )) {
-        
-        for ( uint32_t i = index; i < index + len; i++  ) {
-
-            winOut -> writeChars( "0x%4x:", 0 );
-            
-            T64TlbEntry *ptr = tlb -> getTlbEntry( i );
-            if ( ptr != nullptr ) displayTlbEntry( ptr, rdx );
-            
-            winOut -> writeChars( "\n" );
-        }
-        
-    } else winOut -> writeChars( "index + len out of range\n" );
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayCacheLine( T64CacheLine *line, int rdx ) {
-
-    winOut -> writeChars( "[" );
-    winOut -> writeChars( "xxx" );
-    winOut -> writeChars( "][" );
-    winOut ->printNumber( 0, FMT_HEX_2_4_4 );
-    winOut -> writeChars( "] " );
-
-    for ( int i = 0; i < 4; i++ ) { // ??? fix cache line size...
-
-        winOut ->printNumber( 0, FMT_HEX_4_4_4_4 );
-        winOut -> writeChars( "  " );
-    }
-}
-
-//----------------------------------------------------------------------------------------
-// "displayCacheEntries" displays a list of cache line entries. Since we have a couple
-// of block sizes and  perhaps one or more sets, the display is rather complex.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayCacheEntries( T64Cache *cPtr, int index, int len, int rdx ) {
-
-   // ??? get cache size and number of sets
-   // ??? for each index print index and setId 
-   // ??? printCacheLine
 }
 
 //----------------------------------------------------------------------------------------
@@ -845,11 +761,11 @@ void SimCommandsWin::printWelcome( ) {
     if ( glb -> console -> isConsole( )) {
         
         winOut -> writeChars( "Twin-64 Simulator, Version: %s, Patch Level: %d\n",
-                             glb -> env -> getEnvVarStr((char *) ENV_PROG_VERSION ),
-                             glb -> env -> getEnvVarStr((char *) ENV_PATCH_LEVEL ));
+                              glb -> env -> getEnvVarStr((char *) ENV_PROG_VERSION ),
+                              glb -> env -> getEnvVarStr((char *) ENV_PATCH_LEVEL ));
         
         winOut -> writeChars( "Git Branch: %s\n",
-                             glb -> env -> getEnvVarStr((char *) ENV_GIT_BRANCH ));
+                              glb -> env -> getEnvVarStr((char *) ENV_GIT_BRANCH ));
         
         winOut -> writeChars( "\n" );
     }
@@ -1017,13 +933,15 @@ void SimCommandsWin::envCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
+        // ??? rework so that we get en entry at a time and add it to the output buffer...
+
         env -> displayEnvTable( );
     }
     else if ( tok -> tokTyp( ) == TYP_IDENT ) {
         
         char envName[ MAX_ENV_NAME_SIZE ];
         
-        strcpy( envName, tok -> tokStr( ));
+        strcpy( envName, tok -> tokName( ));
         upshiftStr( envName );
         
         tok -> nextToken( );
@@ -1037,12 +955,9 @@ void SimCommandsWin::envCmd( ) {
             SimExpr rExpr;
             eval -> parseExpr( &rExpr );
             
-            if ( rExpr.typ == TYP_NUM )        
-                env -> setEnvVar( envName, rExpr.u.val );
-            else if ( rExpr.typ == TYP_BOOL )       
-                env -> setEnvVar( envName, rExpr.u.bVal );
-            else if ( rExpr.typ == TYP_STR )        
-                env -> setEnvVar( envName, rExpr.u.str );
+            if ( rExpr.typ == TYP_NUM )       env -> setEnvVar( envName, rExpr.u.val );
+            else if ( rExpr.typ == TYP_BOOL ) env -> setEnvVar( envName, rExpr.u.bVal );
+            else if ( rExpr.typ == TYP_STR )  env -> setEnvVar( envName, rExpr.u.str );
         }
     }
 }
@@ -1054,11 +969,8 @@ void SimCommandsWin::envCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execFileCmd( ) {
     
-    if ( tok -> tokTyp( ) == TYP_STR ) {
-        
-        execCmdsFromFile( tok -> tokStr( ));
-    }
-    else throw( ERR_EXPECTED_FILE_NAME );
+    if ( tok -> tokTyp( ) == TYP_STR )  execCmdsFromFile( tok -> tokStr( ));
+    else                                throw( ERR_EXPECTED_FILE_NAME );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1067,46 +979,23 @@ void SimCommandsWin::execFileCmd( ) {
 //  RESET [ ( 'PROC' | 'MEM' | 'STATS' | 'ALL' ) ]
 //
 // ??? rethink what we want ... reset the SYSTEM ? all CPUs ?
-//
-// ??? when and what statistics to also reset ?
-// ??? what execution mode will put the CPU ? halted ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::resetCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        // glb -> cpu -> reset( );
     }
-    else if ( tok -> tokTyp( ) == TYP_SYM ) {
+    else if ( tok -> isToken( TOK_CPU )) {
+
+    }
+    else if ( tok -> isToken( TOK_MEM )) {
         
-        switch( tok -> tokId( )) {
-                
-            case TOK_PROC: {
-                
-              //  glb -> cpu -> reset( );
-                
-            } break;
-                
-            case TOK_MEM: {
-                
-              //  glb -> cpu -> physMem -> reset( );
-                
-            } break;
-
-            case TOK_STATS: {
-
-
-            } break;
-                
-            case TOK_ALL: {
-                
-             //   glb -> cpu -> reset( );
-             //   glb -> cpu -> physMem -> reset( );
-                
-            } break;
-                
-            default: throw ( ERR_INVALID_ARG );
-        }
+    }
+    else if ( tok -> isToken( TOK_STATS )) {
+        
+    }
+    else if ( tok -> isToken( TOK_ALL )) {
+        
     }
     else throw ( ERR_INVALID_ARG );
 }
@@ -1115,8 +1004,6 @@ void SimCommandsWin::resetCmd( ) {
 // Run command. The command will just run the CPU until a "halt" instruction is detected.
 //
 //  RUN
-//
-// ??? see STEP command for details on the console handling.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::runCmd( ) {
     
@@ -1124,16 +1011,15 @@ void SimCommandsWin::runCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Step command. The command will execute one instruction. Default is one instruction.
-// There is an ENV variable that will set the default to be a single clock step.
+// Step command. The command will advance all processors by one instruction. Default is
+// step number is one instruction.
 //
 //  S [ <steps> ]
 //
 // ??? we need to handle the console window. It should be enabled before we pass control
-// to the CPU.
-// ??? make it the current window, saving the previous current window.
-// ??? put the console mode into non-blocking and hand over to the CPU.
-// ??? on return from the CPU steps, enable blocking mode again and restore the current window.
+// to the CPU. Make it the current window, saving the previous current window. Put the
+// console mode into non-blocking and hand over to the CPU. On return from the CPU 
+// steps, enable blocking mode again and restore the current window.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::stepCmd( ) {
     
@@ -1145,15 +1031,13 @@ void SimCommandsWin::stepCmd( ) {
     }
     
     tok -> checkEOS( );
-    
-    // ??? system call ...
+    glb -> system -> step( numOfSteps );
 }
 
 //----------------------------------------------------------------------------------------
 // Write line command. We analyze the expression and ping out the result.
 //
 //  W <expr> [ , <rdx> ]
-//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::writeLineCmd( ) {
     
@@ -1225,7 +1109,7 @@ void SimCommandsWin::histCmd( ) {
     
     if (( depth == 0 ) || ( depth > cmdCount )) depth = cmdCount;
     
-    for ( int i = -depth; i < 0; i++ ) {
+    for ( int i = - depth; i < 0; i++ ) {
         
         int  cmdRef = 0;
         char *cmdLine = hist -> getCmdLine( i, &cmdRef );
@@ -1290,56 +1174,6 @@ void SimCommandsWin::redoCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Modify register command. This command modifies a register within a register set.
-//
-// MR <reg> <val> [ <proc> ]
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::modifyRegCmd( ) {
-    
-    SimTokTypeId    regSetId    = TYP_GREG;
-    int             regNum      = 0;
-    T64Word         val         = 0;
-    
-    if (( tok -> tokTyp( ) == TYP_GREG )        ||
-        ( tok -> tokTyp( ) == TYP_CREG )        ||
-        ( tok -> tokTyp( ) == TYP_PSW_PREG )) {
-        
-        regSetId    = tok -> tokTyp( );
-        regNum      = tok -> tokVal( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_INVALID_REG_ID );
-    
-    if ( tok -> isToken( TOK_EOS )) throw( ERR_EXPECTED_NUMERIC );
-
-    val = eval -> acceptNumExpr( ERR_INVALID_NUM );
-
-    // ??? figure out which Processor...
-    
-    switch( regSetId ) {
-
-        case TYP_PSW_PREG: {
-
-
-        } break;
-            
-        case TYP_GREG: {
-
-            // glb -> cpu -> setReg( RC_GEN_REG_SET, regNum, val );   
-        
-        } break;
-
-        case TYP_CREG: {
-
-            //glb -> cpu -> setReg( RC_CTRL_REG_SET, regNum, val );
-        
-        } break;
-            
-        default: throw( ERR_EXPECTED_REG_SET );
-    }
-}
-
-//----------------------------------------------------------------------------------------
 // Display absolute memory command. The memory address is a byte address. The offset 
 // address is a byte address, the length is measured in bytes, rounded up to the a 
 // word size. We accept any address and length and only check that the offset plus 
@@ -1348,13 +1182,13 @@ void SimCommandsWin::modifyRegCmd( ) {
 // specifier will allow for HEX, DECIMAL and CODE. In the case of the code option, the
 // default number format option is used for showing the offset value.
 //
-//  DA <ofs> [ , <len> [ , <fmt> ]]
+//  DA <ofs> [ "," <len> [ "," <fmt> ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayAbsMemCmd( ) {
     
+    int         rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     T64Word     ofs     = 0;
     T64Word     len     = sizeof( T64Word );
-    int         rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     bool        asCode  = false;
 
     ofs = eval -> acceptNumExpr( ERR_EXPECTED_START_OFS );
@@ -1372,17 +1206,9 @@ void SimCommandsWin::displayAbsMemCmd( ) {
         switch(  tok -> tokId( )) {
 
             case TOK_HEX: 
-            case TOK_DEC:  {
-                
-                rdx = tok -> tokVal( ); 
-                
-            } break;
+            case TOK_DEC:   rdx = tok -> tokVal( );  break;
             
-            case TOK_CODE: {
-                
-                asCode = true; 
-            
-            } break;
+            case TOK_CODE:  asCode = true; break;
             
             case TOK_EOS: 
             default:        throw ( ERR_INVALID_FMT_OPT );
@@ -1393,9 +1219,9 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     
     tok -> checkEOS( );
     
-    if (((uint64_t) ofs + len ) <= UINT32_MAX ) {
+    if (((uint64_t) ofs + len ) < INT64_MAX ) { // ??? rather memory size ?
         
-        if ( asCode ) displayAbsMemContentAsCode( ofs, len, rdx );
+        if ( asCode ) displayAbsMemContentAsCode( ofs, len );
         else          displayAbsMemContent( ofs, len, rdx );
     }
     else throw ( ERR_OFS_LEN_LIMIT_EXCEEDED );
@@ -1410,202 +1236,216 @@ void SimCommandsWin::displayAbsMemCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyAbsMemCmd( ) {
     
-    T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_OFS );
+    T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_OFS, 0, INT64_MAX );
     T64Word val = eval -> acceptNumExpr( ERR_INVALID_NUM );
-
     tok -> checkEOS( );
-    
-    // ??? call the system memory ...
+
+    glb -> system -> writeMemWord( adr, val );
 }
 
 //----------------------------------------------------------------------------------------
-// Display cache entries command.
+// Modify register command. This command modifies a register within a register set.
+// There are two modes. When the processor module number is not passed, we must be in
+// windows mode and the current window must be a ProgState window. Otherwise we try
+// to locate the processor module.
 //
-//  DCA <proc> <cache> <set> <index> [ , <len> [ , <fmt> ]]
+// MR <reg> <val> [ "," <pNum> ]
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::displayCacheCmd( ) {
-    
-   //  CpuMem      *cPtr           = nullptr;
+void SimCommandsWin::modifyRegCmd( ) {
    
-    int rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int             pNum        = 0;
+    SimTokTypeId    regSetId    = TYP_GREG;
+    int             regNum      = 0;
+    T64Word         val         = 0;
     
-    int index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX );
-    int len   = 1;
-    
-    if ( tok -> isToken( TOK_COMMA )) {
+    if (( tok -> tokTyp( ) == TYP_GREG )        ||
+        ( tok -> tokTyp( ) == TYP_CREG )        ||
+        ( tok -> tokTyp( ) == TYP_PSW_PREG )) {
         
+        regSetId    = tok -> tokTyp( );
+        regNum      = tok -> tokVal( );
         tok -> nextToken( );
-        
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            len = 1;
-            tok -> nextToken( );
-        }
-        else {
+    }
+    else throw ( ERR_INVALID_REG_ID );
+    
+    val = eval -> acceptNumExpr( ERR_INVALID_NUM );
 
-            len = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX );
-        }
-    }
-    
     if ( tok -> isToken( TOK_COMMA )) {
-        
-        tok -> nextToken( );
-        
-        if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
-            
-            rdx = tok -> tokVal( );
-            tok -> nextToken( );
-        }
-        else throw ( ERR_INVALID_FMT_OPT );
+
+        pNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
+
+        // check that we refer to a PROC module...
     }
-    
+    else {
+
+        // check WON, WTYPE, get procModuleNum from window
+    }
     tok -> checkEOS( );
 
-    // ??? do the work .... 
-    
+    switch( regSetId ) {
+
+        case TYP_PSW_PREG:  glb -> system -> writePswReg( pNum, regNum, val );     break;
+        case TYP_GREG:      glb -> system -> writeGeneralReg( pNum, regNum, val ); break;
+        case TYP_CREG:      glb -> system -> writeControlReg( pNum, regNum, val ); break;
+            
+        default: throw( ERR_EXPECTED_REG_SET );
+    }
 }
 
 //----------------------------------------------------------------------------------------
-// Purges a cache line from the cache.
+// Purges a cache line from the cache. We have two modes. If windows is on and we point
+// at a cache window, then just the index is required. All other parameters come from
+// the cache window. In addition, we can also specify the cache directly by passing 
+// processor module, cache and set number.
 //
-//  DCA <proc> <cache> <set> <index>
+//  PCA <index> [ "," <proc> "," <cache> "," <set> ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
-    uint32_t    index           = 0;
-    uint32_t    set             = 0;
+    int pNum    = 0;
+    int cNum    = 0;
+    int index   = 0;
+    int cSet    = 0;
 
     index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
     
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        set = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        cSet = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+
+        // check that actually point at a cache set.
+
+    }
+    else {
+
+        // check WON
+        // check WTYP
+        // get the data from the window.
     }
     
     tok -> checkEOS( );
 
-    // ??? do the work ...
-
+    glb -> system -> purgeCacheLine( pNum, cNum, cSet, index );
 }
 
 //----------------------------------------------------------------------------------------
-// Flushes a cache line from the cache.
+// Flushes a cache line from the cache. We have two modes. If windows is on and we point
+// at a cache window, then just the index is required. All other parameters come from
+// the cache window. In addition, we can also specify the cache directly by passing 
+// processor module, cache and set number.
 //
-// FCA <proc> <cache> <set> <index>
+// FCA <index> [ "," <proc> "," <cache> "," <set> ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
     
-  //  CpuMem      *cPtr           = nullptr;
-    uint32_t    index           = 0;
-    uint32_t    set             = 0;
+    int pNum    = 0;
+    int cNum    = 0;
+    int index   = 0;
+    int cSet    = 0;
 
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max
+    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
     
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        set = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max
+        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        cSet = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+
+        // check that actually point at a cache set.
+
+    }
+    else {
+
+        // check WON
+        // check WTYP
+        // get the data from the window.
     }
     
     tok -> checkEOS( );
-    
-    
-    // ??? do the work ....
+
+    glb -> system -> flushCacheLine( pNum, cNum, cSet, index );
 }
 
-//----------------------------------------------------------------------------------------
-// Display TLB entries command.
-//
-//  DTLB <proc> <tlb> <set> <index> [ , <len> [ , <rdx> ]]
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayTLBCmd( ) {
-    
-    uint32_t    index       = 0;
-    uint32_t    len         = 0;
-    uint32_t    tlbSize     = 0;
-  
-    int         rdx         = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
-    
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0 ); // ??? max
-    
-    if ( tok -> isToken( TOK_COMMA )) {
-        
-        tok -> nextToken( );
-        
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            len = 1;
-            tok -> nextToken( );
-        }
-        else {
-
-            len = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0 ); // ??? max
-        }
-    }
-    
-    if ( tok -> isToken( TOK_COMMA )) {
-        
-        tok -> nextToken( );
-        
-        if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
-            
-            rdx = tok -> tokVal( );
-            tok -> nextToken( );
-        }
-        else throw ( ERR_INVALID_FMT_OPT );
-    }
-    
-    tok -> checkEOS( );
-    
-    if ( len == 0 ) len = tlbSize;
-    
-    if (( index > tlbSize ) || ( index + len > tlbSize )) throw ( ERR_TLB_SIZE_EXCEEDED );
-    
-  //   displayTlbEntries( tPtr, index, len, rdx );
-    winOut -> writeChars( "\n" );
-}
 
 //----------------------------------------------------------------------------------------
-// Insert into TLB command.
+// Insert into TLB command. We have two modes. If windows is on and we point at a TLB 
+// window, then just the index is required. All other parameters come from the TLB 
+// window. In addition, we can also specify the TLB directly by passing processor module
+// and TLB number.
 //
-//  ITLB <proc>, <tlb>, <info1>, <info2>
+//  ITLB  <info1> "," <info2> [ "," <proc> "," <tlb> ] 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
-    int procNum = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
-    tok -> acceptComma( );
+    int     pNum    = 0;
+    int     tlbNum  = 0;
+    T64Word info1   = 0;
+    T64Word info2   = 0;
 
-    int tlbNum = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+    info1 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
     tok -> acceptComma( );
+    info2 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+    
+    if ( tok -> isToken( TOK_COMMA )) {
+        
+        tok -> nextToken( );
+        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        tok -> acceptComma( );
+        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        
+        // check that actually point at a TLB window.
+    }
+    else {
 
-    T64Word info1 = eval -> acceptNumExpr( ERR_INVALID_NUM );
-    tok -> acceptComma( );
-
-    T64Word info2 = eval -> acceptNumExpr( ERR_INVALID_NUM );
+        // check WON
+        // check WTYP
+        // get the data from the window.
+    }
+    
     tok -> checkEOS( );
 
-    // ??? call TLB code...
+    glb -> system -> insertTlbEntry( pNum, tlbNum, info1, info2 );
 }
 
 //----------------------------------------------------------------------------------------
-// Purge from TLB command.
+// Purge from TLB command. If windows is on and we point at a TLB window, then just the
+// index is required. All other parameters come from the TLB window. In addition, we can
+// also specify the TLB directly by passing processor module and TLB number.
 //
-//  PTLB <proc> <tlb> <adr>
+//  PTLB <index [ "," <proc> <tlb> ]
 //  
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
-     int procNum = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
-    tok -> acceptComma( );
+    int pNum    = 0;
+    int tlbNum  = 0;
+    int index   = 0;
+   
+    index = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+   
+    if ( tok -> isToken( TOK_COMMA )) {
+        
+        tok -> nextToken( );
+        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        tok -> acceptComma( );
+        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        
+        // check that actually point at a TLB window.
+    }
+    else {
 
-    int tlbNum = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );  // ??? max
-    tok -> acceptComma( );
-
-    T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+        // check WON
+        // check WTYP
+        // get the data from the window.
+    }
+    
     tok -> checkEOS( );
 
-    // ??? call TLB code...
+    glb -> system -> purgeTlbEntry( pNum, tlbNum, index );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1621,32 +1461,25 @@ void SimCommandsWin::winOnCmd( ) {
 
 void SimCommandsWin::winOffCmd( ) {
   
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     glb -> winDisplay -> windowsOff( );
 }
 
 void SimCommandsWin::winDefCmd( ) {
-    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
+
     glb -> winDisplay -> windowDefaults( );
     glb -> winDisplay -> reDraw( true );
 }
 
 void SimCommandsWin::winStacksEnable( ) {
     
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-        
-        glb -> winDisplay -> winStacksEnable( true );
-        glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> winStacksEnable( true );
+    glb -> winDisplay -> reDraw( true );
 }
 
 void SimCommandsWin::winStacksDisable( ) {
-    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-        
-        glb -> winDisplay -> winStacksEnable( false );
-        glb -> winDisplay -> reDraw( true );
+   
+    glb -> winDisplay -> winStacksEnable( false );
+    glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1660,42 +1493,28 @@ void SimCommandsWin::winEnableCmd( ) {
     
     int winNum = 0;
     
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
     if ( tok -> tokId( ) != TOK_EOS ) {
 
         winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
     }
 
     tok -> checkEOS( );
-    
-    if ( glb -> winDisplay -> validWindowNum( winNum )) {
-        
-        glb -> winDisplay -> windowEnable( winNum, true );
-        glb -> winDisplay -> reDraw( true );
-    }
-    else throw ( ERR_INVALID_WIN_ID );
+    glb -> winDisplay -> windowEnable( winNum, true );
+    glb -> winDisplay -> reDraw( true );
 }
 
 void SimCommandsWin::winDisableCmd( ) {
     
     int winNum = 0;
     
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
     if ( tok -> tokId( ) != TOK_EOS ) {
 
         winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
     }
 
     tok -> checkEOS( );
-    
-    if ( glb -> winDisplay -> validWindowNum( winNum )) {
-        
-        glb -> winDisplay -> windowEnable( winNum, false );
-        glb -> winDisplay -> reDraw( true );
-    }
-    else throw ( ERR_INVALID_WIN_ID );
+    glb -> winDisplay -> windowEnable( winNum, false );
+    glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1706,8 +1525,6 @@ void SimCommandsWin::winDisableCmd( ) {
 //  <win>R [ <radix> [ "," <winNum>]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetRadixCmd( ) {
-    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
     int     winNum  = 0;
     int     rdx     =  glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
@@ -1734,13 +1551,9 @@ void SimCommandsWin::winSetRadixCmd( ) {
         
         tok -> nextToken( );
         winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
-
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
     }
 
     tok -> checkEOS( );
-    
     glb -> winDisplay -> windowRadix( rdx, winNum );
 }
 
@@ -1756,8 +1569,6 @@ void SimCommandsWin::winSetRadixCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winForwardCmd( ) {
   
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-
     T64Word winItems    = 0;
     int     winNum      = 0;
     
@@ -1769,9 +1580,6 @@ void SimCommandsWin::winForwardCmd( ) {
             
             tok -> nextToken( );
             winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
-
-            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
         }
       
         tok -> checkEOS( );
@@ -1781,9 +1589,7 @@ void SimCommandsWin::winForwardCmd( ) {
 }
 
 void SimCommandsWin::winBackwardCmd( ) {
-    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
+   
     T64Word winItems    = 0;
     int     winNum      = 0;
     
@@ -1795,9 +1601,6 @@ void SimCommandsWin::winBackwardCmd( ) {
             
             tok -> nextToken( );
             winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
-
-            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
         }
       
         tok -> checkEOS( );
@@ -1816,8 +1619,6 @@ void SimCommandsWin::winBackwardCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winHomeCmd( ) {
    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-
     T64Word winPos  = 0;
     int     winNum  = 0;
     
@@ -1829,9 +1630,6 @@ void SimCommandsWin::winHomeCmd( ) {
             
             tok -> nextToken( );
             winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
-
-            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
         }
       
         tok -> checkEOS( );
@@ -1849,8 +1647,6 @@ void SimCommandsWin::winHomeCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winJumpCmd( ) {
    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-
     T64Word winPos  = 0;
     int     winNum  = 0;
     
@@ -1882,8 +1678,6 @@ void SimCommandsWin::winJumpCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetRowsCmd( ) {
    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
     if ( tok -> isToken( TOK_EOS )) {
         
         glb -> winDisplay -> windowSetRows( 0, 0 );
@@ -1903,7 +1697,6 @@ void SimCommandsWin::winSetRowsCmd( ) {
         }
 
         tok -> checkEOS( );
-    
         glb -> winDisplay -> windowSetRows( winLines, winNum );
         glb -> winDisplay -> reDraw( true );
     }    
@@ -1918,17 +1711,15 @@ void SimCommandsWin::winSetRowsCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-
     if ( tok -> isToken( TOK_EOS )) {
 
-        glb -> winDisplay -> windowSetCmdWinRows( 10 ); // fix .... default..
+        glb -> winDisplay -> windowSetCmdWinRows( getDefRows( ));
     }
     else {
 
         int winLines = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
-        glb -> winDisplay -> windowSetCmdWinRows( winLines );
         tok -> checkEOS( );
+        glb -> winDisplay -> windowSetCmdWinRows( winLines );
     }
 }
 
@@ -1941,17 +1732,11 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winCurrentCmd( ) {
     
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-   
     if ( tok -> isToken( TOK_EOS )) throw ( ERR_EXPECTED_WIN_ID );
 
     int winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
     
     tok -> checkEOS( );
-    
-    if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-        throw ( ERR_INVALID_WIN_ID );
-    
     glb -> winDisplay -> windowCurrent( winNum );
 }
 
@@ -1964,8 +1749,6 @@ void SimCommandsWin::winCurrentCmd( ) {
 //----------------------------------------------------------------------------------------
 void  SimCommandsWin::winToggleCmd( ) {
     
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-   
     if ( tok -> isToken( TOK_EOS )) {
         
         glb -> winDisplay -> windowToggle( glb -> winDisplay -> getCurrentWindow( ));
@@ -2048,7 +1831,6 @@ void SimCommandsWin::winNewWinCmd( ) {
             }
 
             tok -> checkEOS( );
-
             glb -> winDisplay -> windowNewTlb( procNum, tlbNum );
 
         } break;
@@ -2066,7 +1848,6 @@ void SimCommandsWin::winNewWinCmd( ) {
             }
 
             tok -> checkEOS( );
-
             glb -> winDisplay -> windowNewCache( procNum, cacheNum );
 
         } break;
@@ -2086,7 +1867,6 @@ void SimCommandsWin::winNewWinCmd( ) {
             else throw ( ERR_INVALID_ARG );
 
             tok -> checkEOS( );
-
             glb -> winDisplay -> windowNewText( argStr );
 
         } break;
@@ -2136,10 +1916,6 @@ void SimCommandsWin::winKillWinCmd( ) {
         if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
     }
     
-    if (( ! glb -> winDisplay -> validWindowNum( winNumStart )) ||
-        ( ! glb -> winDisplay -> validWindowNum( winNumEnd ))) 
-        throw ( ERR_INVALID_WIN_ID );
-    
     glb -> winDisplay -> windowKill( winNumStart, winNumEnd );
     glb -> winDisplay -> reDraw( true );
 }
@@ -2161,9 +1937,6 @@ void SimCommandsWin::winSetStackCmd( ) {
 
     stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 0, MAX_WIN_STACKS );
     
-    if ( ! glb -> winDisplay -> validWindowStackNum( stackNum ))
-        throw ( ERR_INVALID_WIN_STACK_ID );
-    
     if ( tok -> isToken( TOK_EOS )) {
         
         winNumStart = glb -> winDisplay -> getCurrentWindow( );
@@ -2182,11 +1955,7 @@ void SimCommandsWin::winSetStackCmd( ) {
         else winNumEnd = winNumStart;
     }
     else throw ( ERR_EXPECTED_COMMA );
-    
-    if (( ! glb -> winDisplay -> validWindowNum( winNumStart )) ||
-        ( ! glb -> winDisplay -> validWindowNum( winNumEnd ))) 
-        throw ( ERR_INVALID_WIN_ID );
-    
+   
     glb -> winDisplay -> windowSetStack( stackNum, winNumStart, winNumEnd );
     glb -> winDisplay -> reDraw( true );
 }
@@ -2245,11 +2014,9 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_DA:            displayAbsMemCmd( );            break;
                     case CMD_MA:            modifyAbsMemCmd( );             break;
                         
-                    case CMD_D_TLB:         displayTLBCmd( );               break;
                     case CMD_I_TLB:         insertTLBCmd( );                break;
                     case CMD_P_TLB:         purgeTLBCmd( );                 break;
                         
-                    case CMD_D_CACHE:       displayCacheCmd( );             break;
                     case CMD_P_CACHE:       purgeCacheCmd( );               break;
                     case CMD_F_CACHE:       flushCacheCmd( );               break;
                         

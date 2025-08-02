@@ -33,6 +33,15 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
+    bool isWinScrollable ( SimWinType typ ) {
+
+        return (( typ == WT_MEM_WIN     ) ||
+                ( typ == WT_CODE_WIN    ) ||
+                ( typ == WT_TLB_WIN     ) ||
+                ( typ == WT_CACHE_WIN   ) ||
+                ( typ == WT_TEXT_WIN    ));  
+    }
+
 }; // namespace
 
 //----------------------------------------------------------------------------------------
@@ -111,7 +120,6 @@ void SimWinDisplay::setCurrentWindow( int winNum ) {
     
     currentWinNum = winNum;
 }
-
 
 //----------------------------------------------------------------------------------------
 // Attribute functions on window Id, stack and type. A window number is the index into
@@ -406,6 +414,8 @@ void SimWinDisplay::windowsOn( ) {
 }
 
 void SimWinDisplay::windowsOff( ) {
+
+    if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
     
     winModeOn = false;
     glb -> console -> clearScrollArea( );
@@ -416,7 +426,7 @@ void SimWinDisplay::windowsOff( ) {
 }
 
 void SimWinDisplay::windowDefaults( ) {
-    
+
     for ( int i = 0; i < MAX_WINDOWS; i++ ) {
         
         if ( windowList[ i ] != nullptr ) windowList[ i ] -> setDefaults( );
@@ -426,7 +436,9 @@ void SimWinDisplay::windowDefaults( ) {
 }
 
 void SimWinDisplay::winStacksEnable( bool arg ) {
-    
+
+    if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
+        
     winStacksOn = arg;
 }
 
@@ -439,7 +451,8 @@ void SimWinDisplay::winStacksEnable( bool arg ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowCurrent( int winNum ) {
     
-    if ( validWindowNum( winNum )) currentWinNum = winNum;
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+    currentWinNum = winNum; 
 }
 
 //----------------------------------------------------------------------------------------
@@ -451,6 +464,10 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
+
+    if ( ! validWindowStackNum( winStack )) throw ( ERR_INVALID_WIN_STACK_ID );
+    if ( ! (( validWindowNum( winNumStart )) && ( validWindowNum( winNumEnd )))) 
+        throw ( ERR_INVALID_WIN_ID );
     
     if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS )) return;
     if ( winStack > MAX_WIN_STACKS ) return;
@@ -461,7 +478,7 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
         winNumStart = winNumEnd;
         winNumEnd = tmp;
     }
-    
+
     for ( int i = winNumStart; i <= winNumEnd; i++ ) {
         
         if ( windowList[ i - 1 ] != nullptr ) {
@@ -481,13 +498,14 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowEnable( int winNum, bool show ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = currentWinNum;
-            
-    if ( validWindowNum( winNum )) {
-                
-        windowList[ winNum - 1 ] -> setEnable( show );
-        currentWinNum = winNum;
-    }
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+    
+    windowList[ winNum - 1 ] -> setEnable( show );
+    currentWinNum = winNum;
+
+    reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -500,13 +518,12 @@ void SimWinDisplay::windowEnable( int winNum, bool show ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowRadix( int rdx, int winNum ) {
 
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = currentWinNum;
-            
-    if ( validWindowNum( winNum )) {
-                
-        windowList[ winNum - 1 ] -> setRadix( rdx );
-        currentWinNum = winNum;
-    }
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+         
+    windowList[ winNum - 1 ] -> setRadix( rdx );
+    currentWinNum = winNum;
     
     reDraw( true );
 }
@@ -514,28 +531,32 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
 //----------------------------------------------------------------------------------------
 // "setRows" is the method to set the number if lines in a window. The number includes
 // the banner. We are passed an optional windows number, which is used when there are
-// user defined windows for locating the window object. In case of a user window, the
-// window is made the current window.
+// user defined windows for locating the window object. The window is made the current
+// window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetRows( int rows, int winNum ) {
 
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = currentWinNum;
-            
-    if ( validWindowNum( winNum )) {
-
-        if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getDefRows( );
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+      
+    if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getDefRows( );
                 
-        windowList[ winNum - 1 ] -> setRows( rows );
-        currentWinNum = winNum;
-    }
+    windowList[ winNum - 1 ] -> setRows( rows );
+    currentWinNum = winNum;
+
+    reDraw( true );
 }
 
 void SimWinDisplay::windowSetCmdWinRows( int rows ) {
 
-    if ( rows == 0 ) ; // ??? fix ....
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
 
+    if ( rows == 0 ) rows = cmdWin -> getDefRows( );
     cmdWin -> setRows( rows );
+
+    reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -549,13 +570,12 @@ void SimWinDisplay::windowSetCmdWinRows( int rows ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowHome( int pos, int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
-    
-    if ( validWindowNum( winNum )) {
-        
-        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winHome( pos );
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+
+    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winHome( pos );
         setCurrentWindow( winNum );
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -567,13 +587,14 @@ void SimWinDisplay::windowHome( int pos, int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowForward( int amt, int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+        throw (ERR_INVALID_WIN_ID );
     
-    if ( validWindowNum( winNum )) {
-        
-        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winForward( amt );
-        setCurrentWindow( winNum );
-    }
+    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winForward( amt );
+    setCurrentWindow( winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -585,13 +606,14 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowBackward( int amt, int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+        throw (ERR_INVALID_WIN_ID );
     
-    if ( validWindowNum( winNum )) {
-        
-        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winBackward( amt );
-        setCurrentWindow( winNum );
-    }
+    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winBackward( amt );
+    setCurrentWindow( winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -602,13 +624,14 @@ void SimWinDisplay::windowBackward( int amt, int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowJump( int pos, int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+        throw (ERR_INVALID_WIN_ID );
     
-    if ( validWindowNum( winNum )) {
-      
-        ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winJump( pos );
-        setCurrentWindow( winNum );
-    }
+    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winJump( pos );
+    setCurrentWindow( winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -619,13 +642,12 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowToggle( int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
-    
-    if ( validWindowNum( winNum )) {
-        
-        windowList[ winNum - 1 ] -> toggleWin( );
-        setCurrentWindow( winNum );
-    }
+    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
+   
+    windowList[ winNum - 1 ] -> toggleWin( );
+    setCurrentWindow( winNum );
 }
 
 //----------------------------------------------------------------------------------------
@@ -636,6 +658,7 @@ void SimWinDisplay::windowToggle( int winNum ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowExchangeOrder( int winNum ) {
     
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     int currentWindow = getCurrentWindow( );
     if ( winNum == currentWindow ) return;
     if ( ! validWindowNum( winNum )) return;
@@ -695,7 +718,7 @@ void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, WT_TLB_WIN );
+    windowList[ slot ] = (SimWin *) new SimWinTlb( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
@@ -706,7 +729,7 @@ void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinCache( glb, WT_CACHE_WIN );
+    windowList[ slot ] = (SimWin *) new SimWinCache( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setEnable( true );
@@ -735,8 +758,10 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
 void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
     
     if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS ))  return;
-    
     if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
+
+    if ( ! (( validWindowNum( winNumStart )) && ( ! validWindowNum( winNumEnd )))) 
+        throw ( ERR_INVALID_WIN_ID );
     
     for ( int i = winNumStart - 1; i <= winNumEnd - 1; i++ ) {
          

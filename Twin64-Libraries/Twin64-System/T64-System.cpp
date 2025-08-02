@@ -211,3 +211,124 @@ void T64System::step( int steps ) {
         moduleTab[ i ].moduleHandler -> step( );
     }
 }
+
+int T64System::readGeneralReg( int proc, int reg, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::writeGeneralReg( int proc, int reg, T64Word val ) {
+
+    return( 0 );
+}
+
+int T64System::readControlReg( int proc, int reg, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::writeControlReg( int proc, int reg, T64Word val ) {
+
+    return( 0 );
+}
+
+int T64System::readPswReg( int proc, int reg, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::writePswReg( int proc, int reg, T64Word val ) {
+
+    return( 0 );
+}
+
+int T64System::readTlbEntry( int proc, int tlb, int index, 
+                                T64Word *info1, T64Word *info2 )  {
+
+    *info1 = 0;                                
+    *info2 = 0;                                     
+    return( 0 );
+}
+
+int T64System::insertTlbEntry( int proc, int tlb, 
+                                T64Word info1, T64Word info2 ) {
+
+    return( 0 );
+}
+
+int T64System::purgeTlbEntry( int proc, int tlb, int index ) {
+
+    return( 0 );
+}
+
+int T64System::readCacheLine( int proc, int cache, int set, int index, T64Word *line ) {
+
+    line[ 0 ] = 0;
+    line[ 1 ] = 0;
+    line[ 2 ] = 0;
+    line[ 3 ] = 0;
+    return( 0 );
+}
+
+int T64System::flushCacheLine( int proc, int cache, int set, int index ) {
+
+    return( 0 );
+}
+
+int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
+
+}
+
+    // ??? also need BYTE, HALF, WORD, DOUBLE ?
+int T64System::readMemWord( T64Word adr, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::writeMemWord( T64Word adr, T64Word val ) {
+
+    return( 0 );
+}
+
+int T64System::readMemBlock( T64Word adr, T64Word *blk ) {
+
+    blk[ 0 ] = 0;
+    blk[ 1 ] = 0;
+    blk[ 2 ] = 0;
+    blk[ 3 ] = 0;
+    return( 0 );
+}
+
+int T64System::writeMemBlock( T64Word adr, T64Word *blk ) {
+
+    return( 0 );
+}
+
+int T64System::getHpaStartAdr( int module, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::getHpaSize( int module, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::getSpaStartAdr( int module, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+
+int T64System::getSpaSize( int module, T64Word *val ) {
+
+    *val = 0;
+    return( 0 );
+}
+ 

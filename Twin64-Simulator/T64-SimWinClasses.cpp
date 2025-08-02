@@ -160,7 +160,6 @@ void SimWinProgState::setDefaults( ) {
     setDefRows( 5 );
     setDefColumns( 110 );
     setRows( getDefRows( ));
-    setRadix( 16 );
     setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
     setEnable( true );
@@ -566,9 +565,9 @@ void SimWinCode::drawLine( T64Word itemAdr ) {
 // Object constructor. All we do is to remember what kind of TLB this is.
 //
 //----------------------------------------------------------------------------------------
-SimWinTlb::SimWinTlb( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) { 
+SimWinTlb::SimWinTlb( SimGlobals *glb ) : SimWinScrollable( glb ) { 
 
-    setWinType( winType );
+    setWinType( WT_TLB_WIN );
     setDefaults( );
 }
 
@@ -672,9 +671,9 @@ void SimWinTlb::drawLine( T64Word index ) {
 // Object constructor. All we do is to remember what kind of Cache this is.
 //
 //----------------------------------------------------------------------------------------
-SimWinCache::SimWinCache( SimGlobals *glb, int winType ) : SimWinScrollable( glb ) { 
+SimWinCache::SimWinCache( SimGlobals *glb ) : SimWinScrollable( glb ) { 
 
-    setWinType( winType );
+    setWinType( WT_CACHE_WIN );
     setDefaults( );
 }
 
@@ -745,7 +744,6 @@ void SimWinCache::drawBanner( ) {
 // Format:
 //
 //  (0x0000): [xxx] [0x00_00000_0000] 0x0000_0000_0000_0000 0x... 0x... 0x... 
-// 
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawLine( T64Word index ) {
     
@@ -842,13 +840,9 @@ void SimWinText::drawBanner( ) {
     printTextField((char *) "Text: ", ( fmtDesc | FMT_ALIGN_LFT ));
     printTextField((char *) fileName, ( fmtDesc | FMT_ALIGN_LFT | FMT_TRUNC_LFT ), 48 );
     printTextField((char *) "  Line: " );
-   
-    // printNumericField( getCurrentItemAdr( ) + 1, ( fmtDesc | FMT_HALF_WORD ));
-    
+    printNumericField( getCurrentItemAdr( ) + 1, ( fmtDesc | FMT_DEC ));
     printTextField((char *) "  Home: " );
-    
-    // printNumericField(  getHomeItemAdr( ) + 1, ( fmtDesc | FMT_HALF_WORD ));
-    
+    printNumericField(  getHomeItemAdr( ) + 1, ( fmtDesc | FMT_DEC ));
     padLine( fmtDesc );
 }
 
@@ -872,8 +866,7 @@ void SimWinText::drawLine( T64Word index ) {
         lineSize = readTextFileLine( index + 1, lineBuf, sizeof( lineBuf ));
         if ( lineSize > 0 ) {
             
-            //  printNumericField( index + 1, ( fmtDesc | FMT_HALF_WORD ));
-            
+            printNumericField( index + 1, ( fmtDesc | FMT_DEC ));
             printTextField((char *) ": " );
             printTextField( lineBuf, fmtDesc, lineSize );
             padLine( );
@@ -885,8 +878,8 @@ void SimWinText::drawLine( T64Word index ) {
 
 //----------------------------------------------------------------------------------------
 // "openTextFile" is called every time we want to print a line. If the file is not
-// opened yet, it will be now and while we are at it, we will also count the source
-// lines for setting the limit in the scrollable window.
+// opened yet, it will be opened now and while we are at it, we will also count the
+// source lines for setting the limit in the scrollable window.
 //
 //----------------------------------------------------------------------------------------
 bool SimWinText::openTextFile( ) {

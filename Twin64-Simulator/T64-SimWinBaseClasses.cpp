@@ -59,12 +59,12 @@ SimWin:: ~SimWin( ) { }
 // Getter/Setter methods for window attributes.
 //
 //----------------------------------------------------------------------------------------
-int  SimWin::getWinType( ) { 
+SimWinType  SimWin::getWinType( ) { 
     
     return ( winType ); 
 }
 
-void SimWin::setWinType( int arg ) { 
+void SimWin::setWinType( SimWinType arg ) { 
     
     winType = arg; 
 }
@@ -85,7 +85,7 @@ bool SimWin::isEnabled( ) {
 }
 
 void SimWin::setEnable( bool arg ) { 
-    
+
     winEnabled = arg; 
 }
 
@@ -110,10 +110,9 @@ void SimWin::setColumns( int arg ) {
 }
 
 void SimWin::setRadix( int rdx ) { 
-    
-    if      ( rdx == 10 )   winRadix = 10;
-    else if ( rdx == 16 )   winRadix = 16;
-    else                    winRadix = 10;
+
+    if (( rdx == 10 ) || ( rdx == 16 )) winRadix = rdx; 
+    else winRadix = 16;
 }
 
 int SimWin::getRadix( ) { 

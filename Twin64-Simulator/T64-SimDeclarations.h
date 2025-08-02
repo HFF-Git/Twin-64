@@ -129,6 +129,8 @@ const int MAX_WIN_COL_SIZE      = 256;
 const int MAX_WINDOWS           = 32;
 const int MAX_WIN_STACKS        = 4;
 
+const int MAX_FILE_PATH_SIZE    = 256;
+
 //----------------------------------------------------------------------------------------
 // Windows have a type. The type is primarily used to specify what type of window to
 // create.
@@ -740,8 +742,8 @@ struct SimWin {
     SimWin( SimGlobals *glb );
     virtual         ~ SimWin( );
     
-    void            setWinType( int type );
-    int             getWinType( );
+    void            setWinType( SimWinType type );
+    SimWinType      getWinType( );
     
     void            setWinIndex( int index );
     int             getWinIndex( );
@@ -825,7 +827,7 @@ struct SimWin {
    
     private:
     
-    int             winType             = WT_NIL;
+    SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
     
     bool            winEnabled          = false;
@@ -958,11 +960,16 @@ struct SimWinTlb : SimWinScrollable {
     
     public:
     
-    SimWinTlb( SimGlobals *glb, int winType );
+    SimWinTlb( SimGlobals *glb );
     
     void setDefaults( );
     void drawBanner( );
     void drawLine( T64Word index );
+
+    private:
+
+    int procModuleNum;
+    int tlbNum;
 };
 
 //----------------------------------------------------------------------------------------
@@ -975,11 +982,16 @@ struct SimWinCache : SimWinScrollable {
     
     public:
     
-    SimWinCache( SimGlobals *glb, int winType );
+    SimWinCache( SimGlobals *glb );
     
     void setDefaults( );
     void drawBanner( );
     void drawLine( T64Word index );
+
+    private:
+
+    int procMuduleNum;
+    int cacheNum;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1007,7 +1019,7 @@ struct SimWinText : SimWinScrollable {
     FILE    *textFile          = nullptr;
     int     fileSizeLines      = 0;
     int     lastLinePos        = 0;
-    char    fileName[ 256 ]    = { 0 };
+    char    fileName[ MAX_FILE_PATH_SIZE ] = { 0 };
 };
 
 //----------------------------------------------------------------------------------------
@@ -1068,7 +1080,7 @@ private:
     int             promptYesNoCancel( char *promptStr );
   
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
-    void            displayAbsMemContentAsCode( T64Word ofs, T64Word len, int rdx = 16 );
+    void            displayAbsMemContentAsCode( T64Word ofs, T64Word len );
     
     void            displayTlbEntry( T64TlbEntry *entry, int rdx = 16 );
     void            displayTlbEntries( T64Tlb *tlb, int index, int len, int rdx = 16 );
