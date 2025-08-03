@@ -83,16 +83,13 @@ const SimToken cmdTokTab[ ] = {
     { .name = "STEP",       .typ = TYP_CMD,     .tid = CMD_STEP               },
     { .name = "S",          .typ = TYP_CMD,     .tid = CMD_STEP               },
     
-    { .name = "DR",         .typ = TYP_CMD,     .tid = CMD_DR                 },
     { .name = "MR",         .typ = TYP_CMD,     .tid = CMD_MR                 },
     { .name = "DA",         .typ = TYP_CMD,     .tid = CMD_DA                 },
     { .name = "MA",         .typ = TYP_CMD,     .tid = CMD_MA                 },
     
     { .name = "ITLB",       .typ = TYP_CMD,     .tid = CMD_I_TLB              },
-    { .name = "DTLB",       .typ = TYP_CMD,     .tid = CMD_D_TLB              },
     { .name = "PTLB",       .typ = TYP_CMD,     .tid = CMD_P_TLB              },
     
-    { .name = "DCA",        .typ = TYP_CMD,     .tid = CMD_D_CACHE            },
     { .name = "PCA",        .typ = TYP_CMD,     .tid = CMD_P_CACHE            },
     { .name = "FCA",        .typ = TYP_CMD,     .tid = CMD_F_CACHE            },
     
@@ -338,13 +335,7 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_EXPECTED_INSTR_OPT,         
       .errStr = (char *) "Expected the instruction options" },
-
-    { .errNum = ERR_EXPECTED_SR1_SR3,           
-      .errStr = (char *) "Expected SR1 .. SR3 as segment register" },
-
-    { .errNum = ERR_EXPECTED_LOGICAL_ADR,       
-      .errStr = (char *) "Expected a logical address" },
-
+      
     { .errNum = ERR_EXPECTED_AN_OFFSET_VAL,     
       .errStr = (char *) "Expected an offset value" },
 
@@ -557,13 +548,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
     
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DR,
-        .cmdNameStr     = (char *) "dr",
-        .cmdSyntaxStr   = (char *) "dr <cpu> [ ( <regSet> | <reg> ) ] [ , <fmt> ]",
-        .helpStr        = (char *) "display a CPU register or register set"
-    },
-    
-    {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MR,
         .cmdNameStr     = (char *) "mr",
         .cmdSyntaxStr   = (char *) "mr <cpu> <reg> <val>",
@@ -585,14 +569,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
     
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_D_CACHE,
-        .cmdNameStr     = (char *) "dca",
-        .cmdSyntaxStr   = (char *) "dca <proc>, <cache>, <set>, "
-                                   " <index> [ , <len> [ , <fmt> ]] ",
-        .helpStr        = (char *) "display cache content"
-    },
-    
-    {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_CACHE,
         .cmdNameStr     = (char *) "pca",
         .cmdSyntaxStr   = (char *) "pca <proc>, <cache>, <set>, <index>",
@@ -604,14 +580,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdNameStr     = (char *) "fca",
         .cmdSyntaxStr   = (char *) "fca <proc>, <cache>, <set>, <index>",
         .helpStr        = (char *) "flushes cache line data"
-    },
-    
-    {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_D_TLB,
-        .cmdNameStr     = (char *) "dtlb",
-        .cmdSyntaxStr   = (char *) "dtlb <proc>, <tlb>, <set>, "
-                                   "<index> [ , <len> [ , <rdx> ]]",
-        .helpStr        = (char *) "display TLB content"
     },
     
     {

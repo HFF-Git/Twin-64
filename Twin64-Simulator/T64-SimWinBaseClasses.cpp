@@ -125,9 +125,9 @@ int SimWin::getWinStack( ) {
     return ( winStack ); 
 }
 
-void SimWin::setWinStack( int wCol ) { 
+void SimWin::setWinStack( int wStack ) { 
     
-    winStack = wCol; 
+    winStack = wStack; 
 }
 
  void SimWin::setDefRows( int rows ) {
@@ -391,7 +391,8 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 
 //----------------------------------------------------------------------------------------
 // A user defined window has a field that shows the window number as well as this is 
-// the current window.
+// the current window. We show wether it is the current window, the window stack and the
+// window number.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
@@ -404,12 +405,12 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if ( winIndex < MAX_WINDOWS ) {
+    if ( winIndex <= MAX_WINDOWS ) {
 
         if ( isCurrent ) len += glb -> console -> writeChars((char *) "*(" ); 
         else             len += glb -> console -> writeChars((char *) "(" );
 
-        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack, winIndex ); 
+        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack + 1, winIndex ); 
     }    
     else len = glb -> console -> writeChars((char *) "(-***-)" );
    

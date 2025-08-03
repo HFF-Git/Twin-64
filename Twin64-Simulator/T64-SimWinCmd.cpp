@@ -932,10 +932,18 @@ void SimCommandsWin::envCmd( ) {
     SimEnv *env = glb -> env;
     
     if ( tok -> isToken( TOK_EOS )) {
-        
-        // ??? rework so that we get en entry at a time and add it to the output buffer...
 
-        env -> displayEnvTable( );
+        int hwm = env -> getEnvHwm( );
+        if ( hwm > 0 ) {
+
+            for ( int i = 0; i < hwm; i++ ) {
+
+
+                char buf[ 128 ];
+                int len = env -> formatEnvEntry( i, buf, sizeof( buf ));
+                if ( len > 0 ) winOut -> writeChars( "%s\n", buf );
+            }
+        }
     }
     else if ( tok -> tokTyp( ) == TYP_IDENT ) {
         
@@ -947,7 +955,12 @@ void SimCommandsWin::envCmd( ) {
         tok -> nextToken( );
         if ( tok -> isToken( TOK_EOS )) {
             
-            if ( env -> isValid( envName )) env -> displayEnvTableEntry( envName );
+            if ( env -> isValid( envName )) {
+
+                char buf[ 128 ];
+                int len = env -> formatEnvEntry( envName, buf, sizeof( buf ));
+                if ( len > 0 ) winOut -> writeChars( "%s\n", buf );
+            } 
             else throw ( ERR_ENV_VAR_NOT_FOUND );
         }
         else {
@@ -1923,7 +1936,8 @@ void SimCommandsWin::winKillWinCmd( ) {
 //----------------------------------------------------------------------------------------
 // This command assigns a user window to a stack. User windows can be displayed in a
 // separate stack of windows. The first stack is always the main stack, where the 
-// predefined and command window can be found.
+// predefined and command window can be found. Stacks are numbered from 1 to MAX.
+// Internally, we think in stack numbers from 0 to MAX -1 !
 //
 //  WS <stackNum> [ , <winNumStart> [ , <winNumEnd ]]
 //----------------------------------------------------------------------------------------
@@ -1935,7 +1949,7 @@ void SimCommandsWin::winSetStackCmd( ) {
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
 
-    stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 0, MAX_WIN_STACKS );
+    stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
     
     if ( tok -> isToken( TOK_EOS )) {
         
@@ -1956,7 +1970,7 @@ void SimCommandsWin::winSetStackCmd( ) {
     }
     else throw ( ERR_EXPECTED_COMMA );
    
-    glb -> winDisplay -> windowSetStack( stackNum, winNumStart, winNumEnd );
+    glb -> winDisplay -> windowSetStack( stackNum - 1, winNumStart, winNumEnd );
     glb -> winDisplay -> reDraw( true );
 }
 

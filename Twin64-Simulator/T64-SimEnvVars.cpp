@@ -23,6 +23,7 @@
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 
@@ -59,11 +60,101 @@ namespace {
 // pointer are used to manage the search, add and remove functions.
 //
 //----------------------------------------------------------------------------------------
-SimEnv::SimEnv( int size ) {
+SimEnv::SimEnv( SimGlobals *glb, int size ) {
    
     table       = (SimEnvTabEntry *) calloc( size, sizeof( SimEnvTabEntry ));
     hwm         = table;
     limit       = &table[ size ];
+    this -> glb = glb;
+}
+
+//----------------------------------------------------------------------------------------
+// Utility functions to return variable attributes.
+//
+//----------------------------------------------------------------------------------------
+bool SimEnv::isValid( char *name ) {
+    
+    int index = lookupEntry( name );
+    
+    if ( index >= 0 ) return( table[ index ].valid );
+    else return( false );
+}
+
+bool SimEnv::isReadOnly( char *name ) {
+    
+    int index = lookupEntry( name );
+    
+    if ( index >= 0 ) return( table[ index ].readOnly );
+    else return( false );
+}
+
+bool SimEnv::isPredefined( char *name ) {
+    
+    int index = lookupEntry( name );
+    
+    if ( index >= 0 ) return( table[ index ].predefined );
+    else return( false );
+}
+
+SimEnvTabEntry *SimEnv::getEnvEntry( char *name ) {
+    
+    int index = lookupEntry( name );
+    if ( index >= 0 ) return( &table[ index ] );
+    else return( nullptr );
+}
+
+SimEnvTabEntry *SimEnv::getEnvEntry( int index ) {
+    
+    if (( index >= 0 ) && ( index < ( hwm- table ))) return( &table[ index ] );
+    else return( nullptr );
+}
+
+int SimEnv::getEnvHwm( ) {
+
+    return( hwm - table );
+}
+
+//----------------------------------------------------------------------------------------
+// Look a variable. We just do a linear search up to the HWM. If not found, a -1 is 
+// returned. Straightforward.
+//
+//----------------------------------------------------------------------------------------
+int SimEnv::lookupEntry( char *name ) {
+    
+    SimEnvTabEntry *entry = table;
+    
+    while ( entry < hwm ) {
+        
+        if (( entry -> valid ) && ( strcmp( entry -> name, name ) == 0 )) 
+            return((int) ( entry - table ));
+        else entry ++;
+    }
+    
+    return( -1 );
+}
+
+//----------------------------------------------------------------------------------------
+// Find a free slot for a variable. First we look for a free entry in the range up to 
+// the HWM. If there is none, we try to increase the HWM. If all fails, the table is
+// full.
+//
+//----------------------------------------------------------------------------------------
+int SimEnv::findFreeEntry( ) {
+    
+    SimEnvTabEntry *entry = table;
+    
+    while ( entry < hwm ) {
+        
+        if ( ! entry -> valid ) return((int) ( entry - table ));
+        else entry ++;
+    }
+    
+    if ( hwm < limit ) {
+        
+        hwm ++;
+        return((int) ( entry - table ));
+    }
+    else throw( ERR_ENV_TABLE_FULL );
 }
 
 //----------------------------------------------------------------------------------------
@@ -178,34 +269,6 @@ char *SimEnv::getEnvVarStr( char *name, char *def ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Remove a user defined ENV variable. If the ENV variable is predefined it is an error.
-// If the ENV variable type is a string, free the string space. The entry is marked 
-// invalid, i.e. free. Finally, if the entry was at the high water mark, adjust the HWM.
-//
-//----------------------------------------------------------------------------------------
-void SimEnv::removeEnvVar( char *name ) {
-    
-    int index = lookupEntry( name );
-    
-    if ( index == -1 ) throw ( ERR_ENV_VAR_NOT_FOUND );
-        
-    SimEnvTabEntry *ptr = &table[ index ];
-    
-    if ( ptr -> predefined ) throw( ERR_ENV_PREDEFINED );
-    
-    if (( ptr -> typ == TYP_STR ) && 
-        ( ptr -> u.strVal != nullptr )) free( ptr -> u.strVal );
-    
-    ptr -> valid    = false;
-    ptr -> typ      = TYP_NIL;
-    
-    if ( ptr == hwm - 1 ) {
-        
-        while (( ptr >= table ) && ( ptr -> valid )) hwm --;
-    } 
-}
-
-//----------------------------------------------------------------------------------------
 // A set of helper function to enter a variable. The variable can be a user or predefined
 // one. If it is a predefined variable, the readonly flag marks the variable read only 
 // for the ENV command.
@@ -270,152 +333,90 @@ void SimEnv::enterVar( char *name, char *str, bool predefined, bool rOnly ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Utility functions to return variable attributes.
+// Remove a user defined ENV variable. If the ENV variable is predefined it is an error.
+// If the ENV variable type is a string, free the string space. The entry is marked 
+// invalid, i.e. free. Finally, if the entry was at the high water mark, adjust the HWM.
 //
 //----------------------------------------------------------------------------------------
-bool SimEnv::isValid( char *name ) {
+void SimEnv::removeEnvVar( char *name ) {
     
     int index = lookupEntry( name );
     
-    if ( index >= 0 ) return( table[ index ].valid );
-    else return( false );
-}
-
-bool SimEnv::isReadOnly( char *name ) {
-    
-    int index = lookupEntry( name );
-    
-    if ( index >= 0 ) return( table[ index ].readOnly );
-    else return( false );
-}
-
-bool SimEnv::isPredefined( char *name ) {
-    
-    int index = lookupEntry( name );
-    
-    if ( index >= 0 ) return( table[ index ].predefined );
-    else return( false );
-}
-
-SimEnvTabEntry *SimEnv::getEnvEntry( char *name ) {
-    
-    int index = lookupEntry( name );
-    if ( index >= 0 ) return( &table[ index ] );
-    else return( nullptr );
-}
-
-//----------------------------------------------------------------------------------------
-// Look a variable. We just do a linear search up to the HWM. If not found, a -1 is 
-// returned. Straightforward.
-//
-//----------------------------------------------------------------------------------------
-int SimEnv::lookupEntry( char *name ) {
-    
-    SimEnvTabEntry *entry = table;
-    
-    while ( entry < hwm ) {
+    if ( index == -1 ) throw ( ERR_ENV_VAR_NOT_FOUND );
         
-        if (( entry -> valid ) && ( strcmp( entry -> name, name ) == 0 )) 
-            return((int) ( entry - table ));
-        else entry ++;
-    }
+    SimEnvTabEntry *ptr = &table[ index ];
     
-    return( -1 );
+    if ( ptr -> predefined ) throw( ERR_ENV_PREDEFINED );
+    
+    if (( ptr -> typ == TYP_STR ) && 
+        ( ptr -> u.strVal != nullptr )) free( ptr -> u.strVal );
+    
+    ptr -> valid    = false;
+    ptr -> typ      = TYP_NIL;
+    
+    if ( ptr == hwm - 1 ) {
+        
+        while (( ptr >= table ) && ( ptr -> valid )) hwm --;
+    } 
 }
 
 //----------------------------------------------------------------------------------------
-// Find a free slot for a variable. First we look for a free entry in the range up to 
-// the HWM. If there is none, we try to increase the HWM. If all fails, the table is
-// full.
+// Format the ENV entry. 
 //
 //----------------------------------------------------------------------------------------
-int SimEnv::findFreeEntry( ) {
-    
-    SimEnvTabEntry *entry = table;
-    
-    while ( entry < hwm ) {
-        
-        if ( ! entry -> valid ) return((int) ( entry - table ));
-        else entry ++;
-    }
-    
-    if ( hwm < limit ) {
-        
-        hwm ++;
-        return((int) ( entry - table ));
-    }
-    else throw( ERR_ENV_TABLE_FULL );
-}
+int SimEnv::formatEnvEntry( char *name, char *buf, int bufLen ) {
 
-//----------------------------------------------------------------------------------------
-// List the entire ENV table up to the high water mark.
-//
-//----------------------------------------------------------------------------------------
-void SimEnv::displayEnvTable( ) {
-    
-    SimEnvTabEntry *entry = table;
-    
-    while ( entry < hwm ) {
-        
-        if ( entry -> valid ) displayEnvEntry( entry );
-        entry ++;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-// Display a ENV entry by name.
-//
-//----------------------------------------------------------------------------------------
-void SimEnv::displayEnvTableEntry( char *name ) {
-    
     int index = lookupEntry( name );
-    
-    if ( index >= 0 ) displayEnvEntry( &table[ index ] );
-    else throw( 99 );
+    return( formatEnvEntry( index, buf, bufLen ));
 }
 
-//----------------------------------------------------------------------------------------
-// Display the ENV entry. 
-//
-//----------------------------------------------------------------------------------------
-void SimEnv::displayEnvEntry( SimEnvTabEntry *entry ) {
+int SimEnv::formatEnvEntry( int index, char *buf, int bufLen ) {
+
+    if (( index >= 0 ) && ( index < ( hwm - table ))) {
+
+        SimEnvTabEntry *e = &table[ index ];
+
+        if ( e -> valid ) {
+
+            int len = snprintf( buf, 128, "%-32s", e -> name );
     
-    fprintf( stdout, "%-32s", entry -> name );
-    
-    switch ( entry -> typ ) {
+            switch ( e -> typ ) {
             
-        case TYP_NUM: {
+                case TYP_NUM: {
 
-            if (( entry -> u.iVal >= INT_MIN ) && 
-                ( entry -> u.iVal <= INT_MAX )) {
+                    if (( e -> u.iVal >= INT_MIN ) && ( e -> u.iVal <= INT_MAX )) {
 
-                fprintf( stdout, "NUM:     %i", (int) entry -> u.iVal ); 
+                        len += snprintf( buf + len, 128, "NUM:     %i", (int) e -> u.iVal ); 
+                    }
+                    else {
+
+                        len += snprintf( buf + len, 128, "NUM:     %llx.", e -> u.iVal ); 
+                    } 
+
+                } break;
+            
+                case TYP_STR: {
+                
+                    // ??? any length checks ?
+                    len += snprintf( buf + len, 128, "STR:     \"%s\"", e -> u.strVal );
+                
+                } break;
+                
+                case TYP_BOOL: {
+                    
+                    if ( e -> u.bVal )  len += snprintf( buf + len, 128, "BOOL:    TRUE");
+                    else                len += snprintf( buf + len, 128, "BOOL:    FALSE"); 
+                
+                } break;
+
+                default:  len += snprintf( buf + len, 128, "Unknown type" );
             }
-            else {
 
-                fprintf( stdout, "NUM:     %llx.", entry -> u.iVal ); 
-            } 
-    
-        } break;
-            
-        case TYP_STR: {
-            
-            // ??? any length checks ?
-            fprintf( stdout, "STR:     \"%s\"", entry -> u.strVal );
-            
-        } break;
-            
-        case TYP_BOOL: {
-            
-            if ( entry -> u.bVal ) fprintf( stdout, "BOOL:    TRUE");
-            else                   fprintf( stdout, "BOOL:    FALSE"); 
-        
-        } break;
-
-        default: printf( "Unknown type" );
+            return ( len );
+        }
     }
-    
-    fprintf( stdout, "\n" );
+
+    return ( 0 );
 }
 
 //----------------------------------------------------------------------------------------

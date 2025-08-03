@@ -201,16 +201,15 @@ enum SimTokId : uint16_t {
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
     TOK_STR                 = 102, 
 
+    TOK_DEC                 = 200,      TOK_HEX                 = 201,
+    TOK_CODE                = 202,
+
     TOK_DEF                 = 200,      TOK_ALL                 = 201,
     TOK_PROC                = 202,      TOK_CPU                 = 203,   
+    TOK_TLB                 = 204,      TOK_CACHE               = 205,      
+    TOK_MEM                 = 206,      TOK_STATS               = 207,      
+    TOK_TEXT                = 208, 
     
-    TOK_TLB                 = 204, 
-    TOK_CACHE               = 205,      TOK_MEM                 = 206,      
-    TOK_STATS               = 207,      TOK_TEXT                = 209, 
-    
-    TOK_DEC                 = 300,      TOK_HEX                 = 302,
-    TOK_CODE                = 303,      
-
     //------------------------------------------------------------------------------------
     // Line Commands.
     //
@@ -223,28 +222,20 @@ enum SimTokId : uint16_t {
     CMD_XF                  = 1007,     CMD_WRITE_LINE          = 1008,
     CMD_DM                  = 1009,
     
-    CMD_RESET               = 1009,     CMD_RUN                 = 1010,     
-    CMD_STEP                = 1011,
-
-    CMD_DR                  = 1012,     CMD_MR                  = 1013,
+    CMD_RESET               = 1010,     CMD_RUN                 = 1011,     
+    CMD_STEP                = 1012,     CMD_MR                  = 1013,
     CMD_DA                  = 1014,     CMD_MA                  = 1015,
-    
-    CMD_D_TLB               = 1016,     CMD_I_TLB               = 1017,     
-    CMD_P_TLB               = 1018,
-
-    CMD_D_CACHE             = 1019,     CMD_F_CACHE             = 1020,
-    CMD_P_CACHE             = 1021,
+    CMD_I_TLB               = 1016,     CMD_P_TLB               = 1017,
+    CMD_F_CACHE             = 1018,     CMD_P_CACHE             = 1019,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
     //
     //------------------------------------------------------------------------------------
     WCMD_SET                = 2000,     WTYPE_SET               = 2001,
-    
     CMD_WON                 = 2002,     CMD_WOFF                = 2003,     
     CMD_WDEF                = 2004,     CMD_CWL                 = 2005,     
     CMD_WSE                 = 2006,     CMD_WSD                 = 2007,
-    
     CMD_WE                  = 2050,     CMD_WD                  = 2051,     
     CMD_WR                  = 2052,     CMD_WF                  = 2053,     
     CMD_WB                  = 2054,     CMD_WH                  = 2055,
@@ -264,7 +255,7 @@ enum SimTokId : uint16_t {
     PF_HASH                 = 3003,     PF_S32                  = 3005,   
     
     //------------------------------------------------------------------------------------
-    // General, Segment and Control Registers Tokens.
+    // General, Control and PSW Register Tokens.
     //
     //------------------------------------------------------------------------------------
     REG_SET                 = 4000,
@@ -288,6 +279,8 @@ enum SimTokId : uint16_t {
     CR_12                   = 4212,     CR_13                   = 4213,     
     CR_14                   = 4214,     CR_15                   = 4215,       
     CR_SET                  = 4216,
+
+    PSW_IA                  = 4300,     PSW_ST                  = 4301
 };
 
 //----------------------------------------------------------------------------------------
@@ -302,7 +295,8 @@ enum SimErrMsgId : int {
     ERR_NOT_IN_WIN_MODE             = 2,
     ERR_TOO_MANY_ARGS_CMD_LINE      = 3,
     ERR_EXTRA_TOKEN_IN_STR          = 4,
-    ERR_NUMERIC_OVERFLOW            = 5,
+    ERR_INVALID_CHAR_IN_TOKEN_LINE  = 5,
+    ERR_NUMERIC_OVERFLOW            = 6,
     
     ERR_INVALID_CMD                 = 10,
     ERR_INVALID_ARG                 = 11,
@@ -313,7 +307,6 @@ enum SimErrMsgId : int {
     ERR_INVALID_RADIX               = 16,
     ERR_INVALID_REG_ID              = 17,
     ERR_INVALID_STEP_OPTION         = 18,
-    ERR_INVALID_CHAR_IN_TOKEN_LINE  = 19,
     ERR_INVALID_EXPR                = 20,
     ERR_INVALID_INSTR_OPT           = 21,
     ERR_INVALID_INSTR_MODE          = 22,
@@ -328,6 +321,7 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_COMMA              = 100,
     ERR_EXPECTED_LPAREN             = 101,
     ERR_EXPECTED_RPAREN             = 102,
+    ERR_EXPECTED_CLOSING_QUOTE      = 323,
     ERR_EXPECTED_NUMERIC            = 103,
     ERR_EXPECTED_EXT_ADR            = 104,
     ERR_EXPECTED_FILE_NAME          = 105,
@@ -344,11 +338,11 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_STEPS              = 116,
     ERR_EXPECTED_INSTR_VAL          = 117,
     ERR_EXPECTED_INSTR_OPT          = 318,
-    ERR_EXPECTED_SR1_SR3            = 319,
-    ERR_EXPECTED_LOGICAL_ADR        = 320,
+   
+    
     ERR_EXPECTED_AN_OFFSET_VAL      = 321,
     ERR_EXPECTED_FMT_OPT            = 322,
-    ERR_EXPECTED_CLOSING_QUOTE      = 323,
+   
     ERR_EXPECTED_STR                = 324,
     ERR_EXPECTED_EXPR               = 325,
     
@@ -605,12 +599,10 @@ struct SimEnv {
 
     public:
     
-    SimEnv( int size );
+    SimEnv( SimGlobals *glb, int size );
     
-    void            displayEnvTable( );
-    void            displayEnvTableEntry( char *name );
     void            setupPredefined( );
-    
+   
     void            setEnvVar( char *name, T64Word val );
     void            setEnvVar( char *name, bool val );
     void            setEnvVar( char *name, char *str );
@@ -620,11 +612,15 @@ struct SimEnv {
     T64Word         getEnvVarInt( char *name, T64Word def = 0 );
     char            *getEnvVarStr( char *name, char *def = nullptr );
     SimEnvTabEntry  *getEnvEntry( char *name );
+    SimEnvTabEntry  *getEnvEntry( int index );
+    int             getEnvHwm( );
+    int             formatEnvEntry( char *name, char *buf, int bufLen );
+    int             formatEnvEntry( int index, char *buf, int bufLen );
     
     bool            isValid( char *name );
     bool            isReadOnly( char *name );
     bool            isPredefined( char *name );
-    
+   
     private:
     
     int             lookupEntry( char *name );
@@ -650,6 +646,7 @@ struct SimEnv {
     SimEnvTabEntry  *table  = nullptr;
     SimEnvTabEntry  *hwm    = nullptr;
     SimEnvTabEntry  *limit  = nullptr;
+    SimGlobals      *glb    = nullptr;
 };
 
 //----------------------------------------------------------------------------------------

@@ -458,9 +458,9 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 //----------------------------------------------------------------------------------------
 // The routine sets the stack attribute for a user window. The setting is not allowed
 // for the predefined window. They are always in the main window stack, which has the
-// stack Id of zero. Theoretically we could have many stacks, numbered 0 to MAX_STACKS
-// minus 1. Realistically, 3 to 4 stacks will fit on a screen. The last window moved
-// is made the current window.
+// stack Id of one. Theoretically we could have many stacks, numbered 1 to MAX_STACKS. 
+// Realistically, 3 to 4 stacks will fit on a screen. The last window moved is made the
+// current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
@@ -468,10 +468,7 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
     if ( ! validWindowStackNum( winStack )) throw ( ERR_INVALID_WIN_STACK_ID );
     if ( ! (( validWindowNum( winNumStart )) && ( validWindowNum( winNumEnd )))) 
         throw ( ERR_INVALID_WIN_ID );
-    
-    if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS )) return;
-    if ( winStack > MAX_WIN_STACKS ) return;
-    
+   
     if ( winNumStart > winNumEnd ) {
         
         int tmp = winNumStart;
@@ -668,8 +665,11 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 
 //----------------------------------------------------------------------------------------
 // "Window New" family of routines create a new window for certain window type. The 
-// newly created window also becomes the current user window.
+// newly created window also becomes the current user window. The window number is stored
+// from 1 to MAX, the initial stack number is zero.
 //
+// ??? confusing. Perhaps we go back to keep the internal numbering and correct on
+// input and output these numbers.
 //----------------------------------------------------------------------------------------
 int SimWinDisplay::getFreeWindowSlot( ) {
 
@@ -688,6 +688,7 @@ void SimWinDisplay::windowNewAbsMem( ) {
     windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -699,6 +700,7 @@ void SimWinDisplay::windowNewAbsCode( ){
     windowList[ slot ] = (SimWin *) new SimWinCode( glb ); 
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -710,6 +712,7 @@ void SimWinDisplay::windowNewProgState( int procModuleNum ) {
     windowList[ slot ] = (SimWin *) new SimWinProgState( glb, procModuleNum  );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -721,6 +724,7 @@ void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
     windowList[ slot ] = (SimWin *) new SimWinTlb( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -732,6 +736,7 @@ void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
     windowList[ slot ] = (SimWin *) new SimWinCache( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -743,6 +748,7 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
     windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
