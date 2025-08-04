@@ -3,8 +3,13 @@
 //  Twin64 - A 64-bit CPU Simulator - Declarations
 //
 //----------------------------------------------------------------------------------------
-// ...
-//
+// The Twin-64 Simulator is an interactive program for simulating a running Twin-64
+// system. It consists of the processor, the memory and I/O module components, which
+// together build the Twin-64 system. The system is created by an interactive window
+// based environment. Windows represent the individual components. The terminal window
+// environment was taken from a previous project and adapted to the Twin-64 system.
+// This file includes all the window environment related declarations.
+// 
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Simulator - Declarations
@@ -32,14 +37,16 @@
 #include "T64-Memory.h"
 
 //----------------------------------------------------------------------------------------
-// General screen structure:
+// When we say windows, don't think about a modern graphical window system. The simulator
+// is a simple terminal screen with portions of the screen representing a "window". 
+// The general screen structure is:
 //
 //          |---> column (absolute)
 //          |
 //          v       :--------------------------------------------------------:
 //        rows      :                                                        :
 //     (absolute)   :                                                        :
-//                  :              Active windows shown space                :
+//                  :              Active windows space                      :
 //                  :                                                        :
 //                  :--------------------------------------------------------:
 //                  :                                                        :
@@ -62,10 +69,14 @@
 //                  :                                                        :
 //                  :--------------------------------------------------------:
 //
-// Total size of the screen can vary. It is the sum of all active window lines
-// plus the command window lines. Command window is a bit special on that it has
-// an input line at the lowest line. Scroll lock after the active windows before
-// the command window. Routines to move cursor, print fields with attributes.
+// Total size of the screen can vary. It is the sum of all active window line plus the
+// command window lines. Command window is a bit special on that it has an input line
+// at the lowest line. Scroll lock after the active windows before the command window.
+// Routines to move cursor, print fields with attributes.
+//
+// In addition, windows can be organized in stacks. The stacks are displayed next to
+// each other, which is quite helpful, but could make the columns needed quite large. 
+// The command window will in this case span all stacks.
 //
 //----------------------------------------------------------------------------------------
 
@@ -75,12 +86,9 @@
 //
 //  WON, WOFF       -> on, off
 //  WDEF            -> window defaults, show initial screen.
-//
-//  Stacks:
-//
 //  WSE, WSD        -> winStackEnable/Disable
 //
-//  Window:
+//  Window commands:
 //
 //  enable, disable -> winEnable        -> E, D
 //  back, forward   -> winMove          -> B, F
@@ -107,14 +115,14 @@
 // General maximum size for commands, etc.
 //
 //----------------------------------------------------------------------------------------
-const int MAX_CMD_HIST_BUF_SIZE     = 64;
-const int MAX_WIN_CMD_LINES         = 64;
-const int CMD_LINE_BUF_SIZE         = 256;
+const int MAX_CMD_HIST              = 64;
+const int MAX_CMD_LINES             = 64;
+const int MAX_CMD_LINE_SIZE         = 256;
 const int MAX_WIN_OUT_LINES         = 256;
 const int MAX_WIN_OUT_LINE_SIZE     = 256;
 
-const int TOK_STR_SIZE              = 256;
-const int MAX_TOKEN_NAME_SIZE       = 32;
+const int MAX_TOK_STR_SIZE          = 256;
+const int MAX_TOK_NAME_SIZE         = 32;
 const int MAX_ENV_NAME_SIZE         = 32;
 const int MAX_ENV_VARIABLES         = 256;
 
@@ -153,7 +161,7 @@ enum SimWinType : int {
 // Command line tokens and expression have a type.
 //
 //----------------------------------------------------------------------------------------
-enum SimTokTypeId : uint16_t {
+enum SimTokTypeId : int {
 
     TYP_NIL                 = 0,    
 
@@ -167,9 +175,10 @@ enum SimTokTypeId : uint16_t {
 };
 
 //----------------------------------------------------------------------------------------
-// Tokens are the labels for reserved words and symbols recognized by the 
-// tokenizer objects. Tokens have a name, a token id, a token type and an 
-// optional value with further data.
+// Tokens are the labels for reserved words and symbols recognized by the tokenizer 
+// objects. Tokens have a name, a token id, a token type and an optional value with 
+// further data. See also the "SimTables" include file how types and token Id are used
+// to build the command and expression tokens.
 //
 //----------------------------------------------------------------------------------------
 enum SimTokId : uint16_t {
@@ -296,9 +305,11 @@ enum SimErrMsgId : int {
     ERR_TOO_MANY_ARGS_CMD_LINE      = 3,
     ERR_EXTRA_TOKEN_IN_STR          = 4,
     ERR_INVALID_CHAR_IN_TOKEN_LINE  = 5,
+    ERR_INVALID_CHAR_IN_IDENT       = 25,
     ERR_NUMERIC_OVERFLOW            = 6,
-    
+
     ERR_INVALID_CMD                 = 10,
+    ERR_INVALID_EXPR                = 20,
     ERR_INVALID_ARG                 = 11,
     ERR_INVALID_WIN_STACK_ID        = 12,
     ERR_INVALID_WIN_ID              = 13,
@@ -306,17 +317,10 @@ enum SimErrMsgId : int {
     ERR_INVALID_EXIT_VAL            = 15,
     ERR_INVALID_RADIX               = 16,
     ERR_INVALID_REG_ID              = 17,
-    ERR_INVALID_STEP_OPTION         = 18,
-    ERR_INVALID_EXPR                = 20,
-    ERR_INVALID_INSTR_OPT           = 21,
-    ERR_INVALID_INSTR_MODE          = 22,
     ERR_INVALID_FMT_OPT             = 23,
-    ERR_INVALID_NUM                 = 24,
-    ERR_INVALID_CHAR_IN_IDENT       = 25,
-    ERR_INVALID_REG_COMBO           = 26,
-    ERR_INVALID_OP_CODE             = 27,
-    ERR_INVALID_S_OP_CODE           = 28,
-    ERR_INVALID_CMD_ID              = 29,
+    
+    // -----
+   
     
     ERR_EXPECTED_COMMA              = 100,
     ERR_EXPECTED_LPAREN             = 101,
@@ -331,7 +335,7 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_REG_OR_SET         = 109,
     ERR_EXPECTED_REG_SET            = 110,
     ERR_EXPECTED_GENERAL_REG        = 111,
-    ERR_EXPECTED_SEGMENT_REG        = 312,
+  
     ERR_EXPECTED_OFS                = 213,
     ERR_EXPECTED_START_OFS          = 214,
     ERR_EXPECTED_LEN                = 215,
@@ -340,6 +344,12 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_INSTR_OPT          = 318,
    
     
+
+
+    ERR_INVALID_NUM                 = 24,
+   
+
+
     ERR_EXPECTED_AN_OFFSET_VAL      = 321,
     ERR_EXPECTED_FMT_OPT            = 322,
    
@@ -360,7 +370,7 @@ enum SimErrMsgId : int {
     ERR_OFS_LEN_LIMIT_EXCEEDED      = 408,
     ERR_INSTR_HAS_NO_OPT            = 409,
     ERR_IMM_VAL_RANGE               = 410,
-    ERR_INSTR_MODE_OPT_COMBO        = 411,
+   
     ERR_POS_VAL_RANGE               = 412,
     ERR_LEN_VAL_RANGE               = 413,
     ERR_OFFSET_VAL_RANGE            = 414,
@@ -453,7 +463,7 @@ struct SimHelpMsgEntry {
 //----------------------------------------------------------------------------------------
 struct SimToken {
 
-    char         name[ MAX_TOKEN_NAME_SIZE ] = { };
+    char         name[ MAX_TOK_NAME_SIZE ] = { };
     SimTokTypeId typ                         = TYP_NIL;
     SimTokId     tid                         = TOK_NIL;
     
@@ -659,7 +669,7 @@ struct SimEnv {
 struct SimCmdHistEntry {
     
     int  cmdId;
-    char cmdLine[ CMD_LINE_BUF_SIZE ];
+    char cmdLine[ MAX_CMD_LINE_SIZE ];
 };
 
 struct SimCmdHistory {
@@ -680,7 +690,7 @@ struct SimCmdHistory {
     int tail                = 0;
     int count               = 0;
     
-    SimCmdHistEntry history[ MAX_CMD_HIST_BUF_SIZE ];
+    SimCmdHistEntry history[ MAX_CMD_HIST ];
 };
 
 //----------------------------------------------------------------------------------------

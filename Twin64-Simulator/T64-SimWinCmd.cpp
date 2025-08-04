@@ -249,11 +249,11 @@ void SimCmdHistory::addCmdLine( char *cmdStr ) {
     ptr -> cmdId = nextCmdNum;
     strncpy( ptr -> cmdLine, cmdStr, 256 );
     
-    if ( count == MAX_CMD_HIST_BUF_SIZE ) tail = ( tail + 1 ) % MAX_CMD_HIST_BUF_SIZE;
+    if ( count == MAX_CMD_HIST ) tail = ( tail + 1 ) % MAX_CMD_HIST;
     else count++;
     
     nextCmdNum ++;
-    head = ( head + 1 ) % MAX_CMD_HIST_BUF_SIZE;
+    head = ( head + 1 ) % MAX_CMD_HIST;
 }
 
 //----------------------------------------------------------------------------------------
@@ -265,7 +265,7 @@ void SimCmdHistory::addCmdLine( char *cmdStr ) {
 //----------------------------------------------------------------------------------------
 char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
     
-    if (( cmdRef >= 0 ) && (( nextCmdNum - cmdRef ) > MAX_CMD_HIST_BUF_SIZE ))
+    if (( cmdRef >= 0 ) && (( nextCmdNum - cmdRef ) > MAX_CMD_HIST ))
          return ( nullptr );
 
     if (( cmdRef < 0  ) && ( - cmdRef > nextCmdNum )) return ( nullptr );
@@ -276,7 +276,7 @@ char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
         
         for ( int i = 0; i < count; i++ ) {
             
-            int pos = ( tail + i ) % MAX_CMD_HIST_BUF_SIZE;
+            int pos = ( tail + i ) % MAX_CMD_HIST;
             if ( history[ pos ].cmdId == cmdRef ) {
                 
                 if ( cmdId != nullptr ) *cmdId = history[ pos ].cmdId;
@@ -288,7 +288,7 @@ char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
     }
     else {
         
-        int pos = ( head + cmdRef + MAX_CMD_HIST_BUF_SIZE) % MAX_CMD_HIST_BUF_SIZE;
+        int pos = ( head + cmdRef + MAX_CMD_HIST ) % MAX_CMD_HIST;
         
         if (( pos < head ) && ( pos >= tail )) {
             
@@ -454,7 +454,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
                 }
                 else {
                    
-                    if ( cmdBufLen < CMD_LINE_BUF_SIZE - 1 ) {
+                    if ( cmdBufLen < MAX_CMD_LINE_SIZE - 1 ) {
                        
                         insertChar( cmdBuf, ch, &cmdBufLen, &cmdBufCursor );
                         
@@ -797,7 +797,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execCmdsFromFile( char* fileName ) {
     
-    char cmdLineBuf[ CMD_LINE_BUF_SIZE ] = "";
+    char cmdLineBuf[ MAX_CMD_LINE_SIZE ] = "";
     
     try {
         
@@ -1117,7 +1117,7 @@ void SimCommandsWin::histCmd( ) {
     
     if ( tok -> tokId( ) != TOK_EOS ) {
 
-        depth = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST_BUF_SIZE );
+        depth = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST );
     }
     
     if (( depth == 0 ) || ( depth > cmdCount )) depth = cmdCount;
@@ -1146,7 +1146,7 @@ void SimCommandsWin::doCmd( ) {
     
     if ( tok -> tokId( ) != TOK_EOS ) {
 
-        cmdId = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST_BUF_SIZE );
+        cmdId = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST );
     }
     
     char *cmdStr = hist -> getCmdLine( cmdId );
@@ -1170,7 +1170,7 @@ void SimCommandsWin::redoCmd( ) {
     
     if ( tok -> tokId( ) != TOK_EOS ) {
         
-        cmdId = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST_BUF_SIZE );
+        cmdId = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST );
     }
     
     char *cmdStr = hist -> getCmdLine( cmdId );
@@ -2098,8 +2098,8 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::cmdInterpreterLoop( ) {
     
-    char cmdLineBuf[ CMD_LINE_BUF_SIZE ];
-    char cmdPrompt[ CMD_LINE_BUF_SIZE ];
+    char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
+    char cmdPrompt[ MAX_CMD_LINE_SIZE ];
    
     printWelcome( );
     glb -> winDisplay -> reDraw( );

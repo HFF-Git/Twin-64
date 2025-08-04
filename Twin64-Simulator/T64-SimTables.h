@@ -249,38 +249,17 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
     { .errNum = ERR_INVALID_WIN_STACK_ID,       
       .errStr = (char *) "Invalid window stack Id" },
 
-    { .errNum = ERR_INVALID_STEP_OPTION,        
-      .errStr = (char *) "Invalid steps/instr option" },
-
     { .errNum = ERR_INVALID_EXPR,               
       .errStr = (char *) "Invalid expression" },
 
     { .errNum = ERR_INVALID_NUM,
       .errStr = (char *) "Invalid number" },
 
-    { .errNum = ERR_INVALID_INSTR_OPT,          
-      .errStr = (char *) "Invalid instruction option" },
-
-    { .errNum = ERR_INVALID_INSTR_MODE,         
-      .errStr = (char *) "Invalid adr mode for instruction" },
-
-    { .errNum = ERR_INVALID_REG_COMBO,          
-      .errStr = (char *) "Invalid register combo for instruction" },
-
-    { .errNum = ERR_INVALID_OP_CODE,            
-      .errStr = (char *) "Invalid instruction opcode" },
-
-    { .errNum = ERR_INVALID_S_OP_CODE,          
-      .errStr = (char *) "Invalid synthetic instruction opcode" },
-
     { .errNum = ERR_INVALID_FMT_OPT,            
       .errStr = (char *) "Invalid format option" },
 
     { .errNum = ERR_INVALID_WIN_TYPE,           
       .errStr = (char *) "Invalid window type" },
-
-    { .errNum = ERR_INVALID_CMD_ID,             
-      .errStr = (char *) "Invalid command Id" },
 
     { .errNum = ERR_EXPECTED_INSTR_VAL,         
       .errStr = (char *) "Expected the instruction value" },
@@ -338,9 +317,6 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
       
     { .errNum = ERR_EXPECTED_AN_OFFSET_VAL,     
       .errStr = (char *) "Expected an offset value" },
-
-    { .errNum = ERR_EXPECTED_SEGMENT_REG,       
-      .errStr = (char *) "Expected a segment register" },
 
     { .errNum = ERR_EXPECTED_FMT_OPT,           
       .errStr = (char *) "Expected a format option" },

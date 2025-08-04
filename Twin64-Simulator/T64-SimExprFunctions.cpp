@@ -152,7 +152,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     SimExpr     lExpr;
     uint32_t    instr = 0;
     int         rdx   = 0;
-    char        asmStr[ CMD_LINE_BUF_SIZE ];
+    char        asmStr[ MAX_CMD_LINE_SIZE ];
     
     // glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
