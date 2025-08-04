@@ -410,7 +410,7 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
         if ( isCurrent ) len += glb -> console -> writeChars((char *) "*(" ); 
         else             len += glb -> console -> writeChars((char *) "(" );
 
-        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack + 1, winIndex ); 
+        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack, winIndex ); 
     }    
     else len = glb -> console -> writeChars((char *) "(-***-)" );
    

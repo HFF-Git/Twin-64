@@ -920,11 +920,15 @@ struct SimWinAbsMem : SimWinScrollable {
     
     public:
     
-    SimWinAbsMem( SimGlobals *glb );
+    SimWinAbsMem( SimGlobals *glb, T64Word adr );
     
     void setDefaults( );
     void drawBanner( );
     void drawLine( T64Word index );
+
+    private:
+
+    T64Word adr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1191,7 +1195,7 @@ public:
     void            windowToggle( int winNum = 0 );
     void            windowExchangeOrder( int winNum );
     
-    void            windowNewAbsMem( );
+    void            windowNewAbsMem( T64Word adr );
     void            windowNewAbsCode( );
     void            windowNewProgState( int procModuleNum );
     void            windowNewTlb( int procModuleNum, int tlbNum = 0 );

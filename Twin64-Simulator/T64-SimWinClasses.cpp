@@ -336,7 +336,10 @@ void SimWinProgState::drawBody( ) {
 // Object constructor.
 //
 //----------------------------------------------------------------------------------------
-SimWinAbsMem::SimWinAbsMem( SimGlobals *glb ) : SimWinScrollable( glb ) { }
+SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, T64Word adr ) : SimWinScrollable( glb ) {
+
+    this -> adr = adr;
+ }
 
 //----------------------------------------------------------------------------------------
 // The default values are the initial settings when windows is brought up the first time,
@@ -355,8 +358,8 @@ void SimWinAbsMem::setDefaults( ) {
     setEnable( false );
     setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
-    setHomeItemAdr( 0 );
-    setCurrentItemAdr( 0 );
+    setHomeItemAdr( adr );
+    setCurrentItemAdr( adr );
     setLineIncrement( 8 * 4 );
     setLimitItemAdr( UINT_MAX );
 }

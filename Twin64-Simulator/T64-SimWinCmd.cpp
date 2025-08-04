@@ -1866,7 +1866,21 @@ void SimCommandsWin::winNewWinCmd( ) {
         } break;
 
 
-        case TOK_MEM:    glb -> winDisplay -> windowNewAbsMem( ); break;
+        case TOK_MEM: {
+
+            T64Word adr = 0;
+
+             if ( tok -> isToken( TOK_COMMA )) {
+
+                tok -> nextToken( );
+                adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
+            }
+
+            tok -> checkEOS( );
+            glb -> winDisplay -> windowNewAbsMem( adr );
+        
+        }  break;
+
         case TOK_CODE:   glb -> winDisplay -> windowNewAbsCode( ); break;
 
 
@@ -1937,19 +1951,18 @@ void SimCommandsWin::winKillWinCmd( ) {
 // This command assigns a user window to a stack. User windows can be displayed in a
 // separate stack of windows. The first stack is always the main stack, where the 
 // predefined and command window can be found. Stacks are numbered from 1 to MAX.
-// Internally, we think in stack numbers from 0 to MAX -1 !
 //
 //  WS <stackNum> [ , <winNumStart> [ , <winNumEnd ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetStackCmd( ) {
     
-    int     stackNum    = 0;
+    int     winStack    = 0;
     int     winNumStart = 0;
     int     winNumEnd   = 0;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
 
-    stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
+    winStack = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
     
     if ( tok -> isToken( TOK_EOS )) {
         
@@ -1970,7 +1983,7 @@ void SimCommandsWin::winSetStackCmd( ) {
     }
     else throw ( ERR_EXPECTED_COMMA );
    
-    glb -> winDisplay -> windowSetStack( stackNum - 1, winNumStart, winNumEnd );
+    glb -> winDisplay -> windowSetStack( winStack, winNumStart, winNumEnd );
     glb -> winDisplay -> reDraw( true );
 }
 

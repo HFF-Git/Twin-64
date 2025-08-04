@@ -280,6 +280,7 @@ int T64System::flushCacheLine( int proc, int cache, int set, int index ) {
 
 int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
 
+    return( 0 );
 }
 
     // ??? also need BYTE, HALF, WORD, DOUBLE ?

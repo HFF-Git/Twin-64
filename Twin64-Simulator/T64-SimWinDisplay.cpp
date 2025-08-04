@@ -136,7 +136,7 @@ bool SimWinDisplay::validWindowNum( int winNum ) {
 
 bool SimWinDisplay::validWindowStackNum( int stackNum ) {
     
-    return(( stackNum >= 0 ) && ( stackNum < MAX_WIN_STACKS ));
+    return(( stackNum >= 1 ) && ( stackNum < MAX_WIN_STACKS ));
 }
 
 bool SimWinDisplay::validWindowType( SimTokId winType ) {
@@ -190,7 +190,6 @@ int SimWinDisplay::computeColumnsNeeded( int winStack ) {
             ( windowList[ i ] -> getWinStack( ) == winStack )) {
             
             int columns = windowList[ i ] -> getDefColumns( );
-            
             if ( columns > columnSize ) columnSize = columns;
         }
     }
@@ -293,22 +292,23 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // The command screen will have a columns size across all visible stacks.
 //
 // ??? sometimes the gap between the stacks has stale characters...
+// ??? the data sees to be coming from about the middle of the first stack column ?
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( bool mustRedraw ) {
     
     int winStackColumns[ MAX_WIN_STACKS ]   = { 0 };
     int winStackRows[ MAX_WIN_STACKS ]      = { 0 };
-    int minRowSize                          = glb -> env -> getEnvVarInt((char *) ENV_WIN_MIN_ROWS );
     int maxRowsNeeded                       = 0;
     int maxColumnsNeeded                    = 0;
     int stackColumnGap                      = 2;
+     int minRowSize = glb -> env -> getEnvVarInt((char *) ENV_WIN_MIN_ROWS );
     
     if ( winModeOn ) {
        
         for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
             
-            winStackColumns[ i ] = computeColumnsNeeded( i );
-            winStackRows[ i ]    = computeRowsNeeded( i );
+            winStackColumns[ i ] = computeColumnsNeeded( i + 1 );
+            winStackRows[ i ]    = computeRowsNeeded( i + 1 );
             
             if ( winStacksOn ) {
                 
@@ -332,8 +332,8 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
         
         for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
             
-            setWindowColumns( i, winStackColumns[ i ] );
-            setWindowOrigins( i, curRows, curColumn );
+            setWindowColumns( i + 1, winStackColumns[ i ] );
+            setWindowOrigins( i + 1, curRows, curColumn );
             
             if ( winStacksOn ) {
                 
@@ -681,14 +681,14 @@ int SimWinDisplay::getFreeWindowSlot( ) {
     throw( ERR_OUT_OF_WINDOWS );
 }
 
-void SimWinDisplay::windowNewAbsMem( ) {
+void SimWinDisplay::windowNewAbsMem( T64Word adr ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb );
+    windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb, adr );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -700,7 +700,7 @@ void SimWinDisplay::windowNewAbsCode( ){
     windowList[ slot ] = (SimWin *) new SimWinCode( glb ); 
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -712,7 +712,7 @@ void SimWinDisplay::windowNewProgState( int procModuleNum ) {
     windowList[ slot ] = (SimWin *) new SimWinProgState( glb, procModuleNum  );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -724,7 +724,7 @@ void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
     windowList[ slot ] = (SimWin *) new SimWinTlb( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -736,7 +736,7 @@ void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
     windowList[ slot ] = (SimWin *) new SimWinCache( glb );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -748,7 +748,7 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
     windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 0 );
+    windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }

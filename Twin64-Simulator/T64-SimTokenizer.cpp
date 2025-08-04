@@ -171,8 +171,9 @@ void SimTokenizer::parseNum( ) {
     T64Word tmpVal      = 0;
     
     if ( currentChar == '0' ) {
+
+        while ( currentChar == '0' ) nextChar( );
         
-        nextChar( );
         if (( currentChar == 'x' ) || ( currentChar == 'X' )) {
             
             base        = 16;
@@ -405,13 +406,7 @@ void SimTokenizer::nextToken( ) {
     currentToken.tid    = TOK_NIL;
     currentToken.u.val  = 0;
     
-    #if 0
-    while (( currentChar == ' '  ) || 
-           ( currentChar == '\n' ) || 
-           ( currentChar == '\n' )) 
-    #endif
-
-    while ( currentChar == ' '  ) nextChar( );
+    while (( currentChar == ' '  ) || ( currentChar == '\n' )) nextChar( );
 
     currentTokCharIndex = currentCharIndex - 1;
     
@@ -528,7 +523,7 @@ void SimTokenizer::nextToken( ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Helper functions.
 //
 //----------------------------------------------------------------------------------------
 void SimTokenizer::checkEOS( ) {
