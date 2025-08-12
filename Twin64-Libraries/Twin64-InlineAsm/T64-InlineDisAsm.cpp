@@ -59,6 +59,11 @@ int printCondField( char *buf, uint32_t cmpCode ) {
         case 1:  return ( snprintf( buf, 4, ".LT" ));
         case 2:  return ( snprintf( buf, 4, ".NE" ));
         case 3:  return ( snprintf( buf, 4, ".LE" ));
+        case 4:  return ( snprintf( buf, 4, ".EV" ));
+        case 5:  return ( snprintf( buf, 4, ".OD" ));
+
+        case 6:
+        case 7:
         default: return ( snprintf( buf, 4, ".**" ));
     }
 }
@@ -321,7 +326,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             
             int cursor = snprintf( buf, LEN_16, "CBR" );
             if ( extractInstrBit( instr, 19 )) cursor += snprintf( buf + cursor, 4, ".**" );
-            cursor += printCondField( buf + cursor, extractInstrField( instr,20,2 ));
+            cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
             return ( cursor );
         }
             
@@ -329,7 +334,15 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             
             int cursor = snprintf( buf, LEN_16, "MBR" );
             if ( extractInstrBit( instr, 19 )) cursor += snprintf( buf + cursor, 4, ".**" );
-            cursor += printCondField( buf + cursor, extractInstrField( instr,20,2 ));
+            cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
+            return ( cursor );
+        }
+
+        case ( OPC_GRP_BR * 16 + OPC_ABR ): {
+            
+            int cursor = snprintf( buf, LEN_16, "ABR" );
+            if ( extractInstrBit( instr, 19 )) cursor += snprintf( buf + cursor, 4, ".**" );
+            cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
             return ( cursor );
         }
             
@@ -339,6 +352,8 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
                 return ( snprintf( buf, 8, "MFCR "));
             else if ( extractInstrField( instr, 19, 3 ) == 1 )   
                 return ( snprintf( buf, 8, "MTCR "));
+            else if ( extractInstrField( instr, 19, 3 ) == 2 )   
+                return ( snprintf( buf, 8, "MFIA "));
             else 
                 return ( snprintf( buf, LEN_16, "**MROP**" ));
         }
@@ -672,10 +687,19 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         }
             
         case ( OPC_GRP_SYS * 16 + OPC_MR ): {
+
+            if (( extractInstrField( instr, 19, 3 ) == 0 ) ||
+                ( extractInstrField( instr, 19, 3 ) == 1 )) {
             
-            return ( snprintf( buf, LEN_32, "R%d, C%d",
-                               extractInstrRegR( instr ),
-                               extractInstrRegB( instr )));
+                return ( snprintf( buf, LEN_32, "R%d, C%d",
+                                    extractInstrRegR( instr ),
+                                    extractInstrRegB( instr )));
+            }
+            else if ( extractInstrField( instr, 19, 3 ) == 2 ) {
+
+                return ( snprintf( buf, LEN_32, "R%d",
+                                    extractInstrRegR( instr )));
+            }
         }
             
         case ( OPC_GRP_SYS * 16 + OPC_LPA ): {

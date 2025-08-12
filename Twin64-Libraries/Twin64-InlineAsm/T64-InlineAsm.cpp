@@ -205,10 +205,11 @@ enum TokId : int {
     
     TOK_OP_B        = 341,  TOK_OP_BR       = 342,  TOK_OP_BV       = 343,
     TOK_OP_BB       = 344,  TOK_OP_CBR      = 345,  TOK_OP_MBR      = 346,
+    TOK_OP_ABR      = 347,
     
-    TOK_OP_MFCR     = 351,  TOK_OP_MTCR     = 352,
-    TOK_OP_RSM      = 353,  TOK_OP_SSM      = 354,
-    TOK_OP_LPA      = 355,  TOK_OP_PRB      = 356,
+    TOK_OP_MFCR     = 351,  TOK_OP_MTCR     = 352,  TOK_OP_MFIA     = 353,
+    TOK_OP_RSM      = 354,  TOK_OP_SSM      = 355,
+    TOK_OP_LPA      = 356,  TOK_OP_PRB      = 357,
     
     TOK_OP_ITLB     = 361,  TOK_OP_PTLB     = 362,
     TOK_OP_PCA      = 363,  TOK_OP_FCA      = 364,
@@ -274,6 +275,7 @@ enum InstrTemplate : uint32_t {
     OPF_BB       = ( OPC_BB     << 26 ),
     OPF_CBR      = ( OPC_CBR    << 26 ),
     OPF_MBR      = ( OPC_MBR    << 26 ),
+    OPF_ABR      = ( OPC_ABR    << 26 ),
     
     OPF_MR       = ( OPC_MR     << 26 ),
     OPF_LPA      = ( OPC_LPA    << 26 ),
@@ -325,6 +327,8 @@ enum InstrFlags : uint32_t {
     IF_LT       = ( 1U << 25 ),
     IF_NE       = ( 1U << 26 ),
     IF_LE       = ( 1U << 27 ),
+    IF_EV       = ( 1U << 28 ),
+    IF_OD       = ( 1U << 29 ),
     
     IM_NIL      = 0,
     IM_ADD_OP   = ( IF_B | IF_H | IF_W | IF_D ),
@@ -342,8 +346,9 @@ enum InstrFlags : uint32_t {
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
-    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE ),
-    IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE ),
+    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
+    IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
+    IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_CHK_OP   = ( IF_B | IF_H | IF_W | IF_D )
     
     // ??? synthetic instructions also need a mask constant.
@@ -518,12 +523,18 @@ const Token AsmTokTab[ ] = {
 
     {   .name   = "MBR",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_MBR,   .val = ( OPG_BR  | OPF_MBR    | OPM_FLD_0 ) },
+
+    {   .name   = "ABR",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_ABR,   .val = ( OPG_BR  | OPF_ABR    | OPM_FLD_0 ) },
     
     {   .name   = "MFCR",       .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_MFCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_0 ) },
 
     {   .name   = "MTCR",       .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_MTCR,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_1 ) },
+
+    {   .name   = "MFIA",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_MFIA,  .val = ( OPG_SYS | OPF_MR     | OPM_FLD_2 ) },
     
     {   .name   = "LPA",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_LPA,   .val = ( OPG_SYS | OPF_LPA    | OPM_FLD_0 ) },
@@ -2089,8 +2100,20 @@ void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
-
     acceptCregB( instr );
+    acceptEOS( );
+}
+
+//----------------------------------------------------------------------------------------
+// "parseInstrMFIA" copies the instruction offset to a general register.
+//
+//      MFIA <RegR>
+//
+//----------------------------------------------------------------------------------------
+void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
+   
+    nextToken( );
+    acceptRegR( instr );
     acceptEOS( );
 }
 
@@ -2337,6 +2360,8 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                 
             case TOK_OP_MFCR:
             case TOK_OP_MTCR:   parseInstrMxCR( instr, instrOpToken );      break;
+
+            case TOK_OP_MFIA:   parseInstrMFIA( instr, instrOpToken );      break;
                 
             case TOK_OP_LPA:    parseInstrLPA( instr, instrOpToken );       break;
                 
