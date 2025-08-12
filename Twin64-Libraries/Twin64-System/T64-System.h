@@ -125,8 +125,10 @@ struct T64System {
     int         purgeCacheLine( int proc, int cache, int set, int index );
 
     // ??? also need BYTE, HALF, WORD, DOUBLE ?
-    int         readMemWord( T64Word adr, T64Word *val );
-    int         writeMemWord( T64Word adr, T64Word val );
+    int         readMem( T64Word adr, T64Word *val, int len );
+    int         writeMem( T64Word adr, T64Word val, int len );
+
+   
 
     int         readMemBlock( T64Word adr, T64Word *blk );
     int         writeMemBlock( T64Word adr, T64Word *blk );

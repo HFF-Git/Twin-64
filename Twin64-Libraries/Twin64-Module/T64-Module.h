@@ -79,6 +79,8 @@ struct T64Module {
     int             getSpaStartAdr( T64Word *val );
     int             getSpaSize( T64Word *val );
 
+    // ??? routines to read and write to the areas ?
+
     private:
 
     T64ModuleType   moduleTyp       = MT_NIL;

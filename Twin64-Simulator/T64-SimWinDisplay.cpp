@@ -312,9 +312,12 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
             
             if ( winStacksOn ) {
                 
-                if ( winStackColumns[ i ] > 0 ) 
-                    maxColumnsNeeded += winStackColumns[ i ] + stackColumnGap;
+                if ( winStackColumns[ i ] > 0 ) {
 
+                    maxColumnsNeeded += winStackColumns[ i ];
+                    if ( i > 0 ) maxColumnsNeeded += stackColumnGap;
+                }
+                
                 if ( winStackRows[ i ] > maxRowsNeeded ) 
                     maxRowsNeeded = winStackRows[ i ];
             }
@@ -354,12 +357,13 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
         }
         else maxRowsNeeded += cmdWin -> getRows( );
         
-        if ( maxColumnsNeeded == 0 ) 
-            maxColumnsNeeded = cmdWin -> getDefColumns( ) + stackColumnGap;
-        
-        if ( winStacksOn )  cmdWin -> setColumns( maxColumnsNeeded - stackColumnGap );
-        else                cmdWin -> setColumns( maxColumnsNeeded );
-        
+        if ( maxColumnsNeeded == 0 ) {
+
+            maxColumnsNeeded = cmdWin -> getDefColumns( );
+            if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
+        }
+       
+        cmdWin -> setColumns( maxColumnsNeeded ); 
         cmdWin -> setWinOrigin( maxRowsNeeded - cmdWin -> getRows( ) + 1, 1 );
     }
     else {
@@ -406,7 +410,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
 // screen window changes, just do WON again to set it straight. There is also a function
 // to enable or disable the window stacks feature.
 //
-//-----------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
 void SimWinDisplay::windowsOn( ) {
 
     winModeOn = true;

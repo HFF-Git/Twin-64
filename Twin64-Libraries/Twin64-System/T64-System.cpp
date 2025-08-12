@@ -283,15 +283,74 @@ int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
     return( 0 );
 }
 
-    // ??? also need BYTE, HALF, WORD, DOUBLE ?
-int T64System::readMemWord( T64Word adr, T64Word *val ) {
+// ??? OR keep this veneer rather small and let the I/O Modules do the work...
 
-    *val = 0;
+int T64System::readMem( T64Word adr, T64Word *val, int len ) {
+
+    switch ( len ) {
+
+        case 1: {
+
+        } break;
+
+        case 2: {
+
+            if ( ! isAligned( adr, 2 )) ;
+
+        } break;
+
+        case 4: {
+
+            if ( ! isAligned( adr, 4 )) ;
+
+        } break;
+
+        case 8: {
+
+            if ( ! isAligned( adr, 8 )) ;
+
+        } break;
+
+        default: {
+
+            *val = 0;
+        }
+    }
+
     return( 0 );
 }
 
-int T64System::writeMemWord( T64Word adr, T64Word val ) {
+int T64System::writeMem( T64Word adr, T64Word val, int len ) {
 
+     switch ( len ) {
+
+        case 1: {
+
+        } break;
+
+        case 2: {
+
+            if ( ! isAligned( adr, 2 )) ;
+
+        } break;
+
+        case 4: {
+
+            if ( ! isAligned( adr, 4 )) ;
+
+        } break;
+
+        case 8: {
+
+            if ( ! isAligned( adr, 8 )) ;
+
+        } break;
+
+        default: {
+
+        }
+    }
+    
     return( 0 );
 }
 
