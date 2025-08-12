@@ -287,6 +287,18 @@ int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
 
 int T64System::readMem( T64Word adr, T64Word *val, int len ) {
 
+    T64Module *m = lookupByAdr( adr );
+
+    if ( m != nullptr ) {
+
+        // ??? need a method to invoke ...
+    }
+
+
+
+    // ??? find the module that handles this address....
+    // ??? do the alignment check in any case ?
+
     switch ( len ) {
 
         case 1: {
@@ -321,6 +333,9 @@ int T64System::readMem( T64Word adr, T64Word *val, int len ) {
 }
 
 int T64System::writeMem( T64Word adr, T64Word val, int len ) {
+
+    // ??? find the module that handles this address....
+    // ??? do the alignment check in any case ?
 
      switch ( len ) {
 

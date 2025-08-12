@@ -79,7 +79,7 @@ struct T64Module {
     int             getSpaStartAdr( T64Word *val );
     int             getSpaSize( T64Word *val );
 
-    // ??? routines to read and write to the areas ?
+    // ??? routines to be called by SYSTEM when a request is made ?
 
     private:
 
