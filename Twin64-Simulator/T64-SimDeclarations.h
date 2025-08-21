@@ -210,8 +210,8 @@ enum SimTokId : uint16_t {
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
     TOK_STR                 = 102, 
 
-    TOK_DEC                 = 200,      TOK_HEX                 = 201,
-    TOK_CODE                = 202,
+    TOK_DEC                 = 104,      TOK_HEX                 = 105,
+    TOK_CODE                = 106,
 
     TOK_DEF                 = 200,      TOK_ALL                 = 201,
     TOK_PROC                = 202,      TOK_CPU                 = 203,   

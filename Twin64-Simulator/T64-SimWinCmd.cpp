@@ -1865,7 +1865,6 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         } break;
 
-
         case TOK_MEM: {
 
             T64Word adr = 0;
@@ -1881,8 +1880,11 @@ void SimCommandsWin::winNewWinCmd( ) {
         
         }  break;
 
-        case TOK_CODE:   glb -> winDisplay -> windowNewAbsCode( ); break;
+        case TOK_CODE: {
 
+            glb -> winDisplay -> windowNewAbsCode( );
+        
+        }  break;
 
         case TOK_TEXT: {
 
