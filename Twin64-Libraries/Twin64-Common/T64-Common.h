@@ -133,49 +133,50 @@ enum ControlRegId : int {
 //----------------------------------------------------------------------------------------
 enum OpCodeGroup : uint32_t {
     
-    OPC_GRP_ALU = 0U,
-    OPC_GRP_MEM = 1U,
-    OPC_GRP_BR  = 2U,
-    OPC_GRP_SYS = 3U
+    OPC_GRP_ALU     = 0U,
+    OPC_GRP_MEM     = 1U,
+    OPC_GRP_BR      = 2U,
+    OPC_GRP_SYS     = 3U
 };
 
 enum OpCodeFam : uint32_t {
     
-    OPC_NOP      = 0U,
+    OPC_NOP         = 0U,
     
-    OPC_ADD      = 1U,
-    OPC_SUB      = 2U,
-    OPC_AND      = 3U,
-    OPC_OR       = 4U,
-    OPC_XOR      = 5U,
-    OPC_CMP      = 6U,
-    OPC_BITOP    = 7U,
-    OPC_SHAOP    = 8U,
-    OPC_IMMOP    = 9U,
-    OPC_LDO      = 10U,
+    OPC_ADD         = 1U,
+    OPC_SUB         = 2U,
+    OPC_AND         = 3U,
+    OPC_OR          = 4U,
+    OPC_XOR         = 5U,
+    OPC_CMP         = 6U,
+    OPC_BITOP       = 7U,
+    OPC_SHAOP       = 8U,
+    OPC_IMMOP       = 9U,
+    OPC_LDO         = 10U,
     
-    OPC_LD       = 8U,
-    OPC_ST       = 9U,
-    OPC_LDR      = 10U,
-    OPC_STC      = 11U,
+    OPC_LD          = 8U,
+    OPC_ST          = 9U,
+    OPC_LDR         = 10U,
+    OPC_STC         = 11U,
     
-    OPC_B        = 1U,
-    OPC_BR       = 2U,
-    OPC_BV       = 3U,
-    OPC_BB       = 4U,
-    OPC_CBR      = 5U,
-    OPC_MBR      = 6U,
-    OPC_ABR      = 7U,
+    OPC_B           = 1U,
+    OPC_BR          = 2U,
+    OPC_BV          = 3U,
+    OPC_BE          = 4U,
+    OPC_BB          = 8U,
+    OPC_CBR         = 9U,
+    OPC_MBR         = 10U,
+    OPC_ABR         = 11U,
     
-    OPC_MR       = 1U,
-    OPC_LPA      = 2U,
-    OPC_PRB      = 3U,
-    OPC_TLB      = 4U,
-    OPC_CA       = 5U,
-    OPC_MST      = 6U,
-    OPC_RFI      = 7U,
-    OPC_TRAP     = 14U,
-    OPC_DIAG     = 15U
+    OPC_MR          = 1U,
+    OPC_LPA         = 2U,
+    OPC_PRB         = 3U,
+    OPC_TLB         = 4U,
+    OPC_CA          = 5U,
+    OPC_MST         = 6U,
+    OPC_RFI         = 7U,
+    OPC_TRAP        = 14U,
+    OPC_DIAG        = 15U
 };
 
 #endif

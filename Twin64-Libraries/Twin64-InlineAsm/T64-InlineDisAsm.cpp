@@ -302,6 +302,11 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
                 cursor += snprintf( buf + cursor, 4, ".G" );
             return ( cursor );
         }
+
+        case ( OPC_GRP_BR * 16 + OPC_BE ): {
+            
+            return ( snprintf( buf, LEN_16, "BE" ));
+        }
             
         case ( OPC_GRP_BR * 16 + OPC_BR ): {
             
@@ -622,6 +627,23 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         case ( OPC_GRP_BR * 16 + OPC_B ): {
             
             int cursor = snprintf( buf, LEN_32, ", %d", extractInstrImm19( instr ));
+            
+            if ( extractInstrField( instr, 26, 4 ) != 0 ) {
+
+                cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
+                                    extractInstrRegR( instr ));
+            }
+            
+            return ( cursor );
+        }
+
+        case ( OPC_GRP_BR * 16 + OPC_BE ): {
+
+            // ??? what is a good syntax ?
+            
+             int cursor = snprintf( buf, LEN_32, "R%d", extractInstrRegR( instr ));
+            
+            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrImm15( instr ));
             
             if ( extractInstrField( instr, 26, 4 ) != 0 ) {
 

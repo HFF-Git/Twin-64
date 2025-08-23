@@ -204,8 +204,10 @@ enum TokId : int {
     TOK_OP_ST       = 337,  TOK_OP_STC      = 338,
     
     TOK_OP_B        = 341,  TOK_OP_BR       = 342,  TOK_OP_BV       = 343,
-    TOK_OP_BB       = 344,  TOK_OP_CBR      = 345,  TOK_OP_MBR      = 346,
-    TOK_OP_ABR      = 347,
+    TOK_OP_BE       = 344,
+
+    TOK_OP_BB       = 345,  TOK_OP_CBR      = 346,  TOK_OP_MBR      = 347,
+    TOK_OP_ABR      = 348,
     
     TOK_OP_MFCR     = 351,  TOK_OP_MTCR     = 352,  TOK_OP_MFIA     = 353,
     TOK_OP_RSM      = 354,  TOK_OP_SSM      = 355,
@@ -272,6 +274,7 @@ enum InstrTemplate : uint32_t {
     OPF_B        = ( OPC_B      << 26 ),
     OPF_BR       = ( OPC_BR     << 26 ),
     OPF_BV       = ( OPC_BV     << 26 ),
+    OPF_BE       = ( OPC_BE     << 26 ),
     OPF_BB       = ( OPC_BB     << 26 ),
     OPF_CBR      = ( OPC_CBR    << 26 ),
     OPF_MBR      = ( OPC_MBR    << 26 ),
@@ -513,8 +516,11 @@ const Token AsmTokTab[ ] = {
         .tid    =   TOK_OP_BR,  .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
 
     {   .name   = "BV",         .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_1 ) },
+        .tid    = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_0 ) },
 
+    {   .name   = "BE",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_BE,    .val = ( OPG_BR  | OPF_BE     | OPM_FLD_0 ) },
+    
     {   .name   = "BB",         .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
     
@@ -1932,6 +1938,37 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "parseOpBE" is the external branch. We add and offset to RegB which forms the target 
+// offset. Optionally, we can specify a return link register.
+//
+//      BE <regB> [ "," ofs [ "," <regR> ]]
+//
+//----------------------------------------------------------------------------------------
+void parseInstrBE( uint32_t *instr, uint32_t instrOpToken ) {
+
+    Expr rExpr = INIT_EXPR;
+    
+    nextToken( );
+    acceptRegB( instr );
+    acceptComma( );
+
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
+
+         depositInstrImm15( instr, (uint32_t) rExpr.val );
+    }
+    else ;
+
+    if ( isToken( TOK_COMMA )) {
+
+        nextToken( );
+        acceptRegR( instr );
+    }
+    
+    acceptEOS( );
+}
+
+//----------------------------------------------------------------------------------------
 // "parseOpBR" is the IA-relative branch adding RegB to IA. Optionally, we can specify
 // a return link register.
 //
@@ -2351,6 +2388,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_STC:    parseMemOp( instr, instrOpToken );          break;
                 
             case TOK_OP_B:      parseInstrB( instr, instrOpToken );         break;
+            case TOK_OP_BE:     parseInstrBE( instr, instrOpToken );        break;
             case TOK_OP_BR:     parseInstrBR( instr, instrOpToken );        break;
             case TOK_OP_BV:     parseInstrBV( instr, instrOpToken );        break;
             case TOK_OP_BB:     parseInstrBB( instr, instrOpToken );        break;
