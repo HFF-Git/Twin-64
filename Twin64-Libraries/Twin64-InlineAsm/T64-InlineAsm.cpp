@@ -272,9 +272,10 @@ enum InstrTemplate : uint32_t {
     OPF_STC      = ( OPC_STC    << 26 ),
     
     OPF_B        = ( OPC_B      << 26 ),
+    OPF_BE       = ( OPC_BE     << 26 ),
     OPF_BR       = ( OPC_BR     << 26 ),
     OPF_BV       = ( OPC_BV     << 26 ),
-    OPF_BE       = ( OPC_BE     << 26 ),
+    
     OPF_BB       = ( OPC_BB     << 26 ),
     OPF_CBR      = ( OPC_CBR    << 26 ),
     OPF_MBR      = ( OPC_MBR    << 26 ),
@@ -348,6 +349,7 @@ enum InstrFlags : uint32_t {
     IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
+    IM_BE_OP    = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
     IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
@@ -512,15 +514,15 @@ const Token AsmTokTab[ ] = {
     {   .name   = "B",          .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_B,     .val = ( OPG_BR  | OPF_B      | OPM_FLD_0 ) },
 
+    {   .name   = "BE",         .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_BE,    .val = ( OPG_BR  | OPF_BE     | OPM_FLD_0 ) },
+
     {   .name   = "BR",         .typ = TYP_OP_CODE, 
         .tid    =   TOK_OP_BR,  .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
 
     {   .name   = "BV",         .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_0 ) },
-
-    {   .name   = "BE",         .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_BE,    .val = ( OPG_BR  | OPF_BE     | OPM_FLD_0 ) },
-    
+   
     {   .name   = "BB",         .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_BB,    .val = ( OPG_BR  | OPF_BB     | OPM_FLD_0 ) },
     
@@ -1941,23 +1943,33 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseOpBE" is the external branch. We add and offset to RegB which forms the target 
 // offset. Optionally, we can specify a return link register.
 //
-//      BE <regB> [ "," ofs [ "," <regR> ]]
+//      BE  [ <ofs> ] "("" <regB> ")" [ "," <regR> ]
 //
 //----------------------------------------------------------------------------------------
 void parseInstrBE( uint32_t *instr, uint32_t instrOpToken ) {
 
-    Expr rExpr = INIT_EXPR;
-    
+    Expr        rExpr       = INIT_EXPR;
+    uint32_t    instrFlags  = IF_NIL;
+
     nextToken( );
+    parseInstrOptions( &instrFlags, instrOpToken );
+    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) {
+
+        throw ( ERR_INVALID_INSTR_OPT );
+    } 
+
     acceptRegB( instr );
     acceptComma( );
 
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
 
-         depositInstrImm15( instr, (uint32_t) rExpr.val );
+        depositInstrImm15( instr, (uint32_t) rExpr.val );    
     }
-    else ;
+    
+    acceptLparen( );
+    acceptRegB( instr );
+    acceptRparen( );
 
     if ( isToken( TOK_COMMA )) {
 
@@ -2318,9 +2330,9 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 // "parseInstrTrapOp" assembles the trap operations.
 //
-//      Generic. TRAP <info1> "," RegB "," RegA "," <info2> "," <val>
+//      Generic. TRAP <info> "," RegB "," RegA "," <val>
 //
-// We have p to 8 trap group IDs. Group zero should be the BRK group ID..
+// We have up to 32 trap group IDs. Group zero should be the BRK group ID..
 //
 // ??? to be designed ...
 //----------------------------------------------------------------------------------------

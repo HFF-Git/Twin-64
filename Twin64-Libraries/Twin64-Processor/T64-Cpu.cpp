@@ -915,37 +915,46 @@ void T64Processor::instrExecute( ) {
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_BR ): {
+
+                switch ( extractInstrField( instrReg, 19, 3 )) {
+
+                    case 0: {
+
+                        T64Word ofs     = getRegB( instrReg ) << 2;
+                        T64Word rl      = addAdrOfs( pswReg, 4 );
+                        T64Word newIA   = addAdrOfs( pswReg, ofs );
                 
-                T64Word ofs     = getRegB( instrReg ) << 2;
-                T64Word rl      = addAdrOfs( pswReg, 4 );
-                T64Word newIA   = addAdrOfs( pswReg, ofs );
-                
-                if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
-                    throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                        if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
+                            throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                     
-                if ( ! isAligned( newIA, 4 )) throw( T64Trap( ALIGNMENT_TRAP ));
+                        if ( ! isAligned( newIA, 4 )) throw( T64Trap( ALIGNMENT_TRAP ));
                 
-                pswReg = newIA;
-                setRegR( instrReg, rl );
+                        pswReg = newIA;
+                        setRegR( instrReg, rl );
+                    
+                    } break;
+
+                    case 1: {
+
+                        T64Word base    = getRegB( instrReg );
+                        T64Word ofs     = getRegA( instrReg );
+                        T64Word rl      = addAdrOfs( pswReg, 4 );
+                        T64Word newIA   = addAdrOfs( base, ofs );
                 
-            } break;
+                        if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
+                            throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                        if ( ! isAligned( newIA, 4 )) throw( T64Trap( ALIGNMENT_TRAP ));
                 
-            case ( OPC_GRP_BR * 16 + OPC_BV ): {
-                
-                T64Word base    = getRegB( instrReg );
-                T64Word ofs     = getRegA( instrReg );
-                T64Word rl      = addAdrOfs( pswReg, 4 );
-                T64Word newIA   = addAdrOfs( base, ofs );
-                
-                if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
-                    throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
-                if ( ! isAligned( newIA, 4 )) throw( T64Trap( ALIGNMENT_TRAP ));
-                
-                pswReg = newIA;
-                setRegR( instrReg, rl );
-                
-            } break;
-                
+                        pswReg = newIA;
+                        setRegR( instrReg, rl );
+                    
+                    } break;
+
+                    default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                }
+
+            } break;   
+               
             case ( OPC_GRP_BR * 16 + OPC_BB ): {
                 
                 T64Word newIA   = addAdrOfs( pswReg, extractImm13( instrReg ));

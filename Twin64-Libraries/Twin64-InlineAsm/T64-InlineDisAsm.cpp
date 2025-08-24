@@ -305,19 +305,24 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
 
         case ( OPC_GRP_BR * 16 + OPC_BE ): {
             
-            return ( snprintf( buf, LEN_16, "BE" ));
+            int cursor = snprintf( buf, LEN_16, "BE" );
+            if ( extractInstrField( instr, 20, 2) != 0 ) 
+                cursor += snprintf( buf + cursor, 4, ".**" );
+            if ( extractInstrBit( instr, 19 ))           
+                cursor += snprintf( buf + cursor, 4, ".G" );
+            return ( cursor );
         }
-            
+
         case ( OPC_GRP_BR * 16 + OPC_BR ): {
-            
-            return ( snprintf( buf, LEN_16, "BR" ));
+
+           return ( snprintf( buf, LEN_16, "BR" ));
         }
             
         case ( OPC_GRP_BR * 16 + OPC_BV ): {
-            
-            return ( snprintf( buf, LEN_16, "BV" ));
+
+           return ( snprintf( buf, LEN_16, "BV" ));
         }
-            
+      
         case ( OPC_GRP_BR * 16 + OPC_BB ): {
             
             int cursor = snprintf( buf, LEN_16, "BB" );
@@ -639,11 +644,9 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
 
         case ( OPC_GRP_BR * 16 + OPC_BE ): {
 
-            // ??? what is a good syntax ?
-            
-             int cursor = snprintf( buf, LEN_32, "R%d", extractInstrRegR( instr ));
-            
-            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrImm15( instr ));
+            int cursor = snprintf( buf, LEN_32, "%d", extractInstrImm15( instr ));
+
+            cursor += snprintf( buf + cursor, LEN_32, "(R%d)", extractInstrRegB( instr ));
             
             if ( extractInstrField( instr, 26, 4 ) != 0 ) {
 
@@ -655,20 +658,20 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         }
             
         case ( OPC_GRP_BR * 16 + OPC_BR ): {
-            
+
             int cursor = snprintf( buf, LEN_32, "R%d", extractInstrRegB( instr ));
             
-            if ( extractInstrField( instr, 26, 4 ) != 0 ) {
+                if ( extractInstrField( instr, 26, 4 ) != 0 ) {
 
-                cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
-                                    extractInstrRegR( instr ));
-            }
+                    cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
+                                                    extractInstrRegR( instr ));
+                }
             
-            return ( cursor );
+               return ( cursor ); 
         }
-            
-        case ( OPC_GRP_BR * 16 + OPC_BV ): {
-            
+
+         case ( OPC_GRP_BR * 16 + OPC_BV ): {
+
             int cursor = snprintf( buf, LEN_32, "R%d, R%d",
                                    extractInstrRegB( instr ),
                                    extractInstrRegA( instr ));
@@ -677,7 +680,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
 
                 cursor += snprintf( buf + cursor, LEN_32, ", R%d", 
                                     extractInstrRegR( instr ));
-            }
+                }
 
             return ( cursor );
         }

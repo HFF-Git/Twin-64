@@ -160,9 +160,10 @@ enum OpCodeFam : uint32_t {
     OPC_STC         = 11U,
     
     OPC_B           = 1U,
-    OPC_BR          = 2U,
-    OPC_BV          = 3U,
-    OPC_BE          = 4U,
+    OPC_BE          = 2U,
+    OPC_BR          = 3U,
+    OPC_BV          = 4U,
+   
     OPC_BB          = 8U,
     OPC_CBR         = 9U,
     OPC_MBR         = 10U,
