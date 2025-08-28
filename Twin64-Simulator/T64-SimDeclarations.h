@@ -228,14 +228,14 @@ enum SimTokId : uint16_t {
     CMD_EXIT                = 1001,     CMD_HELP                = 1002,
     CMD_DO                  = 1003,     CMD_REDO                = 1004,     
     CMD_HIST                = 1005,     CMD_ENV                 = 1006,     
-    CMD_XF                  = 1007,     CMD_WRITE_LINE          = 1008,
-    CMD_DM                  = 1009,
+    CMD_XF                  = 1007,     CMD_LF                  = 1008,
+    CMD_WRITE_LINE          = 1009,     CMD_DM                  = 1010,
     
-    CMD_RESET               = 1010,     CMD_RUN                 = 1011,     
-    CMD_STEP                = 1012,     CMD_MR                  = 1013,
-    CMD_DA                  = 1014,     CMD_MA                  = 1015,
-    CMD_I_TLB               = 1016,     CMD_P_TLB               = 1017,
-    CMD_F_CACHE             = 1018,     CMD_P_CACHE             = 1019,
+    CMD_RESET               = 1011,     CMD_RUN                 = 1012,     
+    CMD_STEP                = 1013,     CMD_MR                  = 1014,
+    CMD_DA                  = 1015,     CMD_MA                  = 1016,
+    CMD_I_TLB               = 1017,     CMD_P_TLB               = 1018,
+    CMD_F_CACHE             = 1019,     CMD_P_CACHE             = 1020,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -1101,6 +1101,8 @@ private:
     void            helpCmd( );
     void            envCmd( );
     void            execFileCmd( );
+    void            loadElfFileCmd( );
+    void            loadElfFile( char *fileName );
     void            writeLineCmd( );
     void            execCmdsFromFile( char* fileName );
     

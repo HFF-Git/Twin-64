@@ -32,7 +32,6 @@
 #include "T64-Util.h"
 #include "T64-System.h"
 #include "T64-SimDeclarations.h"
-#include <elfio/elfio.hpp>
 
 //----------------------------------------------------------------------------------------
 // Here we go.

@@ -16,6 +16,7 @@ add_executable( ${PROJECT_NAME}
     T64-SimEnvVars.cpp
     T64-SimWinBaseClasses.cpp
     T64-SimWinClasses.cpp
+    T64-SimWinElfFileCmd.cpp
     T64-SimWinCmd.cpp
     T64-SimWinDisplay.cpp
 )

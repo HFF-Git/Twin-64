@@ -986,6 +986,17 @@ void SimCommandsWin::execFileCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Load an ELF file command. 
+//
+// LF "<filename>"
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::loadElfFileCmd( ) {
+    
+    if ( tok -> tokTyp( ) == TYP_STR )  ; // execCmdsFromFile( tok -> tokStr( ));
+    else                                throw( ERR_EXPECTED_FILE_NAME );
+}
+
+//----------------------------------------------------------------------------------------
 // Reset command.
 //
 //  RESET [ ( 'PROC' | 'MEM' | 'STATS' | 'ALL' ) ]
