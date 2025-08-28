@@ -623,6 +623,7 @@ struct SimEnv {
     char            *getEnvVarStr( char *name, char *def = nullptr );
     SimEnvTabEntry  *getEnvEntry( char *name );
     SimEnvTabEntry  *getEnvEntry( int index );
+
     int             getEnvHwm( );
     int             formatEnvEntry( char *name, char *buf, int bufLen );
     int             formatEnvEntry( int index, char *buf, int bufLen );
@@ -650,9 +651,7 @@ struct SimEnv {
                               char *str, 
                               bool predefined = false, 
                               bool rOnly = false );
-    
-    void            displayEnvEntry( SimEnvTabEntry *entry );
-    
+   
     SimEnvTabEntry  *table  = nullptr;
     SimEnvTabEntry  *hwm    = nullptr;
     SimEnvTabEntry  *limit  = nullptr;

@@ -938,7 +938,6 @@ void SimCommandsWin::envCmd( ) {
 
             for ( int i = 0; i < hwm; i++ ) {
 
-
                 char buf[ 128 ];
                 int len = env -> formatEnvEntry( i, buf, sizeof( buf ));
                 if ( len > 0 ) winOut -> writeChars( "%s\n", buf );

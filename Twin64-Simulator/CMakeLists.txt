@@ -20,6 +20,9 @@ add_executable( ${PROJECT_NAME}
     T64-SimWinDisplay.cpp
 )
 
+add_library( ELFIO INTERFACE )
+    target_include_directories( ELFIO INTERFACE ${CMAKE_SOURCE_DIR}/../ELFIO )
+
 target_link_libraries( ${PROJECT_NAME} PRIVATE 
 
     Twin64-Common 
@@ -28,4 +31,5 @@ target_link_libraries( ${PROJECT_NAME} PRIVATE
     Twin64-System
     Twin64-Processor
     Twin64-Memory
+    ELFIO
 )
