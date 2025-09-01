@@ -64,13 +64,14 @@ enum AccRights : int {
 //----------------------------------------------------------------------------------------
 //
 //
+// ??? fix trap numbers... IVA relevant...
 //----------------------------------------------------------------------------------------
 enum TrapCode : int {
     
     NO_TRAP                 = 0,
     ILLEGAL_INSTR_TRAP      = 1,
-    ALIGNMENT_TRAP          = 2,
-    
+    INSTR_ALIGNMENT_TRAP    = 2,
+      
     PHYS_MEM_ADR_TRAP       = 4,
     IO_MEM_ADR_TRAP         = 5,
     
@@ -78,6 +79,9 @@ enum TrapCode : int {
     PROTECTION_TRAP         = 7,
     PRIV_VIOLATION_TRAP     = 8,
     TLB_ACCESS_TRAP         = 9,
+
+     
+    DATA_ALIGNMENT_TRAP     = 2, 
     
 };
 

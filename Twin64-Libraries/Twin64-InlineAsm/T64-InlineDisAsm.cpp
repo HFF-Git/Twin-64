@@ -393,22 +393,26 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         }
             
         case ( OPC_GRP_SYS * 16 + OPC_TLB ): {
-            
-            if ( extractInstrField( instr, 19, 3 ) == 0 ) 
-                return ( snprintf( buf, LEN_16, "ITLB" ));
-            else if ( extractInstrField( instr, 19, 3 ) == 1 ) 
-                return ( snprintf( buf, LEN_16, "PTLB" ));
-            else return ( snprintf( buf, 8, "**TLB**" ));
+
+            switch ( extractInstrField( instr, 19, 3 )) {
+
+                case 0: return ( snprintf( buf, LEN_16, "IITLB" ));
+                case 1: return ( snprintf( buf, LEN_16, "IDTLB" ));
+                case 2: return ( snprintf( buf, LEN_16, "PITLB" ));
+                case 3: return ( snprintf( buf, LEN_16, "PDTLB" ));
+                default: return ( snprintf( buf, 8, "**TLB**" ));
+            }
         }
             
         case ( OPC_GRP_SYS * 16 + OPC_CA ): {
-            
-            if ( extractInstrField( instr, 19, 3 ) == 0 ) 
-                return ( snprintf( buf, LEN_16, "PCA" ));
-            else if ( extractInstrField( instr, 19, 3 ) == 1 ) 
-                return ( snprintf( buf, LEN_16, "FCA" ));
-            else 
-                return ( snprintf( buf, 8, "**CA**" ));
+
+            switch ( extractInstrField( instr, 19, 3 )) {
+
+                case 0: return ( snprintf( buf, LEN_16, "PICA" ));
+                case 1: return ( snprintf( buf, LEN_16, "PDCA" ));
+                case 2: return ( snprintf( buf, LEN_16, "FDCA" ));
+                default: return ( snprintf( buf, 8, "**CA**" ));
+            }
         }
             
         case ( OPC_GRP_SYS * 16 + OPC_MST ): {

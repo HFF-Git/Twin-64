@@ -212,9 +212,11 @@ enum TokId : int {
     TOK_OP_MFCR     = 351,  TOK_OP_MTCR     = 352,  TOK_OP_MFIA     = 353,
     TOK_OP_RSM      = 354,  TOK_OP_SSM      = 355,
     TOK_OP_LPA      = 356,  TOK_OP_PRB      = 357,
+
+    TOK_OP_IITLB    = 361,  TOK_OP_IDTLB    = 362,
+    TOK_OP_PITLB    = 363,  TOK_OP_PDTLB    = 364,
     
-    TOK_OP_ITLB     = 361,  TOK_OP_PTLB     = 362,
-    TOK_OP_PCA      = 363,  TOK_OP_FCA      = 364,
+    TOK_OP_PICA     = 365,  TOK_OP_PDCA     = 366,  TOK_OP_FDCA     = 367,
     
     TOK_OP_RFI      = 371,  TOK_OP_DIAG     = 372,  TOK_OP_TRAP     = 373,
     
@@ -550,17 +552,26 @@ const Token AsmTokTab[ ] = {
     {   .name   = "PRB",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_PRB,   .val = ( OPG_SYS | OPF_PRB    | OPM_FLD_0 ) },
 
-    {   .name   = "ITLB",       .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_ITLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
+    {   .name   = "IITLB",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_IITLB, .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_0 ) },
 
-    {   .name   = "PTLB",       .typ = TYP_OP_CODE,
-        .tid    = TOK_OP_PTLB,  .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+    {   .name   = "IDTLB",      .typ = TYP_OP_CODE,
+        .tid    = TOK_OP_IDTLB, .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_1 ) },
+
+    {   .name   = "PITLB",      .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PITLB, .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_2 ) },
+
+    {   .name   = "PDTLB",      .typ = TYP_OP_CODE,
+        .tid    = TOK_OP_PDTLB, .val = ( OPG_SYS | OPF_TLB    | OPM_FLD_3 ) },
     
-    {   .name   = "PCA",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_PCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
+    {   .name   = "PICA",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PICA,  .val = ( OPG_SYS | OPF_CA     | OPM_FLD_0 ) },
 
-    {   .name   = "FCA",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_FCA,   .val = ( OPG_SYS | OPF_CA     | OPM_FLD_1 ) },
+    {   .name   = "PDCA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_1 ) },
+
+    {   .name   = "FDCA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_FDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_2 ) },
     
     {   .name   = "RSM",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
@@ -2225,8 +2236,10 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 // virtual address. For TLB inserts RegA contains the info on access rights and 
 // physical address. The result is in RegR.
 //
-//      ITLB <targetReg> "," <RegB> "," <RegA>
-// ^    PTLB <targetReg> "," <RegB>
+//      IITLB <targetReg> "," <RegB> "," <RegA>
+//      IDTLB <targetReg> "," <RegB> "," <RegA>
+//      PITLB <targetReg> "," <RegB>
+//      PDTLB <targetReg> "," <RegB>
 //
 //----------------------------------------------------------------------------------------
 void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2236,7 +2249,7 @@ void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
     acceptComma( );
     acceptRegB( instr );
     
-    if ( instrOpToken == TOK_OP_ITLB ) {
+    if (( instrOpToken == TOK_OP_IITLB ) || ( instrOpToken == TOK_OP_IDTLB )) {
         
         acceptComma( );
         acceptRegA( instr );
@@ -2248,8 +2261,9 @@ void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 // "parseInstrCacheOp" assemble the cache flush and purge operation.
 //
-//      PCA <targetReg> "," <RegB>
-//      FCA <targetReg> "," <RegB>
+//      PICA <targetReg> "," <RegB>
+//      PDCA <targetReg> "," <RegB>
+//      FDCA <targetReg> "," <RegB>
 //
 //----------------------------------------------------------------------------------------
 void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2417,11 +2431,14 @@ void parseLine( char *inputStr, uint32_t *instr ) {
                 
             case TOK_OP_PRB:    parseInstrPRB( instr, instrOpToken );       break;
                 
-            case TOK_OP_ITLB:
-            case TOK_OP_PTLB:   parseInstrTlbOp( instr, instrOpToken );     break;
+            case TOK_OP_IITLB:
+            case TOK_OP_IDTLB:  
+            case TOK_OP_PITLB:
+            case TOK_OP_PDTLB:  parseInstrTlbOp( instr, instrOpToken );     break;
                 
-            case TOK_OP_PCA:
-            case TOK_OP_FCA:    parseInstrCacheOp( instr, instrOpToken );   break;
+            case TOK_OP_PICA:
+            case TOK_OP_PDCA:
+            case TOK_OP_FDCA:   parseInstrCacheOp( instr, instrOpToken );   break;
                 
             case TOK_OP_SSM:
             case TOK_OP_RSM:    parseInstrSregOp( instr, instrOpToken );    break;

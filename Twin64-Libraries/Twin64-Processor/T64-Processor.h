@@ -124,7 +124,8 @@ private:
 
 
 //----------------------------------------------------------------------------------------
-// The CPU core executes the instructions.
+// The CPU core executes the instructions. The processor has the interfaces called by
+// the simulator. This includes interfaces to TLBs and caches. 
 //
 //----------------------------------------------------------------------------------------
 struct T64Processor : T64Module {
@@ -143,13 +144,20 @@ public:
     T64Word         getControlReg( int index );
     void            setControlReg( int index, T64Word val );
 
-    void            addTlbEntry( T64Word info1, T64Word info2 );
-    void            removeTlbEntry( T64Word vAdr );
-    T64TlbEntry     *getTlbEntry( int index );
+    void            insertInstrTlb( T64Word vAdr, T64Word info2 );
+    void            purgeInstrTlb( T64Word vAdr );
+    T64TlbEntry     *getInstrTlbEntry( int index );
 
-    void            flushCache( T64Word vAdr );
-    void            purgeCache( T64Word vAdr );
-    T64CacheLine    *getCacheEntry( int set, int index );
+    void            insertDataTlb( T64Word vAdr, T64Word info2 );
+    void            purgeDataTlb( T64Word vAdr );
+    T64TlbEntry     *getDataTlbEntry( int index );
+
+    void            purgeInstrCache( T64Word vAdr );
+    void            flushDataCache( T64Word vAdr );
+    void            purgeDataCache( T64Word vAdr );
+
+    T64CacheLine    *getInstrCacheEntry( int set, int index );
+    T64CacheLine    *getDataCacheEntry( int set, int index );
     
     T64Word         getPswReg( );
     void            setPswReg( T64Word val );
@@ -167,19 +175,22 @@ private:
     T64Word         extractImm20U( uint32_t instr );
     T64Word         extractDwField( uint32_t instr );
     
-    T64Word         translateAdr( T64Word vAdr );
+    bool            isPhysicalAdrRange( T64Word vAdr );
+    bool            privModeCheck( );
+    bool            protectionCheck( uint32_t pId, bool wMode );
+    bool            accessRightCheck( T64Word vAdr, AccRights mode );
     
-    void            instrRead( );
-    T64Word         dataRead( T64Word vAdr, int len  );
-    void            dataWrite( T64Word vAdr, T64Word val, int len );
+    T64Word         instrRead( T64Word vAdr );
 
+    T64Word         dataRead( T64Word vAdr, int len  );
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
     T64Word         dataReadRegBOfsRegX( uint32_t instr );
 
+    void            dataWrite( T64Word vAdr, T64Word val, int len );
     void            dataWriteRegBOfsImm13( uint32_t instr );
     void            dataWriteRegBOfsRegX( uint32_t instr );
-    
-    void            instrExecute( );
+
+    void            instrExecute( uint32_t instr );
    
 private:
     
@@ -193,6 +204,9 @@ private:
     T64Cache        *cache              = nullptr;
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;
+
+    T64Word         lowerPhysMemAdr     = 0;
+    T64Word         upperPhysMemAdr     = 0;
 };
 
 
