@@ -93,8 +93,7 @@ struct T64System {
     void        run( );
     void        step( int steps = 1 );
 
-    // ??? ideas for routines used by the simulator...
-    // ??? perhaps also used by the processor in some parts...
+    // ??? ideas for routines used by the simulator
     // ??? general logic: lookup module and invoke the module specific function.
 
     int         readGeneralReg( int proc, int reg, T64Word *val );
@@ -102,9 +101,6 @@ struct T64System {
 
     int         readControlReg( int proc, int reg, T64Word *val );
     int         writeControlReg( int proc, int reg, T64Word val );
-
-    // ??? a but cumbersome when we want to modify an address only and leave the
-    // status part unchanged...
 
     int         readPswReg( int proc, int reg, T64Word *val );
     int         writePswReg( int proc, int reg, T64Word val );
@@ -124,14 +120,19 @@ struct T64System {
 
     int         purgeCacheLine( int proc, int cache, int set, int index );
 
-    // ??? also need BYTE, HALF, WORD, DOUBLE ?
     int         readMem( T64Word adr, T64Word *val, int len );
     int         writeMem( T64Word adr, T64Word val, int len );
 
-   
 
-    int         readMemBlock( T64Word adr, T64Word *blk );
-    int         writeMemBlock( T64Word adr, T64Word *blk );
+    // need routines for cache coherence memory access
+
+    int         readBlockShared( int proc, T64Word pAdr, T64Word *data );
+    int         readBlockPrivate( int proc, T64Word pAdr, T64Word *data );
+    int         writeBlock( int proc, T64Word pAdr, T64Word *data );
+    int         readWord( int proc, T64Word pAdr, T64Word *word );
+    int         writeWord( int proc, T64Word pAdr, T64Word *word );
+
+    // routines for module support
 
     int         getHpaStartAdr( int module, T64Word *val );
     int         getHpaSize( int module, T64Word *val );
@@ -139,6 +140,16 @@ struct T64System {
     int         getSpaStartAdr( int module, T64Word *val );
     int         getSpaSize( int module, T64Word *val );
  
+
+
+    
+
+   
+    // ??? goes away =
+    int         readMemBlock( T64Word adr, T64Word *blk );
+    int         writeMemBlock( T64Word adr, T64Word *blk );
+
+    
     private:
 
     T64SystemMapEntry   moduleTab[ MAX_MODULES ];

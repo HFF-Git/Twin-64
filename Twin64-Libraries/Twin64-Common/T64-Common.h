@@ -49,6 +49,21 @@ const   int     PAGE_SIZE       = 16 * 1024;
 const   int64_t IO_MEM_START    = 0xF0000000;
 const   int64_t IO_MEM_LIMIT    = 0xFFFFFFFF;
 
+
+const int T64_PAGE_SIZE_BYTES   = 4096;
+const int T64_PAGE_OFS_BITS     = 12;
+const int T64_VADR_BITS         = 52;
+const int T64_PADR              = 36;
+
+const int T64_MAX_TLB_SIZE = 64;
+
+const int T64_MAX_CACHE_SETS    =    64;
+const int T64_MAX_CACHE_WAYS    =    4;
+const int T64_CACHE_LINE_BYTES  = 64;
+const int T64_LINE_OFS_BITS     = 6;
+const int T64_CACHE_WORD_BYTES  = 8;
+
+
 //----------------------------------------------------------------------------------------
 //
 //

@@ -3,11 +3,12 @@
 // T64 - A 64-bit CPU - TLB
 //
 //----------------------------------------------------------------------------------------
-// 
+// The T64 CPU Simulator has a unified TLB. It is a fully associative TLB with 64
+// entries and a LRU mechanism t select replacements.
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - Cache
+// T64 - A 64-bit CPU - TLB
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
@@ -42,12 +43,10 @@ namespace {
 //
 //----------------------------------------------------------------------------------------
 //
-// ??? add HWM ?
+//
 //----------------------------------------------------------------------------------------
-T64Tlb::T64Tlb( int size ) {
-    
-    this -> size = size;
-    this -> map  = (T64TlbEntry *) calloc( size, sizeof( T64TlbEntry ));
+T64Tlb::T64Tlb( ) {
+
     reset( );
 }
 
@@ -57,65 +56,121 @@ T64Tlb::T64Tlb( int size ) {
 //----------------------------------------------------------------------------------------
 void T64Tlb::reset( ) {
     
-    for ( int i = 0; i < size; i++ ) {
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
         
         map[ i ].valid = false;
     }
+
+    timeCounter = 0;
 }
 
-
 //----------------------------------------------------------------------------------------
+// The lookup method checks all valid entries if they cover the virtual address. If
+// found we update the last used field and return the entry.
 //
-// ??? look up to the HWM.
 //----------------------------------------------------------------------------------------
-T64TlbEntry *T64Tlb::lookupTlb( T64Word vAdr ) {
+T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
+
+    timeCounter ++;
     
-    for ( int i = 0; i < size; i++ ) {
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
         
         T64TlbEntry *ptr = &map[ i ];
-        
-        if (( ptr -> valid ) && ( ptr -> vAdr == vAdr )) return( ptr );
+       
+        if (( ptr -> valid ) && 
+            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> vSize ))) {
+         
+            ptr -> lastUsed = timeCounter;
+            return( ptr );
+        }
     }
     
     return( nullptr );
 }
 
 //----------------------------------------------------------------------------------------
-//
-// ??? find free slot. Is it the one after HWM ?
+// The insert method inserts a new entry. If the TLB is full, a victim is selected 
+// based on the lastUsed data. 
+// 
+// ??? a check that we do not insert a physical range ?
 //----------------------------------------------------------------------------------------
-void T64Tlb::insertTlb( T64Word vAdr, T64Word info ) {
-    
-    // ??? to do ...
-    
+void T64Tlb::insert( T64Word vAdr, T64Word info ) {
+
+    timeCounter++;
+
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
+        
+        T64TlbEntry *ptr = &map[ i ];
+
+        if ( ! ptr -> valid ) {
+
+             // ??? fill in ...
+            ptr -> valid         = true; 
+            ptr -> uncached      = false;
+            ptr -> locked        = false;
+            ptr -> modified      = false;
+            ptr -> trapOnBranch  = false;
+            ptr -> vAdr          = vAdr;
+            ptr -> pAdr          = 0;
+            ptr -> vSize         = 0;
+
+            return;
+        }
+    }
+        
+    T64TlbEntry *victim = &map[ 0 ];
+
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
+        
+        T64TlbEntry *ptr = &map[ i ];
+
+        if (( ! ptr -> valid ) && ( ptr -> lastUsed < timeCounter  )) {
+
+            victim = ptr;
+        }
+    }
+     
+    // ??? fill in ...
+    victim -> valid         = true; 
+    victim -> uncached      = false;
+    victim -> locked        = false;
+    victim -> modified      = false;
+    victim -> trapOnBranch  = false;
+    victim -> vAdr          = vAdr;
+    victim -> pAdr          = 0;
+    victim -> vSize         = 0;
 }
 
 //----------------------------------------------------------------------------------------
 //
 // ??? find entry and remove. Move HWM slot to the freed place, dec HWM.
 //----------------------------------------------------------------------------------------
-void T64Tlb::purgeTlb( T64Word vAdr ) {
+void T64Tlb::purge( T64Word vAdr ) {
     
-    for ( int i = 0; i < size; i++ ) {
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
         
         T64TlbEntry *ptr = &map[ i ];
         
-        if (( ptr -> valid ) && ( ptr -> vAdr == vAdr )) ptr -> valid = false;
+        if (( ptr -> valid ) && 
+            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> vSize ))) {
+        
+            ptr -> valid = false;
+        }
     }
 }
 
 //----------------------------------------------------------------------------------------
-//
-// ??? return entry, regardless of HWM
+// "getTlbEntry" is used by the simulator for the display routines.
+// 
 //----------------------------------------------------------------------------------------
 T64TlbEntry *T64Tlb::getTlbEntry( int index ) {
     
-    if ( isInRange( index, 0, size - 1 ))   return( &map[ index ] );
-    else                                    return( nullptr );
+    if ( isInRange( index, 0, T64_MAX_TLB_SIZE - 1 )) return( &map[ index ] );
+    else                                              return( nullptr );
 }
 
 
 int T64Tlb::getTlbSize( ) {
 
-    return ( size );
+    return ( T64_MAX_TLB_SIZE );
 }

@@ -43,7 +43,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 T64Processor::T64Processor( ) {
     
-    this -> tlb     = new T64Tlb( 64 );
+    this -> tlb     = new T64Tlb( );
     this -> cache   = new T64Cache( );
     
     this -> reset( );
@@ -213,16 +213,19 @@ T64Word T64Processor::instrRead( T64Word vAdr ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookupTlb( vAdr );
+            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
+            #if 0
+            // is part of the vAdr...
             if ( ! protectionCheck( tlbPtr -> protectId, false )) {
 
                 throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
             }
+            #endif
 
             // ??? cached / uncached...
 
@@ -273,16 +276,18 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookupTlb( vAdr );
+            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
+            #if 0
             if ( ! protectionCheck( tlbPtr -> protectId, false )) {
 
                 throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
             }
+            #endif
 
             // ??? cached / uncached...
 
@@ -329,16 +334,18 @@ void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookupTlb( vAdr );
+            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
+            #if 0
             if ( ! protectionCheck( tlbPtr -> protectId, true )) {
 
                 throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
             }
+            #endif
 
             // ??? cached / uncached...
 
@@ -1242,7 +1249,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 // ?? privileged op ?
                 
                 T64Word res = 0;
-                T64TlbEntry *e = tlb -> lookupTlb( getRegB(instr ));
+                T64TlbEntry *e = tlb -> lookup( getRegB(instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
@@ -1269,7 +1276,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 else                                   
                     privLevel = extractBit64( getRegA( instr ), 0 );
                 
-                T64TlbEntry *e = tlb -> lookupTlb( getRegB(instr ));
+                T64TlbEntry *e = tlb -> lookup( getRegB(instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     

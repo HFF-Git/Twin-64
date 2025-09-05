@@ -28,39 +28,121 @@
 #include "T64-System.h"
 #include "T64-Module.h"
 
+
+
+
 //----------------------------------------------------------------------------------------
 // Cache
 //
-//
-// ??? not sure we even need a cache for the Emulator. It is perhaps too slow. 
-// However when we have more than one CPU thread, the cache protocols are 
-// interesting... also for LDR and STC. Firs version, just pass through...
 //
 //----------------------------------------------------------------------------------------
 struct T64CacheLine {
     
     bool            valid;
-    
-    // access rights, status bits
-    
-    T64Word         vAdr;
-    T64Word         pAdr;
-    T64Word         line[ 4 ]; // a constant ?
+    bool            modified;
+    T64Word         tag;
+    T64Word         line[ T64_CACHE_LINE_BYTES / T64_CACHE_WORD_BYTES ];
 };
 
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
 struct T64Cache {
+
+    public:
     
     T64Cache( );
     void            reset( );
-    
-    void            readCacheWord( T64Word vAdr, T64Word *data );
-    void            writeCacheWord( T64Word vAdr, T64Word *data );
-    void            fetchCachLine( T64Word vAdr,  T64Word *data );
-    void            purgeCacheLine( T64Word vAdr );
-    void            flushCacheLine( T64Word vAdr );
-    
-    T64CacheLine    *getCacheLine( int index );
+
+    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int             write( T64Word pAdr, T64Word data, int len, bool cached );
+    int             flush( T64Word pAdr );
+    int             purge( T64Word pAdr );
+
+    int             getCacheWord( int set, int index, T64Word *word );
+
+    protected: 
+
+    // routines shared by subclasses
+
+    private: 
+
 };
+
+
+//----------------------------------------------------------------------------------------
+struct T64CachePt : T64Cache {
+
+public:
+
+    T64CachePt( );
+
+    void            reset( );
+
+    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int             write( T64Word pAdr, T64Word data, int len, bool cached );
+    int             flush( T64Word pAdr );
+    int             purge( T64Word pAdr );
+
+    int             getCacheWord( int set, int index, T64Word *word );
+
+private:
+
+};
+
+struct T64Cache2W : T64Cache {
+
+public:
+
+    void            reset( );
+
+    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int             write( T64Word pAdr, T64Word data, int len, bool cached );
+    int             flush( T64Word pAdr );
+    int             purge( T64Word pAdr );
+
+    int             getCacheWord( int set, int index, T64Word *word );
+
+private:
+
+};
+
+struct T64Cache4W : T64Cache {
+
+public:
+
+    void            reset( );
+
+    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int             write( T64Word pAdr, T64Word data, int len, bool cached );
+    int             flush( T64Word pAdr );
+    int             purge( T64Word pAdr );
+
+    int             getCacheWord( int set, int index, T64Word *word );
+
+private:
+
+};
+
+struct T64Cache8W : T64Cache {
+
+public:
+
+    void            reset( );
+
+    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int             write( T64Word pAdr, T64Word data, int len, bool cached );
+    int             flush( T64Word pAdr );
+    int             purge( T64Word pAdr );
+
+    int             getCacheWord( int set, int index, T64Word *word );
+
+private:
+    
+};
+
 
 // ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
 
@@ -86,41 +168,56 @@ struct T64Cache {
 //----------------------------------------------------------------------------------------
 struct T64TlbEntry {
 
+public:
+
     bool            valid;
-    
-    // some more flags ...
-    
-    uint8_t         accessId;
-    uint32_t        protectId;
+    bool            uncached;
+    bool            locked;
+    bool            modified;
+    bool            trapOnBranch;
+   
     T64Word         vAdr;
     T64Word         pAdr;
+    int             vSize;
+
+    uint8_t         accessRights; // decode the four bits ?
+
+    T64Word         lastUsed;
 };
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+
 
 struct T64Tlb {
     
 public:
     
-    T64Tlb( int size );
+    T64Tlb( );
     
     void            reset( );
-    T64TlbEntry     *lookupTlb( T64Word vAdr );
+    T64TlbEntry     *lookup( T64Word vAdr );
     
-    void            insertTlb( T64Word info1, T64Word info2 );
-    void            purgeTlb( T64Word vAdr );
+    void            insert( T64Word vAdr, T64Word info2 );
+    void            purge( T64Word vAdr );
     
     int             getTlbSize( );
     T64TlbEntry     *getTlbEntry( int index );
-   
+
+    // routines for simulator
+
+    int insertTlbEntry( int proc, int tlbNum, T64Word info1, T64Word info2 );
+    int purgeTlbEntry( int proc, int tlbNum, int index );
+
 private:
     
-    int             size = 0;
-    T64TlbEntry     *map = nullptr;
+    T64TlbEntry     map [ T64_MAX_TLB_SIZE ];
+    T64Word         timeCounter = 0;
 };
 
-// ??? createTlb( int tlbNum, tlbSize ); 
-// ??? purgeTlbEntry( int tlbNum, int index );
-// ??? purgeTlbEntry( int tlbNum, T64Word vAdr );
-// ??? insertTlbEntry( int tlbNum, T64Word info1, T64Word info2 );
+
 
 
 //----------------------------------------------------------------------------------------
