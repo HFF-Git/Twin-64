@@ -25,6 +25,7 @@
 #define T64_Processor_h
 
 #include "T64-Common.h"
+#include "T64-Util.h"
 #include "T64-System.h"
 #include "T64-Module.h"
 

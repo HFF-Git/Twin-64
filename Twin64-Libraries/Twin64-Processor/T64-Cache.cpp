@@ -240,17 +240,20 @@ void T64Cache::reset( ) {
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
+    
+    if ( isInIoAdrRange( pAdr )) {
 
-    // check sets, index is upper 6bits in page offset
-    // move according to len
-    // if uncached, bypass cache and call system interface
 
-    // if not found, read shared / private ?
-    // if not found and no room, pick victim to purge first
-    // if modified flush first
-    // read block and return data
+        // ??? if in IO range or not cached do directly get the data.
 
-    return( 0 );
+        return( 0 );
+    }
+    else {
+
+        // else call the get cache line routine in the subclass
+
+        return( 0 );
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -259,17 +262,19 @@ int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 
-    // check sets, index is upper 6bits in page offset
-    // move according to len
-    // if uncached, bypass cache and call system interface
+    if ( isInIoAdrRange( pAdr )) {
 
-    // if found and shared, mark private
-    // if not found, read private
-    // if not found and no room, pick victim to purge first
-    // if modified flush first
-    // read private and modify
 
-    return( 0 );
+        // ??? if in IO range or not cached do directly put the data.
+
+        return( 0 );
+    }
+    else {
+
+        // else call the put cache line routine in the subclass
+
+        return( 0 );
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -278,10 +283,18 @@ int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::flush( T64Word pAdr ) {
 
-    // lookup cache line
-    // if found and modified, write back, mark as read shared
+    if ( ! isInIoAdrRange( pAdr )) {
 
-    return( 0 );
+
+        // ??? if not in IO range call the subclass handler.
+
+        return( 0 );
+    }
+    else {
+
+        // ignore ?
+         return( 0 );
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -290,13 +303,19 @@ int T64Cache::flush( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::purge( T64Word pAdr ) {
 
-    // lookup cache line
-    // if found and modified, write back
-    // invalidate line
+     if ( ! isInIoAdrRange( pAdr )) {
 
-    return( 0 );
+
+        // ??? if not in IO range call the subclass handler.
+
+        return( 0 );
+    }
+    else {
+
+        // ignore ?
+         return( 0 );
+    }
 }
-
 
 
 //****************************************************************************************
@@ -323,7 +342,7 @@ void T64CachePt::reset( ) {
 
 //----------------------------------------------------------------------------------------
 //
-//
+// ??? becomes a read cache line specific to this class?
 //----------------------------------------------------------------------------------------
 int T64CachePt::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 
