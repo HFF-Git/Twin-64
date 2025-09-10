@@ -29,12 +29,8 @@
 #include "T64-System.h"
 #include "T64-Module.h"
 
-
-
-
 //----------------------------------------------------------------------------------------
-// Cache
-//
+// Caches. We support set associative caches, 2, 4, and 8-way. 
 //
 //----------------------------------------------------------------------------------------
 struct T64CacheLine {
@@ -45,16 +41,11 @@ struct T64CacheLine {
     T64Word         line[ T64_WORDS_PER_CACHE_LINE ];
 };
 
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
 struct T64Cache {
 
     public:
 
-    T64Cache(  T64System *sys );
+    T64Cache( int sets, T64System *sys );
     virtual void    reset( );
 
     int             read( T64Word pAdr, T64Word *data, int len, bool cached );
@@ -62,91 +53,40 @@ struct T64Cache {
     int             flush( T64Word pAdr );
     int             purge( T64Word pAdr );
 
-    virtual int     readCacheData( T64Word pAdr, T64Word *data, int len ) = 0;
-    virtual int     writeCacheData( T64Word pAdr, T64Word data, int len ) = 0;
-    virtual int     flushCacheData( T64Word pAdr ) = 0;
-    virtual int     purgeCacheData( T64Word pAdr ) = 0;
+    virtual int     readCacheData( T64Word pAdr, T64Word *data, int len );
+    virtual int     writeCacheData( T64Word pAdr, T64Word data, int len );
+    virtual int     flushCacheData( T64Word pAdr );
+    virtual int     purgeCacheData( T64Word pAdr );
 
     int             getRequestCount( );
     int             getMissCount( );
 
-    protected: 
-
-    int             cacheRequests   = 0;
-    int             cacheMiss       = 0;
-
-    // routines shared by subclasses
-
     private: 
 
-    T64System       *sys = nullptr;
+    T64CacheLine    *lookup( T64Word pAdr );
 
-};
+    T64Word         getCacheLineData( T64CacheLine *line, 
+                                      T64Word pAdr,
+                                      int len );
+
+    void            setCacheLineData( T64CacheLine *line, 
+                                      T64Word pAdr, 
+                                      T64Word data, 
+                                      int len );
+
+    int             plruVictim( uint8_t state );
+    uint8_t         plruUpdate( uint8_t state, int way );
+
+    T64CacheLine    *cacheArray     = nullptr;
+    T64System       *sys            = nullptr;
+
+    int             ways            = 2;
+    int             sets            = T64_MAX_CACHE_SETS;
+    int             cacheRequests   = 0;
+    int             cacheMiss       = 0;
+    uint8_t         plruState       = 0;
 
 
-//----------------------------------------------------------------------------------------
-struct T64Cache2W : T64Cache {
-
-public:
-
-    static constexpr int T64_MAX_WAYS = 2;
-
-    T64Cache2W(  T64System *sys );
-    void            reset( );
-
-    int             readCacheData( T64Word pAdr, T64Word *data, int len );
-    int             writeCacheData( T64Word pAdr, T64Word data, int len );
-    int             flushCacheData( T64Word pAdr );
-    int             purgeCacheData( T64Word pAdr );
-
-
-private:
-
-    uint8_t         plruState = 0;
-    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
-
-};
-
-struct T64Cache4W : T64Cache {
-
-public:
-
-    static constexpr int T64_MAX_WAYS = 8;      
-
-    T64Cache4W(  T64System *sys );
-    void            reset( );
-
-    int             readCacheData( T64Word pAdr, T64Word *data, int len );
-    int             writeCacheData( T64Word pAdr, T64Word data, int len );
-    int             flushCacheData( T64Word pAdr );
-    int             purgeCacheData( T64Word pAdr );
-
-private:
-
-    uint8_t         plruState = 0;
-    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
-
-};
-
-struct T64Cache8W : T64Cache {
-
-public:
-
-    static constexpr int T64_MAX_WAYS = 8;      
-
-    T64Cache8W(  T64System *sys );
-    void            reset( );
-
-    int             readCacheData( T64Word pAdr, T64Word *data, int len );
-    int             writeCacheData( T64Word pAdr, T64Word data, int len );
-    int             flushCacheData( T64Word pAdr );
-    int             purgeCacheData( T64Word pAdr );
-
-private:
-
-    uint8_t         plruState = 0;
-    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
-    
 };
 
 
