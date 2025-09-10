@@ -42,7 +42,7 @@ struct T64CacheLine {
     bool            valid;
     bool            modified;
     T64Word         tag;
-    T64Word         line[ T64_CACHE_LINE_BYTES / T64_CACHE_WORD_BYTES ];
+    T64Word         line[ T64_WORDS_PER_CACHE_LINE ];
 };
 
 
@@ -53,7 +53,7 @@ struct T64CacheLine {
 struct T64Cache {
 
     public:
-    
+
     T64Cache(  T64System *sys );
     virtual void    reset( );
 
@@ -89,6 +89,8 @@ struct T64Cache2W : T64Cache {
 
 public:
 
+    static constexpr int T64_MAX_WAYS = 2;
+
     T64Cache2W(  T64System *sys );
     void            reset( );
 
@@ -100,12 +102,18 @@ public:
 
 private:
 
+    uint8_t         plruState = 0;
+    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
+
 };
 
 struct T64Cache4W : T64Cache {
 
 public:
 
+    static constexpr int T64_MAX_WAYS = 8;      
+
+    T64Cache4W(  T64System *sys );
     void            reset( );
 
     int             readCacheData( T64Word pAdr, T64Word *data, int len );
@@ -114,6 +122,9 @@ public:
     int             purgeCacheData( T64Word pAdr );
 
 private:
+
+    uint8_t         plruState = 0;
+    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
 
 };
 
@@ -121,6 +132,9 @@ struct T64Cache8W : T64Cache {
 
 public:
 
+    static constexpr int T64_MAX_WAYS = 8;      
+
+    T64Cache8W(  T64System *sys );
     void            reset( );
 
     int             readCacheData( T64Word pAdr, T64Word *data, int len );
@@ -129,6 +143,9 @@ public:
     int             purgeCacheData( T64Word pAdr );
 
 private:
+
+    uint8_t         plruState = 0;
+    T64CacheLine    cacheArray [ T64_MAX_WAYS ] [ T64_MAX_CACHE_SETS ];
     
 };
 

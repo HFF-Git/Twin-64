@@ -80,6 +80,7 @@ inline uint8_t plru2_update(uint8_t state, int way) {
 //  Victim table (state -> victim):
 //    state: 0 1 2 3 4 5 6 7
 //    victim:3 2 3 2 1 1 0 0
+//
 //  Access update (way -> new_state):
 //    way 0 -> 0
 //    way 1 -> 2
@@ -115,8 +116,7 @@ inline static uint8_t plru4Update(uint8_t state, int way) {
 //----------------------------------------------------------------------------------------
 // PLRU utilities: 8-way ------------------------------
 //
-//  8-way tree PLRU uses 7 bits (nodes):
-//    nodes indexed as:
+// 7-bit encoding:
 //      node 0: root (splits [0..3] left and [4..7] right)
 //      node 1: left child of root (splits [0..1] and [2..3])
 //      node 2: right child of root (splits [4..5] and [6..7])
@@ -207,6 +207,16 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 
     return s;
 }
+
+void clearCacheLine( T64CacheLine *cl ) {
+
+    cl -> valid     = false;
+    cl -> modified  = false;
+    cl -> tag       = 0;
+
+    for ( int i = 0; i < T64_WORDS_PER_CACHE_LINE; i++ ) cl -> line[ i ] = 0;
+}
+
 
 
 
@@ -303,6 +313,7 @@ int T64Cache::purge( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 T64Cache2W::T64Cache2W( T64System *sys ) : T64Cache( sys ) { }
 
+
 //----------------------------------------------------------------------------------------
 //
 //
@@ -311,9 +322,11 @@ void T64Cache2W::reset( ) {
 
     T64Cache::reset( );
 
-    
-    // clear sets
+    for ( int i = 0; i < T64_MAX_CACHE_WAYS; i++ ) 
+        for ( int j = 0; j < T64_MAX_CACHE_SETS; i++ ) 
+            clearCacheLine( &cacheArray[ i ][ j ] ); 
 
+    plruState = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -322,13 +335,38 @@ void T64Cache2W::reset( ) {
 //----------------------------------------------------------------------------------------
 int T64Cache2W::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
-    // check sets, index is upper 6bits in page offset
-    // move according to len
+    int             lineIndex   = ( pAdr / sizeof( T64Word )) % T64_WORDS_PER_CACHE_LINE;
+    T64CacheLine    *lineFound  = nullptr;
+    T64Word         tag         = pAdr & 0xFFFFFFFE0;
 
-    // if not found, read shared / private ?
-    // if not found and no room, pick victim to purge first
-    // if modified flush first
-    // read block and return data
+    for ( int w = 0; w < T64_MAX_CACHE_WAYS; w++ ) {
+
+        T64CacheLine *line = &cacheArray[ w ][ lineIndex ];
+
+        if (( line -> valid ) && ( line -> tag == tag )) {
+
+            lineFound = line;
+
+            // update PLRU state
+
+            break;
+        }
+    }
+
+    if ( lineFound == nullptr ) {
+
+        cacheMiss ++;
+
+       // pick victim to flush / purge
+
+        // miss: fetch from memory. 
+
+        // update plru state
+
+    }
+    
+    // found: check alignment, copy data
+    // move according to len
 
     return( 0 );
 }

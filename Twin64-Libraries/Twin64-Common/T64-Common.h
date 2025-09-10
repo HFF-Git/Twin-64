@@ -55,13 +55,16 @@ const int T64_PAGE_OFS_BITS     = 12;
 const int T64_VADR_BITS         = 52;
 const int T64_PADR              = 36;
 
-const int T64_MAX_TLB_SIZE = 64;
+const int T64_MAX_TLB_SIZE          = 64;
 
-const int T64_MAX_CACHE_SETS    =    64;
-const int T64_MAX_CACHE_WAYS    =    4;
-const int T64_CACHE_LINE_BYTES  = 64;
-const int T64_LINE_OFS_BITS     = 6;
-const int T64_CACHE_WORD_BYTES  = 8;
+const int T64_CACHE_INDEX_BITS      = 7;
+const int T64_LINE_OFS_BITS         = 5;
+const int T64_MAX_CACHE_WAYS        = 8;
+const int T64_MAX_CACHE_SETS        = 128;
+const int T64_WORDS_PER_CACHE_LINE  = 4;
+const int T64_CACHE_LINE_BYTES      = T64_WORDS_PER_CACHE_LINE * sizeof( T64Word );
+
+const int T64_CACHE_WORD_BYTES  = sizeof( T64Word );
 
 
 //----------------------------------------------------------------------------------------
