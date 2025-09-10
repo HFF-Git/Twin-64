@@ -54,57 +54,49 @@ struct T64Cache {
 
     public:
     
-    T64Cache( );
-    void            reset( );
+    T64Cache(  T64System *sys );
+    virtual void    reset( );
 
     int             read( T64Word pAdr, T64Word *data, int len, bool cached );
     int             write( T64Word pAdr, T64Word data, int len, bool cached );
     int             flush( T64Word pAdr );
     int             purge( T64Word pAdr );
 
-    int             getCacheWord( int set, int index, T64Word *word );
+    virtual int     readCacheData( T64Word pAdr, T64Word *data, int len ) = 0;
+    virtual int     writeCacheData( T64Word pAdr, T64Word data, int len ) = 0;
+    virtual int     flushCacheData( T64Word pAdr ) = 0;
+    virtual int     purgeCacheData( T64Word pAdr ) = 0;
+
+    int             getRequestCount( );
+    int             getMissCount( );
 
     protected: 
+
+    int             cacheRequests   = 0;
+    int             cacheMiss       = 0;
 
     // routines shared by subclasses
 
     private: 
 
+    T64System       *sys = nullptr;
+
 };
 
 
 //----------------------------------------------------------------------------------------
-struct T64CachePt : T64Cache {
-
-public:
-
-    T64CachePt( );
-
-    void            reset( );
-
-    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int             write( T64Word pAdr, T64Word data, int len, bool cached );
-    int             flush( T64Word pAdr );
-    int             purge( T64Word pAdr );
-
-    int             getCacheWord( int set, int index, T64Word *word );
-
-private:
-
-};
-
 struct T64Cache2W : T64Cache {
 
 public:
 
+    T64Cache2W(  T64System *sys );
     void            reset( );
 
-    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int             write( T64Word pAdr, T64Word data, int len, bool cached );
-    int             flush( T64Word pAdr );
-    int             purge( T64Word pAdr );
+    int             readCacheData( T64Word pAdr, T64Word *data, int len );
+    int             writeCacheData( T64Word pAdr, T64Word data, int len );
+    int             flushCacheData( T64Word pAdr );
+    int             purgeCacheData( T64Word pAdr );
 
-    int             getCacheWord( int set, int index, T64Word *word );
 
 private:
 
@@ -116,12 +108,10 @@ public:
 
     void            reset( );
 
-    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int             write( T64Word pAdr, T64Word data, int len, bool cached );
-    int             flush( T64Word pAdr );
-    int             purge( T64Word pAdr );
-
-    int             getCacheWord( int set, int index, T64Word *word );
+    int             readCacheData( T64Word pAdr, T64Word *data, int len );
+    int             writeCacheData( T64Word pAdr, T64Word data, int len );
+    int             flushCacheData( T64Word pAdr );
+    int             purgeCacheData( T64Word pAdr );
 
 private:
 
@@ -133,12 +123,10 @@ public:
 
     void            reset( );
 
-    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int             write( T64Word pAdr, T64Word data, int len, bool cached );
-    int             flush( T64Word pAdr );
-    int             purge( T64Word pAdr );
-
-    int             getCacheWord( int set, int index, T64Word *word );
+    int             readCacheData( T64Word pAdr, T64Word *data, int len );
+    int             writeCacheData( T64Word pAdr, T64Word data, int len );
+    int             flushCacheData( T64Word pAdr );
+    int             purgeCacheData( T64Word pAdr );
 
 private:
     
@@ -230,7 +218,7 @@ struct T64Processor : T64Module {
     
 public:
     
-    T64Processor(  );
+    T64Processor( T64System *sys );
     
     void            reset( );
     void            step( );
@@ -298,6 +286,7 @@ private:
     uint32_t        instrReg;
     T64Word         resvReg;
     
+    T64System       *sys                = nullptr;
     T64Tlb          *tlb                = nullptr;
     T64Cache        *cache              = nullptr;
     T64Word         instructionCount    = 0;

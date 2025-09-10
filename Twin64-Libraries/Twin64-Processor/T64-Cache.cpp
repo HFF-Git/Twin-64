@@ -219,172 +219,78 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // Cache
 //
 //----------------------------------------------------------------------------------------
+// "T64Cache" is the abstract class for the T64 caches.
 //
-//
-// ??? maybe this becomes an abstract class, the word is done in the subclasses...
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( ) {
+T64Cache::T64Cache( T64System *sys ) { 
 
+    this -> sys = sys;
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Rest. For now, clear the statistics.
 //
 //----------------------------------------------------------------------------------------
 void T64Cache::reset( ) {
 
+    cacheRequests   = 0;
+    cacheMiss       = 0;
 }
 
 //----------------------------------------------------------------------------------------
-//
+// A cache read operation. For non-cached requests, we directly read the data from 
+// memory.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
+
+    cacheRequests++;
     
-    if ( isInIoAdrRange( pAdr )) {
+    if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-
-        // ??? if in IO range or not cached do directly get the data.
-
-        return( 0 );
+        return( sys -> readMem( pAdr, data, len ));
     }
-    else {
-
-        // else call the get cache line routine in the subclass
-
-        return( 0 );
-    }
+    else return( readCacheData( pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
-//
+// A cache write operation. For non-cached requests, we directly write the data to 
+// memory.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 
-    if ( isInIoAdrRange( pAdr )) {
+    cacheRequests++;
 
+    if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-        // ??? if in IO range or not cached do directly put the data.
-
-        return( 0 );
+        return( sys -> writeMem( pAdr, data, len ));
     }
-    else {
-
-        // else call the put cache line routine in the subclass
-
-        return( 0 );
-    }
+    else return( writeCacheData( pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
-//
+// A cache flush operation. Only valid for non-I/O address range.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::flush( T64Word pAdr ) {
 
-    if ( ! isInIoAdrRange( pAdr )) {
-
-
-        // ??? if not in IO range call the subclass handler.
-
-        return( 0 );
-    }
-    else {
-
-        // ignore ?
-         return( 0 );
-    }
+    if ( ! isInIoAdrRange( pAdr )) return( flushCacheData( pAdr ));
+    else return( 99 );
 }
 
 //----------------------------------------------------------------------------------------
-//
+// A cache purge operation. Only valid for non-I/O address range.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::purge( T64Word pAdr ) {
 
-     if ( ! isInIoAdrRange( pAdr )) {
-
-
-        // ??? if not in IO range call the subclass handler.
-
-        return( 0 );
-    }
-    else {
-
-        // ignore ?
-         return( 0 );
-    }
+     if ( ! isInIoAdrRange( pAdr )) return( purgeCacheData( pAdr ));
+     else return( 99 );
 }
 
 
-//****************************************************************************************
-//****************************************************************************************
-//
-// Cache - pass through
-//
-//----------------------------------------------------------------------------------------
-// Actually, this is not a cache. It is simply a pass through for system that do not have
-// a cache. We directly call the system interfaces.
-//
-//----------------------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-void T64CachePt::reset( ) {
-
-    // not a lot to do.
-
-}
-
-//----------------------------------------------------------------------------------------
-//
-// ??? becomes a read cache line specific to this class?
-//----------------------------------------------------------------------------------------
-int T64CachePt::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
-
-    // call system directly for the data. 
-   // we fetch a word in any case from MEM
-
-    return( 0 );
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-int T64CachePt::write( T64Word pAdr, T64Word data, int len, bool cached ) {
-
-   // call system directly for the data. 
-   // we fetch / modify and store the word in any case from MEM
-
-    return( 0 );
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-int T64CachePt::flush( T64Word pAdr ) {
-
-   // no cache
-
-    return( 0 );
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-int T64CachePt::purge( T64Word pAdr ) {
-
-    // no cache
-
-    return( 0 );
-}
+// ??? do this one first ...
 
 //****************************************************************************************
 //****************************************************************************************
@@ -395,8 +301,7 @@ int T64CachePt::purge( T64Word pAdr ) {
 // 
 //
 //----------------------------------------------------------------------------------------
-
-// what can we make shared functions ?
+T64Cache2W::T64Cache2W( T64System *sys ) : T64Cache( sys ) { }
 
 //----------------------------------------------------------------------------------------
 //
@@ -404,6 +309,9 @@ int T64CachePt::purge( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 void T64Cache2W::reset( ) {
 
+    T64Cache::reset( );
+
+    
     // clear sets
 
 }
@@ -412,11 +320,10 @@ void T64Cache2W::reset( ) {
 //
 //
 //----------------------------------------------------------------------------------------
-int T64Cache2W::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
+int T64Cache2W::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
     // check sets, index is upper 6bits in page offset
     // move according to len
-    // if uncached, bypass cache and call system interface
 
     // if not found, read shared / private ?
     // if not found and no room, pick victim to purge first
@@ -430,11 +337,10 @@ int T64Cache2W::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 //
 //
 //----------------------------------------------------------------------------------------
-int T64Cache2W::write( T64Word pAdr, T64Word data, int len, bool cached ) {
+int T64Cache2W::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
     // check sets, index is upper 6bits in page offset
     // move according to len
-    // if uncached, bypass cache and call system interface
 
     // if found and shared, mark private
     // if not found, read private
@@ -449,7 +355,7 @@ int T64Cache2W::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 //
 //
 //----------------------------------------------------------------------------------------
-int T64Cache2W::flush( T64Word pAdr ) {
+int T64Cache2W::flushCacheData( T64Word pAdr ) {
 
     // lookup cache line
     // if found and modified, write back, mark as read shared
@@ -461,7 +367,7 @@ int T64Cache2W::flush( T64Word pAdr ) {
 //
 //
 //----------------------------------------------------------------------------------------
-int T64Cache2W::purge( T64Word pAdr ) {
+int T64Cache2W::purgeCacheData( T64Word pAdr ) {
 
     // lookup cache line
     // if found and modified, write back

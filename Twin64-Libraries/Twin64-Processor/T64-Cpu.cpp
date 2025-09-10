@@ -41,10 +41,11 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Processor::T64Processor( ) {
+T64Processor::T64Processor( T64System *sys ) {
     
+    this -> sys     = sys;
     this -> tlb     = new T64Tlb( );
-    this -> cache   = new T64Cache( );
+    this -> cache   = new T64Cache2W( sys );
     
     this -> reset( );
 }
