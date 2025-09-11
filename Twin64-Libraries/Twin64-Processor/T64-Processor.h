@@ -75,10 +75,10 @@ struct T64Cache {
     int                 flush( T64Word pAdr );
     int                 purge( T64Word pAdr );
 
-    virtual int         readCacheData( T64Word pAdr, T64Word *data, int len );
-    virtual int         writeCacheData( T64Word pAdr, T64Word data, int len );
-    virtual int         flushCacheData( T64Word pAdr );
-    virtual int         purgeCacheData( T64Word pAdr );
+    int                 readCacheData( T64Word pAdr, T64Word *data, int len );
+    int                 writeCacheData( T64Word pAdr, T64Word data, int len );
+    int                 flushCacheLine( T64Word pAdr );
+    int                 purgeCacheLine( T64Word pAdr );
 
     int                 getCacheLine( int set, 
                                       int index, 
@@ -96,9 +96,18 @@ struct T64Cache {
                                        uint32_t *set, 
                                        uint32_t *offset );
 
+    uint32_t            getTag( T64Word pAdr );                           
+    uint32_t            getSetIndex( T64Word  paAdr );
+    uint32_t            getLineOfs( T64Word  paAdr );
+
     bool                lookupCache( T64Word          pAdr, 
                                      T64CacheLineInfo **info, 
                                      uint8_t          **data );
+
+    bool                selectCacheLine( uint32_t         way,
+                                         uint32_t         set, 
+                                         T64CacheLineInfo **info, 
+                                         uint8_t          **data );
 
     int                 plruVictim( );
     void                plruUpdate( );

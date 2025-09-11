@@ -3,7 +3,18 @@
 // T64 - A 64-bit CPU - Cache
 //
 //----------------------------------------------------------------------------------------
-// 
+// The Twin-64 processor has a cache subsystem. Since there can be more than one 
+// processor, the caches need to maintain cache coherence. We implement this in a 
+// simple protocol where each operation in a processor will trigger the cache coherence
+// action immediately. For example, if there is a write operation to a cache line not
+// available so far, a read private operation will be communicated to the T64 system.
+// The T64 system in turn will tell all modules that they need to flush and or purge 
+// their cache line. Then the data is read and the processor is the exclusive owner of
+// this cache line. In other words, all actions with respect to the cache line are 
+// done right away transparently to the processor.
+//
+// The caches themselves are set associative caches. There are defined cache types to 
+// experiment with ways and set sizes. 
 //
 //----------------------------------------------------------------------------------------
 //
@@ -39,60 +50,50 @@
 // PRURGE:                      -
 
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-
-
-
-
 //----------------------------------------------------------------------------------------
-//
+// Local name space. 
 //
 //----------------------------------------------------------------------------------------
 namespace {
 
 //----------------------------------------------------------------------------------------
-//  2-way PRU: repl_state bit meaning: 0 => way0 was used recently (victim = way1)
-//                                   1 => way1 was used recently (victim = way0)
+// PLRU utilities: 2-way 
 //
+//  1-bit encoding: we just alternate between the two ways.
+//   
 //----------------------------------------------------------------------------------------
 inline int plru2Victim( uint8_t state ) {
-    // state bit: 0 -> left recent -> evict right (1)
-    return ( state & 1 ) ? 0 : 1;
+    
+    return (( state & 1 ) ? 0 : 1 );
 }
 
-inline uint8_t plru2Update(uint8_t state, int way) {
-    // set state to indicate which way was used recently:
-    // way==0 => bit = 0, way==1 => bit = 1
-    return (uint8_t)(way & 1);
+inline uint8_t plru2Update( uint8_t state, int way ) {
+    
+    return ((uint8_t)( way & 1 ));
 }
 
 //----------------------------------------------------------------------------------------
 // PLRU utilities: 4-way 
 //
 //  3-bit encoding:
-//    bit2 = b0 (root)  : 0 = left used recently, 1 = right used recently
-//    bit1 = b1 (left)  : 0 = W0 used recently, 1 = W1 used recently
-//    bit0 = b2 (right) : 0 = W2 used recently, 1 = W3 used recently
 //
-//  Victim table (state -> victim):
-//    state: 0 1 2 3 4 5 6 7
-//    victim:3 2 3 2 1 1 0 0
+//  bit0 = root         ( 0 -> left, 1 -> right )
+//  bit1 = left branch  ( 0 -> way3, 1 -> way2  )
+//  bit2 = right branch ( 0 -> way1, 1 -> way0  )
 //
-//  Access update (way -> new_state):
-//    way 0 -> 0
-//    way 1 -> 2
-//    way 2 -> 4
-//    way 3 -> 5
+//  Convention: bit == 0  => left subtree/leaf was used recently
+//              bit == 1  => right subtree/leaf was used recently
+//  
+//  Access update ( way -> new_state ):
+//
+//  way 0 -> 0
+//  way 1 -> 2
+//  way 2 -> 4
+//  way 3 -> 5
 //
 //----------------------------------------------------------------------------------------
 inline static int plru4Victim( uint8_t s ) {
 
-    // bit0 = root (0→left, 1→right)
-    // bit1 = left branch (0→way3, 1→way2)
-    // bit2 = right branch (0→way1, 1→way0)
 
     if ((( s >> 0 ) & 1 ) == 0 ) return ((( s >> 1 ) & 1 ) == 0 ) ? 3 : 2;
     else                         return ((( s >> 2 ) & 1 ) == 0 ) ? 1 : 0;    
@@ -100,7 +101,7 @@ inline static int plru4Victim( uint8_t s ) {
 
 inline static uint8_t plru4Update(uint8_t state, int way) {
         
-    uint8_t s = state & 0x07; // only 3 bits used
+    uint8_t s = state & 0x07;
         
     switch ( way & 3 ) {
         
@@ -114,57 +115,63 @@ inline static uint8_t plru4Update(uint8_t state, int way) {
 };
 
 //----------------------------------------------------------------------------------------
-// PLRU utilities: 8-way ------------------------------
+// PLRU utilities: 8-way 
 //
 // 7-bit encoding:
-//      node 0: root (splits [0..3] left and [4..7] right)
-//      node 1: left child of root (splits [0..1] and [2..3])
-//      node 2: right child of root (splits [4..5] and [6..7])
-//      node 3: left-left node (splits 0 vs 1)
-//      node 4: left-right node (splits 2 vs 3)
-//      node 5: right-left node (splits 4 vs 5)
-//      node 6: right-right node (splits 6 vs 7)
+//
+//      node 0: root                    ( splits [0..3] left and [4..7] right )
+//      node 1: left child of root      ( splits [0..1] and [2..3] )
+//      node 2: right child of root     ( splits [4..5] and [6..7] )
+//      node 3: left-left node          ( splits 0 vs 1 )
+//      node 4: left-right node         ( splits 2 vs 3 )
+//      node 5: right-left node         ( splits 4 vs 5 )
+//      node 6: right-right node        ( splits 6 vs 7 )
 //
 //  Convention: bit == 0  => left subtree/leaf was used recently
 //              bit == 1  => right subtree/leaf was used recently
 //
 //  Victim selection: at each node, follow the NOT-recent direction:
-//    if bit==0 (left recent) -> victim is in right subtree
-//    if bit==1 (right recent) -> victim is in left subtree
+//
+//  if bit == 0 ( left recent )  -> victim is in right subtree
+//  if bit == 1 ( right recent ) -> victim is in left subtree
+//
+// Access update:
+//
+//  set bits along the path to mark the accessed side as recent.
+//  convention: bit == 0 => left recent, bit == 1 => right recent
+//
+//  Way 0:  root left,  node1 left,  node3 left
+//  Way 1:  root left,  node1 left,  node3 right
+//  Way 2:  root left,  node1 right, node4 left
+//  Way 3:  root left,  node1 right, node4 right
+//  Way 4:  root right, node2 left,  node5 left
+//  Way 5:  root right, node2 left,  node5 right
+//  Way 6:  root right, node2 right, node6 left
+//  Way 7:  root right, node2 right, node6 right
 //
 //----------------------------------------------------------------------------------------
 static inline int plru8Victim( uint8_t s ) {
 
-    // s: low 7 bits used: bit0=node0(root), bit1=node1, bit2=node2, bit3=node3, bit4=node4, bit5=node5, bit6=node6
-    // follow rule: if node == 0 -> left recent -> pick right (node 2) etc.
-
-    // root:
     if ((( s >> 0 ) & 1 ) == 0 ) {
         
-        // left recent -> victim in right subtree (ways 4..7)
         if ((( s >> 2 ) & 1 ) == 0 ) {
             
-            // node2 == 0 => left recent within right subtree -> victim in right child of node2 (ways 6..7)
-            if ((( s >> 6 ) & 1 ) == 0 )  return 7; // node6==0 => left recent => victim right => way7
-            else                          return 6; // node6==1 => right recent => victim left => way6
+            if ((( s >> 6 ) & 1 ) == 0 )  return 7;
+            else                          return 6;
         } else {
 
-            // node2 == 1 => right recent within right subtree -> victim in left child (ways 4..5)
-            if ((( s >> 5 ) & 1 ) == 0 )  return 5; // node5==0 => left recent => victim right => way5
-            else                          return 4; // node5==1 => right recent => victim left => way4
+            if ((( s >> 5 ) & 1 ) == 0 )  return 5; 
+            else                          return 4; 
         }
     } else {
         
-        // root bit == 1 => right recent -> victim in left subtree (ways 0..3)
         if ((( s >> 1 ) & 1 ) == 0 ) {
             
-            // node1==0 => left recent -> victim in right child (ways 2..3)
             if ((( s >> 4 ) & 1 ) == 0 )  return 3;
             else                          return 2;
 
         } else {
             
-            // node1==1 => right recent -> victim in left child (ways 0..1)
             if ((( s >> 3 ) & 1 ) == 0 )  return 1;
             else                          return 0;
         }
@@ -173,35 +180,17 @@ static inline int plru8Victim( uint8_t s ) {
 
 static inline uint8_t plru8Update( uint8_t state, int way ) {
 
-    // set bits along the path to mark the accessed side as recent.
-    // convention: bit == 0 => left recent, bit == 1 => right recent
-
-    uint8_t s = state & 0x7F; // mask 7 bits
+    uint8_t s = state & 0x7F;
 
     switch ( way & 0x7 ) {
 
-        // root left, node1 left, node3 left
-        case 0: s &= ~1;    s &= ~2;    s &= ~8;    break;
-
-        // root left, node1 left, node3 right
+        case 0: s &= ~1;    s &= ~2;    s &= ~8;    break;        
         case 1: s &= ~1;    s &= ~2;    s |= 8;     break;
-
-         // root left, node1 right, node4 left
         case 2: s &= ~1;    s |= 2;     s &= ~16;   break;
-
-        // root left, node1 right, node4 right
         case 3: s &= ~1;    s |= 2;     s |= 16;    break;
-
-        // root right, node2 left, node5 left
         case 4: s |= 1;     s &= ~4;    s &= ~32;   break;
-
-        // root right, node2 left, node5 right
         case 5: s |= 1;     s &= ~4;    s |= 32;    break;
-
-        // root right, node2 right, node6 left
         case 6: s |= 1;     s |= 4;     s &= ~64;   break;
-
-        // root right, node2 right, node6 right
         case 7: s |= 1;     s |= 4;     s |= 64;    break;
     }
 
@@ -318,6 +307,21 @@ void T64Cache::decomposeAdr( T64Word pAdr,
     *tag    = pAdr >> tagShift;
 }
 
+uint32_t T64Cache::getTag( T64Word pAdr ) {
+
+    return ( pAdr >> tagShift );
+}   
+
+uint32_t T64Cache::getSetIndex( T64Word  pAdr ) {
+
+    return ( ( pAdr >> indexShift ) & indexBitmask );
+}
+
+uint32_t T64Cache::getLineOfs( T64Word  pAdr ) {
+
+    return ( pAdr & offsetBitmask );    
+}
+
 //----------------------------------------------------------------------------------------
 // The set associative cache uses a pseudo LRU scheme. There are two local routines,
 // select a victim and update the state. Depending on the number of ways, we call the
@@ -367,12 +371,30 @@ bool T64Cache::lookupCache( T64Word          pAdr,
         if (( l -> valid ) && ( l -> tag == tag )) {
 
             *info = l;
-            *data = &cacheData[ ( w * sets ) + set * lineSize ];
+            *data = &cacheData[ (( w * sets ) + set ) * lineSize ];
             return( true );
         }
     }
 
     return( false );               
+}
+
+//----------------------------------------------------------------------------------------
+// "selectCacheLine" will return the slot based on way an set index regardless if 
+// the slot is valid.
+//
+//----------------------------------------------------------------------------------------
+bool T64Cache::selectCacheLine( uint32_t         way,
+                                uint32_t         set, 
+                                T64CacheLineInfo **info, 
+                                uint8_t          **data ) {
+
+    if ( way > ways ) return ( false );
+    if ( set > sets ) return ( false );
+
+    *info  = &cacheInfo[ way * set ];
+     *data = &cacheData[ (( way * sets ) + set ) * lineSize ];
+     return ( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -405,15 +427,20 @@ void T64Cache::setCacheLineData( uint8_t *line,
 }
 
 //----------------------------------------------------------------------------------------
-// "readCacheData" is the routine to get the data from the cache. 
+// "readCacheData" is the routine to get the data from the cache. We first check for
+// any alignment errors. Next, lookup the cache. If the line is found, just return
+// the data.
+//
+// If the cache does not have the data, we need to get it. First select a victim line
+// to read in the cache line from memory. If we select an unused line, easy, just 
+// issue a shared read request to the T64 system. If the cache line is valid, we need
+// to check if it was modified. If so, we need to flush the data first. Then we READ 
+// SHARED the new cache line into this slot. Finally, we return the requested data.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) {
-
-        // alignment error 
-    }
+    if ( ! isAligned( pAdr, len )) return( -1 );
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -423,13 +450,16 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
         cacheHits ++;
         plruUpdate( );
 
-        // found it, get the data
+        *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
     }
     else {
 
         cacheMiss ++;
 
-        int vSet = plruVictim( );
+        int vWay = plruVictim( );
+        plruUpdate( );
+        
+
 
         // if victim valid 
         //      if victim modified -> flush
@@ -444,15 +474,21 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "writeCacheData" is the routine to write data to the cache. We first check for
+// any alignment errors. Next, lookup the cache. If the line is found, just update
+// the data in the cache line.
 //
+// If the cache does not have the cache line, we need to get it first. First select 
+// a victim line to read in the cache line from memory. If we select an unused line,
+// easy, just issue a shared private request to the T64 system. If the cache line is
+// valid, we need to check if it was modified. If so, we need to flush the data first.
+// Then we READ PRIVATE the new cache line into this slot. Finally, we update the 
+// cache line.
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) {
-
-        // alignment error 
-    }
+    if ( ! isAligned( pAdr, len )) return ( -1 );
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -461,8 +497,7 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
         cacheHits ++;
         plruUpdate( );
-
-        // found it, set the data
+        setCacheLineData( cData, getLineOfs( pAdr ), len, data );
     }
     else {
 
@@ -484,37 +519,49 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// "flushCacheLine" will write back a cache line to memory if it is modified. If we 
+// do not have such a cache line, the request is ignored. 
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::flushCacheData( T64Word pAdr ) {
+int T64Cache::flushCacheLine( T64Word pAdr ) {
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
 
-    if ( lookupCache( pAdr, &cInfo, &cData )) {
+    if ( lookupCache( pAdr, &cInfo, &cData )) { 
 
-        // if found and modified, write back, 
-        // mark as read shared
+        if ( cInfo -> modified ) {
 
+             // write back, 
+          
+            cInfo -> modified = false;
+        }
     }
 
     return( 0 );
 }
 
 //----------------------------------------------------------------------------------------
-//
+// "purgeCacheLine" will remove a cache line. If the line was modified it is flushed
+// first.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::purgeCacheData( T64Word pAdr ) {
+int T64Cache::purgeCacheLine( T64Word pAdr ) {
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
 
     if ( lookupCache( pAdr, &cInfo, &cData )) {
 
-        // if modified, flush
-        // invalidate line
+        if ( cInfo -> modified ) {
+
+             // write back, 
+          
+            cInfo -> modified = false;
+        }
+
+        cInfo -> valid  = false;
+        cInfo -> tag    = 0;
     }
 
     return( 0 );
@@ -554,7 +601,7 @@ int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::flush( T64Word pAdr ) {
 
-    if ( ! isInIoAdrRange( pAdr )) return( flushCacheData( pAdr ));
+    if ( ! isInIoAdrRange( pAdr )) return( flushCacheLine( pAdr ));
     else return( 99 );
 }
 
@@ -564,6 +611,6 @@ int T64Cache::flush( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::purge( T64Word pAdr ) {
 
-     if ( ! isInIoAdrRange( pAdr )) return( purgeCacheData( pAdr ));
+     if ( ! isInIoAdrRange( pAdr )) return( purgeCacheLine( pAdr ));
      else return( 99 );
 }
