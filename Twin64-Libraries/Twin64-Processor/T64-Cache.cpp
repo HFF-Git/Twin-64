@@ -63,7 +63,7 @@ inline int plru2Victim( uint8_t state ) {
     return ( state & 1 ) ? 0 : 1;
 }
 
-inline uint8_t plru2_update(uint8_t state, int way) {
+inline uint8_t plru2Update(uint8_t state, int way) {
     // set state to indicate which way was used recently:
     // way==0 => bit = 0, way==1 => bit = 1
     return (uint8_t)(way & 1);
@@ -208,23 +208,6 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
     return s;
 }
 
-void clearCacheLine( T64CacheLine *cl ) {
-
-    cl -> valid     = false;
-    cl -> modified  = false;
-    cl -> tag       = 0;
-
-    for ( int i = 0; i < T64_WORDS_PER_CACHE_LINE; i++ ) cl -> line[ i ] = 0;
-}
-
-int getLineIndex( T64Word pAdr ) {
-
-    return(( pAdr >> T64_LINE_OFS_BITS ) & (( 1 << T64_CACHE_INDEX_BITS ) - 1 ));
-}
-
-
-
-
 } // namespace
 
 
@@ -234,108 +217,191 @@ int getLineIndex( T64Word pAdr ) {
 // Cache
 //
 //----------------------------------------------------------------------------------------
-// "T64Cache" is the abstract class for the T64 caches.
+// "T64Cache" is the object constructor. We decode the valid cache type options and
+// precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( int ways, T64System *sys ) { 
+T64Cache::T64Cache( T64CacheType cacheType, T64System *sys ) { 
 
-    this -> sys = sys;
-    this -> ways = ways;
+    this -> cacheType = cacheType;
 
-    if (( ways != 2 ) && ( ways != 4 ) && ( ways != 8 )) ways = 4;
+     switch ( cacheType ) {
 
-    cacheArray = (T64CacheLine *) malloc ( ways * sets * sizeof( T64CacheLine ));
+        case T64_CT_2W_64S: 
+        case T64_CT_2W_128S:    ways = 2;   break;
+
+        case T64_CT_4W_64S:
+        case T64_CT_4W_128S:    ways = 4;   break;
+
+        case T64_CT_8W_64S:
+        case T64_CT_8W_128S:    ways = 8;   break;
+
+        default:                ways = 2; 
+    }
+
+    switch ( cacheType ) {
+
+        case T64_CT_2W_128S:    
+        case T64_CT_4W_128S:
+        case T64_CT_8W_128S: {
+            
+            sets        = 128; 
+            lineSize    = 32;
+            offsetBits  = 5;                    
+            indexBits   = 7;     
+        
+        } break;
+
+        case T64_CT_2W_64S:    
+        case T64_CT_4W_64S:
+        case T64_CT_8W_64S: {
+            
+            sets        = 64; 
+            lineSize    = 64;
+            offsetBits  = 6;                    
+            indexBits   = 6;     
+
+         } break;
+
+        default: {
+            
+            sets        = 128; 
+            lineSize    = 32;
+            offsetBits  = 5;                    
+            indexBits   = 7;     
+
+         }
+    }
+
+    offsetBitmask   = ( 1ULL << offsetBits ) - 1;
+    indexBitmask    = ( 1ULL << indexBits ) - 1;
+    indexShift      = offsetBits;
+    tagShift        = offsetBits + indexBits;
+    cacheHits       = 0;
+    cacheMiss       = 0;
+    plruState       = 0;
+
+    cacheInfo = (T64CacheLineInfo *) malloc( ways * sets );
+    cacheData = (uint8_t *) malloc( ways * sets * lineSize );
 }
 
 //----------------------------------------------------------------------------------------
-// The set associative cache uses a pseudo LRU scheme.
+// Reset. For now, clear the statistics.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::plruVictim( uint8_t state ) {
+void T64Cache::reset( ) {
 
-    switch( ways ) {
+    cacheHits   = 0;
+    cacheMiss   = 0;
+    plruState   = 0;
 
-        case 2: break;
-        case 4: break;
-        case 8: break;
+    for ( int i = 0; i < ( ways * sets ); i++ ) {
+
+        cacheInfo[ i ].valid    = false;
+        cacheInfo[ i ].modified = false;
+        cacheInfo[ i ].tag      = 0;
     }
-
-    return( 0 );
 }
 
-uint8_t T64Cache::plruUpdate( uint8_t state, int way ) {
+//----------------------------------------------------------------------------------------
+// A cache requests will decode the tag, index and line offset from the physical 
+// address.
+//
+//----------------------------------------------------------------------------------------
+void T64Cache::decomposeAdr( T64Word pAdr,
+                             uint32_t *tag, 
+                             uint32_t *set, 
+                             uint32_t *offset ) {
+
+    *offset = pAdr & offsetBitmask;
+    *set    = ( pAdr >> indexShift ) & indexBitmask;
+    *tag    = pAdr >> tagShift;
+}
+
+//----------------------------------------------------------------------------------------
+// The set associative cache uses a pseudo LRU scheme. There are two local routines,
+// select a victim and update the state. Depending on the number of ways, we call the
+// respective local routine.
+//
+//----------------------------------------------------------------------------------------
+int T64Cache::plruVictim( ) {
 
     switch( ways ) {
 
-        case 2: break;
-        case 4: break;
-        case 8: break;
+        case 2: return( plru2Victim( plruState ));
+        case 4: return( plru4Victim( plruState ));
+        case 8: return( plru8Victim( plruState ));
+        default: return( 0 );
     }
+}
 
-    return( 0 );
+void T64Cache::plruUpdate( ) {
+
+    switch( ways ) {
+
+        case 2:  plruState = plru2Update( plruState, ways ); break;
+        case 4:  plruState = plru4Update( plruState, ways ); break;
+        case 8:  plruState = plru8Update( plruState, ways ); break;
+        default: plruState = 0;
+    }
 }
 
 //----------------------------------------------------------------------------------------
 // "lookup" searches the cache sets. If we find a valid cache line with the matching
-// tag, we return this line.
+// tag, we return the pointers to the line.
 //
 //----------------------------------------------------------------------------------------
-T64CacheLine *T64Cache::lookup( T64Word pAdr ) {
+bool T64Cache::lookupCache( T64Word          pAdr, 
+                            T64CacheLineInfo **info, 
+                            uint8_t          **data ) {
 
-    T64Word ofsMask = ( 1 << T64_LINE_OFS_BITS ) - 1;
-    T64Word setMask = ( 1 << T64_CACHE_INDEX_BITS ) - 1;
-    int     index   = ( pAdr >> T64_LINE_OFS_BITS ) & setMask;
-    T64Word tag     = pAdr & ofsMask;
+    uint32_t  tag;
+    uint32_t  ofs;
+    uint32_t  set;
+
+    decomposeAdr( pAdr, &tag, &set, &ofs );
 
     for ( int w = 0; w < ways; w++ ) {
 
-        T64CacheLine *l = &cacheArray[ w * T64_MAX_CACHE_SETS ] + index;
-        if (( l -> valid ) && ( l -> tag == tag )) return ( l );
+        T64CacheLineInfo *l = &cacheInfo[ w * set ];
+        if (( l -> valid ) && ( l -> tag == tag )) {
+
+            *info = l;
+            *data = &cacheData[ ( w * sets ) + set * lineSize ];
+            return( true );
+        }
     }
 
-    return( nullptr );
+    return( false );               
 }
 
 //----------------------------------------------------------------------------------------
 // "getCacheLineData" copies data from the cache line. We expect a valid len argument.
-// The pAdr parameter contains the full address from which we derive the alignment and
-// offset into the cache line.
-//
+// 
 //----------------------------------------------------------------------------------------
-T64Word T64Cache::getCacheLineData( T64CacheLine *cLine,
-                                    T64Word      pAdr, 
-                                    int          len ) {
+T64Word T64Cache::getCacheLineData( uint8_t *line, 
+                                    int     lineOfs,
+                                    int     len ) {
 
-    T64Word ofsMask = ( 1 << T64_LINE_OFS_BITS ) - 1;
-    int     lOfs    = pAdr & ofsMask;
-    int     wOfs    = sizeof( T64Word ) - len;
+    int wOfs = sizeof( T64Word ) - len;
 
     T64Word tmp;
-    memcpy((uint8_t *) &cLine -> line[ lOfs ], 
-           ((uint8_t *) &tmp + wOfs ), 
-           len );
-
+    memcpy(((uint8_t *) &tmp + wOfs ), &line[ lineOfs ], len );
     return( tmp );
 }
 
 //----------------------------------------------------------------------------------------
 // "setCacheLineData" copies data to the cache line. We expect a valid len argument.
-// The pAdr parameter contains the full address from which we derive the alignment and
-// offset into the cache line.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::setCacheLineData( T64CacheLine *cLine,
-                                 T64Word pAdr, 
-                                 T64Word data, 
-                                 int len ) {
+void T64Cache::setCacheLineData( uint8_t *line,
+                                 int     lineOfs,
+                                 int     len,
+                                 T64Word data ) {
 
-    T64Word ofsMask = ( 1 << T64_LINE_OFS_BITS ) - 1;
-    int     lOfs    = pAdr & ofsMask;
-    int     wOfs    = sizeof( T64Word ) - len;
+    int wOfs = sizeof( T64Word ) - len;
 
-    memcpy(((uint8_t *) &data + wOfs ),
-           (uint8_t *) &cLine -> line[ lOfs ], 
-           len );
+    memcpy( &line[ lineOfs ], ((uint8_t *) &data + wOfs ), len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -344,29 +410,35 @@ void T64Cache::setCacheLineData( T64CacheLine *cLine,
 //----------------------------------------------------------------------------------------
 int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
-    // check len ?
-    // check align ?
+    if ( ! isAligned( pAdr, len )) {
 
-    T64CacheLine *cLine = lookup( pAdr );
+        // alignment error 
+    }
 
-    if ( cLine == nullptr ) {
+    T64CacheLineInfo *cInfo;
+    uint8_t          *cData;
+
+    if ( lookupCache( pAdr, &cInfo, &cData )) {
+
+        cacheHits ++;
+        plruUpdate( );
+
+        // found it, get the data
+    }
+    else {
 
         cacheMiss ++;
 
-        int vSet = plru2Victim( plruState );
+        int vSet = plruVictim( );
 
-        cLine = &cacheArray[ vSet * T64_MAX_CACHE_SETS + getLineIndex( pAdr ) ];
+        // if victim valid 
+        //      if victim modified -> flush
+        //      purge, mark invalid
 
-       // pick victim to flush / purge
-
-        // miss: fetch from memory. 
-
-        // update plru state
-
+        // read shared from memory.
     }
-    
-    // found: check alignment, copy data
-    // move according to len
+
+    // copy data according to len
 
     return( 0 );
 }
@@ -377,32 +449,36 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
-    T64CacheLine *cLine = lookup( pAdr );
+    if ( ! isAligned( pAdr, len )) {
 
-     if ( cLine == nullptr ) {
-
-        cacheMiss ++;
-
-        int vSet = plru2Victim( plruState );
-
-        cLine = &cacheArray[ vSet * T64_MAX_CACHE_SETS + getLineIndex( pAdr ) ];
-
-       // pick victim to flush / purge
-
-        // miss: fetch from memory. 
-
-        // update plru state
-
+        // alignment error 
     }
 
-    // check sets, index is upper 6bits in page offset
-    // move according to len
+    T64CacheLineInfo *cInfo;
+    uint8_t          *cData;
 
-    // if found and shared, mark private
-    // if not found, read private
-    // if not found and no room, pick victim to purge first
-    // if modified flush first
-    // read private and modify
+    if ( lookupCache( pAdr, &cInfo, &cData )) {
+
+        cacheHits ++;
+        plruUpdate( );
+
+        // found it, set the data
+    }
+    else {
+
+        int vSet = plruVictim( );
+
+        cacheMiss ++;
+        plruUpdate( );
+
+        // if victim valid 
+        //      if victim modified -> flush
+        //      purge, mark invalid
+
+        // read private from memory.
+    }
+
+    // set data according to len
 
     return( 0 );
 }
@@ -413,8 +489,15 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::flushCacheData( T64Word pAdr ) {
 
-    // lookup cache line
-    // if found and modified, write back, mark as read shared
+    T64CacheLineInfo *cInfo;
+    uint8_t          *cData;
+
+    if ( lookupCache( pAdr, &cInfo, &cData )) {
+
+        // if found and modified, write back, 
+        // mark as read shared
+
+    }
 
     return( 0 );
 }
@@ -425,25 +508,16 @@ int T64Cache::flushCacheData( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 int T64Cache::purgeCacheData( T64Word pAdr ) {
 
-    // lookup cache line
-    // if found and modified, write back
-    // invalidate line
+    T64CacheLineInfo *cInfo;
+    uint8_t          *cData;
+
+    if ( lookupCache( pAdr, &cInfo, &cData )) {
+
+        // if modified, flush
+        // invalidate line
+    }
 
     return( 0 );
-}
-
-//----------------------------------------------------------------------------------------
-// Reset. For now, clear the statistics.
-//
-//----------------------------------------------------------------------------------------
-void T64Cache::reset( ) {
-
-    cacheRequests   = 0;
-    cacheMiss       = 0;
-    plruState       = 0;
-
-    for ( int i = 0; i < ( ways * sets ); i++ ) 
-        clearCacheLine( &cacheArray[ i ] ); 
 }
 
 //----------------------------------------------------------------------------------------
@@ -452,8 +526,6 @@ void T64Cache::reset( ) {
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
-
-    cacheRequests++;
     
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
@@ -468,8 +540,6 @@ int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 //
 //----------------------------------------------------------------------------------------
 int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
-
-    cacheRequests++;
 
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 

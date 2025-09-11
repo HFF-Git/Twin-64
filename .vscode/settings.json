@@ -35,7 +35,12 @@
         "string_view": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "__locale": "cpp",
+        "ios": "cpp",
+        "new": "cpp",
+        "print": "cpp",
+        "typeinfo": "cpp"
     },
     "spellright.language": [
         "en"

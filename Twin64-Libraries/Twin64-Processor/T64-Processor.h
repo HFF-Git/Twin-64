@@ -33,6 +33,28 @@
 // Caches. We support set associative caches, 2, 4, and 8-way. 
 //
 //----------------------------------------------------------------------------------------
+enum T64CacheType : int {
+
+    T64_CT_NIL      = 0,
+
+    T64_CT_2W_128S  = 1,
+    T64_CT_4W_128S  = 2,
+    T64_CT_8W_128S  = 3,
+
+    T64_CT_2W_64S   = 4,
+    T64_CT_4W_64S   = 5,
+    T64_CT_8W_64S   = 6,
+
+};
+
+struct T64CacheLineInfo {
+
+    bool        valid;
+    bool        modified;
+    uint32_t    tag;
+};
+
+// ??? goes away ...
 struct T64CacheLine {
     
     bool            valid;
@@ -45,48 +67,76 @@ struct T64Cache {
 
     public:
 
-    T64Cache( int sets, T64System *sys );
-    virtual void    reset( );
+    T64Cache( T64CacheType cacheType, T64System *sys );
+    virtual void        reset( );
 
-    int             read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int             write( T64Word pAdr, T64Word data, int len, bool cached );
-    int             flush( T64Word pAdr );
-    int             purge( T64Word pAdr );
+    int                 read( T64Word pAdr, T64Word *data, int len, bool cached );
+    int                 write( T64Word pAdr, T64Word data, int len, bool cached );
+    int                 flush( T64Word pAdr );
+    int                 purge( T64Word pAdr );
 
-    virtual int     readCacheData( T64Word pAdr, T64Word *data, int len );
-    virtual int     writeCacheData( T64Word pAdr, T64Word data, int len );
-    virtual int     flushCacheData( T64Word pAdr );
-    virtual int     purgeCacheData( T64Word pAdr );
+    virtual int         readCacheData( T64Word pAdr, T64Word *data, int len );
+    virtual int         writeCacheData( T64Word pAdr, T64Word data, int len );
+    virtual int         flushCacheData( T64Word pAdr );
+    virtual int         purgeCacheData( T64Word pAdr );
 
-    int             getRequestCount( );
-    int             getMissCount( );
+    int                 getCacheLine( int set, 
+                                      int index, 
+                                      T64CacheLineInfo *info,
+                                      uint8_t *data );
+
+    int                 getRequestCount( );
+    int                 getHitCount( );
+    int                 getMissCount( );
 
     private: 
 
-    T64CacheLine    *lookup( T64Word pAdr );
+    void                decomposeAdr(  T64Word  paAdr,
+                                       uint32_t *tag, 
+                                       uint32_t *set, 
+                                       uint32_t *offset );
 
-    T64Word         getCacheLineData( T64CacheLine *line, 
-                                      T64Word pAdr,
-                                      int len );
+    bool                lookupCache( T64Word          pAdr, 
+                                     T64CacheLineInfo **info, 
+                                     uint8_t          **data );
 
-    void            setCacheLineData( T64CacheLine *line, 
-                                      T64Word pAdr, 
-                                      T64Word data, 
-                                      int len );
+    int                 plruVictim( );
+    void                plruUpdate( );
 
-    int             plruVictim( uint8_t state );
-    uint8_t         plruUpdate( uint8_t state, int way );
+    T64Word             getCacheLineData( uint8_t *line, 
+                                          int     lineOfs,
+                                          int     len );
 
-    T64CacheLine    *cacheArray     = nullptr;
-    T64System       *sys            = nullptr;
+    void                setCacheLineData( uint8_t *line,
+                                          int     lineOfs,
+                                          int     len,
+                                          T64Word data ); 
+                                          
 
-    int             ways            = 2;
-    int             sets            = T64_MAX_CACHE_SETS;
-    int             cacheRequests   = 0;
-    int             cacheMiss       = 0;
-    uint8_t         plruState       = 0;
+    T64CacheType        cacheType       = T64_CT_NIL;
+    T64CacheLineInfo    *cacheInfo      = nullptr;
+    uint8_t             *cacheData      = nullptr;
+    T64System           *sys            = nullptr;
+
+    int                 ways            = 0;
+    int                 sets            = 0;
+    int                 lineSize        = 0;
+    int                 offsetBits      = 0;
+    int                 indexBits       = 0;
+    T64Word             offsetBitmask   = 0;
+    T64Word             indexBitmask    = 0;
+    int                 indexShift      = 0;
+    int                 tagShift        = 0;
+
+    int                 cacheHits       = 0;
+    int                 cacheMiss       = 0;
+    uint8_t             plruState       = 0;
 
 
+
+
+    T64CacheLine    *cacheArray     = nullptr; // out ...
+    
 };
 
 

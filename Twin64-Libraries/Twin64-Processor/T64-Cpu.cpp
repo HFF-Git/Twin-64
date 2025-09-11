@@ -45,7 +45,7 @@ T64Processor::T64Processor( T64System *sys ) {
     
     this -> sys     = sys;
     this -> tlb     = new T64Tlb( );
-    this -> cache   = new T64Cache( 4, sys );
+    this -> cache   = new T64Cache( T64_CT_2W_128S, sys );
     
     this -> reset( );
 }
