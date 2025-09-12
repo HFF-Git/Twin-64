@@ -212,6 +212,10 @@ void T64System::step( int steps ) {
     }
 }
 
+//----------------------------------------------------------------------------------------
+//
+// ??? register access
+//----------------------------------------------------------------------------------------
 int T64System::readGeneralReg( int proc, int reg, T64Word *val ) {
 
     *val = 0;
@@ -245,6 +249,10 @@ int T64System::writePswReg( int proc, int reg, T64Word val ) {
     return( 0 );
 }
 
+//----------------------------------------------------------------------------------------
+//
+// ??? used by simulator to access TLB data in a processor.
+//----------------------------------------------------------------------------------------
 int T64System::readTlbEntry( int proc, int tlb, int index, 
                                 T64Word *info1, T64Word *info2 )  {
 
@@ -264,6 +272,10 @@ int T64System::purgeTlbEntry( int proc, int tlb, int index ) {
     return( 0 );
 }
 
+//----------------------------------------------------------------------------------------
+//
+// ??? used by simulator to access cache data in a processor.
+//----------------------------------------------------------------------------------------
 int T64System::readCacheLine( int proc, int cache, int set, int index, T64Word *line ) {
 
     line[ 0 ] = 0;
@@ -283,8 +295,10 @@ int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
     return( 0 );
 }
 
-// ??? OR keep this veneer rather small and let the I/O Modules do the work...
-
+//----------------------------------------------------------------------------------------
+//
+// Used by the simulator to access physical memory. Address must be aligned to len =
+//----------------------------------------------------------------------------------------
 int T64System::readMem( T64Word adr, T64Word *val, int len ) {
 
     T64Module *m = lookupByAdr( adr );
@@ -294,95 +308,48 @@ int T64System::readMem( T64Word adr, T64Word *val, int len ) {
         // ??? need a method to invoke ...
     }
 
-
-
-    // ??? find the module that handles this address....
-    // ??? do the alignment check in any case ?
-
-    switch ( len ) {
-
-        case 1: {
-
-        } break;
-
-        case 2: {
-
-            if ( ! isAligned( adr, 2 )) ;
-
-        } break;
-
-        case 4: {
-
-            if ( ! isAligned( adr, 4 )) ;
-
-        } break;
-
-        case 8: {
-
-            if ( ! isAligned( adr, 8 )) ;
-
-        } break;
-
-        default: {
-
-            *val = 0;
-        }
-    }
-
     return( 0 );
 }
 
 int T64System::writeMem( T64Word adr, T64Word val, int len ) {
 
-    // ??? find the module that handles this address....
-    // ??? do the alignment check in any case ?
-
-     switch ( len ) {
-
-        case 1: {
-
-        } break;
-
-        case 2: {
-
-            if ( ! isAligned( adr, 2 )) ;
-
-        } break;
-
-        case 4: {
-
-            if ( ! isAligned( adr, 4 )) ;
-
-        } break;
-
-        case 8: {
-
-            if ( ! isAligned( adr, 8 )) ;
-
-        } break;
-
-        default: {
-
-        }
-    }
     
     return( 0 );
 }
 
-int T64System::readMemBlock( T64Word adr, T64Word *blk ) {
-
-    blk[ 0 ] = 0;
-    blk[ 1 ] = 0;
-    blk[ 2 ] = 0;
-    blk[ 3 ] = 0;
-    return( 0 );
-}
-
-int T64System::writeMemBlock( T64Word adr, T64Word *blk ) {
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int T64System::readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len ) {
 
     return( 0 );
 }
 
+int T64System::readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len ) {
+
+    return( 0 );
+}
+
+int T64System::writeBlock( int proc, T64Word pAdr, uint8_t *data, int len ) {
+
+    return( 0 );
+}
+
+int T64System::readWord( int proc, T64Word pAdr, T64Word *word ){
+
+    return( 0 );
+}
+
+int T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
+
+    return( 0 );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
 int T64System::getHpaStartAdr( int module, T64Word *val ) {
 
     *val = 0;

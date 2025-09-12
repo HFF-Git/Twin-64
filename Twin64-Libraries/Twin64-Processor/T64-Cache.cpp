@@ -297,16 +297,6 @@ void T64Cache::reset( ) {
 // address.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::decomposeAdr( T64Word pAdr,
-                             uint32_t *tag, 
-                             uint32_t *set, 
-                             uint32_t *offset ) {
-
-    *offset = pAdr & offsetBitmask;
-    *set    = ( pAdr >> indexShift ) & indexBitmask;
-    *tag    = pAdr >> tagShift;
-}
-
 uint32_t T64Cache::getTag( T64Word pAdr ) {
 
     return ( pAdr >> tagShift );
@@ -359,11 +349,9 @@ bool T64Cache::lookupCache( T64Word          pAdr,
                             T64CacheLineInfo **info, 
                             uint8_t          **data ) {
 
-    uint32_t  tag;
-    uint32_t  ofs;
-    uint32_t  set;
-
-    decomposeAdr( pAdr, &tag, &set, &ofs );
+    uint32_t  tag = getTag( pAdr );
+    uint32_t  of  = getLineOfs( pAdr );
+    uint32_t  set = getSetIndex( pAdr );
 
     for ( int w = 0; w < ways; w++ ) {
 
@@ -384,10 +372,10 @@ bool T64Cache::lookupCache( T64Word          pAdr,
 // the slot is valid.
 //
 //----------------------------------------------------------------------------------------
-bool T64Cache::selectCacheLine( uint32_t         way,
-                                uint32_t         set, 
-                                T64CacheLineInfo **info, 
-                                uint8_t          **data ) {
+bool T64Cache::getCacheLine( uint32_t         way,
+                             uint32_t         set, 
+                             T64CacheLineInfo **info, 
+                             uint8_t       **data ) {
 
     if ( way > ways ) return ( false );
     if ( set > sets ) return ( false );
@@ -459,16 +447,22 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
         int vWay = plruVictim( );
         plruUpdate( );
         
+        getCacheLine( vWay, getSetIndex( pAdr ), &cInfo, &cData );
 
+        if ( cInfo -> valid ) {
 
-        // if victim valid 
-        //      if victim modified -> flush
-        //      purge, mark invalid
+            if ( cInfo -> modified ) {
 
-        // read shared from memory.
+                 sys -> writeBlock( 0, pAdr, cData, lineSize );
+            }
+
+            cInfo -> valid = false;
+        }
+
+        sys -> readBlockShared( 0, pAdr, cData, lineSize );
     }
 
-    // copy data according to len
+    *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
 
     return( 0 );
 }
@@ -501,19 +495,27 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
     }
     else {
 
-        int vSet = plruVictim( );
+        int vWay = plruVictim( );
 
         cacheMiss ++;
         plruUpdate( );
 
-        // if victim valid 
-        //      if victim modified -> flush
-        //      purge, mark invalid
+        getCacheLine( vWay, getSetIndex( pAdr ), &cInfo, &cData );
 
-        // read private from memory.
+        if ( cInfo -> valid ) {
+
+            if ( cInfo -> modified ) {
+
+                sys -> writeBlock( 0, pAdr, cData, lineSize );
+            }
+
+            cInfo -> valid = false;
+        }
+
+        sys -> readBlockPrivate( 0, pAdr, cData, lineSize );
     }
 
-    // set data according to len
+    setCacheLineData( cData, getLineOfs( pAdr ), len, data );
 
     return( 0 );
 }
@@ -532,8 +534,7 @@ int T64Cache::flushCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
-             // write back, 
-          
+            sys -> writeBlock( 0, pAdr, cData, lineSize );
             cInfo -> modified = false;
         }
     }
@@ -555,8 +556,7 @@ int T64Cache::purgeCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
-             // write back, 
-          
+            sys -> writeBlock( 0, pAdr, cData, lineSize );
             cInfo -> modified = false;
         }
 

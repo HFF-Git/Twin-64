@@ -80,21 +80,16 @@ struct T64Cache {
     int                 flushCacheLine( T64Word pAdr );
     int                 purgeCacheLine( T64Word pAdr );
 
-    int                 getCacheLine( int set, 
-                                      int index, 
-                                      T64CacheLineInfo *info,
-                                      uint8_t *data );
+    bool                getCacheLine( uint32_t way,
+                                      uint32_t set, 
+                                      T64CacheLineInfo **info,
+                                      uint8_t **data );
 
     int                 getRequestCount( );
     int                 getHitCount( );
     int                 getMissCount( );
 
     private: 
-
-    void                decomposeAdr(  T64Word  paAdr,
-                                       uint32_t *tag, 
-                                       uint32_t *set, 
-                                       uint32_t *offset );
 
     uint32_t            getTag( T64Word pAdr );                           
     uint32_t            getSetIndex( T64Word  paAdr );
@@ -103,11 +98,6 @@ struct T64Cache {
     bool                lookupCache( T64Word          pAdr, 
                                      T64CacheLineInfo **info, 
                                      uint8_t          **data );
-
-    bool                selectCacheLine( uint32_t         way,
-                                         uint32_t         set, 
-                                         T64CacheLineInfo **info, 
-                                         uint8_t          **data );
 
     int                 plruVictim( );
     void                plruUpdate( );

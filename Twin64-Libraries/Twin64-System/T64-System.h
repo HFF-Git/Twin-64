@@ -93,9 +93,6 @@ struct T64System {
     void        run( );
     void        step( int steps = 1 );
 
-    // ??? ideas for routines used by the simulator
-    // ??? general logic: lookup module and invoke the module specific function.
-
     int         readGeneralReg( int proc, int reg, T64Word *val );
     int         writeGeneralReg( int proc, int reg, T64Word val );
 
@@ -123,16 +120,11 @@ struct T64System {
     int         readMem( T64Word adr, T64Word *val, int len );
     int         writeMem( T64Word adr, T64Word val, int len );
 
-
-    // need routines for cache coherence memory access
-
-    int         readBlockShared( int proc, T64Word pAdr, T64Word *data );
-    int         readBlockPrivate( int proc, T64Word pAdr, T64Word *data );
-    int         writeBlock( int proc, T64Word pAdr, T64Word *data );
+    int         readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
+    int         readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
+    int         writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
     int         readWord( int proc, T64Word pAdr, T64Word *word );
     int         writeWord( int proc, T64Word pAdr, T64Word *word );
-
-    // routines for module support
 
     int         getHpaStartAdr( int module, T64Word *val );
     int         getHpaSize( int module, T64Word *val );
@@ -140,16 +132,6 @@ struct T64System {
     int         getSpaStartAdr( int module, T64Word *val );
     int         getSpaSize( int module, T64Word *val );
  
-
-
-    
-
-   
-    // ??? goes away =
-    int         readMemBlock( T64Word adr, T64Word *blk );
-    int         writeMemBlock( T64Word adr, T64Word *blk );
-
-    
     private:
 
     T64SystemMapEntry   moduleTab[ MAX_MODULES ];
