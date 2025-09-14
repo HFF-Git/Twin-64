@@ -453,13 +453,18 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                 sys -> writeBlock( 0, pAdr, cData, lineSize );
+                sys -> writeBlock( 0, 
+                                    ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
+                                    cData, 
+                                    lineSize );
+                // ??? throw on error ?
             }
 
             cInfo -> valid = false;
         }
 
         sys -> readBlockShared( 0, pAdr, cData, lineSize );
+        // ??? throw on error ?
     }
 
     *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
@@ -506,13 +511,18 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                sys -> writeBlock( 0, pAdr, cData, lineSize );
+                sys -> writeBlock( 0, 
+                                    ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
+                                    cData, 
+                                    lineSize );
+                // ??? throw on error 
             }
 
             cInfo -> valid = false;
         }
 
         sys -> readBlockPrivate( 0, pAdr, cData, lineSize );
+        // ??? throw on error ?
     }
 
     setCacheLineData( cData, getLineOfs( pAdr ), len, data );
@@ -534,7 +544,13 @@ int T64Cache::flushCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
-            sys -> writeBlock( 0, pAdr, cData, lineSize );
+            // ??? need to mask pAdr ? 
+            sys -> writeBlock( 0, 
+                               ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
+                               cData, 
+                               lineSize );
+            // ??? throw on error ?
+
             cInfo -> modified = false;
         }
     }
@@ -556,7 +572,10 @@ int T64Cache::purgeCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
+            // ??? need to mask pAdr ? 
             sys -> writeBlock( 0, pAdr, cData, lineSize );
+            // ??? throw on error ?
+
             cInfo -> modified = false;
         }
 

@@ -1378,7 +1378,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
     catch ( const T64Trap t ) {
         
         // ??? we are here because we trapped some level deep...
-        // the emulator will fill in the trap info and the next instruction 
+        // the emulator will finalize in the trap info and the next instruction 
         // to execute will be that of a trap handler.
         
     }
