@@ -671,10 +671,12 @@ void SimWinTlb::drawLine( T64Word index ) {
 // Methods for the Cache class.
 //
 //----------------------------------------------------------------------------------------
-// Object constructor. All we do is to remember what kind of Cache this is.
+// Object constructor.
 //
 //----------------------------------------------------------------------------------------
 SimWinCache::SimWinCache( SimGlobals *glb ) : SimWinScrollable( glb ) { 
+
+    // ??? get the cache....
 
     setWinType( WT_CACHE_WIN );
     setDefaults( );
@@ -688,19 +690,36 @@ SimWinCache::SimWinCache( SimGlobals *glb ) : SimWinScrollable( glb ) {
 //
 //----------------------------------------------------------------------------------------
 void SimWinCache::setDefaults( ) {
- 
+
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setDefRows( 6 );
-    setDefColumns( 128 );
+    // ??? how do we map a cache line size of 8 and 16 32-bit words ?
+   
+    if ( cache -> getCacheLineSize( ) == 32 ) {
+
+        setDefRows( 6 );
+        setDefColumns( 128 );
+    }
+    else if ( cache -> getCacheLineSize( ) == 64 ) { 
+
+    } 
+    else {
+
+        // ??? would a two line approach work ?
+        // ??? what if someone sets rows to an odd number ?
+
+        setDefRows( 6 );
+        setDefColumns( 128 * 2 );
+    }
+
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
 
     setCurrentItemAdr( 0 );
-    setLineIncrement( 4 );
-    setLimitItemAdr( UINT32_MAX ); // ??? fix: use cache size
-    setWinToggleLimit( 3 );  // ??? fix: use number of sets
+    setLineIncrement( 1 );
+    setLimitItemAdr( cache -> getSetSize( ));
+    setWinToggleLimit( cache -> getWays( ));
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -715,7 +734,6 @@ void SimWinCache::setDefaults( ) {
 //
 //  <windId> Proc: n Cache: n Set: n Current: 0x0000.  <rdx>
 //
-// ??? item Adr limit ...
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawBanner( ) {
     
@@ -725,10 +743,10 @@ void SimWinCache::drawBanner( ) {
     printWindowIdField( fmtDesc );
 
     printTextField((char *) "Proc: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+    printNumericField( procMuduleNum, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Cache: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+    printNumericField( cacheNum, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
@@ -749,14 +767,25 @@ void SimWinCache::drawBanner( ) {
 //  (0x0000): [xxx] [0x00_00000_0000] 0x0000_0000_0000_0000 0x... 0x... 0x... 
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawLine( T64Word index ) {
-    
+
     uint32_t fmtDesc = FMT_DEF_ATTR;
+
+    T64CacheLineInfo *cInfo;
+    uint8_t          *cData; // ?? this is byte...
+
+    if ( ! cache -> getCacheLine( getWinToggleVal( ),
+                                  index,
+                                  &cInfo, 
+                                  &cData )) {
+
+
+    }
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
     printTextField((char *) "): ", fmtDesc );
 
-    if ( index > 100 ) { // ??? fix .... is cache size...
+    if ( index > getLimitItemAdr( )) {
   
         printTextField((char *) "[", fmtDesc );
         printTextField((char *) "Invalid Cache index", fmtDesc );
@@ -766,9 +795,15 @@ void SimWinCache::drawLine( T64Word index ) {
     else {
 
         printTextField((char *) "[", fmtDesc );
-        printTextField((char *) "xxx", fmtDesc );
+
+        if ( cInfo -> valid ) printTextField((char *) "V", fmtDesc );
+        else printTextField((char *) "v", fmtDesc );
+
+         if ( cInfo -> modified ) printTextField((char *) "M", fmtDesc );
+        else printTextField((char *) "m", fmtDesc );
+
         printTextField((char *) "] [", fmtDesc );
-        printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
+        printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4 );
         printTextField((char *) "] ", fmtDesc );
 
         for ( int i = 0; i < 4; i++ ) { // ??? fix ... cache line size

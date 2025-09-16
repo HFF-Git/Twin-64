@@ -30,7 +30,8 @@
 #include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
-// Caches. We support set associative caches, 2, 4, and 8-way. 
+// Caches. We support set associative caches, 2, 4, and 8-way. There is a cache line 
+// info with flags and the tag and an array of bytes which holds the cache data.
 //
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
@@ -54,15 +55,6 @@ struct T64CacheLineInfo {
     uint32_t    tag;
 };
 
-// ??? goes away ...
-struct T64CacheLine {
-    
-    bool            valid;
-    bool            modified;
-    T64Word         tag;
-    T64Word         line[ T64_WORDS_PER_CACHE_LINE ];
-};
-
 struct T64Cache {
 
     public:
@@ -80,7 +72,7 @@ struct T64Cache {
     void                flushCacheLine( T64Word pAdr );
     void                purgeCacheLine( T64Word pAdr );
 
-    void                getCacheLine( uint32_t way,
+    bool                getCacheLine( uint32_t way,
                                       uint32_t set, 
                                       T64CacheLineInfo **info,
                                       uint8_t **data );
@@ -88,12 +80,16 @@ struct T64Cache {
     int                 getRequestCount( );
     int                 getHitCount( );
     int                 getMissCount( );
+    int                 getWays( );
+    int                 getSetSize( );
+    int                 getCacheLineSize( );
 
     private: 
 
     uint32_t            getTag( T64Word pAdr );                           
     uint32_t            getSetIndex( T64Word  paAdr );
     uint32_t            getLineOfs( T64Word  paAdr );
+    T64Word             pAdrFromTag( uint32_t tag, uint32_t index );
 
     bool                lookupCache( T64Word          pAdr, 
                                      T64CacheLineInfo **info, 
@@ -130,12 +126,6 @@ struct T64Cache {
     int                 cacheHits       = 0;
     int                 cacheMiss       = 0;
     uint8_t             plruState       = 0;
-
-
-
-
-    T64CacheLine    *cacheArray     = nullptr; // out ...
-    
 };
 
 
@@ -248,8 +238,8 @@ public:
     void            flushDataCache( T64Word vAdr );
     void            purgeDataCache( T64Word vAdr );
 
-    T64CacheLine    *getInstrCacheEntry( int set, int index );
-    T64CacheLine    *getDataCacheEntry( int set, int index );
+   // T64CacheLine    *getInstrCacheEntry( int set, int index );
+   // T64CacheLine    *getDataCacheEntry( int set, int index );
     
     T64Word         getPswReg( );
     void            setPswReg( T64Word val );

@@ -1000,8 +1000,10 @@ struct SimWinCache : SimWinScrollable {
 
     private:
 
-    int procMuduleNum;
-    int cacheNum;
+    int         procMuduleNum   = 0;
+    int         cacheNum        = 0;;
+
+    T64Cache    *cache          = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1092,11 +1094,6 @@ private:
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len );
     
-    void            displayTlbEntry( T64TlbEntry *entry, int rdx = 16 );
-    void            displayTlbEntries( T64Tlb *tlb, int index, int len, int rdx = 16 );
-    void            displayCacheLine( T64CacheLine *line, int rdx = 16 );
-    void            displayCacheEntries( T64Cache *cache, int index, int len, int rdx = 16 );
-
     void            exitCmd( );
     void            helpCmd( );
     void            envCmd( );

@@ -298,8 +298,7 @@ void T64Cache::reset( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A cache requests will decode the tag, index and line offset from the physical 
-// address.
+// Helper functions.
 //
 //----------------------------------------------------------------------------------------
 uint32_t T64Cache::getTag( T64Word pAdr ) {
@@ -315,6 +314,26 @@ uint32_t T64Cache::getSetIndex( T64Word  pAdr ) {
 uint32_t T64Cache::getLineOfs( T64Word  pAdr ) {
 
     return ( pAdr & offsetBitmask );    
+}
+
+int T64Cache::getSetSize( ) {
+
+    return( sets );
+}
+
+int T64Cache::getWays( ) {
+
+    return( ways );
+}
+
+ int T64Cache::getCacheLineSize( ) {
+
+    return( lineSize );
+ }
+
+T64Word T64Cache:: pAdrFromTag( uint32_t tag, uint32_t index ) {
+
+    return(( tag << ( offsetBits + indexBits ) | ( index < indexShift )));
 }
 
 //----------------------------------------------------------------------------------------
@@ -376,18 +395,16 @@ bool T64Cache::lookupCache( T64Word          pAdr,
 // the slot is valid.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::getCacheLine( uint32_t         way,
+bool T64Cache::getCacheLine( uint32_t         way,
                              uint32_t         set, 
                              T64CacheLineInfo **info, 
                              uint8_t       **data ) {
 
-    if (( way > ways ) || ( set > sets )) {
-        
-        throw( T64Trap( MACHINE_CHECK_TRAP ));
-    }
-    
+    if (( way > ways ) || ( set > sets )) return ( false );
+   
     *info  = &cacheInfo[ way * set ];
     *data = &cacheData[ (( way * sets ) + set ) * lineSize ];
+    return ( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -452,21 +469,25 @@ void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
         cacheMiss ++;
 
-        int vWay = plruVictim( );
+        int      vWay     = plruVictim( );
+        uint32_t setIndex = getSetIndex( pAdr );
         plruUpdate( );
         
-        getCacheLine( vWay, getSetIndex( pAdr ), &cInfo, &cData );
-
+        if ( ! getCacheLine( vWay, setIndex, &cInfo, &cData )) {
+        
+            throw( T64Trap( MACHINE_CHECK_TRAP ));
+        }
+    
         if ( cInfo -> valid ) {
 
             if ( cInfo -> modified ) {
 
                 if ( ! sys -> writeBlock( 0, 
-                                    ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
-                                    cData, 
-                                    lineSize )) {
+                                          pAdrFromTag( cInfo -> tag, setIndex ), 
+                                          cData,
+                                          lineSize )) {
 
-                    throw ( 99 ); // ??? fill in ... a machine check ?
+                    throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
                 }
             }
 
@@ -513,19 +534,23 @@ void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
     }
     else {
 
-        int vWay = plruVictim( );
+        int      vWay     = plruVictim( );
+        uint32_t setIndex = getSetIndex( pAdr );
 
         cacheMiss ++;
         plruUpdate( );
 
-        getCacheLine( vWay, getSetIndex( pAdr ), &cInfo, &cData );
+        if ( ! getCacheLine( vWay, setIndex, &cInfo, &cData )) {
+        
+            throw( T64Trap( MACHINE_CHECK_TRAP ));
+        }
 
         if ( cInfo -> valid ) {
 
             if ( cInfo -> modified ) {
 
                 if ( ! sys -> writeBlock( 0, 
-                                    ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
+                                    pAdrFromTag( cInfo -> tag, setIndex ), 
                                     cData, 
                                     lineSize )) {        
                     
@@ -559,11 +584,13 @@ void T64Cache::flushCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
+            uint32_t setIndex = getSetIndex( pAdr );
+
             // ??? need to mask pAdr ? 
             if ( ! sys -> writeBlock( 0, 
-                               ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
-                               cData, 
-                               lineSize )) {
+                                      pAdrFromTag( cInfo -> tag, setIndex ),  
+                                      cData, 
+                                     lineSize )) {
         
                 throw( T64Trap( MACHINE_CHECK_TRAP ));
             }
@@ -587,8 +614,12 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 
         if ( cInfo -> modified ) {
 
-            // ??? need to mask pAdr ? 
-            if ( ! sys -> writeBlock( 0, pAdr, cData, lineSize )) {
+            uint32_t setIndex = getSetIndex( pAdr );
+
+            if ( ! sys -> writeBlock( 0, 
+                                      pAdrFromTag( cInfo -> tag, setIndex ), 
+                                      cData, 
+                                      lineSize )) {
         
                 throw( T64Trap( MACHINE_CHECK_TRAP ));
             }

@@ -27,7 +27,7 @@
 #include "T64-Processor.h"
 
 //----------------------------------------------------------------------------------------
-//
+// Name space for local routines.
 //
 //----------------------------------------------------------------------------------------
 namespace {
@@ -61,7 +61,7 @@ void T64Processor::reset( ) {
     for ( int i = 0; i < MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
     for ( int i = 0; i < MAX_GREGS; i++ ) genRegFile[ i ] = 0;
     
-    pswReg              = 0; // ??? PDC space address ?
+    pswReg              = 0;
     instrReg            = 0;
     resvReg             = 0;
 
@@ -210,8 +210,7 @@ T64Word T64Processor::instrRead( T64Word vAdr ) {
             };
 
             // ??? should physical access ever be cached ?
-            
-            
+             
             return( instr );
         }
         else {
