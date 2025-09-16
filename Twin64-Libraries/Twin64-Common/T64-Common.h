@@ -99,7 +99,9 @@ enum TrapCode : int {
     TLB_ACCESS_TRAP         = 9,
 
      
-    DATA_ALIGNMENT_TRAP     = 2, 
+    DATA_ALIGNMENT_TRAP     = 10, 
+
+    MACHINE_CHECK_TRAP      = 11
     
 };
 

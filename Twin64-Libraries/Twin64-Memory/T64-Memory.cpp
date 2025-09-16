@@ -107,7 +107,7 @@ T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
         val |= (T64Word) mem[ adr + 7 ];
         return ( val );
     }
-  //  else throw T64Trap( ALIGNMENT_TRAP );
+    else throw T64Trap( DATA_ALIGNMENT_TRAP );
 }
 
 //----------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ void T64Memory::write( T64Word adr, T64Word arg, int len ) {
         mem[ adr + 6] = ( arg >> 8  ) & 0xFF;
         mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
     }
-  //   else throw T64Trap( ALIGNMENT_TRAP );
+    else throw T64Trap( DATA_ALIGNMENT_TRAP );
 }
 
 // ??? separate routines for monitor display ?

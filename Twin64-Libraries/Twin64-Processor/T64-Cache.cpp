@@ -16,6 +16,8 @@
 // The caches themselves are set associative caches. There are defined cache types to 
 // experiment with ways and set sizes. 
 //
+// NOTE: This class throws the T64Trap traps.
+//
 //----------------------------------------------------------------------------------------
 //
 // T64 - A 64-bit CPU - Cache
@@ -32,6 +34,9 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
+#include "T64-Common.h"
+#include "T64-Util.h"
+#include "T64-System.h"
 #include "T64-Processor.h"
 
 // We:                          Them:
@@ -350,7 +355,6 @@ bool T64Cache::lookupCache( T64Word          pAdr,
                             uint8_t          **data ) {
 
     uint32_t  tag = getTag( pAdr );
-    uint32_t  of  = getLineOfs( pAdr );
     uint32_t  set = getSetIndex( pAdr );
 
     for ( int w = 0; w < ways; w++ ) {
@@ -372,17 +376,18 @@ bool T64Cache::lookupCache( T64Word          pAdr,
 // the slot is valid.
 //
 //----------------------------------------------------------------------------------------
-bool T64Cache::getCacheLine( uint32_t         way,
+void T64Cache::getCacheLine( uint32_t         way,
                              uint32_t         set, 
                              T64CacheLineInfo **info, 
                              uint8_t       **data ) {
 
-    if ( way > ways ) return ( false );
-    if ( set > sets ) return ( false );
-
+    if (( way > ways ) || ( set > sets )) {
+        
+        throw( T64Trap( MACHINE_CHECK_TRAP ));
+    }
+    
     *info  = &cacheInfo[ way * set ];
-     *data = &cacheData[ (( way * sets ) + set ) * lineSize ];
-     return ( true );
+    *data = &cacheData[ (( way * sets ) + set ) * lineSize ];
 }
 
 //----------------------------------------------------------------------------------------
@@ -426,9 +431,12 @@ void T64Cache::setCacheLineData( uint8_t *line,
 // SHARED the new cache line into this slot. Finally, we return the requested data.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
+void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) return( -1 );
+    if ( ! isAligned( pAdr, len )) {
+        
+        throw( T64Trap( MACHINE_CHECK_TRAP ));
+    }
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -453,23 +461,25 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                sys -> writeBlock( 0, 
+                if ( ! sys -> writeBlock( 0, 
                                     ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
                                     cData, 
-                                    lineSize );
-                // ??? throw on error ?
+                                    lineSize )) {
+
+                    throw ( 99 ); // ??? fill in ... a machine check ?
+                }
             }
 
             cInfo -> valid = false;
         }
 
-        sys -> readBlockShared( 0, pAdr, cData, lineSize );
-        // ??? throw on error ?
+        if ( ! sys -> readBlockShared( 0, pAdr, cData, lineSize )) {
+
+            throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
+        }
     }
 
     *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
-
-    return( 0 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -485,9 +495,12 @@ int T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 // cache line.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
+void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) return ( -1 );
+    if ( ! isAligned( pAdr, len )) {
+        
+        throw( T64Trap( MACHINE_CHECK_TRAP ));
+    }
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -511,23 +524,25 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                sys -> writeBlock( 0, 
+                if ( ! sys -> writeBlock( 0, 
                                     ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
                                     cData, 
-                                    lineSize );
-                // ??? throw on error 
+                                    lineSize )) {        
+                    
+                    throw( T64Trap( MACHINE_CHECK_TRAP ));
+                }
             }
 
             cInfo -> valid = false;
         }
 
-        sys -> readBlockPrivate( 0, pAdr, cData, lineSize );
-        // ??? throw on error ?
+        if ( ! sys -> readBlockPrivate( 0, pAdr, cData, lineSize )) {
+
+            throw( T64Trap( MACHINE_CHECK_TRAP ));
+        }
     }
 
     setCacheLineData( cData, getLineOfs( pAdr ), len, data );
-
-    return( 0 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -535,7 +550,7 @@ int T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 // do not have such a cache line, the request is ignored. 
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::flushCacheLine( T64Word pAdr ) {
+void T64Cache::flushCacheLine( T64Word pAdr ) {
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -545,17 +560,17 @@ int T64Cache::flushCacheLine( T64Word pAdr ) {
         if ( cInfo -> modified ) {
 
             // ??? need to mask pAdr ? 
-            sys -> writeBlock( 0, 
+            if ( ! sys -> writeBlock( 0, 
                                ( cInfo -> tag << indexBits ) + getSetIndex( pAdr ), 
                                cData, 
-                               lineSize );
-            // ??? throw on error ?
+                               lineSize )) {
+        
+                throw( T64Trap( MACHINE_CHECK_TRAP ));
+            }
 
             cInfo -> modified = false;
         }
     }
-
-    return( 0 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -563,7 +578,7 @@ int T64Cache::flushCacheLine( T64Word pAdr ) {
 // first.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::purgeCacheLine( T64Word pAdr ) {
+void T64Cache::purgeCacheLine( T64Word pAdr ) {
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
@@ -573,17 +588,17 @@ int T64Cache::purgeCacheLine( T64Word pAdr ) {
         if ( cInfo -> modified ) {
 
             // ??? need to mask pAdr ? 
-            sys -> writeBlock( 0, pAdr, cData, lineSize );
-            // ??? throw on error ?
-
+            if ( ! sys -> writeBlock( 0, pAdr, cData, lineSize )) {
+        
+                throw( T64Trap( MACHINE_CHECK_TRAP ));
+            }
+     
             cInfo -> modified = false;
         }
 
         cInfo -> valid  = false;
         cInfo -> tag    = 0;
     }
-
-    return( 0 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -591,13 +606,16 @@ int T64Cache::purgeCacheLine( T64Word pAdr ) {
 // memory.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
+void T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
     
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-        return( sys -> readMem( pAdr, data, len ));
+        if ( sys -> readMem( pAdr, data, len )) {
+            
+            throw( T64Trap( MACHINE_CHECK_TRAP ));
+        }
     }
-    else return( readCacheData( pAdr, data, len ));
+    else readCacheData( pAdr, data, len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -605,31 +623,32 @@ int T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 // memory.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
+void T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-        return( sys -> writeMem( pAdr, data, len ));
+        if ( ! sys -> writeMem( pAdr, data, len )) {
+
+            throw( T64Trap( MACHINE_CHECK_TRAP ));
+        }
     }
-    else return( writeCacheData( pAdr, data, len ));
+    else writeCacheData( pAdr, data, len );
 }
 
 //----------------------------------------------------------------------------------------
 // A cache flush operation. Only valid for non-I/O address range.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::flush( T64Word pAdr ) {
+void T64Cache::flush( T64Word pAdr ) {
 
-    if ( ! isInIoAdrRange( pAdr )) return( flushCacheLine( pAdr ));
-    else return( 99 );
+    if ( ! isInIoAdrRange( pAdr )) flushCacheLine( pAdr );
 }
 
 //----------------------------------------------------------------------------------------
 // A cache purge operation. Only valid for non-I/O address range.
 //
 //----------------------------------------------------------------------------------------
-int T64Cache::purge( T64Word pAdr ) {
+void T64Cache::purge( T64Word pAdr ) {
 
-     if ( ! isInIoAdrRange( pAdr )) return( purgeCacheLine( pAdr ));
-     else return( 99 );
+     if ( ! isInIoAdrRange( pAdr )) purgeCacheLine( pAdr );
 }

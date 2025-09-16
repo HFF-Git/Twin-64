@@ -117,20 +117,20 @@ struct T64System {
 
     int         purgeCacheLine( int proc, int cache, int set, int index );
 
-    int         readMem( T64Word adr, T64Word *val, int len );
-    int         writeMem( T64Word adr, T64Word val, int len );
+    bool        readMem( T64Word adr, T64Word *val, int len );
+    bool        writeMem( T64Word adr, T64Word val, int len );
 
-    int         readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
-    int         readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
-    int         writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
-    int         readWord( int proc, T64Word pAdr, T64Word *word );
-    int         writeWord( int proc, T64Word pAdr, T64Word *word );
+    bool        readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool        readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool        writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool        readWord( int proc, T64Word pAdr, T64Word *word );
+    bool        writeWord( int proc, T64Word pAdr, T64Word *word );
 
-    int         getHpaStartAdr( int module, T64Word *val );
-    int         getHpaSize( int module, T64Word *val );
+    bool        getHpaStartAdr( int module, T64Word *val );
+    bool        getHpaSize( int module, T64Word *val );
 
-    int         getSpaStartAdr( int module, T64Word *val );
-    int         getSpaSize( int module, T64Word *val );
+    bool        getSpaStartAdr( int module, T64Word *val );
+    bool        getSpaSize( int module, T64Word *val );
  
     private:
 

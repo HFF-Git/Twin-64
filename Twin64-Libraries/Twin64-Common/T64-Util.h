@@ -33,7 +33,7 @@
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------
-//
+// Byte order conversion functions. They are different on Mac and Windows.
 //
 //----------------------------------------------------------------------------------------
 #if __APPLE__
@@ -54,7 +54,7 @@ inline uint64_t toBigEndian64(uint64_t val) { return _byteswap_uint64(val); }
 #endif
 
 //----------------------------------------------------------------------------------------
-//
+// Helper functions.
 //
 //----------------------------------------------------------------------------------------
 inline T64Word roundup( T64Word arg, int round ) {
@@ -77,7 +77,7 @@ inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Helper function to check a bit range value in the instruction.
 //
 //----------------------------------------------------------------------------------------
 inline bool isInRangeForInstrBitField( int val, int bitLen ) {
@@ -180,7 +180,7 @@ inline int extractInstrImm20( T64Instr instr ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Helper function for depositing value in the instruction.
 //
 //----------------------------------------------------------------------------------------
 inline void depositInstrField( T64Instr *instr, int bitpos, int len, T64Word value ) {
@@ -211,7 +211,7 @@ inline void depositInstrRegA( T64Instr *instr, uint32_t regId ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// General extract, deposit and shift functions.
 //
 //----------------------------------------------------------------------------------------
 inline T64Word extractBit64( T64Word arg, int bitpos ) {
@@ -309,7 +309,7 @@ inline bool willShiftLftOverflow( T64Word val, int shift ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Address arithmetic.
 //
 //----------------------------------------------------------------------------------------
 inline T64Word addAdrOfs( T64Word adr, T64Word ofs ) {
@@ -320,7 +320,7 @@ inline T64Word addAdrOfs( T64Word adr, T64Word ofs ) {
 
 
 //----------------------------------------------------------------------------------------
-//
+// Address range check.
 //
 //----------------------------------------------------------------------------------------
 inline bool isInIoAdrRange( T64Word adr ) {
@@ -329,7 +329,7 @@ inline bool isInIoAdrRange( T64Word adr ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Little helpers.
 //
 //----------------------------------------------------------------------------------------
 void upshiftStr( char *str );

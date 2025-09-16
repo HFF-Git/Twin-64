@@ -299,7 +299,7 @@ int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
 //
 // Used by the simulator to access physical memory. Address must be aligned to len =
 //----------------------------------------------------------------------------------------
-int T64System::readMem( T64Word adr, T64Word *val, int len ) {
+bool T64System::readMem( T64Word adr, T64Word *val, int len ) {
 
     T64Module *m = lookupByAdr( adr );
 
@@ -311,7 +311,7 @@ int T64System::readMem( T64Word adr, T64Word *val, int len ) {
     return( 0 );
 }
 
-int T64System::writeMem( T64Word adr, T64Word val, int len ) {
+bool T64System::writeMem( T64Word adr, T64Word val, int len ) {
 
     
     return( 0 );
@@ -321,56 +321,56 @@ int T64System::writeMem( T64Word adr, T64Word val, int len ) {
 //
 //
 //----------------------------------------------------------------------------------------
-int T64System::readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len ) {
+bool T64System::readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len ) {
 
-    return( 0 );
+    return( true );
 }
 
-int T64System::readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len ) {
+bool T64System::readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len ) {
 
-    return( 0 );
+    return( true );
 }
 
-int T64System::writeBlock( int proc, T64Word pAdr, uint8_t *data, int len ) {
+bool T64System::writeBlock( int proc, T64Word pAdr, uint8_t *data, int len ) {
 
-    return( 0 );
+    return( true );
 }
 
-int T64System::readWord( int proc, T64Word pAdr, T64Word *word ){
+bool T64System::readWord( int proc, T64Word pAdr, T64Word *word ){
 
-    return( 0 );
+    return( true );
 }
 
-int T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
+bool T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
 
-    return( 0 );
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------------------------
-int T64System::getHpaStartAdr( int module, T64Word *val ) {
+bool T64System::getHpaStartAdr( int module, T64Word *val ) {
 
     *val = 0;
-    return( 0 );
+    return( true );
 }
 
-int T64System::getHpaSize( int module, T64Word *val ) {
+bool T64System::getHpaSize( int module, T64Word *val ) {
 
     *val = 0;
-    return( 0 );
+    return( true );
 }
 
-int T64System::getSpaStartAdr( int module, T64Word *val ) {
+bool T64System::getSpaStartAdr( int module, T64Word *val ) {
 
     *val = 0;
-    return( 0 );
+    return( true );
 }
 
-int T64System::getSpaSize( int module, T64Word *val ) {
+bool T64System::getSpaSize( int module, T64Word *val ) {
 
     *val = 0;
-    return( 0 );
+    return( true );
 }
  

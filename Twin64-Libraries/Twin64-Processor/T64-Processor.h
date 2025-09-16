@@ -68,19 +68,19 @@ struct T64Cache {
     public:
 
     T64Cache( T64CacheType cacheType, T64System *sys );
-    virtual void        reset( );
+    void                reset( );
 
-    int                 read( T64Word pAdr, T64Word *data, int len, bool cached );
-    int                 write( T64Word pAdr, T64Word data, int len, bool cached );
-    int                 flush( T64Word pAdr );
-    int                 purge( T64Word pAdr );
+    void                read( T64Word pAdr, T64Word *data, int len, bool cached );
+    void                write( T64Word pAdr, T64Word data, int len, bool cached );
+    void                flush( T64Word pAdr );
+    void                purge( T64Word pAdr );
 
-    int                 readCacheData( T64Word pAdr, T64Word *data, int len );
-    int                 writeCacheData( T64Word pAdr, T64Word data, int len );
-    int                 flushCacheLine( T64Word pAdr );
-    int                 purgeCacheLine( T64Word pAdr );
+    void                readCacheData( T64Word pAdr, T64Word *data, int len );
+    void                writeCacheData( T64Word pAdr, T64Word data, int len );
+    void                flushCacheLine( T64Word pAdr );
+    void                purgeCacheLine( T64Word pAdr );
 
-    bool                getCacheLine( uint32_t way,
+    void                getCacheLine( uint32_t way,
                                       uint32_t set, 
                                       T64CacheLineInfo **info,
                                       uint8_t **data );
