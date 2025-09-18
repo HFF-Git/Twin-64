@@ -992,7 +992,7 @@ void SimCommandsWin::execFileCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::loadElfFileCmd( ) {
     
-    if ( tok -> tokTyp( ) == TYP_STR )  ; // execCmdsFromFile( tok -> tokStr( ));
+    if ( tok -> tokTyp( ) == TYP_STR )  loadElfFile( tok -> tokStr( ));
     else                                throw( ERR_EXPECTED_FILE_NAME );
 }
 
@@ -2037,6 +2037,7 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_HELP:          helpCmd( );                     break;
                     case CMD_ENV:           envCmd( );                      break;
                     case CMD_XF:            execFileCmd( );                 break;
+                    case CMD_LF:            loadElfFileCmd( );              break;
                         
                     case CMD_WRITE_LINE:    writeLineCmd( );                break;
                         

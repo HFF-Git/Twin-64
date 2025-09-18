@@ -274,7 +274,7 @@ void SimTokenizer::parseString( ) {
         nextChar( );
     }
 
-    strncpy( currentToken.u.str, strTokenBuf, sizeof( strTokenBuf ));
+    currentToken.u.str = strTokenBuf;
 
     nextChar( );
 }

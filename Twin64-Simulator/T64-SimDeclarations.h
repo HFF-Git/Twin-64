@@ -348,7 +348,10 @@ enum SimErrMsgId : int {
 
     ERR_INVALID_NUM                 = 24,
    
-
+    ERR_INVALID_ELF_FILE            = 700,
+    ERR_ELF_INVALID_ADR_RANGE       = 701,
+    ERR_ELF_MEMORY_SIZE_EXCEEDED    = 702,
+    ERR_INVALID_ELF_BYTE_ORDER      = 703,
 
     ERR_EXPECTED_AN_OFFSET_VAL      = 321,
     ERR_EXPECTED_FMT_OPT            = 322,

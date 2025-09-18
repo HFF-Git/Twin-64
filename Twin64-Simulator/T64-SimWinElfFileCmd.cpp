@@ -1,17 +1,12 @@
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator command window
+//  Twin64 - A 64-bit CPU - ELF file loader
 //
-//----------------------------------------------------------------------------------------
-// The command window is the last screen area below all enabled windows displayed. It
-// is actually not a window like the others in that it represents lines written to the
-// window as well as the command input line. It still has a window header and a line
-// drawing area. To enable scrolling of this window, an output buffer needs to be 
-// implemented that stores all output in a circular buffer to use for text output. 
-// Just like a "real" terminal. The cursor up and down keys will perform the scrolling.
-// The command line is also a bit special. It is actually the one line locked scroll
-// area. Input can be edited on this line, a carriage return will append the line to
-// the output buffer area.
+//------------------------------------------------------------------------------------------------------------
+// The ELF file loader will load an executable file into the simulator physical memory.
+// It is right now a rather simple loader intended for loading an initial program.
+// No virtual memory setup, no access rights checking and so on. Just plain load into
+// physical memory whatever you find in the ELF file.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -36,36 +31,185 @@
 #include "T64-SimTables.h"
 #include <elfio/elfio.hpp>
 
+using namespace ELFIO;
+
+const T64Word MAX_MEMORY_SIZE = 0xFFFFFFFFFF;
+
 //----------------------------------------------------------------------------------------
-// Local name space. We try to keep utility functions local to the file. None so far.
+// Local name space.
 //
 //----------------------------------------------------------------------------------------
 namespace {
 
-
-}; // namespace
+//----------------------------------------------------------------------------------------
+// A little helper to convert the byte order.
+//
+//----------------------------------------------------------------------------------------
+inline uint32_t swap32( uint32_t val ) {
+    
+    return ((val & 0xFF) << 24) |
+           ((val & 0xFF00) << 8) |
+           ((val & 0xFF0000) >> 8) |
+           ((val & 0xFF000000) >> 24);
+}
 
 //----------------------------------------------------------------------------------------
+// Open and close the ELF file. On opening we also check that it is a Big Endian 
+// type file.
 //
+//----------------------------------------------------------------------------------------
+elfio *openElfFile( char *fileName ) {
+    
+    ELFIO::elfio *reader = new ( std::nothrow ) elfio;
+    
+    if ( ! reader -> load( fileName )) throw( ERR_INVALID_ELF_FILE );
+    if ( reader -> get_encoding( ) != ELFDATA2MSB ) throw( ERR_INVALID_ELF_BYTE_ORDER );
+    return( reader );
+}
+
+void closeElfFile( elfio *reader ) {
+    
+    delete (elfio*) reader;
+}
+
+//----------------------------------------------------------------------------------------
+// Validate the ELF file. ELFIO does the jib and returns an error message string if 
+// there are errors.
+//
+//----------------------------------------------------------------------------------------
+bool elfioValidate( elfio *reader, char* msg, int msg_len ) {
+    
+    std::string error = reader -> validate( );
+    
+    if ( msg != nullptr && msg_len > 0 ) {
+        
+        strncpy( msg, error.c_str( ), (size_t) msg_len - 1 );
+    }
+    
+    return error.empty( );
+}
+
+//----------------------------------------------------------------------------------------
+// Write a word to the simulator memory.
+//
+//----------------------------------------------------------------------------------------
+bool writeMem( T64System *sys, uint32_t ofs, uint32_t val ) {
+
+   
+    return( true );
+}
+
+//----------------------------------------------------------------------------------------
+// Load a segment into main memory. We are passed the segment and the CPU handle. 
+// Currently we only load physical memory. First we get the segment attributes and 
+// validate them for size, etc. Next we clear the physical memory in the size of what
+// it should be according to the segment data. Next, we copy the segment data word by
+// word up to the segment file size attribute. Note that a segment needs to have 
+// loadable data. Since our memory access is on a word basis, there is one more thing.
+// The data is correctly encoded in big endian format. However, the coercion from that
+// byte array to a word array will place the data in the host system order, in our
+// case little endian. We need to swap each word accordingly.
+//
+//----------------------------------------------------------------------------------------
+void loadSegmentIntoMemory( elfio           *reader, 
+                            segment         *segment, 
+                            T64System       *sys,
+                            SimWinOutBuffer *winOut ) {
+    
+    if ( segment ->get_type( ) == PT_LOAD ) {
+      
+        Elf_Xword       index       = segment -> get_index( );
+        Elf_Xword       fileSize    = segment -> get_file_size( );
+        Elf_Xword       memorySize  = segment -> get_memory_size( );
+        const char      *dataPtr    = segment -> get_data( );
+        const uint32_t  *wordPtr    = reinterpret_cast<const uint32_t*> ( dataPtr );
+        Elf64_Addr      vAdr        = segment -> get_physical_address( );
+        Elf_Xword       align       = segment -> get_align( );
+        
+        winOut -> writeChars( "Loading: Seg: %2d, adr: 0x%08x,"
+                              " mSize: 0x%08x, align: 0x%08x\n",
+                              index, vAdr, memorySize, align );
+        
+        if ( memorySize >= MAX_MEMORY_SIZE ) {
+            
+            throw( ERR_ELF_MEMORY_SIZE_EXCEEDED );
+        }
+        
+        if ( ! (( vAdr >= 0 ) && ( vAdr<= MAX_MEMORY_SIZE ))) {
+            
+            throw( ERR_ELF_INVALID_ADR_RANGE );
+        }
+        
+        if ( vAdr + memorySize >= MAX_MEMORY_SIZE ) {
+            
+            throw( ERR_ELF_MEMORY_SIZE_EXCEEDED );
+        }
+            
+        for ( Elf64_Addr i = 0; i < memorySize; i += 4  ) {
+            
+           if ( ! writeMem( sys, uint32_t( vAdr + i ), 0 )) {
+
+                throw( 99 ); // ??? fix ....
+           }
+        }
+        
+        for ( Elf64_Addr i = 0; i < fileSize; i += 4  ) {
+            
+           writeMem( sys, uint32_t( vAdr + i ), swap32( wordPtr[ i / 4 ] ));
+        }
+    }
+}
+
+} // namespace
+
+
+//----------------------------------------------------------------------------------------
+// Loading a basic ELF file. This routine is rather simple. All we do is to locate 
+// the segments and load them into physical memory. Could be refined and do more 
+// checking one day.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::loadElfFile( char *fileName ) {
-  
-    // ??? create the ELFIO reader
-
-    // ??? read in the header and check
-
-    // ??? if successful:
-
-        // ??? needs access to the CPU 
-        // ??? clear memory
+    
+    elfio *reader = nullptr;
+    char  errMsgBuf[ 256 ];
+    
+    try {
         
-
-        // ??? for each segment:
-        //      ??? locate the section header.
-        //      ??? move the data to the physical memory
-
-    // ??? right now, we do not have any access rights, priv levels, etc.
-    // ??? need to enhance the assembler to pass this kind of data ?
-
+        winOut -> writeChars( "Loading %s\n", fileName );
+        
+        reader = openElfFile( fileName );
+      
+        if ( ! elfioValidate( reader, errMsgBuf, sizeof( errMsgBuf ))) {
+            
+            winOut -> writeChars( "ELF: %s\n", errMsgBuf );
+            throw( 99 );
+        }
+        
+        Elf_Half numOfSeg = reader -> segments.size( );
+        
+        for ( int i = 0; i < numOfSeg; i++ ) {
+            
+            loadSegmentIntoMemory(  reader, 
+                                    reader -> segments[ i ], 
+                                    glb -> system, 
+                                    winOut );
+        }
+        
+        Elf64_Addr entry = reader -> get_entry( );
+        
+        winOut -> writeChars( "Set entry: 0x%08x\n", entry );
+    
+        // glb -> cpu -> setReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_0, (uint32_t) 0 );
+        // glb -> cpu -> setReg( RC_FD_PSTAGE, PSTAGE_REG_ID_PSW_1, (uint32_t) entry );
+        
+        winOut -> writeChars( "Done\n" );
+    }
+    
+    catch ( SimErrMsgId errNum ) {
+        
+        winOut -> writeChars( "ELF file load error: %d\n", errNum );
+    }
+    
+    if ( reader != nullptr ) closeElfFile( reader );
 }
