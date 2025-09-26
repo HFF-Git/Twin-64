@@ -127,7 +127,7 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_STR ) {
         
-       // ret = oneLineAsm -> parseAsmLine( lExpr.str, &instr ); // ???
+        // ret = oneLineAsm -> parseAsmLine( lExpr.str, &instr ); // ???
         
         if ( ret == NO_ERR ) {
             

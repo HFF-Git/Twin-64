@@ -314,8 +314,8 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     }
     else if ( tok -> isTokenTyp( TYP_STR ))  {
         
-        rExpr -> typ = TYP_STR;
-        strcpy( rExpr -> u.str, tok -> tokStr( ));
+        rExpr -> typ   = TYP_STR;
+        rExpr -> u.str = tok -> tokStr( );
         tok -> nextToken( );
     }
     else if ( tok -> isTokenTyp( TYP_GREG ))  {

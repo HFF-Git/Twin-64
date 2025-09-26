@@ -508,7 +508,7 @@ struct SimTokenizer {
     void            checkEOS( );
     void            acceptComma( );
     void            acceptLparen( );
-    void             acceptRparen( );
+    void            acceptRparen( );
 
     private:
     

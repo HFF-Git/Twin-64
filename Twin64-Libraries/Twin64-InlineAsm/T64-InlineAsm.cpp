@@ -348,6 +348,7 @@ enum InstrFlags : uint32_t {
     IM_SHLxA_OP = ( IF_I ),
     IM_SHRxA_OP = ( IF_I ),
     IM_LDI_OP   = ( IF_L | IF_S | IF_U ),
+    IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
@@ -356,6 +357,7 @@ enum InstrFlags : uint32_t {
     IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
+    IM_LPA_OP   = ( IF_M ),
     IM_CHK_OP   = ( IF_B | IF_H | IF_W | IF_D )
     
     // ??? synthetic instructions also need a mask constant.
@@ -1302,6 +1304,9 @@ void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
 // check that there are no conflicting options where only one option out of an option
 // group can be set.
 //
+// There are some instruction options that are exclusive to each other. There will 
+// be a check for this case after all options have been analyzed.
+//
 //----------------------------------------------------------------------------------------
 void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
     
@@ -1311,6 +1316,8 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         nextToken( );
         
+        // ??? what is this ???
+
         if ( isToken( TOK_OP_B )) {
             
             currentToken.typ = TYP_IDENT;
@@ -1319,6 +1326,8 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         }
         
         if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
+
+        // ???
           
         char        *optBuf     = currentToken.name;
         int         optStrLen   = (int) strlen( optBuf );
@@ -1819,21 +1828,28 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
 
 //----------------------------------------------------------------------------------------
 // The "LDO" instruction computes the address of an operand, and stores the result
-// in "R".
+// in "R". Like the MemOp family, the LDO instruction has a dataWidth field.
 //
-//      LDO <targetReg> "," [ <ofs> "," ] "(" <baseReg> ")"
+//      LDO [.B/H/W/D] <targetReg> "," [ <ofs> "," ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr        rExpr       = INIT_EXPR;
+    uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
+    parseInstrOptions( &instrFlags, instrOpToken );
+    if ( instrFlags & ~IM_LDO_OP ) throw ( ERR_INVALID_INSTR_OPT );
+
+    setInstrDwField( instr, instrFlags );
+    if ( instrFlags & IF_M ) depositInstrBit( instr, 20, true );
+
     acceptRegR( instr );
     acceptComma( );
 
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) depositInstrImm15( instr, (uint32_t) rExpr.val );
+    if ( rExpr.typ == TYP_NUM ) depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
     else throw( ERR_EXPECTED_NUMERIC );
     
     acceptLparen( );
@@ -1843,9 +1859,9 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseMemOp" parses the load and store instruction family. The LD and ST family can
-// have an option for specifying the data width. The LDR and STC instruction do not have
-// an option. However we set the dataWidth field for them to "D".
+// "parseMemOp" parses the load and store instruction family. The LD and ST family 
+// can have an option for specifying the data width. The LDR and STC instruction do 
+// not have an option. However we set the dataWidth field for them to "D".
 //
 //       LD  [.B/H/W/D/M ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
 //       LD  [.B/H/W/D/M ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
@@ -2115,7 +2131,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseInstrMBR" move the source reg to the target reg and branches on the condition
 // specified.
 //
-//      MBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
+//      MBR ".EQ/LT/NE/LE/EV/OD" RegR "," RegB "," <ofs>
 //
 // ??? same conditions that CMP ?
 //----------------------------------------------------------------------------------------
@@ -2178,7 +2194,7 @@ void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrLDPA" returns the physical address of a virtual address. It is very 
+// "parseInstrLPA" returns the physical address of a virtual address. It is very 
 // similar to the memory type instruction load and store, except it does just do 
 // address translation. If the page is not in main memory, a zero is returned.
 //
@@ -2188,8 +2204,12 @@ void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
+    uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
+    parseInstrOptions( &instrFlags, instrOpToken );
+    if ( instrFlags & ~IM_LPA_OP ) throw ( ERR_INVALID_INSTR_OPT );
+   
     acceptRegR( instr );
     acceptComma( );
    
