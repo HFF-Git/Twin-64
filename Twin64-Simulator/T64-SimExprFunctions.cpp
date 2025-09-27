@@ -116,9 +116,9 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     
-    SimExpr         lExpr;
-    uint32_t        instr = 0;
-    SimErrMsgId     ret = NO_ERR;
+    SimExpr     lExpr;
+    uint32_t    instr   = 0;
+   int          ret     = 0;
     
     tok -> nextToken( );
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
@@ -127,9 +127,9 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     parseExpr( &lExpr );
     if ( lExpr.typ == TYP_STR ) {
         
-        // ret = oneLineAsm -> parseAsmLine( lExpr.str, &instr ); // ???
+        ret = inlineAsm -> assembleInstr( lExpr.u.str, &instr );
         
-        if ( ret == NO_ERR ) {
+        if ( ret == 0 ) {
             
             rExpr -> typ    = TYP_NUM;
             rExpr -> u.val = instr;
@@ -143,7 +143,13 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Dis-assemble function.
+// Dis-assemble function. We take the value and produce a string. 
+//
+// WARNING: the expression evaluator returns a pointer to a string. This is typically
+// a token and the string is value until the next token is read. This is bit ugly for
+// our disassembler which returns an assembled string. When we just set the expression
+// pointer and return, the string is lost. Therefore the disassemble string is a static
+// variable.
 //
 // DISASSEMBLE "(" <str> [ "," <rdx> ] ")"
 //----------------------------------------------------------------------------------------
@@ -151,10 +157,8 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
     uint32_t    instr = 0;
-    int         rdx   = 0;
-    char        asmStr[ MAX_CMD_LINE_SIZE ];
-    
-    // glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int         rdx   = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    static char        asmStr[ MAX_CMD_LINE_SIZE ];
     
     tok -> nextToken( );
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );
@@ -186,10 +190,10 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr ) {
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
         
-        // disAsm -> formatInstr( asmStr, sizeof( asmStr ), instr ); // ???
+        disAsm -> formatInstr( asmStr, sizeof( asmStr ), instr, rdx );
         
-        rExpr -> typ = TYP_STR;
-        strcpy( rExpr -> u.str, asmStr );
+        rExpr -> typ   = TYP_STR;
+        rExpr -> u.str = asmStr; 
     }
     else throw ( ERR_EXPECTED_INSTR_VAL );
 }

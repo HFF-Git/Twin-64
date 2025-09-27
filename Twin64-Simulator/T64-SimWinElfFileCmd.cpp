@@ -125,11 +125,17 @@ void loadSegmentIntoMemory( elfio           *reader,
         const uint32_t  *wordPtr    = reinterpret_cast<const uint32_t*> ( dataPtr );
         Elf64_Addr      vAdr        = segment -> get_physical_address( );
         Elf_Xword       align       = segment -> get_align( );
-        
-        winOut -> writeChars( "Loading: Seg: %2d, adr: 0x%08x,"
-                              " mSize: 0x%08x, align: 0x%08x\n",
+        Elf_Word        flags       = segment -> get_flags( );
+
+        winOut -> writeChars( "Loading: Seg: %2d, adr: 0x%08x, mSize: 0x%08x, align: 0x%08x, ",
                               index, vAdr, memorySize, align );
         
+        winOut -> writeChars( "R" );
+        if ( flags & SHF_WRITE )     winOut -> writeChars( "W" );
+        if ( flags & SHF_EXECINSTR ) winOut -> writeChars( "X" );
+       
+        winOut -> writeChars( "\n" );
+    
         if ( memorySize >= MAX_MEMORY_SIZE ) {
             
             throw( ERR_ELF_MEMORY_SIZE_EXCEEDED );

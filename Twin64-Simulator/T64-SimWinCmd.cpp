@@ -675,6 +675,18 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
 }
 
 //----------------------------------------------------------------------------------------
+//
+//
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::ensureWinModeOn( ) {
+
+    if ( ! glb -> winDisplay -> isWindowsOn( )) throw( ERR_NOT_IN_WIN_MODE );
+}
+
+
+
+//----------------------------------------------------------------------------------------
 // Display absolute memory content. We will show the memory starting with offset. The 
 // words per line is an environmental variable setting. The offset is rounded down to 
 // the next 8-byte boundary, the limit is rounded up to the next 8-byte boundary. We 
@@ -740,7 +752,7 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Return the current command entered.
+// Return the current command token entered.
 //
 //----------------------------------------------------------------------------------------
 SimTokId SimCommandsWin::getCurrentCmd( ) {
@@ -1273,6 +1285,11 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 // to locate the processor module.
 //
 // MR <reg> <val> [ "," <pNum> ]
+//
+// ??? clarify: dio we only allow the current window to modify ? then we do not need 
+// the optional pNum arg...
+//
+// ?? also for all other cases in TLB, Cache, etc ...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
@@ -1280,6 +1297,14 @@ void SimCommandsWin::modifyRegCmd( ) {
     SimTokTypeId    regSetId    = TYP_GREG;
     int             regNum      = 0;
     T64Word         val         = 0;
+
+    ensureWinModeOn( );
+
+    if ( glb -> winDisplay -> getCurrentWinType( ) == WT_CPU_WIN ) {
+
+        // get the CPU module number...
+    }
+    else throw( ERR_INVALID_WIN_TYPE );
     
     if (( tok -> tokTyp( ) == TYP_GREG )        ||
         ( tok -> tokTyp( ) == TYP_CREG )        ||
@@ -1296,13 +1321,8 @@ void SimCommandsWin::modifyRegCmd( ) {
     if ( tok -> isToken( TOK_COMMA )) {
 
         pNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
-
-        // check that we refer to a PROC module...
     }
-    else {
-
-        // check WON, WTYPE, get procModuleNum from window
-    }
+    
     tok -> checkEOS( );
 
     switch( regSetId ) {
@@ -1329,6 +1349,8 @@ void SimCommandsWin::purgeCacheCmd( ) {
     int cNum    = 0;
     int index   = 0;
     int cSet    = 0;
+
+    ensureWinModeOn( );
 
     index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
     
@@ -1369,6 +1391,8 @@ void SimCommandsWin::flushCacheCmd( ) {
     int index   = 0;
     int cSet    = 0;
 
+    ensureWinModeOn( );
+
     index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
     
     if ( tok -> isToken( TOK_COMMA )) {
@@ -1393,7 +1417,6 @@ void SimCommandsWin::flushCacheCmd( ) {
     glb -> system -> flushCacheLine( pNum, cNum, cSet, index );
 }
 
-
 //----------------------------------------------------------------------------------------
 // Insert into TLB command. We have two modes. If windows is on and we point at a TLB 
 // window, then just the index is required. All other parameters come from the TLB 
@@ -1408,6 +1431,8 @@ void SimCommandsWin::insertTLBCmd( ) {
     int     tlbNum  = 0;
     T64Word info1   = 0;
     T64Word info2   = 0;
+
+    ensureWinModeOn( );
 
     info1 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
     tok -> acceptComma( );
@@ -1447,6 +1472,8 @@ void SimCommandsWin::purgeTLBCmd( ) {
     int pNum    = 0;
     int tlbNum  = 0;
     int index   = 0;
+
+    ensureWinModeOn( );
    
     index = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
    
@@ -1461,7 +1488,6 @@ void SimCommandsWin::purgeTLBCmd( ) {
     }
     else {
 
-        // check WON
         // check WTYP
         // get the data from the window.
     }

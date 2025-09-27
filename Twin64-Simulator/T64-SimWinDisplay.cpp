@@ -117,8 +117,16 @@ int  SimWinDisplay::getCurrentWindow( ) {
 }
 
 void SimWinDisplay::setCurrentWindow( int winNum ) {
-    
-    currentWinNum = winNum;
+
+    if ( validWindowNum( winNum )) currentWinNum = winNum;
+    else throw( ERR_INVALID_WIN_ID );
+}
+
+SimWinType SimWinDisplay::getCurrentWinType( ) {
+
+    if ( validWindowNum( currentWinNum )) 
+        return( windowList[ currentWinNum ] -> getWinType( ));
+    else throw( ERR_INVALID_WIN_ID );
 }
 
 //----------------------------------------------------------------------------------------

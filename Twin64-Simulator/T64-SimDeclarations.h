@@ -916,6 +916,8 @@ struct SimWinProgState : SimWin {
     void drawBanner( );
     void drawBody( );
 
+    int  getProcModuleNum( );
+
     private:
 
     int procModuleNum;
@@ -1093,6 +1095,8 @@ private:
     void            evalInputLine( char *cmdBuf );
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
+
+    void            ensureWinModeOn( );
   
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len );
@@ -1219,6 +1223,7 @@ public:
     int             getCurrentWindow( );
     void            setCurrentWindow( int winNum );
     bool            isCurrentWin( int winNum );
+    SimWinType      getCurrentWinType( );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
     bool            isWinStackOn( );
