@@ -683,6 +683,13 @@ SimWinCache::SimWinCache( SimGlobals *glb ) : SimWinScrollable( glb ) {
 
     // ??? get the cache....
 
+    // ??? we need to be aware whether this is an 8 word cache line.
+    // ??? this line is broken into two, which impact ts the window lines and
+    // item address calculation.
+    //
+    // Our window lines is divided by two to determine the items we can put
+    // into the window. 
+
     setWinType( WT_CACHE_WIN );
     setDefaults( );
 }

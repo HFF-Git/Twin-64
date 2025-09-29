@@ -1280,16 +1280,12 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // Modify register command. This command modifies a register within a register set.
-// There are two modes. When the processor module number is not passed, we must be in
-// windows mode and the current window must be a ProgState window. Otherwise we try
-// to locate the processor module.
+// We must be in windows mode. If the module number is not passed we use the module 
+// of the current module. Note that the checking whether the module number refers
+// to a processor is checked by the system object.
 //
-// MR <reg> <val> [ "," <pNum> ]
+// MR <reg> <val> [ "," <moduleNum> ]
 //
-// ??? clarify: dio we only allow the current window to modify ? then we do not need 
-// the optional pNum arg...
-//
-// ?? also for all other cases in TLB, Cache, etc ...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
@@ -1299,12 +1295,6 @@ void SimCommandsWin::modifyRegCmd( ) {
     T64Word         val         = 0;
 
     ensureWinModeOn( );
-
-    if ( glb -> winDisplay -> getCurrentWinType( ) == WT_CPU_WIN ) {
-
-        // get the CPU module number...
-    }
-    else throw( ERR_INVALID_WIN_TYPE );
     
     if (( tok -> tokTyp( ) == TYP_GREG )        ||
         ( tok -> tokTyp( ) == TYP_CREG )        ||
@@ -1336,39 +1326,30 @@ void SimCommandsWin::modifyRegCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Purges a cache line from the cache. We have two modes. If windows is on and we point
-// at a cache window, then just the index is required. All other parameters come from
-// the cache window. In addition, we can also specify the cache directly by passing 
-// processor module, cache and set number.
+// Purges a cache line from the cache. We must be in windows mode. If the module and 
+// submodule is not passed, we use the window values for module, submodule and 
+// the current toggle value for the actual set. Note that the validation is done at
+// the system object level.
 //
-//  PCA <index> [ "," <proc> "," <cache> "," <set> ]
+//  PCA <index> [ "," <proc> "," <cache> ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
-    int pNum    = 0;
-    int cNum    = 0;
+    int pNum    = getWinModuleNum( );
+    int cNum    = getWinSubModuleNum( );
+    int cSet    = getWinToggleVal( );
     int index   = 0;
-    int cSet    = 0;
-
+    
     ensureWinModeOn( );
 
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
+    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
     
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        cSet = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-
-        // check that actually point at a cache set.
-
-    }
-    else {
-
-        // check WON
-        // check WTYP
-        // get the data from the window.
+        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
+        tok -> acceptComma( );
+        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     }
     
     tok -> checkEOS( );
@@ -1377,81 +1358,63 @@ void SimCommandsWin::purgeCacheCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Flushes a cache line from the cache. We have two modes. If windows is on and we point
-// at a cache window, then just the index is required. All other parameters come from
-// the cache window. In addition, we can also specify the cache directly by passing 
-// processor module, cache and set number.
+// Flushes a cache line from the cache. We must be in windows mode. If the module and 
+// submodule is not passed, we use the window values for module, submodule and 
+// the current toggle value for the actual set. Note that the validation is done at
+// the system object level.
 //
 // FCA <index> [ "," <proc> "," <cache> "," <set> ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
     
-    int pNum    = 0;
-    int cNum    = 0;
+    int pNum    = getWinModuleNum( );
+    int cNum    = getWinSubModuleNum( );
+    int cSet    = getWinToggleVal( );
     int index   = 0;
-    int cSet    = 0;
 
     ensureWinModeOn( );
 
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); // ??? max
+    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
     
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        cSet = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-
-        // check that actually point at a cache set.
-
+        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
+        tok -> acceptComma( );
+        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     }
-    else {
 
-        // check WON
-        // check WTYP
-        // get the data from the window.
-    }
-    
     tok -> checkEOS( );
 
     glb -> system -> flushCacheLine( pNum, cNum, cSet, index );
 }
 
 //----------------------------------------------------------------------------------------
-// Insert into TLB command. We have two modes. If windows is on and we point at a TLB 
-// window, then just the index is required. All other parameters come from the TLB 
-// window. In addition, we can also specify the TLB directly by passing processor module
-// and TLB number.
+// Insert into TLB command. We have two modes. We must be in windows mode. If the
+// module and submodule is not passed, we pass the window values for module and 
+// submodule. Note that the validation is done at the system object level.
 //
 //  ITLB  <info1> "," <info2> [ "," <proc> "," <tlb> ] 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
-    int     pNum    = 0;
-    int     tlbNum  = 0;
+    int     pNum    = getWinModuleNum( );
+    int     tlbNum  = getWinSubModuleNum( );
     T64Word info1   = 0;
     T64Word info2   = 0;
 
     ensureWinModeOn( );
 
-    info1 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+    info1 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
     tok -> acceptComma( );
-    info2 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+    info2 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
     
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
         tok -> acceptComma( );
-        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        
-        // check that actually point at a TLB window.
-    }
-    else {
-
-        // check WON
-        // check WTYP
-        // get the data from the window.
+        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
     tok -> checkEOS( );
@@ -1460,38 +1423,31 @@ void SimCommandsWin::insertTLBCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Purge from TLB command. If windows is on and we point at a TLB window, then just the
-// index is required. All other parameters come from the TLB window. In addition, we can
-// also specify the TLB directly by passing processor module and TLB number.
+// Purge from TLB command. We have two modes. We must be in windows mode. If the
+// module and submodule is not passed, we pass the window values for module and 
+// submodule. Note that the validation is done at the system object level.
 //
 //  PTLB <index [ "," <proc> <tlb> ]
 //  
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
-    int pNum    = 0;
-    int tlbNum  = 0;
+    int pNum    = getWinModuleNum( );
+    int tlbNum  = getWinSubModuleNum( );
     int index   = 0;
 
     ensureWinModeOn( );
    
-    index = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+    index = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
    
     if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
+        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
         tok -> acceptComma( );
-        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max ?
-        
-        // check that actually point at a TLB window.
+        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
-    else {
-
-        // check WTYP
-        // get the data from the window.
-    }
-    
+   
     tok -> checkEOS( );
 
     glb -> system -> purgeTlbEntry( pNum, tlbNum, index );
@@ -1607,11 +1563,12 @@ void SimCommandsWin::winSetRadixCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Window scrolling. This command advances the item address of a scrollable window by
-// the number of lines multiplied by the number of items on a line forward or backward.
-// The meaning of the item address and line items is window dependent. If the amount 
-// is zero, the default value of the window will be used. The window number is optional,
-// used for user definable windows. If omitted, we mean the current window.
+// Window scrolling. This command advances the item address of a scrollable window 
+// by the number of lines multiplied by the number of items on a line forward or 
+// backward. The meaning of the item address and line items is window dependent. If 
+// the amount is zero, the default value of the window will be used. The window number
+// is optional, used for user definable windows. If omitted, we mean the current 
+// window.
 //
 //  <win>F [ <amt> [ , <winNum> ]]
 //  <win>B [ <amt> [ , <winNum> ]]
@@ -1719,9 +1676,10 @@ void SimCommandsWin::winJumpCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Set window lines. This command sets the the number of rows for a window. The number
-// includes the banner line. If the "lines" argument is omitted, the window default 
-// value will be used. The window number is optional, used for user definable windows.
+// Set window lines. This command sets the the number of rows for a window. The 
+// number includes the banner line. If the "lines" argument is omitted, the window
+// default value will be used. The window number is optional, used for user definable
+// windows.
 //
 //  WL [ <lines> [ "," <winNum> ]]
 //----------------------------------------------------------------------------------------
@@ -1752,9 +1710,9 @@ void SimCommandsWin::winSetRowsCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Set command window lines. This command sets the the number of rows for the command
-// window. The number includes the banner line. If the "lines" argument is omitted, the
-// window default value will be used. 
+// Set command window lines. The command sets the the number of rows for the command
+// window. The number includes the banner line. If the "lines" argument is omitted, 
+// the window default value will be used. 
 //
 //  CWL [ <lines> ]
 //----------------------------------------------------------------------------------------
@@ -1773,9 +1731,9 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Window current command. User definable windows are controlled by their window number.
-// To avoid typing this number all the time for a user window command, a user window 
-// can explicitly be set as the current command.
+// Window current command. User definable windows are controlled by their window 
+// number. To avoid typing this number all the time for a user window command, a 
+// user window can explicitly be set as the current command.
 //
 //  WC <winNum>
 //----------------------------------------------------------------------------------------
@@ -1791,8 +1749,8 @@ void SimCommandsWin::winCurrentCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // This command toggles through alternate window content, if supported by the window.
-// An example is the cache sets in a two-way associative cache. The toggle command will
-// just flip through the sets.
+// An example is the cache sets in a two-way associative cache. The toggle command 
+// will just flip through the sets.
 //
 //  WT [ <winNum> ]
 //----------------------------------------------------------------------------------------
@@ -1836,11 +1794,11 @@ void SimCommandsWin::winExchangeCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // This command creates a new user window. The window is assigned a free index form 
-// the windows list. This index is used in all the calls to this window. Depending on 
-// the window type, there are optional arguments to pass to the window object constructor.
-// The general form is:
+// the windows list. This index is used in all the calls to this window. Depending 
+// on the window type, there are optional arguments to pass to the window object 
+// constructor. The general form is:
 //
-//  WN <winType> [ "," <arg1> [ "," <arg2> ]]
+//  WN <winType> [ "," <arg1> [ "," <arg2> ]]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winNewWinCmd( ) {
     
@@ -1856,6 +1814,36 @@ void SimCommandsWin::winNewWinCmd( ) {
     else throw ( ERR_EXPECTED_WIN_ID );
     
     switch ( winType ) {
+
+        case TOK_MODULE: {
+
+            int moduleNum    = 0;
+            int subModuleNum = 0;
+
+            tok -> acceptComma( );
+            moduleNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+
+            if ( tok -> isToken( TOK_COMMA )) {
+            
+                subModuleNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            }
+
+            tok -> checkEOS( );
+
+            // ??? idea: the module number and sub module number determines the 
+            // window type...
+
+            // ??? need a lookup a module/submodule by module number and submodule
+            // number. All we do here is to check the numbers which will also 
+            // be passed to the window creator. Since the system routines work by
+            // those numbers, all we need to do is to store them in the window 
+            // private variables.
+
+            // ??? then case into the window type... 
+
+        } break;
+
+        // review whether we would need all of them ....
 
         case TOK_CPU: {
 
@@ -1916,13 +1904,13 @@ void SimCommandsWin::winNewWinCmd( ) {
         
         }  break;
 
-        case TOK_CODE: {
+        case TOK_CODE: {   // necessary 
 
             glb -> winDisplay -> windowNewAbsCode( );
         
         }  break;
 
-        case TOK_TEXT: {
+        case TOK_TEXT: {  // necessary 
 
             tok -> acceptComma( );
         

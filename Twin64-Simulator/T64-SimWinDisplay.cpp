@@ -726,6 +726,7 @@ void SimWinDisplay::windowNewProgState( int procModuleNum ) {
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
+    windowList[ slot ] -> setModuleNum( procModuleNum );
     currentWinNum = slot + 1;
 }
 

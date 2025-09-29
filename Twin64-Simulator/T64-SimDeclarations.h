@@ -214,10 +214,11 @@ enum SimTokId : uint16_t {
     TOK_CODE                = 106,
 
     TOK_DEF                 = 200,      TOK_ALL                 = 201,
-    TOK_PROC                = 202,      TOK_CPU                 = 203,   
-    TOK_TLB                 = 204,      TOK_CACHE               = 205,      
-    TOK_MEM                 = 206,      TOK_STATS               = 207,      
-    TOK_TEXT                = 208, 
+    TOK_MODULE              = 202, 
+    TOK_PROC                = 203,      TOK_CPU                 = 204,   
+    TOK_TLB                 = 205,      TOK_CACHE               = 206,      
+    TOK_MEM                 = 207,      TOK_STATS               = 208,      
+    TOK_TEXT                = 209, 
     
     //------------------------------------------------------------------------------------
     // Line Commands.
@@ -756,7 +757,16 @@ struct SimWin {
     
     void            setWinIndex( int index );
     int             getWinIndex( );
-    
+
+    void            setModuleNum( int num );
+    int             getWinModuleNum( );
+
+    void            setWinSubModuleNum( int num );
+    int             getWinSubModuleNum( );
+
+    void            setWinSubModuleInfo( int num );
+    int             getWinSubModuleInfo( );
+
     void            setEnable( bool arg );
     bool            isEnabled( );
     
@@ -838,6 +848,9 @@ struct SimWin {
     
     SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
+    int             winModuleNum        = 0;
+    int             winSubmoduleNum     = 0;
+    int             winSubModuleInfo    = 0;
     
     bool            winEnabled          = false;
     int             winRadix            = 16;

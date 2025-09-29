@@ -95,6 +95,7 @@ endmodule
 
 
 
+// reg file for general registers 2 read, 2 write ( expensive )
 
 module regfile (
     
@@ -132,6 +133,87 @@ module regfile (
     assign rdata_3 = (raddr_3 == 4'd0) ? 64'd0 : regs[raddr_3];
 
 endmodule
+
+// reg file for control registers....
+
+module spr_file (
+    input  wire        clk,
+
+    // Single indexed access
+    input  wire        wr_en,
+    input  wire [3:0]  wr_idx,
+    input  wire [63:0] wr_data,
+    input  wire [3:0]  rd_idx,
+    output wire [63:0] rd_data,
+
+    // Multi-write trap update
+    input  wire        trap_wr_en,
+    input  wire [63:0] trap_addr,
+    input  wire [63:0] trap_inst,
+    input  wire [63:0] trap_arg0,
+    input  wire [63:0] trap_arg1,
+
+    // Alias outputs
+    output wire [63:0] spr_trap_addr,
+    output wire [63:0] spr_trap_inst,
+    output wire [63:0] spr_trap_arg0,
+    output wire [63:0] spr_trap_arg1,
+
+    // PID outputs
+    output wire [19:0] spr_pid0,
+    output wire [19:0] spr_pid1,
+    output wire [19:0] spr_pid2,
+    output wire [18:0] spr_pid3,
+    output wire [19:0] spr_pid4,
+    output wire [19:0] spr_pid5,
+    output wire [19:0] spr_pid6,
+    output wire [18:0] spr_pid7,
+
+    // PID WD outputs
+    output wire [19:0] spr_wd_pid0,
+    output wire [19:0] spr_wd_pid1,
+    output wire [19:0] spr_wd_pid2,
+    output wire [18:0] spr_wd_pid3,
+    output wire [19:0] spr_wd_pid4,
+    output wire [19:0] spr_wd_pid5,
+    output wire [19:0] spr_wd_pid6,
+    output wire [18:0] spr_wd_pid7
+
+);
+    reg [63:0] spr [15:0];
+
+    // Write port
+    always @(posedge clk) begin
+        if (wr_en) begin
+            spr[wr_idx] <= wr_data;
+        end
+
+        if (trap_wr_en) begin
+            spr[4] <= trap_addr;
+            spr[5] <= trap_inst;
+            spr[6] <= trap_arg0;
+            spr[7] <= trap_arg1;
+        end
+    end
+
+    // Read port
+    assign rd_data = spr[rd_idx];
+
+    // Aliases for trap group
+    assign spr_trap_addr = spr[4];
+    assign spr_trap_inst = spr[5];
+    assign spr_trap_arg0 = spr[6];
+    assign spr_trap_arg1 = spr[7];
+
+    // Aliases for PID 
+    assign spr_pid0 = spr[4][52:33]; 
+    assign spr_wd_pid0 = spr[4][32];
+
+    // andc so on .... fix numbers first ...
+
+endmodule
+
+
 
 
 module alu64 (
@@ -281,10 +363,39 @@ module deposit_field (
 
 endmodule
 
+//  check module for PDI protection 
+
+module match8 #(
+    parameter WIDTH = 20
+)(
+    input  [WIDTH-1:0] a0,
+    input  [WIDTH-1:0] a1,
+    input  [WIDTH-1:0] a2,
+    input  [WIDTH-1:0] a3,
+    input  [WIDTH-1:0] a4,
+    input  [WIDTH-1:0] a5,
+    input  [WIDTH-1:0] a6,
+    input  [WIDTH-1:0] a7,
+    input  [WIDTH-1:0] x,
+    output             y
+);
+
+    assign y = (x == a0) |
+               (x == a1) |
+               (x == a2) |
+               (x == a3) |
+               (x == a4) |
+               (x == a5) |
+               (x == a6) |
+               (x == a7);
+
+endmodule
 
 
 
-// Two way associatove cache
+
+
+// Two way associative cache
 
 
 module two_way_associative_cache_async_read #(
