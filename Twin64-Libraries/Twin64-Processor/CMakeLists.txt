@@ -7,6 +7,7 @@ project( Twin64-Processor C CXX ASM )
 add_library( ${PROJECT_NAME} STATIC  
 
     T64-Processor.h
+    T64-CPU.cpp
     T64-Cpu.cpp
     T64-Tlb.cpp 
     T64-Cache.cpp

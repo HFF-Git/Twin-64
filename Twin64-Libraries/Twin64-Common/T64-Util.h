@@ -297,7 +297,7 @@ inline bool willDivOverflow( T64Word a, T64Word b ) {
     return ( false );
 }
 
-inline bool willShiftLftOverflow( T64Word val, int shift ) {
+inline bool willShiftLeftOverflow( T64Word val, int shift ) {
     
     if (( shift < 0 ) || ( shift >= 63 ))   return ( true );
     if ( shift == 0 )                       return ( false );
@@ -306,6 +306,25 @@ inline bool willShiftLftOverflow( T64Word val, int shift ) {
     T64Word recovered   = shifted >> shift;
     
     return ( recovered != val );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+inline T64Word vAdrSeg( T64Word vAdr ) {
+
+    return( extractField64( vAdr, 32, 20 ));
+}
+
+inline T64Word vAdrSegOfs( T64Word vAdr ) {
+
+   return( extractField64( vAdr, 0, 32 ));
+}
+
+inline T64Word vAdrPageOfs( T64Word vAdr ) {
+
+   return( extractField64( vAdr, 0, 12 ));
 }
 
 //----------------------------------------------------------------------------------------

@@ -28,7 +28,7 @@
 #include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
-//
+// Modules have a type and subtype.
 //
 //----------------------------------------------------------------------------------------
 enum T64ModuleType {
@@ -37,6 +37,14 @@ enum T64ModuleType {
     MT_PROC = 1,
     MT_MEM  = 2,
     MT_IO   = 3
+};
+
+enum T64ModuleSubType {
+
+    MST_NIL     = 0,
+    MST_CPU     = 1,
+    MST_CACHE   = 2,
+    MST_TLB     = 3 
 };
 
 //----------------------------------------------------------------------------------------
@@ -53,6 +61,7 @@ enum T64ModuleType {
 // two processor for example want to obtain an exclusive copy of a cache line, the 
 // latter wins. 
 //
+// ??? rethink this. We would need a snoop...
 //----------------------------------------------------------------------------------------
 enum T64ModuleEvent {
 
@@ -62,6 +71,9 @@ enum T64ModuleEvent {
 };
 
 //----------------------------------------------------------------------------------------
+// A module is an entity on the imaginary system bus. It "listens" to three physical 
+// memory address area. The hard physical address range, the soft physical address range
+// configured and the broadcast address range. 
 //
 //
 //----------------------------------------------------------------------------------------
@@ -71,45 +83,43 @@ struct T64Module {
 
     T64Module( );
 
-    virtual void    reset( ) = 0;
-    virtual void    step( ) = 0;
-    virtual void    event( T64ModuleEvent evt ) = 0;
+    int                 initModule( int             mNum,
+                                    T64ModuleType   mType,
+                                    T64Word         hpaAdr,
+                                    T64Word         hpaLen,
+                                    T64Word         spaAdr,
+                                    T64Word         spaLen,
+                                    T64Module       *handler
+                              );
 
-    T64ModuleType   getModuleType( );
-    int             getModuleNum( );
+    virtual void        reset( ) = 0;
+    virtual void        step( ) = 0;
+    virtual void        event( T64ModuleEvent evt ) = 0;
+
+    T64ModuleType       getModuleType( );
+    int                 getModuleNum( );
     
-    int             getHpaStartAdr( T64Word *val );
-    int             getHpaSize( T64Word *val );
+    int                 getHpaStartAdr( T64Word *val );
+    int                 getHpaSize( T64Word *val );
 
-    int             getSpaStartAdr( T64Word *val );
-    int             getSpaSize( T64Word *val );
-
-    // ??? routines to be called by SYSTEM when a request is made ?
+    int                 getSpaStartAdr( T64Word *val );
+    int                 getSpaSize( T64Word *val );
 
     private:
 
-    T64ModuleType   moduleTyp       = MT_NIL;
-    int             moduleNum       = 0;
-    T64Word         moduleHPA       = 0;
-    T64Word         moduleHPALen    = 0;
-    T64Word         moduleSPA       = 0;
-    T64Word         moduleSPALen    = 0;
+    T64ModuleType       moduleTyp           = MT_NIL;
+    int                 moduleNum           = 0;
+    T64Word             moduleHPA           = 0;
+    T64Word             moduleHPALen        = 0;
+    T64Word             moduleSPA           = 0;
+    T64Word             moduleSPALen        = 0;
 
 };
 
 //----------------------------------------------------------------------------------------
-// A module is an entity on the imaginary system bus. It "listens" to three physical 
-// memory address area. The hard physical address range, the soft physical address range
-// configured and the broadcast address range. 
+// Modules have registers in their HPA.
 //
 //----------------------------------------------------------------------------------------
-
-
-
-// ??? ideas for registers: 
-
-// ??? module HPA has the seg of admin registers. First in HPA.
-
 // 0 - status
 // 1 - command
 // 2 - HPA address
@@ -123,12 +133,13 @@ struct T64Module {
 // ?? the HPA also has a the IODC, a piece that describes the IO Module and 
 // code to execute module specific functions.
 
-// ??? I/O Element. Allocated in SPA space. Up to 128 bytes in size ->
-// ??? 16 Regs. 
-
+// I/O Element. Allocated in SPA space. Up to 128 bytes in size -> 16 Regs. 
 // ??? need for a larger I/O element ?
 
 // SPA can be USER mode too and directly mapped to user segments, etc.
+
+
+
 
 
 #endif // T64_Module_h

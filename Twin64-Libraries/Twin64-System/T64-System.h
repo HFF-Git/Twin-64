@@ -57,7 +57,6 @@ struct T64SystemMapEntry {
     T64Word         moduleSPA       = 0;
     T64Word         moduleSPALen    = 0;
     T64Module       *moduleHandler  = nullptr;
-
 };
 
 //----------------------------------------------------------------------------------------
@@ -66,6 +65,7 @@ struct T64SystemMapEntry {
 // the module objects and register them. Two routines are used to lookup the module 
 // object for a module number of managed address.
 //
+// ??? think about how the modules would recognize a cache operation ...
 //----------------------------------------------------------------------------------------
 struct T64System {
 
@@ -87,6 +87,7 @@ struct T64System {
     T64Module   *lookupByNum( int modNum );
     T64Module   *lookupByAdr( T64Word adr ); 
 
+    // ??? this is a bit tricky, event is not enough ...
     void        broadCastEvent( T64ModuleEvent evt );
 
     void        reset( );

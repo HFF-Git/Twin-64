@@ -3,7 +3,8 @@
 // T64 - A 64-bit CPU - CPU Core
 //
 //----------------------------------------------------------------------------------------
-// 
+// The CPU core is a submodule of the processor. It implements the actual CPU with
+// all registers and executes the instructions.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -43,12 +44,9 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Processor::T64Processor( T64System *sys ) {
+T64Cpu::T64Cpu( T64Processor *proc ) {
     
-    this -> sys     = sys;
-    this -> tlb     = new T64Tlb( );
-    this -> cache   = new T64Cache( T64_CT_2W_128S, sys );
-    
+    this -> proc    = proc;
     this -> reset( );
 }
 
@@ -56,7 +54,7 @@ T64Processor::T64Processor( T64System *sys ) {
 //
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::reset( ) {
+void T64Cpu::reset( ) {
 
     for ( int i = 0; i < MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
     for ( int i = 0; i < MAX_GREGS; i++ ) genRegFile[ i ] = 0;
@@ -64,46 +62,39 @@ void T64Processor::reset( ) {
     pswReg              = 0;
     instrReg            = 0;
     resvReg             = 0;
-
-    instructionCount    = 0;
-    cycleCount          = 0;
-    
-    tlb     -> reset( );
-    cache   -> reset( );
-
 }
 
 //----------------------------------------------------------------------------------------
 // The register routines. Called externally by monitors and debuggers.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::getGeneralReg( int index ) {
+T64Word T64Cpu::getGeneralReg( int index ) {
     
     if ( index == 0 )   return( 0 );
     else                return( genRegFile[ index % MAX_GREGS ] );
 }
 
-void T64Processor::setGeneralReg( int index, T64Word val ) {
+void T64Cpu::setGeneralReg( int index, T64Word val ) {
     
     if ( index != 0 ) genRegFile[ index % MAX_GREGS ] = val;
 }
 
-T64Word T64Processor::getControlReg( int index ) {
+T64Word T64Cpu::getControlReg( int index ) {
     
     return( ctlRegFile[ index % MAX_CREGS ] );
 }
 
-void T64Processor::setControlReg( int index, T64Word val ) {
+void T64Cpu::setControlReg( int index, T64Word val ) {
     
     ctlRegFile[ index % MAX_CREGS ] = val;
 }
 
-T64Word T64Processor::getPswReg( ) {
+T64Word T64Cpu::getPswReg( ) {
     
     return( pswReg );
 }
 
-void T64Processor::setPswReg( T64Word val ) {
+void T64Cpu::setPswReg( T64Word val ) {
     
     pswReg = val;
 }
@@ -113,22 +104,22 @@ void T64Processor::setPswReg( T64Word val ) {
 // used by the instruction execution code.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::getRegR( uint32_t instr ) {
+T64Word T64Cpu::getRegR( uint32_t instr ) {
     
     return( getGeneralReg( extractInstrRegR( instr )));
 }
 
-T64Word T64Processor::getRegB( uint32_t instr ) {
+T64Word T64Cpu::getRegB( uint32_t instr ) {
     
     return( getGeneralReg( extractInstrRegB( instr )));
 }
 
-T64Word T64Processor::getRegA( uint32_t instr ) {
+T64Word T64Cpu::getRegA( uint32_t instr ) {
     
     return( getGeneralReg( extractInstrRegA( instr )));
 }
 
-void T64Processor::setRegR( uint32_t instr, T64Word val ) {
+void T64Cpu::setRegR( uint32_t instr, T64Word val ) {
     
     setGeneralReg( extractInstrRegR( instr ), val );
 }
@@ -137,51 +128,60 @@ void T64Processor::setRegR( uint32_t instr, T64Word val ) {
 //
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::isPhysicalAdrRange( T64Word vAdr ) {
+void T64Cpu::privModeCheck( ) {
 
-    return( isInRange( vAdr, lowerPhysMemAdr, upperPhysMemAdr ));
+    if ( extractBit64( pswReg, 0 ) != 0 ) 
+        throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix ...
 }
 
 //----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-bool T64Processor::privModeCheck( ) {
-
-    return( extractBit64( pswReg, 0 ));
-}
-
-//----------------------------------------------------------------------------------------
-// Protection check. We compare the pId with the protection identifiers stored in the 
-// control registers CR4 to CR7. We also check the write disable bit in the control
-// register PID word. 
+// Protection check. If we are in user mode, we compare the pId with the protection 
+// identifiers stored in the control registers CR4 to CR7. We also check the write 
+// disable bit in the control register PID word. 
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::protectionCheck( uint32_t pId, bool wMode ) {
+void T64Cpu::protectionCheck( uint32_t pId, bool wMode ) {
 
-    bool validPid   = false;
-    bool validAcc   = false;
+    if ( extractBit64( pswReg, 0 ) != 0 ) {
+
+        bool validPid   = false;
+        bool validAcc   = false;
    
+        validPid = (( extractField64( ctlRegFile[ 4 ],  1, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 4 ], 33, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 5 ],  1, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 5 ], 33, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 6 ],  1, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 6 ], 33, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 7 ],  1, 31 ) == pId ) ||
+                    ( extractField64( ctlRegFile[ 7 ], 33, 31 ) == pId ));
+                
+        validAcc =  (( extractField64( ctlRegFile[ 4 ],  0, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 4 ], 32, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 5 ],  0, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 5 ], 32, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 6 ],  0, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 6 ], 32, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 7 ],  0, 1 ) && wMode ) ||
+                    ( extractField64( ctlRegFile[ 7 ], 32, 1 ) && wMode ));
 
-    validPid = (( extractField64( ctlRegFile[ 4 ],  1, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 4 ], 33, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 5 ],  1, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 5 ], 33, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 6 ],  1, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 6 ], 33, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 7 ],  1, 31 ) == pId ) ||
-                ( extractField64( ctlRegFile[ 7 ], 33, 31 ) == pId ));
-               
-    validAcc =  (( extractField64( ctlRegFile[ 4 ],  0, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 4 ], 32, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 5 ],  0, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 5 ], 32, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 6 ],  0, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 6 ], 32, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 7 ],  0, 1 ) && wMode ) ||
-                 ( extractField64( ctlRegFile[ 7 ], 32, 1 ) && wMode ));
-               
-    return( validPid && validAcc );                
+        if (( ! validPid ) || ( ! validAcc )) {
+
+            throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix ...
+        }          
+    }   
+}
+
+//----------------------------------------------------------------------------------------
+// Alignment Check.
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
+
+    if ( ! isAligned( vAdr, align )) {
+
+        throw( T64Trap( INSTR_ALIGNMENT_TRAP ), 0, 0, 0 ); // fix ...
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -190,24 +190,19 @@ bool T64Processor::protectionCheck( uint32_t pId, bool wMode ) {
 // a virtual address, the TLB is consulted for the translation and security checking.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::instrRead( T64Word vAdr ) {
+T64Word T64Cpu::instrRead( T64Word vAdr ) {
 
     T64Word     pAdr    = 0;
     uint32_t    instr   = 0;
     
     try {
 
-        if ( ! isAligned( vAdr, 4 )) {
+        alignMentCheck( vAdr, 4 );
 
-            throw( T64Trap( INSTR_ALIGNMENT_TRAP ), 0, 0, 0 );
-        }
+        if ( proc -> isPhysicalAdrRange( vAdr )) { 
 
-        if ( isPhysicalAdrRange( vAdr )) { 
+            privModeCheck( );
         
-            if ( ! privModeCheck( )) {
-
-                throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-            };
 
             // ??? should physical access ever be cached ?
              
@@ -215,24 +210,17 @@ T64Word T64Processor::instrRead( T64Word vAdr ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
+            T64TlbEntry *tlbPtr = proc ->iTlb ->lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
-            #if 0
-            // is part of the vAdr...
-            if ( ! protectionCheck( tlbPtr -> protectId, false )) {
-
-                throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
-            }
-            #endif
+            protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
 
             // ??? cached / uncached...
 
             // cache access vAdr, pAdr from TLB, ...
-
 
             return( instr );
         }
@@ -252,21 +240,15 @@ T64Word T64Processor::instrRead( T64Word vAdr ) {
 // translation and security checking. 
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
+T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
     
     try {
 
-        if ( ! isAligned( vAdr, len )) {
+        alignMentCheck( vAdr, len );
 
-            throw( T64Trap( DATA_ALIGNMENT_TRAP ), 0, 0, 0 );
-        }
-
-        if ( isPhysicalAdrRange( vAdr )) { 
+        if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
-            if ( ! privModeCheck( )) {
-
-                throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-            };
+           privModeCheck( );
 
             // ??? should physical access ever be cached ?
             
@@ -278,18 +260,13 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
+            T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
-            #if 0
-            if ( ! protectionCheck( tlbPtr -> protectId, false )) {
-
-                throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
-            }
-            #endif
+           protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
 
             // ??? cached / uncached...
 
@@ -314,21 +291,15 @@ T64Word T64Processor::dataRead( T64Word vAdr, int len ) {
 // consulted for the translation and security checking. 
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
+void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
   
     try {
 
-        if ( ! isAligned( vAdr, len )) {
-
-            throw( T64Trap( DATA_ALIGNMENT_TRAP ), 0, 0, 0 );
-        }
+        alignMentCheck( vAdr, len );
         
-        if ( isPhysicalAdrRange( vAdr )) { 
+        if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
-            if ( ! privModeCheck( )) {
-
-                throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-            };
+           privModeCheck( );
 
             // ??? should physical access ever be cached ?
             
@@ -336,18 +307,13 @@ void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
         }
         else {
 
-            T64TlbEntry *tlbPtr = tlb -> lookup( vAdr );
+            T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
             if ( tlbPtr == nullptr ) {
                 
                 throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
             }
 
-            #if 0
-            if ( ! protectionCheck( tlbPtr -> protectId, true )) {
-
-                throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix 
-            }
-            #endif
+            protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
 
             // ??? cached / uncached...
 
@@ -368,7 +334,7 @@ void T64Processor::dataWrite( T64Word vAdr, T64Word val, int len ) {
 // Read memory data based using RegB and the IMM-13 offset to form the address.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::dataReadRegBOfsImm13( uint32_t instr ) {
+T64Word T64Cpu::dataReadRegBOfsImm13( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr ); 
@@ -382,7 +348,7 @@ T64Word T64Processor::dataReadRegBOfsImm13( uint32_t instr ) {
 // Read memory data based using RegB and the RegX offset to form the address.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Processor::dataReadRegBOfsRegX( uint32_t instr ) {
+T64Word T64Cpu::dataReadRegBOfsRegX( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
@@ -401,7 +367,7 @@ T64Word T64Processor::dataReadRegBOfsRegX( uint32_t instr ) {
 // address.
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::dataWriteRegBOfsImm13( uint32_t instr ) {
+void T64Cpu::dataWriteRegBOfsImm13( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
@@ -417,7 +383,7 @@ void T64Processor::dataWriteRegBOfsImm13( uint32_t instr ) {
 // address.
 //
 //----------------------------------------------------------------------------------------
-void T64Processor:: dataWriteRegBOfsRegX( uint32_t instr ) {
+void T64Cpu:: dataWriteRegBOfsRegX( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
@@ -433,84 +399,13 @@ void T64Processor:: dataWriteRegBOfsRegX( uint32_t instr ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-void  T64Processor::insertInstrTlb( T64Word vAdr, T64Word info ) {
-
-    if ( ! privModeCheck( )) {
-
-                throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-            };
-
-}
-
-void T64Processor::purgeInstrTlb( T64Word vAdr ) {
-
-    if ( ! privModeCheck( )) {
-
-        throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-    };
-
-}
-
-void  T64Processor::insertDataTlb( T64Word vAdr, T64Word info ) {
-
-    if ( ! privModeCheck( )) {
-
-                throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-            };
-
-}
-
-void T64Processor::purgeDataTlb( T64Word vAdr ) {
-
-    if ( ! privModeCheck( )) {
-
-        throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-    };
-
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-void T64Processor::purgeInstrCache( T64Word vAdr ) {
-
-    if ( ! privModeCheck( )) {
-
-            throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-    };
-    
-}
-
-void T64Processor::flushDataCache( T64Word vAdr ) {
-
-    if ( ! privModeCheck( )) {
-
-        throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-    };
-    
-}
-
-void  T64Processor::purgeDataCache( T64Word vAdr ) {
-
-    if ( ! privModeCheck( )) {
-
-        throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix
-    };
-    
-}
-
-//----------------------------------------------------------------------------------------
 // Execute an instruction. This is the key routine of the emulator. Essentially a big
 // case statement. Each instruction is encoded based on the instruction group and the
 // opcode family. Inside each such cases, the option 1 field ( bits 19 .. 22 ) further
 // qualifies an instruction.
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::instrExecute( uint32_t instr ) {
+void T64Cpu::instrExecute( uint32_t instr ) {
     
     try {
         
@@ -983,7 +878,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 }
                 else { // SHLxA
                     
-                    if ( willShiftLftOverflow( val1, shamt )) 
+                    if ( willShiftLeftOverflow( val1, shamt )) 
                         throw ( T64Trap( OVERFLOW_TRAP ));
 
                     res = val1 << shamt;
@@ -1251,7 +1146,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 // ?? privileged op ?
                 
                 T64Word res = 0;
-                T64TlbEntry *e = tlb -> lookup( getRegB(instr ));
+                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB(instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
@@ -1278,7 +1173,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 else                                   
                     privLevel = extractBit64( getRegA( instr ), 0 );
                 
-                T64TlbEntry *e = tlb -> lookup( getRegB(instr ));
+                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
@@ -1302,12 +1197,12 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    insertDataTlb( getRegB( instr ), getRegA( instr ));
+                    proc -> insertDataTlb( getRegB( instr ), getRegA( instr ));
                     setRegR( instr, 1 );
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    purgeDataTlb( getRegB( instr ));
+                    proc -> purgeDataTlb( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
@@ -1321,11 +1216,11 @@ void T64Processor::instrExecute( uint32_t instr ) {
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    purgeDataCache( getRegB( instr ));
+                    proc -> purgeDataCache( getRegB( instr ));
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    flushDataCache( getRegB( instr ));
+                    proc -> flushDataCache( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
@@ -1390,7 +1285,7 @@ void T64Processor::instrExecute( uint32_t instr ) {
 // instructions.
 //
 //----------------------------------------------------------------------------------------
-void T64Processor::step( ) {
+void T64Cpu::step( ) {
     
     try {
         

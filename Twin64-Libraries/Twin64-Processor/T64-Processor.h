@@ -30,9 +30,16 @@
 #include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+struct T64Processor;
+
+//----------------------------------------------------------------------------------------
 // Caches. We support set associative caches, 2, 4, and 8-way. There is a cache line 
 // info with flags and the tag and an array of bytes which holds the cache data.
 //
+// ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
 
@@ -60,6 +67,7 @@ struct T64Cache {
     public:
 
     T64Cache( T64CacheType cacheType, T64System *sys );
+
     void                reset( );
 
     void                read( T64Word pAdr, T64Word *data, int len, bool cached );
@@ -67,15 +75,10 @@ struct T64Cache {
     void                flush( T64Word pAdr );
     void                purge( T64Word pAdr );
 
-    void                readCacheData( T64Word pAdr, T64Word *data, int len );
-    void                writeCacheData( T64Word pAdr, T64Word data, int len );
-    void                flushCacheLine( T64Word pAdr );
-    void                purgeCacheLine( T64Word pAdr );
-
     bool                getCacheLine( uint32_t way,
                                       uint32_t set, 
                                       T64CacheLineInfo **info,
-                                      uint8_t **data );
+                                      uint8_t  **data );
 
     int                 getRequestCount( );
     int                 getHitCount( );
@@ -86,17 +89,14 @@ struct T64Cache {
 
     private: 
 
-    uint32_t            getTag( T64Word pAdr );                           
-    uint32_t            getSetIndex( T64Word  paAdr );
-    uint32_t            getLineOfs( T64Word  paAdr );
-    T64Word             pAdrFromTag( uint32_t tag, uint32_t index );
-
     bool                lookupCache( T64Word          pAdr, 
                                      T64CacheLineInfo **info, 
                                      uint8_t          **data );
 
-    int                 plruVictim( );
-    void                plruUpdate( );
+    void                readCacheData( T64Word pAdr, T64Word *data, int len );
+    void                writeCacheData( T64Word pAdr, T64Word data, int len );
+    void                flushCacheLine( T64Word pAdr );
+    void                purgeCacheLine( T64Word pAdr );
 
     T64Word             getCacheLineData( uint8_t *line, 
                                           int     lineOfs,
@@ -107,6 +107,14 @@ struct T64Cache {
                                           int     len,
                                           T64Word data ); 
                                           
+    uint32_t            getTag( T64Word pAdr );                           
+    uint32_t            getSetIndex( T64Word  paAdr );
+    uint32_t            getLineOfs( T64Word  paAdr );
+    T64Word             pAdrFromTag( uint32_t tag, uint32_t index );
+    int                 plruVictim( );
+    void                plruUpdate( );
+
+    private: 
 
     T64CacheType        cacheType       = T64_CT_NIL;
     T64CacheLineInfo    *cacheInfo      = nullptr;
@@ -127,22 +135,6 @@ struct T64Cache {
     int                 cacheMiss       = 0;
     uint8_t             plruState       = 0;
 };
-
-
-// ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
-
-// ??? createCache( int cacheNum, int cacheSets, int cacheSize, in cacheLineSize );
-
-// ??? for simulator windows
-// ??? readCacheLine( int cacheNum, int cacheSet, int cacheIndex, *cacheLine );
-
-// ??? for CPU
-// ??? readFromCache( int cacheNum, T64Word vAdr, T64Word pAdr, *data, int len );
-// ??? writeToCache( int cacheNum, T64Word vAdr, T64Word pAdr, *data, int len );
-
-// ??? purgeFromCache( int cacheNum, T64Word vAdr, T64Word pAdr );
-// ??? flushFromCache(  int cacheNum, T64Word vAdr, T64Word pAdr );
-
 
 //----------------------------------------------------------------------------------------
 // A CPU needs a TLB. It is vital for address translation. In the Emulator, we only 
@@ -174,8 +166,6 @@ public:
 //
 //
 //----------------------------------------------------------------------------------------
-
-
 struct T64Tlb {
     
 public:
@@ -185,7 +175,7 @@ public:
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
     
-    void            insert( T64Word vAdr, T64Word info2 );
+    void            insert( T64Word vAdr, T64Word info );
     void            purge( T64Word vAdr );
     
     int             getTlbSize( );
@@ -193,22 +183,96 @@ public:
 
     // routines for simulator
 
-    int insertTlbEntry( int proc, int tlbNum, T64Word info1, T64Word info2 );
-    int purgeTlbEntry( int proc, int tlbNum, int index );
+    int insertTlbEntry( int pNum, int tlbNum, T64Word vAdr, T64Word info );
+    int purgeTlbEntry( int pNum, int tlbNum, int index );
 
 private:
     
     T64TlbEntry     map [ T64_MAX_TLB_SIZE ];
-    T64Word         timeCounter = 0;
+    T64Word         timeCounter     = 0;
 };
 
+//----------------------------------------------------------------------------------------
+// The CPU is a submodule of the processor, just like the cache and TLB. 
+//
+//
+//----------------------------------------------------------------------------------------
+struct T64Cpu {
 
+    public: 
+
+    T64Cpu( T64Processor *proc );
+
+    void            reset( );
+    void            step( );
+
+    T64Word         getGeneralReg( int index );
+    void            setGeneralReg( int index, T64Word val );
+
+    T64Word         getControlReg( int index );
+    void            setControlReg( int index, T64Word val );
+
+    T64Word         getPswReg( );
+    void            setPswReg( T64Word val );
+
+    private: 
+
+    T64Word         getRegR( uint32_t instr );
+    T64Word         getRegB( uint32_t instr );
+    T64Word         getRegA( uint32_t instr );
+    void            setRegR( uint32_t instr, T64Word val );
+    
+    T64Word         extractImm13( uint32_t instr );
+    T64Word         extractImm15( uint32_t instr );
+    T64Word         extractImm19( uint32_t instr );
+    T64Word         extractImm20U( uint32_t instr );
+    T64Word         extractDwField( uint32_t instr );
+    
+    void            privModeCheck( );
+    void            protectionCheck( uint32_t pId, bool wMode );
+    void            alignMentCheck( T64Word vAdr, int align );
+    
+    T64Word         instrRead( T64Word vAdr );
+
+    T64Word         dataRead( T64Word vAdr, int len  );
+    T64Word         dataReadRegBOfsImm13( uint32_t instr );
+    T64Word         dataReadRegBOfsRegX( uint32_t instr );
+
+    void            dataWrite( T64Word vAdr, T64Word val, int len );
+    void            dataWriteRegBOfsImm13( uint32_t instr );
+    void            dataWriteRegBOfsRegX( uint32_t instr );
+
+    void            instrExecute( uint32_t instr );
+
+    T64Word         ctlRegFile[ MAX_CREGS ];
+    T64Word         genRegFile[ MAX_GREGS ];
+    T64Word         pswReg;
+    uint32_t        instrReg;
+    T64Word         resvReg;
+
+    T64Processor    *proc   = nullptr;
+    T64Word         lowerPhysMemAdr     = 0;
+    T64Word         upperPhysMemAdr     = 0;
+};
 
 
 //----------------------------------------------------------------------------------------
 // The CPU core executes the instructions. The processor has the interfaces called by
 // the simulator. This includes interfaces to TLBs and caches. 
 //
+// ??? a call to "step" must run to completion:
+// 
+// STEP
+//      EXEC
+//          SYS.read
+//              ... cache / mem work
+//          end
+//
+//          EXEC work
+//
+//      end
+//
+// end
 //----------------------------------------------------------------------------------------
 struct T64Processor : T64Module {
     
@@ -226,6 +290,9 @@ public:
     T64Word         getControlReg( int index );
     void            setControlReg( int index, T64Word val );
 
+    T64Word         getPswReg( );
+    void            setPswReg( T64Word val );
+
     void            insertInstrTlb( T64Word vAdr, T64Word info2 );
     void            purgeInstrTlb( T64Word vAdr );
     T64TlbEntry     *getInstrTlbEntry( int index );
@@ -237,74 +304,24 @@ public:
     void            purgeInstrCache( T64Word vAdr );
     void            flushDataCache( T64Word vAdr );
     void            purgeDataCache( T64Word vAdr );
-
-   // T64CacheLine    *getInstrCacheEntry( int set, int index );
-   // T64CacheLine    *getDataCacheEntry( int set, int index );
-    
-    T64Word         getPswReg( );
-    void            setPswReg( T64Word val );
-            
+        
 private:
 
-    T64Word         getRegR( uint32_t instr );
-    T64Word         getRegB( uint32_t instr );
-    T64Word         getRegA( uint32_t instr );
-    void            setRegR( uint32_t instr, T64Word val );
-    
-    T64Word         extractImm13( uint32_t instr );
-    T64Word         extractImm15( uint32_t instr );
-    T64Word         extractImm19( uint32_t instr );
-    T64Word         extractImm20U( uint32_t instr );
-    T64Word         extractDwField( uint32_t instr );
-    
-    bool            isPhysicalAdrRange( T64Word vAdr );
-    bool            privModeCheck( );
-    bool            protectionCheck( uint32_t pId, bool wMode );
-    bool            accessRightCheck( T64Word vAdr, AccRights mode );
-    
-    T64Word         instrRead( T64Word vAdr );
+    friend struct   T64Cpu;
 
-    T64Word         dataRead( T64Word vAdr, int len  );
-    T64Word         dataReadRegBOfsImm13( uint32_t instr );
-    T64Word         dataReadRegBOfsRegX( uint32_t instr );
-
-    void            dataWrite( T64Word vAdr, T64Word val, int len );
-    void            dataWriteRegBOfsImm13( uint32_t instr );
-    void            dataWriteRegBOfsRegX( uint32_t instr );
-
-    void            instrExecute( uint32_t instr );
-   
-private:
-    
-    T64Word         ctlRegFile[ MAX_CREGS ];
-    T64Word         genRegFile[ MAX_GREGS ];
-    T64Word         pswReg;
-    uint32_t        instrReg;
-    T64Word         resvReg;
-    
     T64System       *sys                = nullptr;
-    T64Tlb          *tlb                = nullptr;
-    T64Cache        *cache              = nullptr;
+    T64Cpu          *cpu                = nullptr;
+    T64Tlb          *iTlb               = nullptr;
+    T64Tlb          *dTlb               = nullptr;
+    T64Cache        *iCache             = nullptr;
+    T64Cache        *dCache             = nullptr;
+
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;
 
+    bool            isPhysicalAdrRange( T64Word vAdr );
     T64Word         lowerPhysMemAdr     = 0;
     T64Word         upperPhysMemAdr     = 0;
 };
-
-
-// ??? a call to "step" must run to completion:
-// 
-// STEP
-//      EXEC
-//          SYS.read
-//              ... cache / mem work
-//          end
-//
-//          ... other EXEC work
-//
-//      end
-//
-// end
 
 #endif // T64_Processor_h

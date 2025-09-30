@@ -49,6 +49,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 T64Tlb::T64Tlb( ) {
 
+
     reset( );
 }
 
@@ -70,6 +71,8 @@ void T64Tlb::reset( ) {
 // The lookup method checks all valid entries if they cover the virtual address. If
 // found we update the last used field and return the entry.
 //
+// ??? rather do the address check here ??? then we do not need to distinguish 
+// in calls to address translation...
 //----------------------------------------------------------------------------------------
 T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
 
