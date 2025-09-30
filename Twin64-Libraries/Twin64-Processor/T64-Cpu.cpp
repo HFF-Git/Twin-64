@@ -125,13 +125,15 @@ void T64Cpu::setRegR( uint32_t instr, T64Word val ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Privilege Mode Check.
 //
 //----------------------------------------------------------------------------------------
 void T64Cpu::privModeCheck( ) {
 
-    if ( extractBit64( pswReg, 0 ) != 0 ) 
+    if ( extractBit64( pswReg, 0 ) != 0 ) {
+
         throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix ...
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -157,13 +159,13 @@ void T64Cpu::protectionCheck( uint32_t pId, bool wMode ) {
                     ( extractField64( ctlRegFile[ 7 ], 33, 31 ) == pId ));
                 
         validAcc =  (( extractField64( ctlRegFile[ 4 ],  0, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 4 ], 32, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 5 ],  0, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 5 ], 32, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 6 ],  0, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 6 ], 32, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 7 ],  0, 1 ) && wMode ) ||
-                    ( extractField64( ctlRegFile[ 7 ], 32, 1 ) && wMode ));
+                     ( extractField64( ctlRegFile[ 4 ], 32, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 5 ],  0, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 5 ], 32, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 6 ],  0, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 6 ], 32, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 7 ],  0, 1 ) && wMode ) ||
+                     ( extractField64( ctlRegFile[ 7 ], 32, 1 ) && wMode ));
 
         if (( ! validPid ) || ( ! validAcc )) {
 
@@ -192,44 +194,32 @@ void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::instrRead( T64Word vAdr ) {
 
-    T64Word     pAdr    = 0;
-    uint32_t    instr   = 0;
-    
-    try {
+    T64Word instr = 0;
+   
+    alignMentCheck( vAdr, 4 );
 
-        alignMentCheck( vAdr, 4 );
+    if ( proc -> isPhysicalAdrRange( vAdr )) { 
 
-        if ( proc -> isPhysicalAdrRange( vAdr )) { 
+        privModeCheck( );
+        proc -> iCache -> read( vAdr, &instr, 4, false );     
+    }
+    else {
 
-            privModeCheck( );
-        
-
-            // ??? should physical access ever be cached ?
-             
-            return( instr );
-        }
-        else {
-
-            T64TlbEntry *tlbPtr = proc ->iTlb ->lookup( vAdr );
-            if ( tlbPtr == nullptr ) {
+        T64TlbEntry *tlbPtr = proc ->iTlb ->lookup( vAdr );
+        if ( tlbPtr == nullptr ) {
                 
-                throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
-            }
-
-            protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-
-            // ??? cached / uncached...
-
-            // cache access vAdr, pAdr from TLB, ...
-
-            return( instr );
+            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
+
+        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
+
+        proc -> iCache -> read( tlbPtr -> pAdr, 
+                                &instr, 
+                                4, 
+                                tlbPtr -> uncached );
     }
-    catch ( const T64Trap t ) {
-        
-        // can do something before re-raising ....
-        throw;
-    }
+
+    return( instr );
 }
 
 //----------------------------------------------------------------------------------------
@@ -241,47 +231,34 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
 //
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
-    
-    try {
 
-        alignMentCheck( vAdr, len );
+    T64Word data = 0;
+   
+    alignMentCheck( vAdr, len );
 
-        if ( proc -> isPhysicalAdrRange( vAdr )) { 
+    if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
-           privModeCheck( );
+        privModeCheck( );
+        proc -> dCache -> read( vAdr, &data, 8, false );
+    }
+    else {
 
-            // ??? should physical access ever be cached ?
-            
-            T64Word data = 0;
-
-            // ??? sign extend
-            
-            return( data );
-        }
-        else {
-
-            T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
-            if ( tlbPtr == nullptr ) {
+        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
+        if ( tlbPtr == nullptr ) {
                 
-                throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
-            }
-
-           protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-
-            // ??? cached / uncached...
-
-            // cache access vAdr, pAdr from TLB, ...
-
-             T64Word data = 0;
-            
-            return( data );
+            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
+
+        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
+        proc -> iCache -> read( tlbPtr -> pAdr, 
+                                &data, 
+                                len, 
+                                tlbPtr -> uncached );
     }
-    catch ( const T64Trap t ) {
-        
-        // can do something before re-raising ....
-        throw;
-    }
+
+    // ??? sign extend
+
+    return( data );
 }
 
 //----------------------------------------------------------------------------------------
@@ -293,40 +270,27 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
   
-    try {
-
-        alignMentCheck( vAdr, len );
+    alignMentCheck( vAdr, len );
         
-        if ( proc -> isPhysicalAdrRange( vAdr )) { 
+    if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
-           privModeCheck( );
-
-            // ??? should physical access ever be cached ?
-            
-           
-        }
-        else {
-
-            T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
-            if ( tlbPtr == nullptr ) {
-                
-                throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
-            }
-
-            protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
-
-            // ??? cached / uncached...
-
-            // cache access vAdr, pAdr from TLB, ...
-
-            // ??? write to cache
-           
-        }
+        privModeCheck( );
+        proc -> dCache -> write( vAdr, val, len, false );           
     }
-    catch ( const T64Trap t ) {
-        
-        // can do something before re-raising ....
-        throw;
+    else {
+
+        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
+        if ( tlbPtr == nullptr ) {
+                
+            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
+        }
+
+        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
+        proc -> iCache -> write( tlbPtr -> pAdr, 
+                                 val, 
+                                 len, 
+                                 tlbPtr -> uncached );
+
     }
 }
 
