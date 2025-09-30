@@ -145,7 +145,7 @@ T64Module *T64System::lookupByNum( int modNum ) {
 }
     
 //----------------------------------------------------------------------------------------
-// Find the module handler based on the physical address. There ate HPA and SPA ranges
+// Find the module handler based on the physical address. There are HPA and SPA ranges
 // to check.
 //
 //----------------------------------------------------------------------------------------
@@ -171,6 +171,31 @@ T64Module *T64System::lookupByAdr( T64Word adr ) {
     }
 
     return( nullptr );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//
+//----------------------------------------------------------------------------------------
+T64ModuleType T64System::getModuleType( int modNum ) {
+
+    T64Module *mPtr = lookupByNum( modNum );
+    if ( mPtr != nullptr ) return( mPtr -> getModuleType( ));
+    else return( MT_NIL );
+}
+
+T64SubModuleType T64System::getModuleSubType( int modNum, int subModNum ) {
+
+    T64Module *mPtr = lookupByNum( modNum );
+    if ( mPtr != nullptr ) {
+
+        
+
+        // module needs to look for the sub type...
+        return( MST_NIL );
+    }
+    else return( MST_NIL );
 }
 
 //----------------------------------------------------------------------------------------

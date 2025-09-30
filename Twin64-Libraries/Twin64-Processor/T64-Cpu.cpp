@@ -36,7 +36,7 @@ namespace {
 };
 
 //****************************************************************************************
-//****************************************************************************************
+//*******************************FABR*********************************************************
 //
 // CPU
 //
@@ -44,9 +44,14 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Cpu::T64Cpu( T64Processor *proc ) {
+T64Cpu::T64Cpu( T64Processor *proc ) : T64SubModule( 0, 0, MST_NIL ) {
     
     this -> proc    = proc;
+    this -> iTlb    = ( T64Tlb *) proc -> subModTab[ 1 ]; 
+    this -> dTlb    = ( T64Tlb *) proc -> subModTab[ 2 ];
+    this -> iCache  = ( T64Cache *) proc -> subModTab[ 3 ];
+    this -> dCache  = ( T64Cache *) proc -> subModTab[ 4 ];
+
     this -> reset( );
 }
 
@@ -201,22 +206,18 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
 
         privModeCheck( );
-        proc -> iCache -> read( vAdr, &instr, 4, false );     
+        iCache -> read( vAdr, &instr, 4, false );     
     }
     else {
 
-        T64TlbEntry *tlbPtr = proc ->iTlb ->lookup( vAdr );
+        T64TlbEntry *tlbPtr = iTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-
-        proc -> iCache -> read( tlbPtr -> pAdr, 
-                                &instr, 
-                                4, 
-                                tlbPtr -> uncached );
+        iCache -> read( tlbPtr -> pAdr, &instr, 4, tlbPtr -> uncached );
     }
 
     return( instr );
@@ -239,21 +240,18 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        proc -> dCache -> read( vAdr, &data, 8, false );
+        dCache -> read( vAdr, &data, 8, false );
     }
     else {
 
-        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
+        T64TlbEntry *tlbPtr = dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-        proc -> iCache -> read( tlbPtr -> pAdr, 
-                                &data, 
-                                len, 
-                                tlbPtr -> uncached );
+        iCache -> read( tlbPtr -> pAdr, &data, len, tlbPtr -> uncached );
     }
 
     // ??? sign extend
@@ -275,22 +273,18 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        proc -> dCache -> write( vAdr, val, len, false );           
+        dCache -> write( vAdr, val, len, false );           
     }
     else {
 
-        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
+        T64TlbEntry *tlbPtr = dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
-        proc -> iCache -> write( tlbPtr -> pAdr, 
-                                 val, 
-                                 len, 
-                                 tlbPtr -> uncached );
-
+        iCache -> write( tlbPtr -> pAdr, val, len, tlbPtr -> uncached );
     }
 }
 
@@ -321,7 +315,10 @@ T64Word T64Cpu::dataReadRegBOfsRegX( uint32_t instr ) {
     
     adr = addAdrOfs( adr, ofs );
     
-    if (( dw > 1 ) && ( !isAligned( adr, len ))) throw ( 0 );
+    if (( dw > 1 ) && ( !isAligned( adr, len ))) {
+                
+        throw ( T64Trap( DATA_ALIGNMENT_TRAP, 0, 0, 0 )); // fix 
+    }
     
     return( dataRead( adr, len ));
 }
@@ -1031,8 +1028,11 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 int     cond    = (int) extractInstrField( instr, 19, 3 );
                 bool    res     = false;
 
-                // ??? add regs...
-                
+                if ( willAddOverflow( val1, val2 )) 
+                    throw ( T64Trap( OVERFLOW_TRAP ));
+                else 
+                    setRegR( instr, val1 + val2 );
+
                 switch ( cond ) {
                         
                     case 0: res = ( val1 == val2 ); break;
@@ -1107,10 +1107,10 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             case ( OPC_GRP_SYS * 16 + OPC_LPA ): {
                 
-                // ?? privileged op ?
-                
+                privModeCheck( );
+
                 T64Word res = 0;
-                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB(instr ));
+                T64TlbEntry *e = dTlb -> lookup( getRegB( instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
@@ -1137,19 +1137,21 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else                                   
                     privLevel = extractBit64( getRegA( instr ), 0 );
                 
-                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 )   {
+                T64TlbEntry *e = dTlb -> lookup( getRegB( instr ));
+                if ( e != nullptr ) {
+
+                    if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
-                    // PRBR
+                        // PRBR
                     
+                    }
+                    else if ( extractInstrField( instr, 19, 3 ) == 1 )   {
+                    
+                        // PRBW
+                    
+                    }
+                    else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
-                else if ( extractInstrField( instr, 19, 3 ) == 1 )   {
-                    
-                    // PRBW
-                    
-                }
-                else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
                 pswReg = addAdrOfs( pswReg, 4 );
                 

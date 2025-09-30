@@ -30,29 +30,31 @@
 #include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
-//
+// Forwards.
 //
 //----------------------------------------------------------------------------------------
 struct T64Processor;
 
 //----------------------------------------------------------------------------------------
-// Caches. We support set associative caches, 2, 4, and 8-way. There is a cache line 
-// info with flags and the tag and an array of bytes which holds the cache data.
+// Caches. Caches are sub modules to the processor. We support set associative caches,
+// 2, 4, and 8-way. There is a cache line info with flags and the tag and an array of
+// bytes which holds the cache data. Cache type es encoded:
+//
+//  T64_CT_<ways>W_<sets>S_<words>L
 //
 // ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
 
-    T64_CT_NIL      = 0,
+    T64_CT_NIL          = 0,
 
-    T64_CT_2W_128S  = 1,
-    T64_CT_4W_128S  = 2,
-    T64_CT_8W_128S  = 3,
+    T64_CT_2W_128S_4L  = 1,
+    T64_CT_4W_128S_4L  = 2,
+    T64_CT_8W_128S_4L  = 3,
 
-    T64_CT_2W_64S   = 4,
-    T64_CT_4W_64S   = 5,
-    T64_CT_8W_64S   = 6,
-
+    T64_CT_2W_64S_8L   = 4,
+    T64_CT_4W_64S_8L   = 5,
+    T64_CT_8W_64S_8L   = 6,
 };
 
 struct T64CacheLineInfo {
@@ -62,9 +64,11 @@ struct T64CacheLineInfo {
     uint32_t    tag;
 };
 
-struct T64Cache {
+struct T64Cache : T64SubModule {
 
     public:
+
+    // ??? rethink the constructor... need cache type, sys and module info...
 
     T64Cache( T64CacheType cacheType, T64System *sys );
 
@@ -166,10 +170,11 @@ public:
 //
 //
 //----------------------------------------------------------------------------------------
-struct T64Tlb {
+struct T64Tlb : T64SubModule {
     
-public:
-    
+    public:
+    // ??? rethink the constructor... need tlb type, sys and module info...
+
     T64Tlb( );
     
     void            reset( );
@@ -186,7 +191,7 @@ public:
     int insertTlbEntry( int pNum, int tlbNum, T64Word vAdr, T64Word info );
     int purgeTlbEntry( int pNum, int tlbNum, int index );
 
-private:
+    private:
     
     T64TlbEntry     map [ T64_MAX_TLB_SIZE ];
     T64Word         timeCounter     = 0;
@@ -197,9 +202,11 @@ private:
 //
 //
 //----------------------------------------------------------------------------------------
-struct T64Cpu {
+struct T64Cpu : T64SubModule {
 
     public: 
+
+    // ??? rethink the constructor... need proc and module info...
 
     T64Cpu( T64Processor *proc );
 
@@ -251,6 +258,11 @@ struct T64Cpu {
     T64Word         resvReg;
 
     T64Processor    *proc   = nullptr;
+    T64Tlb          *iTlb   = nullptr;
+    T64Tlb          *dTlb   = nullptr;
+    T64Cache        *iCache = nullptr;
+    T64Cache        *dCache = nullptr;
+
     T64Word         lowerPhysMemAdr     = 0;
     T64Word         upperPhysMemAdr     = 0;
 };
@@ -274,6 +286,16 @@ struct T64Cpu {
 //
 // end
 //----------------------------------------------------------------------------------------
+enum T64ProcSubModules : int {
+
+   PSM_CPU      = 0,
+   PSM_ITLB     = 1,
+   PSM_DTLB     = 2,
+   PSM_ICACHE   = 3,
+   PSM_DCACHE   = 4,
+   PSM_MAX      = 5
+};
+
 struct T64Processor : T64Module {
     
 public:
@@ -310,11 +332,6 @@ private:
     friend struct   T64Cpu;
 
     T64System       *sys                = nullptr;
-    T64Cpu          *cpu                = nullptr;
-    T64Tlb          *iTlb               = nullptr;
-    T64Tlb          *dTlb               = nullptr;
-    T64Cache        *iCache             = nullptr;
-    T64Cache        *dCache             = nullptr;
 
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;

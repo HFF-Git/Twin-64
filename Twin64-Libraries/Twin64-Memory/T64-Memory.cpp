@@ -53,6 +53,8 @@ void T64Memory::reset( ) {
     
     if ( mem != nullptr ) free( mem );
     this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
+
+    maxSubModules = 0;
 }
 
 //----------------------------------------------------------------------------------------

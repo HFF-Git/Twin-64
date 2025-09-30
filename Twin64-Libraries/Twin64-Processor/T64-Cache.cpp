@@ -215,29 +215,30 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( T64CacheType cacheType, T64System *sys ) { 
+T64Cache::T64Cache( T64CacheType cacheType, T64System *sys ) : 
+                T64SubModule( 0, 0, MST_NIL ){ 
 
     this -> cacheType = cacheType;
 
      switch ( cacheType ) {
 
-        case T64_CT_2W_64S: 
-        case T64_CT_2W_128S:    ways = 2;   break;
+        case T64_CT_2W_64S_8L: 
+        case T64_CT_2W_128S_4L:    ways = 2;   break;
 
-        case T64_CT_4W_64S:
-        case T64_CT_4W_128S:    ways = 4;   break;
+        case T64_CT_4W_64S_8L:
+        case T64_CT_4W_128S_4L:    ways = 4;   break;
 
-        case T64_CT_8W_64S:
-        case T64_CT_8W_128S:    ways = 8;   break;
+        case T64_CT_8W_64S_8L:
+        case T64_CT_8W_128S_4L:    ways = 8;   break;
 
         default:                ways = 2; 
     }
 
     switch ( cacheType ) {
 
-        case T64_CT_2W_128S:    
-        case T64_CT_4W_128S:
-        case T64_CT_8W_128S: {
+        case T64_CT_2W_128S_4L:    
+        case T64_CT_4W_128S_4L:
+        case T64_CT_8W_128S_4L: {
             
             sets        = 128; 
             lineSize    = 32;
@@ -246,9 +247,9 @@ T64Cache::T64Cache( T64CacheType cacheType, T64System *sys ) {
         
         } break;
 
-        case T64_CT_2W_64S:    
-        case T64_CT_4W_64S:
-        case T64_CT_8W_64S: {
+        case T64_CT_2W_64S_8L:    
+        case T64_CT_4W_64S_8L:
+        case T64_CT_8W_64S_8L: {
             
             sets        = 64; 
             lineSize    = 64;

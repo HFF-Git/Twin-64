@@ -51,7 +51,14 @@ T64ModuleType T64Module::getModuleType( ) {
 
 int T64Module::getModuleNum( ) {
 
-    return( 0 );
+    return( moduleNum );
+}
+
+T64SubModuleType T64Module::getSubModuleType( int subModNum ) {
+
+    if ( subModNum < maxSubModules ) 
+        return( subModTab[ subModNum ] -> getSubModType( ));
+    else return ( MST_NIL );
 }
     
 int T64Module::getHpaStartAdr( T64Word *val ) {
@@ -75,3 +82,29 @@ int T64Module::getSpaSize( T64Word *val ) {
     return( 0 );
 }
 
+//****************************************************************************************
+//****************************************************************************************
+//
+// SubModule
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+T64SubModule::T64SubModule( int mNum, 
+                            int subModNum, 
+                            T64SubModuleType smType ) {
+
+    this -> moduleNum   = mNum;
+    this -> subModNum   = subModNum;
+    this -> subModType  = smType;
+}
+
+T64SubModuleType T64SubModule::getSubModType( ) {
+
+    return( subModType );
+}
+
+int T64SubModule::getSubModNum( ) {
+
+    return( subModNum );
+}

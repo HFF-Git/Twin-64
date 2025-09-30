@@ -41,39 +41,39 @@ namespace {
 //
 //----------------------------------------------------------------------------------------
 //
-//
+// ??? when we have unified caches or TLBs, both submodules refer to the same 
+// object.
 //----------------------------------------------------------------------------------------
 T64Processor::T64Processor( T64System *sys ) {
     
     this -> sys     = sys;
 
-    this -> cpu     = new T64Cpu( this );
-
-    this -> iTlb    = new T64Tlb( );
-    this -> dTlb    = new T64Tlb( );
-
-    this -> iCache   = new T64Cache( T64_CT_2W_128S, sys );
-    this -> dCache   = new T64Cache( T64_CT_4W_128S, sys );
+    this -> subModTab[ PSM_CPU ]    = new T64Cpu( this );
+    this -> subModTab[ PSM_ITLB ]   = new T64Tlb( );
+    this -> subModTab[ PSM_DTLB ]   = new T64Tlb( );
+    this -> subModTab[ PSM_ICACHE ] = new T64Cache( T64_CT_2W_128S_4L, sys );
+    this -> subModTab[ PSM_DCACHE ] = new T64Cache( T64_CT_4W_128S_4L, sys );
     
     this -> reset( );
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Reset the processor and its submodules.
 //
 //----------------------------------------------------------------------------------------
 void T64Processor::reset( ) {
 
+    T64Module::reset( );
+
     instructionCount    = 0;
     cycleCount          = 0;
 
-    cpu -> reset( );
-    
-    if ( iTlb != nullptr ) iTlb -> reset( );
-    if ( dTlb != nullptr ) dTlb -> reset( );
-    
-    if ( iCache != nullptr ) iCache -> reset( );
-    if ( dCache != nullptr ) dCache -> reset( );
+    for ( int i = 0; i < PSM_MAX; i++ ) {
+
+        if ( subModTab[ i ] != nullptr ) subModTab[ i ] -> reset( );
+    }
+
+    maxSubModules = PSM_MAX;
 }
 
 //----------------------------------------------------------------------------------------
@@ -82,86 +82,88 @@ void T64Processor::reset( ) {
 //----------------------------------------------------------------------------------------
 T64Word T64Processor::getGeneralReg( int index ) {
 
-   return( cpu -> getGeneralReg( index ));
+   return((( T64Cpu *) subModTab[ PSM_CPU ] ) -> getGeneralReg( index ));
 }
 
 void T64Processor::setGeneralReg( int index, T64Word val ) {
 
-    cpu -> setGeneralReg( index, val );
+    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setGeneralReg( index, val );
 }
 
 T64Word T64Processor::getControlReg( int index ) {
 
-    return( cpu -> getControlReg( index ));
+    return( (( T64Cpu *) subModTab[ PSM_CPU ] ) -> getControlReg( index ));
 }
 
 void T64Processor::setControlReg( int index, T64Word val ) {
     
-    cpu -> setControlReg( index, val );
+    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setControlReg( index, val );
 }
 
 T64Word T64Processor::getPswReg( ) {
     
-    return( cpu -> getPswReg( ));
+    return( (( T64Cpu *) subModTab[ PSM_CPU ] ) -> getPswReg( ));
 }
 
 void T64Processor::setPswReg( T64Word val ) {
     
-    cpu -> setPswReg( val );
+    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setPswReg( val );
 }
 
 //----------------------------------------------------------------------------------------
-// TLB routines. Called by the CPU and externally by monitors and debuggers. When we
-// configured a unified TLB, the data TLB is used.
+// TLB routines. Called by the CPU and externally by monitors and debuggers. 
 //
 //----------------------------------------------------------------------------------------
 void T64Processor::insertInstrTlb( T64Word vAdr, T64Word info ) {
 
-    if      ( iTlb != nullptr ) iTlb -> insert( vAdr, info );
-    else if ( dTlb != nullptr ) dTlb -> insert( vAdr, info );
+    if ( subModTab[ PSM_ITLB ] != nullptr ) 
+        (( T64Tlb *) subModTab[ PSM_ITLB ] ) -> insert( vAdr, info );
     else throw ( 99 );
 }
 
 void T64Processor::purgeInstrTlb( T64Word vAdr ) {
 
-    if      ( iTlb != nullptr ) iTlb -> purge( vAdr );
-    else if ( dTlb != nullptr ) dTlb -> purge( vAdr );
+    if ( subModTab[ PSM_ITLB ] != nullptr ) 
+        (( T64Tlb *) subModTab[ PSM_ITLB ] ) -> purge( vAdr );
     else throw ( 99 );
 }
 
 void  T64Processor::insertDataTlb( T64Word vAdr, T64Word info ) {
 
-    if ( dTlb != nullptr ) dTlb -> insert( vAdr, info );
+    if ( subModTab[ PSM_DTLB ] != nullptr ) 
+        (( T64Tlb *) subModTab[ PSM_DTLB ] ) -> insert( vAdr, info );
     else throw ( 99 );
 }
 
 void T64Processor::purgeDataTlb( T64Word vAdr ) {
 
-   if ( dTlb != nullptr ) dTlb -> purge( vAdr );
+   if ( subModTab[ PSM_DTLB ] != nullptr ) 
+        (( T64Tlb *) subModTab[ PSM_DTLB ] ) -> purge( vAdr );
     else throw ( 99 );
 }
 
 //----------------------------------------------------------------------------------------
-// Cache routines. Called by the CPU and externally by monitors and debuggers. When we
-// configured a unified cache, the data cache is used.
+// Cache routines. Called by the CPU and externally by monitors and debuggers. 
 //
 //----------------------------------------------------------------------------------------
 void T64Processor::purgeInstrCache( T64Word vAdr ) {
 
-    if      ( iCache != nullptr ) iCache -> purge( vAdr );
-    else if ( dCache != nullptr ) dCache -> purge( vAdr );
+    if ( subModTab[ PSM_ICACHE ] != nullptr ) 
+        (( T64Cache *) subModTab[ PSM_ICACHE ] ) -> purge( vAdr );
     else throw ( 99 );
 }
 
 void T64Processor::flushDataCache( T64Word vAdr ) {
 
-    if ( dCache != nullptr ) dCache -> flush( vAdr );
+    if ( subModTab[ PSM_DCACHE ] != nullptr ) 
+        (( T64Cache *) subModTab[ PSM_DCACHE ] )-> purge( vAdr );
     else throw ( 99 );
 }
 
 void  T64Processor::purgeDataCache( T64Word vAdr ) {
 
-    if ( dCache != nullptr ) dCache -> purge( vAdr );
+     if ( subModTab[ PSM_DCACHE ] != nullptr ) 
+        (( T64Cache *) subModTab[ PSM_DCACHE ] )-> flush( vAdr );
     else throw ( 99 );
 }
 
@@ -184,7 +186,7 @@ void T64Processor::step( ) {
 
     try {
         
-        cpu -> step( );
+        (( T64Cpu *) subModTab[ PSM_CPU ] ) -> step( );
     }
     
     catch ( const T64Trap t ) {

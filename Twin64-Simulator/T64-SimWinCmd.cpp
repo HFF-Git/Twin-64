@@ -1009,6 +1009,21 @@ void SimCommandsWin::loadElfFileCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Display Module Table command.
+//
+//  DM
+//
+// ??? perhaps have some options ... later.
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::displayModCmd( ) {
+
+    // ??? to do ...
+
+
+    tok -> checkEOS( );
+}
+
+//----------------------------------------------------------------------------------------
 // Reset command.
 //
 //  RESET [ ( 'PROC' | 'MEM' | 'STATS' | 'ALL' ) ]
@@ -1793,10 +1808,11 @@ void SimCommandsWin::winExchangeCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// This command creates a new user window. The window is assigned a free index form 
-// the windows list. This index is used in all the calls to this window. Depending 
-// on the window type, there are optional arguments to pass to the window object 
-// constructor. The general form is:
+// This command creates a new window. The window is assigned a free index form the
+// windows list. This index is used in all the calls to this window. The window type
+// is determined by the keyword plus additional info such as module and submodule 
+// number. Note that we do not create module or submodule objects, we merely attach
+// a window to them. The general form of the command is:
 //
 //  WN <winType> [ "," <arg1> [ "," <arg2> ]]]
 //----------------------------------------------------------------------------------------
@@ -1817,33 +1833,46 @@ void SimCommandsWin::winNewWinCmd( ) {
 
         case TOK_MODULE: {
 
-            int moduleNum    = 0;
-            int subModuleNum = 0;
+            int modNum    = 0;
+            int subModNum = 0;
 
             tok -> acceptComma( );
-            moduleNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
 
             if ( tok -> isToken( TOK_COMMA )) {
             
-                subModuleNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+                subModNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             }
 
             tok -> checkEOS( );
 
-            // ??? idea: the module number and sub module number determines the 
-            // window type...
+            switch ( glb -> system -> getModuleSubType( modNum, subModNum )) {
+            
+                case MST_CPU: {
 
-            // ??? need a lookup a module/submodule by module number and submodule
-            // number. All we do here is to check the numbers which will also 
-            // be passed to the window creator. Since the system routines work by
-            // those numbers, all we need to do is to store them in the window 
-            // private variables.
+                    glb -> winDisplay -> windowNewProgState( modNum );  
 
-            // ??? then case into the window type... 
+                } break;
+
+                case MST_TLB: {
+
+                    glb -> winDisplay -> windowNewTlb( modNum, subModNum );
+
+                } break;
+
+                case MST_CACHE: {
+
+                    glb -> winDisplay -> windowNewCache( modNum, subModNum );
+
+                } break;
+
+                default: throw( ERR_INVALID_WIN_TYPE ); // ??? fix ...
+            }
 
         } break;
 
         // review whether we would need all of them ....
+        // ??? CPU, TLB and CACHE could go away...
 
         case TOK_CPU: {
 
@@ -1888,6 +1917,9 @@ void SimCommandsWin::winNewWinCmd( ) {
             glb -> winDisplay -> windowNewCache( procNum, cacheNum );
 
         } break;
+
+
+
 
         case TOK_MEM: {
 

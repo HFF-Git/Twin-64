@@ -73,19 +73,23 @@ struct T64System {
 
     T64System( );
 
-    int         registerModule( int             mId,
-                                T64ModuleType   mType,
-                                T64Word         hpaAdr,
-                                T64Word         hpaLen,
-                                T64Word         spaAdr,
-                                T64Word         spaLen,
-                                T64Module       *handler
+    int                 registerModule( int             modNum,
+                                        T64ModuleType   mType,
+                                        T64Word         hpaAdr,
+                                        T64Word         hpaLen,
+                                        T64Word         spaAdr,
+                                        T64Word         spaLen,
+                                        T64Module       *handler
                               );
 
-    int         unregisterModule( int moduleNum );
+    int                 unregisterModule( int modNum );
 
-    T64Module   *lookupByNum( int modNum );
-    T64Module   *lookupByAdr( T64Word adr ); 
+    T64Module           *lookupByNum( int modNum );
+    T64Module           *lookupByAdr( T64Word adr ); 
+
+    T64ModuleType       getModuleType( int modNum );
+    T64SubModuleType    getModuleSubType( int modNum, int subModNum );
+
 
     // ??? this is a bit tricky, event is not enough ...
     void        broadCastEvent( T64ModuleEvent evt );
@@ -135,9 +139,8 @@ struct T64System {
  
     private:
 
-    T64SystemMapEntry   moduleTab[ MAX_MODULES ];
-    int                 moduleTabHwm = 0;
-
+    T64SystemMapEntry   moduleTab[ MAX_MODULES ] = { nullptr };
+    int                 moduleTabHwm             = 0;
 };
 
 #endif

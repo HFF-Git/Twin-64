@@ -39,7 +39,7 @@ enum T64ModuleType {
     MT_IO   = 3
 };
 
-enum T64ModuleSubType {
+enum T64SubModuleType {
 
     MST_NIL     = 0,
     MST_CPU     = 1,
@@ -71,10 +71,34 @@ enum T64ModuleEvent {
 };
 
 //----------------------------------------------------------------------------------------
-// A module is an entity on the imaginary system bus. It "listens" to three physical 
-// memory address area. The hard physical address range, the soft physical address range
-// configured and the broadcast address range. 
+// A module can have a couple of submodules. They all will inherit from this class.
 //
+//
+//----------------------------------------------------------------------------------------
+struct T64SubModule {
+
+    T64SubModule( int modNum, 
+                  int subModNum,
+                  T64SubModuleType subModType );
+
+    int                 getSubModNum( );
+    T64SubModuleType    getSubModType( );
+
+    virtual void        reset( ) = 0;
+
+    private:
+
+    int                 moduleNum;
+    int                 subModNum;
+    T64SubModuleType    subModType;
+};
+
+//----------------------------------------------------------------------------------------
+// A module is an entity on the imaginary system bus. It "listens" to three physical 
+// memory address area. The hard physical address range, the soft physical address 
+// range configured and the broadcast address range. A Module also has an array for 
+// optional sub modules. These are just pointers to submodule objects. For example,
+// a processor has a CPU core, up to two TLBs and Caches. 
 //
 //----------------------------------------------------------------------------------------
 struct T64Module {
@@ -83,7 +107,7 @@ struct T64Module {
 
     T64Module( );
 
-    int                 initModule( int             mNum,
+    int                 initModule( int             modNum,
                                     T64ModuleType   mType,
                                     T64Word         hpaAdr,
                                     T64Word         hpaLen,
@@ -96,8 +120,9 @@ struct T64Module {
     virtual void        step( ) = 0;
     virtual void        event( T64ModuleEvent evt ) = 0;
 
-    T64ModuleType       getModuleType( );
     int                 getModuleNum( );
+    T64ModuleType       getModuleType( );
+    T64SubModuleType    getSubModuleType( int subModNum );
     
     int                 getHpaStartAdr( T64Word *val );
     int                 getHpaSize( T64Word *val );
@@ -105,6 +130,11 @@ struct T64Module {
     int                 getSpaStartAdr( T64Word *val );
     int                 getSpaSize( T64Word *val );
 
+    protected: 
+
+    T64SubModule        *subModTab[8]       = { nullptr };
+    int                 maxSubModules       = 0;
+   
     private:
 
     T64ModuleType       moduleTyp           = MT_NIL;
@@ -113,7 +143,6 @@ struct T64Module {
     T64Word             moduleHPALen        = 0;
     T64Word             moduleSPA           = 0;
     T64Word             moduleSPALen        = 0;
-
 };
 
 //----------------------------------------------------------------------------------------
