@@ -531,9 +531,7 @@ void SimWinCode::drawBanner( ) {
 //----------------------------------------------------------------------------------------
 void SimWinCode::drawLine( T64Word itemAdr ) {
     
-    uint32_t    fmtDesc         = FMT_DEF_ATTR;
-    bool        plWinEnabled    = glb -> winDisplay -> isWinEnabled( 0 );
-
+    uint32_t    fmtDesc                     = FMT_DEF_ATTR;
     uint32_t    instr                       = 0xFFFFFFFF;
     char        buf[ MAX_TEXT_LINE_SIZE ]   = { 0 };
     

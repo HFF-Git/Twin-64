@@ -139,8 +139,8 @@ struct T64System {
  
     private:
 
-    T64SystemMapEntry   moduleTab[ MAX_MODULES ] = { nullptr };
-    int                 moduleTabHwm             = 0;
+    T64SystemMapEntry   moduleTab[ MAX_MODULES ];
+    int                 moduleTabHwm = 0;
 };
 
 #endif

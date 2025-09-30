@@ -166,7 +166,7 @@ bool SimWinDisplay::isWinEnabled( int winNum ) {
 
     if ( winNum == 0 ) winNum = getCurrentWindow( );
 
-    return(( validWindowNum( winNum )) && ( windowList[ winNum ]->isEnabled( )));
+    return(( validWindowNum( winNum )) && ( windowList[ winNum ] -> isEnabled( )));
 }
 
 bool SimWinDisplay::isWindowsOn( ) {
@@ -677,11 +677,9 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 
 //----------------------------------------------------------------------------------------
 // "Window New" family of routines create a new window for certain window type. The 
-// newly created window also becomes the current user window. The window number is stored
-// from 1 to MAX, the initial stack number is zero.
+// newly created window also becomes the current user window. The window number is 
+// stored from 1 to MAX, the initial stack number is zero.
 //
-// ??? confusing. Perhaps we go back to keep the internal numbering and correct on
-// input and output these numbers.
 //----------------------------------------------------------------------------------------
 int SimWinDisplay::getFreeWindowSlot( ) {
 
@@ -727,6 +725,8 @@ void SimWinDisplay::windowNewProgState( int procModuleNum ) {
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     windowList[ slot ] -> setModuleNum( procModuleNum );
+    windowList[ slot ] -> setWinSubModuleNum( 0 );
+
     currentWinNum = slot + 1;
 }
 
@@ -739,6 +739,8 @@ void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
+    windowList[ slot ] -> setModuleNum( procModuleNum );
+    windowList[ slot ] -> setWinSubModuleNum( tlbNum );
     currentWinNum = slot + 1;
 }
 
@@ -751,6 +753,8 @@ void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
+    windowList[ slot ] -> setModuleNum( procModuleNum );
+    windowList[ slot ] -> setWinSubModuleNum( cacheNum );
     currentWinNum = slot + 1;
 }
 

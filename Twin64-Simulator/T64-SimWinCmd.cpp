@@ -1247,7 +1247,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
         
         tok -> nextToken( );
         if ( tok -> isToken( TOK_COMMA )) len = sizeof( T64Word );
-        else                              len = eval -> acceptNumExpr( ERR_EXPECTED_LEN );
+        else len = eval -> acceptNumExpr( ERR_EXPECTED_LEN );
     }
     
     if ( tok -> isToken( TOK_COMMA )) {
@@ -1304,7 +1304,7 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
-    int             pNum        = 0;
+    int             modNum      = 0;
     SimTokTypeId    regSetId    = TYP_GREG;
     int             regNum      = 0;
     T64Word         val         = 0;
@@ -1325,16 +1325,19 @@ void SimCommandsWin::modifyRegCmd( ) {
 
     if ( tok -> isToken( TOK_COMMA )) {
 
-        pNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
+        modNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
     }
     
     tok -> checkEOS( );
 
     switch( regSetId ) {
 
-        case TYP_PSW_PREG:  glb -> system -> writePswReg( pNum, regNum, val );     break;
-        case TYP_GREG:      glb -> system -> writeGeneralReg( pNum, regNum, val ); break;
-        case TYP_CREG:      glb -> system -> writeControlReg( pNum, regNum, val ); break;
+        case TYP_PSW_PREG:  
+            glb -> system -> writePswReg( modNum, regNum, val );     break;
+        case TYP_GREG:      
+            glb -> system -> writeGeneralReg( modNum, regNum, val ); break;
+        case TYP_CREG:      
+            glb -> system -> writeControlReg( modNum, regNum, val ); break;
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1819,9 +1822,9 @@ void SimCommandsWin::winExchangeCmd( ) {
 void SimCommandsWin::winNewWinCmd( ) {
     
     SimTokId  winType = TOK_NIL;
-   
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
+
+    ensureWinModeOn( );
+ 
     if ( tok -> tokTyp( ) == TYP_SYM ) {
         
         winType = tok -> tokId( );
