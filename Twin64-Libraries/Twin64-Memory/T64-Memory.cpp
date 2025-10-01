@@ -49,12 +49,8 @@ T64Memory::T64Memory( T64Word size ) {
 
 void T64Memory::reset( ) {
 
-    T64Module::reset( );
-    
     if ( mem != nullptr ) free( mem );
     this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
-
-    maxSubModules = 0;
 }
 
 //----------------------------------------------------------------------------------------

@@ -44,7 +44,7 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Cpu::T64Cpu( T64Processor *proc ) : T64SubModule( 0, 0, MST_NIL ) {
+T64Cpu::T64Cpu( T64Processor *proc ) : T64Module( 0, 0, MST_NIL ) {
     
     this -> proc    = proc;
     this -> iTlb    = ( T64Tlb *) proc -> subModTab[ 1 ]; 

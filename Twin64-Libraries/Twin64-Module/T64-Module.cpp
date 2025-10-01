@@ -32,6 +32,7 @@ namespace {
 
 };
 
+#if 0
 //****************************************************************************************
 //****************************************************************************************
 //
@@ -46,40 +47,44 @@ T64Module::T64Module( ) {
 
 T64ModuleType T64Module::getModuleType( ) {
 
-    return( MT_NIL );
+    return( moduleTyp );
 }
 
 int T64Module::getModuleNum( ) {
 
     return( moduleNum );
 }
-
-T64SubModuleType T64Module::getSubModuleType( int subModNum ) {
-
-    if ( subModNum < maxSubModules ) 
-        return( subModTab[ subModNum ] -> getSubModType( ));
-    else return ( MST_NIL );
-}
-    
+  
 int T64Module::getHpaStartAdr( T64Word *val ) {
 
-    return( 0 );
+    return( moduleHPA );
 }
 
 int T64Module::getHpaSize( T64Word *val ) {
 
-    return( 0 );
+    return( moduleHPALen );
 }
-
 
 int T64Module:: getSpaStartAdr( T64Word *val ) {
 
-    return( 0 );
+    return( moduleSPA );
 }
 
 int T64Module::getSpaSize( T64Word *val ) {
 
-    return( 0 );
+    return( moduleSPALen );
+}
+
+T64SubModule *T64Module::lookupBySubModNum( int subModNum ) {
+
+    if ( subModNum < maxSubModules ) return( subModTab[ subModNum ]);
+    else return ( nullptr );
+}
+
+T64SubModuleType T64Module::getSubModuleType( int subModNum ) {
+
+    T64SubModule *ptr = lookupBySubModNum( subModNum );
+    return(( ptr != nullptr ) ? ptr -> getSubModType( ) : MST_NIL );
 }
 
 //****************************************************************************************
@@ -87,7 +92,7 @@ int T64Module::getSpaSize( T64Word *val ) {
 //
 // SubModule
 //----------------------------------------------------------------------------------------
-//
+// 
 //
 //----------------------------------------------------------------------------------------
 T64SubModule::T64SubModule( int mNum, 
@@ -108,3 +113,4 @@ int T64SubModule::getSubModNum( ) {
 
     return( subModNum );
 }
+#endif

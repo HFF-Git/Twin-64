@@ -44,26 +44,106 @@
 const int MAX_MODULES = 16;
 
 //----------------------------------------------------------------------------------------
-// A module entry in the module table. A module has a number and physical 
-// address ranges it handles. The handler is the reference to managing object.
+// Modules have a type, submodules a subtype.
+//
+//----------------------------------------------------------------------------------------
+enum T64ModuleType {
+
+    MT_NIL          = 0,
+    MT_PROC         = 10,
+    MST_CPU_CORE    = 11,
+    MST_CPU_CACHE   = 12,
+    MST_CPU_TLB     = 13, 
+    MT_MEM          = 20,
+    MT_MEM_BANK     = 21,
+    MT_IO           = 30,
+   
+};
+
+//----------------------------------------------------------------------------------------
+// The T64Module object represents and an object in the system. It is the base class
+// for all concrete modules and submodules. The module may also get a copy of the 
+// address range. 
+//
+// ??? may be not, it can be retrieved by looking at the address map for the matching
+// module... ?
+//
+//----------------------------------------------------------------------------------------
+struct T64Module {
+    
+    public:
+
+    T64Module( T64ModuleType modType, int modNum, int subModNum );
+
+    virtual void        reset( ) = 0;
+    virtual void        step( ) = 0;
+
+    T64ModuleType       getModuleType( );
+    int                 getModuleNum( );
+    int                 getSubModuleNum( );
+
+    void                setHpaAddressRange( T64Word *startAdr, T64Word len );
+    void                setSpaAddressRange( T64Word *startAdr, T64Word len );
+
+    int                 getHpaStartAdr( T64Word *val );
+    int                 getHpaSize( T64Word *val );
+
+    int                 getSpaStartAdr( T64Word *val );
+    int                 getSpaSize( T64Word *val );
+
+    private:
+
+    T64ModuleType       moduleTyp           = MT_NIL;
+    int                 moduleNum           = 0;
+    int                 subModuleNum        = 0;
+    T64Word             moduleHPA           = 0;
+    T64Word             moduleHPALen        = 0;
+    T64Word             moduleSPA           = 0;
+    T64Word             moduleSPALen        = 0;
+};
+
+//----------------------------------------------------------------------------------------
+// A system map entry in the system map table. The purpose is to locate the module
+// responsible for the physical address range. Note that a module can have none, one
+// or more than one ranges.
 //
 //----------------------------------------------------------------------------------------
 struct T64SystemMapEntry {
 
-    T64ModuleType   moduleTyp       = MT_NIL;
-    int             moduleNum       = 0;
-    T64Word         moduleHPA       = 0;
-    T64Word         moduleHPALen    = 0;
-    T64Word         moduleSPA       = 0;
-    T64Word         moduleSPALen    = 0;
-    T64Module       *moduleHandler  = nullptr;
+    T64Word         start   = 0;
+    T64Word         len     = 0;
+    T64Module       *module = nullptr;
 };
+
+//----------------------------------------------------------------------------------------
+// A module entry in the module table. A module is an entity on the imaginary system
+// bus. It "listens" to three physical memory address area. The hard physical address
+// range, the soft physical address range configured and the broadcast address range.
+// A module may also contain modules that are just modules for structuring the 
+// components of a module. These modules do not necessarily listen to address ranges.
+// For example, a processor is a module that listens to the its hard physical address
+// range. A CPU is a module that is associated with a processor but does not listen
+// to addresses. A TLB is a module associated with a CPU and so on. These associated 
+// modules are also called submodules. ALl these modules are in one table indexed by
+// the module and submodule key. 
+//
+// Modules start with the number zero. A module has a module number and a zero sub
+// module number, a sub module has a module number and subModule number to identify
+// it. The table is sorted by modules and within a module number by submodules. 
+// 
+//----------------------------------------------------------------------------------------
+struct T64ModuleMapEntry {
+
+    int             modNum      = 0;
+    int             subModNum   = 0;
+    T64Module       *module     = nullptr;
+};
+
 
 //----------------------------------------------------------------------------------------
 // A T64 system is a bus where you plug in modules. A module represents an entity such
 // as a processor, a memory module, an I/O module and so on. At program start we create
-// the module objects and register them. Two routines are used to lookup the module 
-// object for a module number of managed address.
+// the module objects and add them to the systemMap and moduleMap. 
 //
 // ??? think about how the modules would recognize a cache operation ...
 //----------------------------------------------------------------------------------------
@@ -73,74 +153,79 @@ struct T64System {
 
     T64System( );
 
-    int                 registerModule( int             modNum,
-                                        T64ModuleType   mType,
-                                        T64Word         hpaAdr,
-                                        T64Word         hpaLen,
-                                        T64Word         spaAdr,
-                                        T64Word         spaLen,
-                                        T64Module       *handler
-                              );
+    // ??? perhaps have one with SPA and HPA as arguments that just call ...
+    // ??? also maybe one that adds a module to both maps ...
 
-    int                 unregisterModule( int modNum );
+    int             addToSystemMap( T64Module  *module,
+                                    T64Word    start,
+                                    T64Word    len
+                                  );
 
-    T64Module           *lookupByNum( int modNum );
-    T64Module           *lookupByAdr( T64Word adr ); 
+    int             addToModuleMap( T64Module  *module );
+    
+    T64ModuleType   getModuleType( int modNum, int subModNum = 0 );
+    T64Module       *lookupByModNum( int modNum, int subModNum = 0 );
+    T64Module       *lookupByAdr( T64Word adr );                    
 
-    T64ModuleType       getModuleType( int modNum );
-    T64SubModuleType    getModuleSubType( int modNum, int subModNum );
+    void            reset( );
+    void            run( );
+    void            step( int steps = 1 );
 
+    int             readGeneralReg( int proc, int cpu, int reg, T64Word *val );
+    int             writeGeneralReg( int proc, int cpu,int reg, T64Word val );
 
-    // ??? this is a bit tricky, event is not enough ...
-    void        broadCastEvent( T64ModuleEvent evt );
+    int             readControlReg( int proc, int cpu,int reg, T64Word *val );
+    int             writeControlReg( int proc, int cpu,int reg, T64Word val );
 
-    void        reset( );
-    void        run( );
-    void        step( int steps = 1 );
+    int             readPswReg( int proc, int cpu,int reg, T64Word *val );
+    int             writePswReg( int proc, int cpu,int reg, T64Word val );
 
-    int         readGeneralReg( int proc, int reg, T64Word *val );
-    int         writeGeneralReg( int proc, int reg, T64Word val );
+    int             readTlbEntry( int proc, int tlb, int index, 
+                                    T64Word *info1, T64Word *info2 );
 
-    int         readControlReg( int proc, int reg, T64Word *val );
-    int         writeControlReg( int proc, int reg, T64Word val );
+    int             insertTlbEntry( int proc, int tlb, 
+                                    T64Word info1, T64Word info2 );
 
-    int         readPswReg( int proc, int reg, T64Word *val );
-    int         writePswReg( int proc, int reg, T64Word val );
+    int             purgeTlbEntry( int proc, int tlb, int index );
 
-    int         readTlbEntry( int proc, int tlb, int index, 
-                                T64Word *info1, T64Word *info2 );
+    int             readCacheLine( int proc, int cache, int set, int index,
+                                    T64Word *line );
 
-    int         insertTlbEntry( int proc, int tlb, 
-                                T64Word info1, T64Word info2 );
+    int             flushCacheLine( int proc, int cache, int set, int index );
 
-    int         purgeTlbEntry( int proc, int tlb, int index );
+    int             purgeCacheLine( int proc, int cache, int set, int index );
 
-    int         readCacheLine( int proc, int cache, int set, int index,
-                                T64Word *line );
+    bool            readMem( T64Word adr, T64Word *val, int len );
+    bool            writeMem( T64Word adr, T64Word val, int len );
 
-    int         flushCacheLine( int proc, int cache, int set, int index );
+    bool            readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            readWord( int proc, T64Word pAdr, T64Word *word );
+    bool            writeWord( int proc, T64Word pAdr, T64Word *word );
 
-    int         purgeCacheLine( int proc, int cache, int set, int index );
+    bool            getHpaStartAdr( int module, T64Word *val );
+    bool            getHpaSize( int module, T64Word *val );
 
-    bool        readMem( T64Word adr, T64Word *val, int len );
-    bool        writeMem( T64Word adr, T64Word val, int len );
-
-    bool        readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool        readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool        writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool        readWord( int proc, T64Word pAdr, T64Word *word );
-    bool        writeWord( int proc, T64Word pAdr, T64Word *word );
-
-    bool        getHpaStartAdr( int module, T64Word *val );
-    bool        getHpaSize( int module, T64Word *val );
-
-    bool        getSpaStartAdr( int module, T64Word *val );
-    bool        getSpaSize( int module, T64Word *val );
+    bool            getSpaStartAdr( int module, T64Word *val );
+    bool            getSpaSize( int module, T64Word *val );
  
     private:
 
-    T64SystemMapEntry   moduleTab[ MAX_MODULES ];
-    int                 moduleTabHwm = 0;
+    void            initSystemMap( );
+    void            initModuleMap( );
+
+    T64SystemMapEntry   systemMap[ MAX_MODULES ];
+    int                 systemMapHwm = 0;
+
+    T64ModuleMapEntry   moduleMap[ MAX_MODULES * 8 ];
+    int                 moduleMapHwm = 0; 
+
+    const int       MAX_SYS_MAP_ENTRIES = 
+                        sizeof( systemMap ) / sizeof( T64SystemMapEntry );
+
+    const int       MAX_MODULE_MAP_ENTRIES = 
+                        sizeof( moduleMap ) / sizeof( T64ModuleMapEntry );
 };
 
 #endif

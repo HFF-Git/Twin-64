@@ -48,6 +48,8 @@ T64Processor::T64Processor( T64System *sys ) {
     
     this -> sys     = sys;
 
+    // ??? should we rather register with the fixed numbers ? Too complex ?
+
     this -> subModTab[ PSM_CPU ]    = new T64Cpu( this );
     this -> subModTab[ PSM_ITLB ]   = new T64Tlb( );
     this -> subModTab[ PSM_DTLB ]   = new T64Tlb( );

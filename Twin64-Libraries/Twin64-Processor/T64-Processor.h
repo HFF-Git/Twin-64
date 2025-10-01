@@ -38,11 +38,10 @@ struct T64Processor;
 //----------------------------------------------------------------------------------------
 // Caches. Caches are sub modules to the processor. We support set associative caches,
 // 2, 4, and 8-way. There is a cache line info with flags and the tag and an array of
-// bytes which holds the cache data. Cache type es encoded:
+// bytes which holds the cache data. Cache type is encoded as follows:
 //
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
-// ??? cache line state: INVALID, SHARED, EXCLUSIVE, MODIFIED
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
 
@@ -57,6 +56,10 @@ enum T64CacheType : int {
     T64_CT_8W_64S_8L   = 6,
 };
 
+//----------------------------------------------------------------------------------------
+// Cache line info consisting of valid, modified and the cache tag.
+//
+//----------------------------------------------------------------------------------------
 struct T64CacheLineInfo {
 
     bool        valid;
@@ -64,6 +67,14 @@ struct T64CacheLineInfo {
     uint32_t    tag;
 };
 
+//----------------------------------------------------------------------------------------
+// The cache submodule. The CPU can have one or two caches. All access will go through
+// the cache submodule, even when the request is a non-cached request. The CPU
+// uses the read, write, flush and purge methods for access. The getting a cache line
+// method is used by the simulator for displaying cache data. In addition, the cache
+// maintains a set of statistics.
+//
+//----------------------------------------------------------------------------------------
 struct T64Cache : T64SubModule {
 
     public:
@@ -141,10 +152,9 @@ struct T64Cache : T64SubModule {
 };
 
 //----------------------------------------------------------------------------------------
-// A CPU needs a TLB. It is vital for address translation. In the Emulator, we only 
-// need one TLB for both instruction and data. In the real world, we need to make sure
-// that we can access from both pipeline stages. Our TLB is a simple array of entries,
-// i.e. modeling a full associative array with a LRU replacement policy.
+// A CPU needs a TLB. It is vital for address translation. The TLB entry stores one
+// translation along with several flags. Each entry has a last used count for the 
+// LRU replacement scheme.
 //
 //----------------------------------------------------------------------------------------
 struct T64TlbEntry {
@@ -160,14 +170,16 @@ public:
     T64Word         vAdr;
     T64Word         pAdr;
     int             vSize;
-
-    uint8_t         accessRights; // decode the four bits ?
+    uint8_t         accessRights;
 
     T64Word         lastUsed;
 };
 
 //----------------------------------------------------------------------------------------
-//
+// The TLB submodule. A CPU can have one or two TLBs. Our TLBs are simple arrays of
+// entries, i.e. modeling a full associative array with a LRU replacement policy.
+// The CPU uses the lookup, insert and purge methods. The simulator uses the methods
+// for display and directly inserting or removing an entry.
 //
 //----------------------------------------------------------------------------------------
 struct T64Tlb : T64SubModule {
@@ -185,11 +197,6 @@ struct T64Tlb : T64SubModule {
     
     int             getTlbSize( );
     T64TlbEntry     *getTlbEntry( int index );
-
-    // routines for simulator
-
-    int insertTlbEntry( int pNum, int tlbNum, T64Word vAdr, T64Word info );
-    int purgeTlbEntry( int pNum, int tlbNum, int index );
 
     private:
     

@@ -25,7 +25,7 @@
 #define T64_Memory_h
 
 #include "T64-Common.h"
-#include "T64-Module.h"
+#include "T64-System.h"
 
 //----------------------------------------------------------------------------------------
 //
@@ -37,11 +37,11 @@ public:
     
     T64Memory( T64Word size );
     
-    void        reset( ) override;
+    void        reset( );
     T64Word     read( T64Word pAdr, int len, bool signExtend = false );
     void        write( T64Word pAdr, T64Word arg, int len );
 
-    void        event( T64ModuleEvent evt ) override;
+    void        event( T64ModuleEvent evt );
 
     // ??? separate routines for monitor display ?
     // int getWord( T64Word adr, uint32_t *data );

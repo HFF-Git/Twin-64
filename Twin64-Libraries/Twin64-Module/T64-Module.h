@@ -28,38 +28,19 @@
 #include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
-// Modules have a type and subtype.
-//
-//----------------------------------------------------------------------------------------
-enum T64ModuleType {
-
-    MT_NIL  = 0,
-    MT_PROC = 1,
-    MT_MEM  = 2,
-    MT_IO   = 3
-};
-
-enum T64SubModuleType {
-
-    MST_NIL     = 0,
-    MST_CPU     = 1,
-    MST_CACHE   = 2,
-    MST_TLB     = 3 
-};
-
-//----------------------------------------------------------------------------------------
 // The processor can communicate events during their instruction execution. The most 
-// important ones are the cache coherency events. They will be handled by any other
-// module that has a cache right away. For example, of a processor wants to modify a 
-// cache line, it will send a "read exclusive" event, which tells the other modules
-// to invalidate their cache line, and perhaps flush it first if they have an exclusive
-// copy. This protocol is not very efficient, but will guarantee a consistent memory
-// copy.
+// important ones are the cache coherency events. They will be immediately handled 
+// by any other module that has a cache. For example, a processor wants to modify a 
+// cache line, it will send a "read exclusive" request, which the system object 
+// will execute by first telling all other modules to perhaps invalidate their cache
+// line, flushing it first the line is an exclusive line. The final step is to 
+// return the data to the requesting module. This protocol is not very efficient, but
+// will guarantee a consistent memory copy.
 // 
-// Events triggered must also run to completion. A processor broadcasting an event 
-// will cause the system to invoke each module. Thus there is also a priority. When 
-// two processor for example want to obtain an exclusive copy of a cache line, the 
-// latter wins. 
+// Request must therefore always run to completion. A processor requesting data will
+// cause the system to invoke each module. Thus there is also a inherit priority 
+// scheme. When two processor for example want to obtain an exclusive copy of the 
+// same cache line, the latter wins. 
 //
 // ??? rethink this. We would need a snoop...
 //----------------------------------------------------------------------------------------
@@ -70,80 +51,6 @@ enum T64ModuleEvent {
     EVT_READ_EXCLUSIVE  = 2
 };
 
-//----------------------------------------------------------------------------------------
-// A module can have a couple of submodules. They all will inherit from this class.
-//
-//
-//----------------------------------------------------------------------------------------
-struct T64SubModule {
-
-    T64SubModule( int modNum, 
-                  int subModNum,
-                  T64SubModuleType subModType );
-
-    int                 getSubModNum( );
-    T64SubModuleType    getSubModType( );
-
-    virtual void        reset( ) = 0;
-
-    private:
-
-    int                 moduleNum;
-    int                 subModNum;
-    T64SubModuleType    subModType;
-};
-
-//----------------------------------------------------------------------------------------
-// A module is an entity on the imaginary system bus. It "listens" to three physical 
-// memory address area. The hard physical address range, the soft physical address 
-// range configured and the broadcast address range. A Module also has an array for 
-// optional sub modules. These are just pointers to submodule objects. For example,
-// a processor has a CPU core, up to two TLBs and Caches. 
-//
-//----------------------------------------------------------------------------------------
-struct T64Module {
-    
-    public:
-
-    T64Module( );
-
-    int                 initModule( int             modNum,
-                                    T64ModuleType   mType,
-                                    T64Word         hpaAdr,
-                                    T64Word         hpaLen,
-                                    T64Word         spaAdr,
-                                    T64Word         spaLen,
-                                    T64Module       *handler
-                              );
-
-    virtual void        reset( ) = 0;
-    virtual void        step( ) = 0;
-    virtual void        event( T64ModuleEvent evt ) = 0;
-
-    int                 getModuleNum( );
-    T64ModuleType       getModuleType( );
-    T64SubModuleType    getSubModuleType( int subModNum );
-    
-    int                 getHpaStartAdr( T64Word *val );
-    int                 getHpaSize( T64Word *val );
-
-    int                 getSpaStartAdr( T64Word *val );
-    int                 getSpaSize( T64Word *val );
-
-    protected: 
-
-    T64SubModule        *subModTab[8]       = { nullptr };
-    int                 maxSubModules       = 0;
-   
-    private:
-
-    T64ModuleType       moduleTyp           = MT_NIL;
-    int                 moduleNum           = 0;
-    T64Word             moduleHPA           = 0;
-    T64Word             moduleHPALen        = 0;
-    T64Word             moduleSPA           = 0;
-    T64Word             moduleSPALen        = 0;
-};
 
 //----------------------------------------------------------------------------------------
 // Modules have registers in their HPA.

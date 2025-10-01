@@ -1333,11 +1333,11 @@ void SimCommandsWin::modifyRegCmd( ) {
     switch( regSetId ) {
 
         case TYP_PSW_PREG:  
-            glb -> system -> writePswReg( modNum, regNum, val );     break;
+            glb -> system -> writePswReg( modNum, PSM_CPU, regNum, val );    break;
         case TYP_GREG:      
-            glb -> system -> writeGeneralReg( modNum, regNum, val ); break;
+            glb -> system -> writeGeneralReg( modNum, PSM_CPU,regNum, val ); break;
         case TYP_CREG:      
-            glb -> system -> writeControlReg( modNum, regNum, val ); break;
+            glb -> system -> writeControlReg( modNum, PSM_CPU,regNum, val ); break;
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1922,7 +1922,7 @@ void SimCommandsWin::winNewWinCmd( ) {
         } break;
 
 
-
+        // ??? make CODE a toggle of MEM ?
 
         case TOK_MEM: {
 
@@ -1944,6 +1944,8 @@ void SimCommandsWin::winNewWinCmd( ) {
             glb -> winDisplay -> windowNewAbsCode( );
         
         }  break;
+
+
 
         case TOK_TEXT: {  // necessary 
 
@@ -2097,6 +2099,8 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_RESET:         resetCmd( );                    break;
                     case CMD_RUN:           runCmd( );                      break;
                     case CMD_STEP:          stepCmd( );                     break;
+
+                    case CMD_DM:            displayModCmd( );               break;
                         
                     case CMD_MR:            modifyRegCmd( );                break;
                         

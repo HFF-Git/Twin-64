@@ -744,6 +744,12 @@ struct SimWinOutBuffer : SimFormatter {
 // so on. There are also abstract methods that the inheriting class needs to implement.
 // Examples are to initialize a window, redraw and so on.
 //
+// A window can also implement different views of the data. This is handled by a 
+// toggle mechanism. The window maintains the current toggle value.
+//
+// Most windows will be associated with a submodule. The window also keeps the module
+// submodule number it is associated with.
+//
 //----------------------------------------------------------------------------------------
 struct SimWin {
     
@@ -874,10 +880,14 @@ struct SimWin {
 // of zero and a limit. The meaning i.e. whether the index is a memory address or an
 // index into a TLB or Cache array is determined by the inheriting class. The 
 // scrollable window will show a number of lines, the "drawLine" method needs to be
-//  implemented by the inheriting class. The routine is passed the item address for 
+// implemented by the inheriting class. The routine is passed the item address for 
 // the line and is responsible for the correct address interpretation. The 
 // "lineIncrement" is the increment value for the item address passed.
 //
+// There is the scenario that a line item actually spans to or even more lines. The
+// actual rows needed is the line increment times the rows per line item. In most 
+// cases there is however a one to one mapping.
+// 
 //----------------------------------------------------------------------------------------
 struct SimWinScrollable : SimWin {
     
@@ -911,6 +921,7 @@ struct SimWinScrollable : SimWin {
     T64Word         currentItemAdr      = 0;
     T64Word         limitItemAdr        = 0;
     T64Word         lineIncrement       = 0;
+    int             rowsPerItemLine     = 1;
 };
 
 //----------------------------------------------------------------------------------------

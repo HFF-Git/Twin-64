@@ -554,15 +554,17 @@ void SimWinScrollable::setLineIncrement( int arg ) {
 // line start of the item of whatever the window is displaying. The item address value
 // is incremented by the itemsPerLine value each time the drawLine routine is called.
 // The cursor position for "drawLine" method call is incremented by the linesPerItem 
-// amount. Note that the window system thinks in lines. If a window has items that 
-// occupy more than one line ( linesPerItem > 1 ), the line count in the window needs
-// to be divided by that value.
+// amount. Note that the window system thinks in lines. 
+//
+// Some items fill more than one row. In this case the number of itemLines we can 
+// draw is the number of rows in the window divided by rows per item line. In most 
+// cases there is a one to one mapping between rows and item lines.
 //
 //----------------------------------------------------------------------------------------
 void SimWinScrollable::drawBody( ) {
     
-    int numOfItemLines = ( getRows( ) - 1 );
-    
+    int numOfItemLines = ( getRows( ) - 1 ) / rowsPerItemLine;
+
     for ( int line = 0; line < numOfItemLines; line++ ) {
         
         setWinCursor( line + 2, 1 );

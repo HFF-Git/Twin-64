@@ -32,183 +32,167 @@
 //----------------------------------------------------------------------------------------
 T64System::T64System( ) {
 
-    moduleTabHwm = 0;
+   initSystemMap( );
+   initModuleMap( );
+}
 
-    for ( int i = 0; i < MAX_MODULES; i++ ) {
+void T64System::initSystemMap( ) {
+
+    for ( int i = 0; i < MAX_SYS_MAP_ENTRIES; i++ ) {
 
         T64SystemMapEntry e;
-        moduleTab[ i ] = e;
+        systemMap[ i ] = e;
     }
 }
 
-//----------------------------------------------------------------------------------------
-// Register a module in the module table. This is typically done at simulator start. The
-// modules are sorted by their SPA address range they are responsible for.
-//
-//----------------------------------------------------------------------------------------
-int T64System::registerModule(  int             mId,
-                                T64ModuleType   mType,
-                                T64Word         hpaAdr,
-                                T64Word         hpaLen,
-                                T64Word         spaAdr,
-                                T64Word         spaLen,
-                                T64Module       *handler
-                              ) {
+void T64System::initModuleMap( ) {
 
+     for ( int i = 0; i < MAX_MODULE_MAP_ENTRIES; i++ ) {
 
-    if ( moduleTabHwm >= MAX_MODULES ) return( -1 );
-    if ( spaLen == 0 ) return( -1 );
-
-    T64Word spaEnd = spaAdr + spaLen;
-
-    int i;
-
-    for ( i = 0; i < moduleTabHwm; ++i ) {
-
-        T64Word  s = moduleTab[ i ].moduleSPA;
-        T64Word  e = s + moduleTab[ i ].moduleSPALen;
-
-        if      ( spaEnd <= s ) break;      // No overlap, insert before    
-        else if ( spaAdr >= e ) continue;   // No overlap, check next
-        else return ( -1 );                 // Overlap found
+        T64SystemMapEntry e;
+        systemMap[ i ] = e;
     }
-
-    // ??? also check for overlapping HPA ?
-
-    // Shift to make space
-    for ( int j = moduleTabHwm; j > i; --j ) {
-
-        moduleTab[ j ] = moduleTab[ j - 1 ];
-    }
-
-    moduleTab[ i ].moduleTyp        = mType;
-    moduleTab[ i ].moduleNum        = mId;
-    moduleTab[ i ].moduleHPA        = hpaAdr;    
-    moduleTab[ i ].moduleHPALen     = hpaLen;
-    moduleTab[ i ].moduleSPA        = spaAdr;
-    moduleTab[ i ].moduleSPALen     = spaLen;
-    moduleTab[ i ].moduleHandler    = handler;
-
-    moduleTabHwm++;
-    return ( 0 );
 }
 
 //----------------------------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------------------------
-int T64System::unregisterModule( int moduleNum ) {
+int T64System::addToSystemMap( T64Module  *module,
+                               T64Word    start,
+                               T64Word    len ) {
 
+    if ( systemMapHwm >= MAX_SYS_MAP_ENTRIES ) return -1; // full
+    
+    T64Word end = start + len - 1;
 
+    // find insertion point
+    int pos = 0;
+    while (( pos < systemMapHwm ) && ( systemMap[ pos ].start < start )) {
 
-    #if 0
-    // Removes entry at index. Returns true on success.
-    bool remove_range_by_index(RangeTable *table, size_t index) {
-    if (index >= table->hwm)
-        return false;
-
-    for (size_t j = index + 1; j < table->hwm; ++j) {
-        table->entries[j - 1] = table->entries[j];
+        pos++;
     }
-    table->hwm--;
-    return true;
-    }
-    #endif
 
-    return ( 0 );
+    // check overlap with previous
+    if ( pos > 0 ) {
+
+        T64Word prev_end = systemMap[ pos-1 ].start + systemMap[ pos-1 ].len - 1;
+        if ( prev_end >= start ) return -2; // overlap
+    }
+
+    // check overlap with next
+    if ( pos < systemMapHwm ) {
+
+        T64Word next_start = systemMap[ pos ].start;
+        if ( end >= next_start ) return -2; // overlap
+    }
+
+    // shift up to insert
+    for (int i = systemMapHwm; i > pos; i-- ) {
+
+        systemMap[ i ] = systemMap[ i-1 ];
+    }
+
+    // fill in
+    systemMap[ pos ].start  = start;
+    systemMap[ pos ].len    = len;
+    systemMap[ pos ].module = module;
+    systemMapHwm++;
+    
+    return 0;
 }
 
- void T64System::broadCastEvent( T64ModuleEvent evt ) {
-
-    if ( moduleTabHwm > 0 ) {
-
-        for ( int i = 1; i < moduleTabHwm; i++ ) 
-            moduleTab[ i ].moduleHandler -> event( evt );
-    }
- }
-
 //----------------------------------------------------------------------------------------
-// Find the module handler based on module Id. 
+//
 //
 //----------------------------------------------------------------------------------------
-T64Module *T64System::lookupByNum( int modNum ) {
+int T64System:: addToModuleMap( T64Module *module ) {
 
-    if ( moduleTabHwm == 0 ) return ( nullptr );
+    if (moduleMapHwm >= MAX_MODULE_MAP_ENTRIES ) return( -1 ); // table full
 
-    for ( int i = 0; i < moduleTabHwm; i++ ) {
+    int modNum = module -> getModuleNum( );
+    int subModNum = module -> getSubModuleNum( );
 
-         if ( moduleTab[ i ].moduleNum == modNum ) 
-            return ( moduleTab[ i ].moduleHandler );
+    // find insertion point
+    int pos = 0;
+    while (pos < moduleMapHwm) {
+        if (moduleMap[pos].modNum > modNum ) break;
+        if (moduleMap[pos].modNum == modNum &&
+            moduleMap[pos].subModNum > subModNum ) break;
+        pos++;
     }
 
-    return( nullptr );
+    // check duplicate
+    if (pos < moduleMapHwm &&
+        moduleMap[pos].modNum == modNum &&
+        moduleMap[pos].subModNum == subModNum) {
+        return false; // duplicate not allowed
+    }
+
+    // shift entries up
+    for (int i = moduleMapHwm; i > pos; i--) {
+        moduleMap[i] = moduleMap[i - 1];
+    }
+
+    // insert new entry
+    moduleMap[pos].modNum       = modNum;
+    moduleMap[pos].subModNum    = subModNum;
+    moduleMap[pos].module = module;
+    moduleMapHwm++;
+    return( 0 );
 }
     
-//----------------------------------------------------------------------------------------
-// Find the module handler based on the physical address. There are HPA and SPA ranges
-// to check.
-//
-//----------------------------------------------------------------------------------------
+T64ModuleType T64System::getModuleType( int modNum, int subModNum = 0 ) {
+
+    T64Module *mod = lookupByModNum( modNum, subModNum );
+    return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
+}
+
+T64Module *T64System::lookupByModNum( int modNum, int subModNum = 0 ) {
+
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
+
+        if ( moduleMap[ i ].modNum == modNum &&
+             moduleMap[ i ].subModNum == subModNum ) {
+            return moduleMap[ i ].module;
+        }
+    }
+    return nullptr;
+}
+
 T64Module *T64System::lookupByAdr( T64Word adr ) {
 
-    if ( moduleTabHwm == 0 ) return ( nullptr );
+    int lo = 0;
+    int hi = moduleMapHwm - 1;
 
-    for ( int i = 0; i < moduleTabHwm; i++ ) {
+    while (lo <= hi) {
 
-        T64SystemMapEntry *p = &moduleTab[ i ];
+        int mid = (lo + hi) / 2;
+        auto &entry = systemMap[mid];
 
-        if (( adr >= p -> moduleSPA ) && 
-            ( adr <= ( p -> moduleSPA + p -> moduleSPALen ))) {
+        int64_t start = entry.start;
+        int64_t end   = entry.start + entry.len - 1;
 
-            return( p -> moduleHandler );
-        }
-
-        if (( adr >= p -> moduleHPA ) && 
-            ( adr <= ( p -> moduleHPA + p -> moduleHPALen ))) {
-
-            return( p -> moduleHandler );
+        if (adr < start) {
+            hi = mid - 1;
+        } else if (adr > end) {
+            lo = mid + 1;
+        } else {
+            return entry.module;  // found
         }
     }
-
-    return( nullptr );
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//
-//----------------------------------------------------------------------------------------
-T64ModuleType T64System::getModuleType( int modNum ) {
-
-    T64Module *mPtr = lookupByNum( modNum );
-    if ( mPtr != nullptr ) return( mPtr -> getModuleType( ));
-    else return( MT_NIL );
-}
-
-T64SubModuleType T64System::getModuleSubType( int modNum, int subModNum ) {
-
-    T64Module *mPtr = lookupByNum( modNum );
-    if ( mPtr != nullptr ) {
-
-        
-
-        // module needs to look for the sub type...
-        return( MST_NIL );
-    }
-    else return( MST_NIL );
-}
+    return nullptr; // not found
+}                 
 
 //----------------------------------------------------------------------------------------
-// Reset the system. We just invoke the handler for each registered module.
+// Reset the system. We just invoke the module handler for each registered module.
 //
 //----------------------------------------------------------------------------------------
 void T64System::reset( ) {
 
-    if ( moduleTabHwm == 0 ) return;
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-    for ( int i = 0; i < moduleTabHwm; i++ ) {
-
-        moduleTab[ i ].moduleHandler -> reset( );
+        if ( moduleMap -> module != nullptr ) moduleMap[ i ].module -> reset( ); 
     }
 }
 
@@ -229,47 +213,48 @@ void T64System::run( ) {
 //----------------------------------------------------------------------------------------
 void T64System::step( int steps ) {
 
-    if ( moduleTabHwm == 0 ) return;
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-    for ( int i = 0; i < moduleTabHwm; i++ ) {
-
-        moduleTab[ i ].moduleHandler -> step( );
+        if ( moduleMap -> module != nullptr ) moduleMap[ i ].module -> step( ); 
     }
 }
 
 //----------------------------------------------------------------------------------------
+// Processor CPU register access. The set of routines are used by the simulator to 
+// access the CPU register for display and modify commands.
 //
-// ??? register access
 //----------------------------------------------------------------------------------------
-int T64System::readGeneralReg( int proc, int reg, T64Word *val ) {
+int T64System::readGeneralReg( int proc, int cpu, int reg, T64Word *val ) {
+
+    
 
     *val = 0;
     return( 0 );
 }
 
-int T64System::writeGeneralReg( int proc, int reg, T64Word val ) {
+int T64System::writeGeneralReg( int proc, int cpu, int reg, T64Word val ) {
 
     return( 0 );
 }
 
-int T64System::readControlReg( int proc, int reg, T64Word *val ) {
+int T64System::readControlReg( int proc, int cpu, int reg, T64Word *val ) {
 
     *val = 0;
     return( 0 );
 }
 
-int T64System::writeControlReg( int proc, int reg, T64Word val ) {
+int T64System::writeControlReg( int proc, int cpu, int reg, T64Word val ) {
 
     return( 0 );
 }
 
-int T64System::readPswReg( int proc, int reg, T64Word *val ) {
+int T64System::readPswReg( int proc, int cpu, int reg, T64Word *val ) {
 
     *val = 0;
     return( 0 );
 }
 
-int T64System::writePswReg( int proc, int reg, T64Word val ) {
+int T64System::writePswReg( int proc, int cpu, int reg, T64Word val ) {
 
     return( 0 );
 }

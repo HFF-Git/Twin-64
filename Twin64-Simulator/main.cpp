@@ -45,10 +45,15 @@ int main( int argc, const char * argv[] ) {
     glb -> env          = new SimEnv( glb, 100 );
     glb -> winDisplay   = new SimWinDisplay( glb );
     glb -> system       = new T64System( );  
-
+    
     glb -> console      -> initConsoleIO( );
     glb -> env          -> setupPredefined( );
     glb -> winDisplay   -> setupWinDisplay( argc, argv );
+
+
+    // ??? register modules here ?
+
+
     glb -> winDisplay   -> startWinDisplay( );
 
     return 0;

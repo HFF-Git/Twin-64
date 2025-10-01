@@ -366,7 +366,7 @@ void SimWinAbsMem::setDefaults( ) {
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrement( 8 * 4 );
-    setLimitItemAdr( UINT_MAX );
+    setLimitItemAdr( UINT_MAX ); // ??? higher for 64-bit ?
 }
 
 //----------------------------------------------------------------------------------------
@@ -603,9 +603,9 @@ void SimWinTlb::setDefaults( ) {
 
 //----------------------------------------------------------------------------------------
 // Each window consist of a banner and a body. The banner line is always shown in 
-// inverse and contains summary or head data for the window. We also need to set the
-// item address limit. As this can change with some commands outside the windows system,
-// better set it every time.
+// inverse and contains summary or head data for the window. We also need to set 
+// the item address limit. As this can change with some commands outside the windows
+// system, better set it every time.
 //
 // Format:
 //
