@@ -1811,11 +1811,11 @@ void SimCommandsWin::winExchangeCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// This command creates a new window. The window is assigned a free index form the
+// This command creates a new window. The window is assigned a free index from the
 // windows list. This index is used in all the calls to this window. The window type
 // is determined by the keyword plus additional info such as module and submodule 
-// number. Note that we do not create module or submodule objects, we merely attach
-// a window to them. The general form of the command is:
+// number. Note that we do not create simulator module objects, we merely attach
+// a window to them. So they must exist. The general form of the command is:
 //
 //  WN <winType> [ "," <arg1> [ "," <arg2> ]]]
 //----------------------------------------------------------------------------------------
@@ -1831,8 +1831,17 @@ void SimCommandsWin::winNewWinCmd( ) {
         tok -> nextToken( );
     }
     else throw ( ERR_EXPECTED_WIN_ID );
-    
+
     switch ( winType ) {
+
+        // PSTATE PS  <proc>
+        // ICACHE IC  <proc>
+        // DCACHE DC  <proc>
+        // ITLB   IT  <proc>
+        // DTLB   DT  <proc>
+        // MEM        <adr>
+        // CODE       <adr>
+        // TEXT       <str>
 
         case TOK_MODULE: {
 
@@ -1849,7 +1858,7 @@ void SimCommandsWin::winNewWinCmd( ) {
 
             tok -> checkEOS( );
 
-            switch ( glb -> system -> getModuleType( modNum, subModNum )) {
+            switch ( glb -> system -> getModuleType( modNum )) {
             
                 case MT_CPU_CORE: {
 
@@ -1859,11 +1868,15 @@ void SimCommandsWin::winNewWinCmd( ) {
 
                 case MT_CPU_TLB: {
 
+                    // two cases and the TLB type...
+
                     glb -> winDisplay -> windowNewTlb( modNum, subModNum );
 
                 } break;
 
                 case MT_CPU_CACHE: {
+
+                    // two cases and the Cache type...
 
                     glb -> winDisplay -> windowNewCache( modNum, subModNum );
 

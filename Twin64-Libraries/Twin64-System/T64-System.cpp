@@ -47,7 +47,7 @@ void T64System::initSystemMap( ) {
 
 void T64System::initModuleMap( ) {
 
-     for ( int i = 0; i < MAX_MODULE_MAP_ENTRIES; i++ ) {
+     for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
 
         T64SystemMapEntry e;
         systemMap[ i ] = e;
@@ -103,59 +103,35 @@ int T64System::addToSystemMap( T64Module  *module,
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Add to the module map. The slot to use is the module number index. We just set the
+// entry from the module data. The high water mark is adjusted of necessary.
 //
 //----------------------------------------------------------------------------------------
 int T64System:: addToModuleMap( T64Module *module ) {
 
-    if (moduleMapHwm >= MAX_MODULE_MAP_ENTRIES ) return( -1 ); // table full
-
     int modNum = module -> getModuleNum( );
-    int subModNum = module -> getSubModuleNum( );
 
-    // find insertion point
-    int pos = 0;
-    while (pos < moduleMapHwm) {
-        if (moduleMap[pos].modNum > modNum ) break;
-        if (moduleMap[pos].modNum == modNum &&
-            moduleMap[pos].subModNum > subModNum ) break;
-        pos++;
+    if ( modNum < MAX_MOD_MAP_ENTRIES ) {
+
+        moduleMap[ modNum ].modNum = modNum;
+        moduleMap[ modNum ].module = module;
+    
+        if ( modNum > moduleMapHwm ) moduleMapHwm = modNum + 1;
+        return( 0 );
     }
-
-    // check duplicate
-    if (pos < moduleMapHwm &&
-        moduleMap[pos].modNum == modNum &&
-        moduleMap[pos].subModNum == subModNum) {
-        return false; // duplicate not allowed
-    }
-
-    // shift entries up
-    for (int i = moduleMapHwm; i > pos; i--) {
-        moduleMap[i] = moduleMap[i - 1];
-    }
-
-    // insert new entry
-    moduleMap[pos].modNum       = modNum;
-    moduleMap[pos].subModNum    = subModNum;
-    moduleMap[pos].module = module;
-    moduleMapHwm++;
-    return( 0 );
+    else return( -1 );
 }
     
 //----------------------------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------------------------
-T64Module *T64System::lookupByModNum( int modNum, int subModNum ) {
+T64Module *T64System::lookupByModNum( int modNum ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
         T64ModuleMapEntry *ptr = &moduleMap[ i ];
-
-        if ( ptr -> modNum == modNum && ptr ->subModNum == subModNum ) {
-
-            return ptr -> module;
-        }
+        if ( ptr -> modNum == modNum ) return ptr -> module;
     }
     return nullptr;
 }
@@ -164,9 +140,9 @@ T64Module *T64System::lookupByModNum( int modNum, int subModNum ) {
 //
 //
 //----------------------------------------------------------------------------------------
-T64ModuleType T64System::getModuleType( int modNum, int subModNum ) {
+T64ModuleType T64System::getModuleType( int modNum ) {
 
-    T64Module *mod = lookupByModNum( modNum, subModNum );
+    T64Module *mod = lookupByModNum( modNum );
     return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
 }
 
@@ -220,7 +196,7 @@ void T64System::run( ) {
 //----------------------------------------------------------------------------------------
 // Single step. 
 //
-// ??? crucial what tor do here.... explain.
+// ??? crucial what to do here.... explain.
 //----------------------------------------------------------------------------------------
 void T64System::step( int steps ) {
 
@@ -240,7 +216,7 @@ void T64System::step( int steps ) {
 //----------------------------------------------------------------------------------------
 int T64System::readGeneralReg( int proc, int cpu, int reg, T64Word *val ) {
 
-    T64Module *mod = lookupByModNum( proc, cpu );
+    T64Module *mod = lookupByModNum( proc );
 
     if (( mod != nullptr ) && ( mod -> getModuleType( ) == MT_CPU_CORE )) {
 

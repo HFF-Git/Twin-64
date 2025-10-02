@@ -47,9 +47,15 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Tlb::T64Tlb( int modNum, int subModNum, T64System *sys ) : 
-            T64Module( MT_CPU_TLB, modNum, subModNum ) {
+T64Tlb::T64Tlb( T64Processor *proc, T64TlbType tlbType ) {
 
+    switch ( tlbType ) {
+
+        case T64_TT_64S: tlbEntries = 64; break;
+        default: tlbEntries = 64;
+    }
+
+    map = (T64TlbEntry *) malloc( tlbEntries * sizeof( T64TlbEntry ));
 
     reset( );
 }

@@ -41,7 +41,9 @@
 // one board. To the software this transparent.
 //
 //----------------------------------------------------------------------------------------
-const int MAX_MODULES = 16;
+const int MAX_MODULES           = 16;
+const int MAX_MOD_MAP_ENTRIES   = MAX_MODULES;
+const int MAX_SYS_MAP_ENTRIES   = MAX_MODULES * 4;
 
 //----------------------------------------------------------------------------------------
 // Modules have a type, submodules a subtype.
@@ -105,7 +107,6 @@ struct T64Module {
 
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
-    int                 getSubModuleNum( );
 
     void                setHpaAddressRange( T64Word *startAdr, T64Word len );
     void                setSpaAddressRange( T64Word *startAdr, T64Word len );
@@ -120,7 +121,6 @@ struct T64Module {
 
     T64ModuleType       moduleTyp           = MT_NIL;
     int                 moduleNum           = 0;
-    int                 subModuleNum        = 0;
     T64Word             moduleHPA           = 0;
     T64Word             moduleHPALen        = 0;
     T64Word             moduleSPA           = 0;
@@ -128,42 +128,28 @@ struct T64Module {
 };
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+struct T64ModuleMapEntry {
+
+    int         modNum  = 0;
+    T64Module   *module = nullptr;
+};
+
+//----------------------------------------------------------------------------------------
 // A system map entry in the system map table. The purpose is to locate the module
-// responsible for the physical address range. Note that a module can have none, one
-// or more than one ranges.
+// responsible for the physical address range. The table also serves as a lookup of
+// the module by module number. Note that a module can have none, one or more than
+// one ranges.
 //
 //----------------------------------------------------------------------------------------
 struct T64SystemMapEntry {
 
-    T64Word         start   = 0;
-    T64Word         len     = 0;
-    T64Module       *module = nullptr;
-};
-
-//----------------------------------------------------------------------------------------
-// A module entry in the module table. A module is an entity on the imaginary system
-// bus. It "listens" to three physical memory address area. The hard physical address
-// range, the soft physical address range configured and the broadcast address range.
-// A module may also contain modules that are just modules for structuring the 
-// components of a module. These modules do not necessarily listen to address ranges.
-// For example, a processor is a module that listens to the its hard physical address
-// range. A CPU is a module that is associated with a processor but does not listen
-// to addresses. A TLB is a module associated with a CPU and so on. These associated 
-// modules are also called submodules. ALl these modules are in one table indexed by
-// the module and submodule key. 
-//
-// Modules start with the number zero. A module has a module number and a zero sub
-// module number, a sub module has a module number and subModule number to identify
-// it. The table is sorted by modules and within a module number by submodules. 
-// 
-//----------------------------------------------------------------------------------------
-struct T64ModuleMapEntry {
-
-    int             modNum      = 0;
-    int             subModNum   = 0;
     T64Module       *module     = nullptr;
+    T64Word         start       = 0;
+    T64Word         len         = 0;
 };
-
 
 //----------------------------------------------------------------------------------------
 // A T64 system is a bus where you plug in modules. A module represents an entity such
@@ -181,15 +167,15 @@ struct T64System {
     // ??? perhaps have one with SPA and HPA as arguments that just call ...
     // ??? also maybe one that adds a module to both maps ...
 
+    int             addToModuleMap( T64Module  *module );
+
     int             addToSystemMap( T64Module  *module,
                                     T64Word    start,
                                     T64Word    len
                                   );
-
-    int             addToModuleMap( T64Module  *module );
     
-    T64ModuleType   getModuleType( int modNum, int subModNum = 0 );
-    T64Module       *lookupByModNum( int modNum, int subModNum = 0 );
+    T64ModuleType   getModuleType( int modNum );
+    T64Module       *lookupByModNum( int modNum );
     T64Module       *lookupByAdr( T64Word adr );                    
 
     void            reset( );
@@ -242,17 +228,12 @@ struct T64System {
     void            initSystemMap( );
     void            initModuleMap( );
 
-    T64SystemMapEntry   systemMap[ MAX_MODULES ];
+    T64ModuleMapEntry   moduleMap[ MAX_MOD_MAP_ENTRIES ];
+    int                 moduleMapHwm = 0;
+
+    T64SystemMapEntry   systemMap[ MAX_SYS_MAP_ENTRIES ];
     int                 systemMapHwm = 0;
-
-    T64ModuleMapEntry   moduleMap[ MAX_MODULES * 8 ];
-    int                 moduleMapHwm = 0; 
-
-    const int       MAX_SYS_MAP_ENTRIES = 
-                        sizeof( systemMap ) / sizeof( T64SystemMapEntry );
-
-    const int       MAX_MODULE_MAP_ENTRIES = 
-                        sizeof( moduleMap ) / sizeof( T64ModuleMapEntry );
+                       
 };
 
 #endif

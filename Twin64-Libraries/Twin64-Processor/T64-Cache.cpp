@@ -212,15 +212,12 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( int modNum, 
-                    int subModNum,
-                    T64CacheType cacheType,  
-                    T64System *sys  ) : 
-                    T64Module( MT_CPU_CACHE, modNum, subModNum )  { 
+T64Cache::T64Cache( T64Processor *proc, T64CacheType cacheTyp )  { 
 
-    this -> cacheType = cacheType;
+    this -> cacheType   = cacheType;
+    this -> proc        = proc;
 
-     switch ( cacheType ) {
+    switch ( cacheType ) {
 
         case T64_CT_2W_64S_8L: 
         case T64_CT_2W_128S_4L:    ways = 2;   break;
@@ -231,7 +228,7 @@ T64Cache::T64Cache( int modNum,
         case T64_CT_8W_64S_8L:
         case T64_CT_8W_128S_4L:    ways = 8;   break;
 
-        default:                ways = 2; 
+        default:                   ways = 2; 
     }
 
     switch ( cacheType ) {
@@ -276,7 +273,7 @@ T64Cache::T64Cache( int modNum,
     cacheMiss       = 0;
     plruState       = 0;
 
-    cacheInfo = (T64CacheLineInfo *) malloc( ways * sets );
+    cacheInfo = (T64CacheLineInfo *) malloc( ways * sets * sizeof( T64CacheLineInfo ));
     cacheData = (uint8_t *) malloc( ways * sets * lineSize );
 }
 
@@ -485,7 +482,7 @@ void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                if ( ! sys -> writeBlock( 0, 
+                if ( ! proc -> writeBlock( 0, 
                                           pAdrFromTag( cInfo -> tag, setIndex ), 
                                           cData,
                                           lineSize )) {
@@ -497,7 +494,7 @@ void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
             cInfo -> valid = false;
         }
 
-        if ( ! sys -> readBlockShared( 0, pAdr, cData, lineSize )) {
+        if ( ! proc -> readBlockShared( 0, pAdr, cData, lineSize )) {
 
             throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
         }
@@ -552,7 +549,7 @@ void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                if ( ! sys -> writeBlock( 0, 
+                if ( ! proc -> writeBlock( 0, 
                                     pAdrFromTag( cInfo -> tag, setIndex ), 
                                     cData, 
                                     lineSize )) {        
@@ -564,7 +561,7 @@ void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
             cInfo -> valid = false;
         }
 
-        if ( ! sys -> readBlockPrivate( 0, pAdr, cData, lineSize )) {
+        if ( ! proc -> readBlockPrivate( 0, pAdr, cData, lineSize )) {
 
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }
@@ -590,7 +587,7 @@ void T64Cache::flushCacheLine( T64Word pAdr ) {
             uint32_t setIndex = getSetIndex( pAdr );
 
             // ??? need to mask pAdr ? 
-            if ( ! sys -> writeBlock( 0, 
+            if ( ! proc -> writeBlock( 0, 
                                       pAdrFromTag( cInfo -> tag, setIndex ),  
                                       cData, 
                                      lineSize )) {
@@ -619,7 +616,7 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 
             uint32_t setIndex = getSetIndex( pAdr );
 
-            if ( ! sys -> writeBlock( 0, 
+            if ( ! proc -> writeBlock( 0, 
                                       pAdrFromTag( cInfo -> tag, setIndex ), 
                                       cData, 
                                       lineSize )) {
@@ -644,7 +641,7 @@ void T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
     
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-        if ( sys -> readMem( pAdr, data, len )) {
+        if ( proc -> readMem( pAdr, data, len )) {
             
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }
@@ -661,7 +658,7 @@ void T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
 
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
-        if ( ! sys -> writeMem( pAdr, data, len )) {
+        if ( ! proc -> writeMem( pAdr, data, len )) {
 
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }

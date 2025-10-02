@@ -44,7 +44,6 @@ T64Module::T64Module( T64ModuleType modType, int modNum, int subModNum ) {
 
     this -> moduleTyp       = modType;
     this -> moduleNum       = modNum;
-    this -> subModuleNum    = subModNum;
 }
 
 T64ModuleType T64Module::getModuleType( ) {
@@ -57,11 +56,6 @@ int T64Module::getModuleNum( ) {
     return( moduleNum );
 }
 
-int T64Module::getSubModuleNum( ) {
-
-    return( subModuleNum );
-}
-  
 #if 0
 int T64Module::getHpaStartAdr( T64Word *val ) {
 

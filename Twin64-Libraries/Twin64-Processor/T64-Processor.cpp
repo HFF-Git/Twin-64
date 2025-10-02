@@ -34,27 +34,34 @@ namespace {
 //****************************************************************************************
 //****************************************************************************************
 //
-// CPU
+// Processor. 
 //
 //----------------------------------------------------------------------------------------
-//
-// ??? when we have unified caches or TLBs, both submodules refer to the same 
-// object.
+// A processor is a module with one CPU, TLBs and Caches. We create the component
+// objects right here and pass them our instance, such that they have access to 
+// these components.
+// 
 //----------------------------------------------------------------------------------------
-T64Processor::T64Processor( int modNum, T64System *sys ) : 
+T64Processor::T64Processor( T64System       *sys,
+                            int             modNum,
+                            T64Options      options,  
+                            T64CpuType      cpuType,
+                            T64TlbType      iTlbType,
+                            T64TlbType      dTlbType,
+                            T64CacheType    iCacheType,
+                            T64CacheType    dCacheType ) : 
                 T64Module( MT_PROC, modNum, 0 ) {
     
+    this -> modNum  = modNum;
     this -> sys     = sys;
 
-    // ??? should we rather register with the fixed numbers ? Too complex ?
+    iTlb    = new T64Tlb( this, iTlbType );
+    dTlb    = new T64Tlb( this, dTlbType );
 
-    #if 0
-    this -> subModTab[ PSM_CPU ]    = new T64Cpu( this );
-    this -> subModTab[ PSM_ITLB ]   = new T64Tlb( );
-    this -> subModTab[ PSM_DTLB ]   = new T64Tlb( );
-    this -> subModTab[ PSM_ICACHE ] = new T64Cache( T64_CT_2W_128S_4L, sys );
-    this -> subModTab[ PSM_DCACHE ] = new T64Cache( T64_CT_4W_128S_4L, sys );
-    #endif
+    iCache  = new T64Cache( this, iCacheType );
+    dCache  = new T64Cache( this, dCacheType );
+
+    cpu     = new T64Cpu( this, cpuType );
     
     this -> reset( );
 }
@@ -64,8 +71,6 @@ T64Processor::T64Processor( int modNum, T64System *sys ) :
 //
 //----------------------------------------------------------------------------------------
 void T64Processor::reset( ) {
-
-    T64Module::reset( );
 
     instructionCount    = 0;
     cycleCount          = 0;
@@ -78,32 +83,32 @@ void T64Processor::reset( ) {
 //----------------------------------------------------------------------------------------
 T64Word T64Processor::getGeneralReg( int index ) {
 
-   return((( T64Cpu *) subModTab[ PSM_CPU ] ) -> getGeneralReg( index ));
+   return( cpu -> getGeneralReg( index ));
 }
 
 void T64Processor::setGeneralReg( int index, T64Word val ) {
 
-    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setGeneralReg( index, val );
+    cpu -> setGeneralReg( index, val );
 }
 
 T64Word T64Processor::getControlReg( int index ) {
 
-    return( (( T64Cpu *) subModTab[ PSM_CPU ] ) -> getControlReg( index ));
+    return( cpu -> getControlReg( index ));
 }
 
 void T64Processor::setControlReg( int index, T64Word val ) {
     
-    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setControlReg( index, val );
+    cpu -> setControlReg( index, val );
 }
 
 T64Word T64Processor::getPswReg( ) {
     
-    return( (( T64Cpu *) subModTab[ PSM_CPU ] ) -> getPswReg( ));
+    return( cpu -> getPswReg( ));
 }
 
 void T64Processor::setPswReg( T64Word val ) {
     
-    (( T64Cpu *) subModTab[ PSM_CPU ] ) -> setPswReg( val );
+    cpu -> setPswReg( val );
 }
 
 //----------------------------------------------------------------------------------------
@@ -112,29 +117,25 @@ void T64Processor::setPswReg( T64Word val ) {
 //----------------------------------------------------------------------------------------
 void T64Processor::insertInstrTlb( T64Word vAdr, T64Word info ) {
 
-    if ( subModTab[ PSM_ITLB ] != nullptr ) 
-        (( T64Tlb *) subModTab[ PSM_ITLB ] ) -> insert( vAdr, info );
+    if ( iTlb != nullptr ) iTlb -> insert( vAdr, info );
     else throw ( 99 );
 }
 
 void T64Processor::purgeInstrTlb( T64Word vAdr ) {
 
-    if ( subModTab[ PSM_ITLB ] != nullptr ) 
-        (( T64Tlb *) subModTab[ PSM_ITLB ] ) -> purge( vAdr );
+    if ( iTlb != nullptr ) iTlb -> purge( vAdr );
     else throw ( 99 );
 }
 
 void  T64Processor::insertDataTlb( T64Word vAdr, T64Word info ) {
 
-    if ( subModTab[ PSM_DTLB ] != nullptr ) 
-        (( T64Tlb *) subModTab[ PSM_DTLB ] ) -> insert( vAdr, info );
+    if ( dTlb != nullptr ) dTlb -> insert( vAdr, info );
     else throw ( 99 );
 }
 
 void T64Processor::purgeDataTlb( T64Word vAdr ) {
 
-   if ( subModTab[ PSM_DTLB ] != nullptr ) 
-        (( T64Tlb *) subModTab[ PSM_DTLB ] ) -> purge( vAdr );
+   if ( dTlb != nullptr ) dTlb -> purge( vAdr );
     else throw ( 99 );
 }
 
@@ -144,23 +145,60 @@ void T64Processor::purgeDataTlb( T64Word vAdr ) {
 //----------------------------------------------------------------------------------------
 void T64Processor::purgeInstrCache( T64Word vAdr ) {
 
-    if ( subModTab[ PSM_ICACHE ] != nullptr ) 
-        (( T64Cache *) subModTab[ PSM_ICACHE ] ) -> purge( vAdr );
+
+    if ( iCache != nullptr ) iCache -> purge( vAdr );
     else throw ( 99 );
 }
 
 void T64Processor::flushDataCache( T64Word vAdr ) {
 
-    if ( subModTab[ PSM_DCACHE ] != nullptr ) 
-        (( T64Cache *) subModTab[ PSM_DCACHE ] )-> purge( vAdr );
+    if ( dCache != nullptr ) dCache -> flush( vAdr );
     else throw ( 99 );
 }
 
 void  T64Processor::purgeDataCache( T64Word vAdr ) {
 
-     if ( subModTab[ PSM_DCACHE ] != nullptr ) 
-        (( T64Cache *) subModTab[ PSM_DCACHE ] )-> flush( vAdr );
+     if ( dCache != nullptr ) dCache -> purge( vAdr );
     else throw ( 99 );
+}
+
+//----------------------------------------------------------------------------------------
+// relay methods for accessing the system bus.
+//
+//----------------------------------------------------------------------------------------
+bool T64Processor::readMem( T64Word adr, T64Word *val, int len ) {
+
+    return( true );
+}
+
+bool T64Processor::writeMem( T64Word adr, T64Word val, int len ) {
+
+    return( true );
+}
+
+bool T64Processor::readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len ) {
+
+    return( true );
+}
+
+bool T64Processor::readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len ) {
+
+    return( true );
+}
+
+bool T64Processor::writeBlock( int proc, T64Word pAdr, uint8_t *data, int len ) {
+
+    return( true );
+}
+
+bool T64Processor::readWord( int proc, T64Word pAdr, T64Word *word ) {
+
+    return( true );
+}
+
+bool T64Processor::writeWord( int proc, T64Word pAdr, T64Word *word ) {
+
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -182,15 +220,10 @@ void T64Processor::step( ) {
 
     try {
         
-        (( T64Cpu *) subModTab[ PSM_CPU ] ) -> step( );
+        cpu -> step( );
     }
     
     catch ( const T64Trap t ) {
         
     }
-}
-
-void T64Processor::event( T64ModuleEvent evt ) {
-
-
 }

@@ -36,6 +36,29 @@ struct T64System;
 struct T64Processor;
 
 //----------------------------------------------------------------------------------------
+// Processor Options. None defined yet. A place holder. 
+//
+//
+//----------------------------------------------------------------------------------------
+enum T64Options : uint32_t {
+
+    T64_PO_NIL = 0
+};
+
+//----------------------------------------------------------------------------------------
+// TLBs. A translation lookaside buffer is essential. We support fully associative 
+// TLBs. TLB type is encoded as follows:
+//
+//  T64_TT_<sets>S
+//
+//----------------------------------------------------------------------------------------
+enum T64TlbType : int {
+
+    T64_TT_NIL = 0,
+    T64_TT_64S = 1
+};
+
+//----------------------------------------------------------------------------------------
 // Caches. Caches are sub modules to the processor. We support set associative caches,
 // 2, 4, and 8-way. There is a cache line info with flags and the tag and an array of
 // bytes which holds the cache data. Cache type is encoded as follows:
@@ -45,7 +68,7 @@ struct T64Processor;
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
 
-    T64_CT_NIL          = 0,
+    T64_CT_NIL         = 0,
 
     T64_CT_2W_128S_4L  = 1,
     T64_CT_4W_128S_4L  = 2,
@@ -54,6 +77,15 @@ enum T64CacheType : int {
     T64_CT_2W_64S_8L   = 4,
     T64_CT_4W_64S_8L   = 5,
     T64_CT_8W_64S_8L   = 6,
+};
+
+//----------------------------------------------------------------------------------------
+// CPU. The execution unit. We could support several types. So far, we do not.
+//
+//----------------------------------------------------------------------------------------
+enum T64CpuType : int {
+
+    T64_CPU_T_NIL = 0
 };
 
 //----------------------------------------------------------------------------------------
@@ -75,16 +107,11 @@ struct T64CacheLineInfo {
 // maintains a set of statistics.
 //
 //----------------------------------------------------------------------------------------
-struct T64Cache : T64Module {
+struct T64Cache {
 
     public:
 
-    // ??? rethink the constructor... need cache type, sys and module info...
-
-    T64Cache( int           modNum, 
-              int           subModNum,
-              T64CacheType  cacheType,  
-              T64System     *sys );
+    T64Cache( T64Processor *proc, T64CacheType cacheType );
 
     void                reset( );
     void                step( );
@@ -94,10 +121,10 @@ struct T64Cache : T64Module {
     void                flush( T64Word pAdr );
     void                purge( T64Word pAdr );
 
-    bool                getCacheLine( uint32_t way,
-                                      uint32_t set, 
-                                      T64CacheLineInfo **info,
-                                      uint8_t  **data );
+    bool                getCacheLine( uint32_t          way,
+                                      uint32_t          set, 
+                                      T64CacheLineInfo  **info,
+                                      uint8_t           **data );
 
     int                 getRequestCount( );
     int                 getHitCount( );
@@ -138,7 +165,7 @@ struct T64Cache : T64Module {
     T64CacheType        cacheType       = T64_CT_NIL;
     T64CacheLineInfo    *cacheInfo      = nullptr;
     uint8_t             *cacheData      = nullptr;
-    T64System           *sys            = nullptr;
+    T64Processor        *proc           = nullptr;
 
     int                 ways            = 0;
     int                 sets            = 0;
@@ -149,33 +176,29 @@ struct T64Cache : T64Module {
     T64Word             indexBitmask    = 0;
     int                 indexShift      = 0;
     int                 tagShift        = 0;
-
     int                 cacheHits       = 0;
     int                 cacheMiss       = 0;
     uint8_t             plruState       = 0;
 };
 
 //----------------------------------------------------------------------------------------
-// A CPU needs a TLB. It is vital for address translation. The TLB entry stores one
-// translation along with several flags. Each entry has a last used count for the 
-// LRU replacement scheme.
+// TLB Entry. The TLB entry stores one translation along with several flags. Each 
+// entry has a last used count for the LRU replacement scheme.
 //
 //----------------------------------------------------------------------------------------
 struct T64TlbEntry {
 
-public:
+    public:
 
     bool            valid;
     bool            uncached;
     bool            locked;
     bool            modified;
     bool            trapOnBranch;
-   
     T64Word         vAdr;
     T64Word         pAdr;
     int             vSize;
     uint8_t         accessRights;
-
     T64Word         lastUsed;
 };
 
@@ -186,15 +209,11 @@ public:
 // for display and directly inserting or removing an entry.
 //
 //----------------------------------------------------------------------------------------
-struct T64Tlb : T64Module {
+struct T64Tlb {
     
     public:
-    // ??? rethink the constructor... need tlb type, sys and module info...
 
-    T64Tlb( int modNum, 
-            int subModNum,
-            T64System     *sys
-          );
+    T64Tlb( T64Processor *proc, T64TlbType tlbType );
     
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
@@ -207,23 +226,22 @@ struct T64Tlb : T64Module {
 
     private:
     
-    T64TlbEntry     map [ T64_MAX_TLB_SIZE ];
+    T64TlbType      tlbType         = T64_TT_NIL;
+    T64TlbEntry     *map            = nullptr; 
+    int             tlbEntries      = 0;
     T64Word         timeCounter     = 0;
+    T64Processor    *proc           = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
-// The CPU is a submodule of the processor, just like the cache and TLB. 
-//
+// The CPU is a execution unit of the processor.
 //
 //----------------------------------------------------------------------------------------
-struct T64Cpu : T64Module {
+struct T64Cpu {
 
     public: 
 
-    // ??? rethink the constructor... need proc and module info...
-
-    T64Cpu( int modNum, 
-            int subModNum );
+    T64Cpu( T64Processor *proc, T64CpuType cpuType );
 
     void            reset( );
     void            step( );
@@ -272,6 +290,7 @@ struct T64Cpu : T64Module {
     uint32_t        instrReg;
     T64Word         resvReg;
 
+    T64CpuType      cpuType = T64_CPU_T_NIL;
     T64Processor    *proc   = nullptr;
     T64Tlb          *iTlb   = nullptr;
     T64Tlb          *dTlb   = nullptr;
@@ -315,7 +334,15 @@ struct T64Processor : T64Module {
     
 public:
     
-    T64Processor( int modNum, T64System *sys );
+    T64Processor( T64System     *sys,
+                  int            modNum,
+                  T64Options    options,  
+                  T64CpuType    cpuType,
+                  T64TlbType    iTlbType,
+                  T64TlbType    dTlbType,
+                  T64CacheType  iCacheType,
+                  T64CacheType  dCacheType
+                 );
     
     void            reset( );
     void            step( );
@@ -330,24 +357,39 @@ public:
     T64Word         getPswReg( );
     void            setPswReg( T64Word val );
 
-    void            insertInstrTlb( T64Word vAdr, T64Word info2 );
+    void            insertInstrTlb( T64Word vAdr, T64Word info );
     void            purgeInstrTlb( T64Word vAdr );
     T64TlbEntry     *getInstrTlbEntry( int index );
 
-    void            insertDataTlb( T64Word vAdr, T64Word info2 );
+    void            insertDataTlb( T64Word vAdr, T64Word info );
     void            purgeDataTlb( T64Word vAdr );
     T64TlbEntry     *getDataTlbEntry( int index );
 
     void            purgeInstrCache( T64Word vAdr );
     void            flushDataCache( T64Word vAdr );
     void            purgeDataCache( T64Word vAdr );
+
+    bool            readMem( T64Word adr, T64Word *val, int len );
+    bool            writeMem( T64Word adr, T64Word val, int len );
+
+    bool            readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool            readWord( int proc, T64Word pAdr, T64Word *word );
+    bool            writeWord( int proc, T64Word pAdr, T64Word *word );
         
 private:
 
     friend struct   T64Cpu;
 
     T64System       *sys                = nullptr;
+    T64Cpu          *cpu                = nullptr;
+    T64Tlb          *iTlb               = nullptr;
+    T64Tlb          *dTlb               = nullptr;
+    T64Cache        *iCache             = nullptr;
+    T64Cache        *dCache             = nullptr;
 
+    int             modNum              = 0;
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;
 

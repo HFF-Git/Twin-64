@@ -41,9 +41,14 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Cpu::T64Cpu( int modNum,
-                int subModNum ) : 
-                T64Module( MT_CPU_CORE, modNum, subModNum ) {
+T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
+
+    this -> cpuType = cpuType;
+
+    switch ( cpuType ) {
+
+        default: ;
+    }
     
 
     #if 0
@@ -53,6 +58,7 @@ T64Cpu::T64Cpu( int modNum,
     this -> dCache  = ( T64Cache *) proc -> subModTab[ 4 ];
     #endif
 
+    this -> proc = proc;
     this -> reset( );
 }
 
@@ -297,7 +303,7 @@ T64Word T64Cpu::dataReadRegBOfsImm13( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr ); 
-    T64Word     ofs     = extractImm13( instr ) << dw;
+    T64Word     ofs     = extractInstrScaledImm13( instr );
     int         len     = 1U << dw;
     
     return( dataRead( addAdrOfs( adr, ofs ), len ));
@@ -333,7 +339,7 @@ void T64Cpu::dataWriteRegBOfsImm13( uint32_t instr ) {
     
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
-    T64Word     ofs     = extractImm13( instr ) << dw;
+    T64Word     ofs     = extractInstrScaledImm13( instr );
     int         len     = 1U << dw;
     T64Word     val     = getRegR( instr );
     
@@ -394,7 +400,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 1: {
                         
                         T64Word val1 = getRegB( instr );
-                        T64Word val2 = extractImm13( instr );
+                        T64Word val2 = extractInstrScaledImm13( instr );
                         
                         if ( willAddOverflow( val1, val2 )) 
                             throw ( T64Trap( OVERFLOW_TRAP ));
@@ -464,7 +470,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 1: {
                         
                         T64Word val1 = getRegB( instr );
-                        T64Word val2 = extractImm13( instr );
+                        T64Word val2 = extractInstrImm15( instr );
                         
                         if ( willSubOverflow( val1, val2 )) 
                             throw ( T64Trap( OVERFLOW_TRAP ));
@@ -532,7 +538,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else {
                     
                     T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractInstrImm13( instr );
+                    T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
                     
@@ -594,7 +600,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else {
                     
                     T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractImm13( instr );
+                    T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
                     
@@ -656,7 +662,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else {
                     
                     T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractImm13( instr );
+                    T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
                     
@@ -707,8 +713,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word val2 = 0;
                 T64Word res  = 0;
                 
-                if ( extractInstrBit( instr, 19 )) val2 = extractImm13( instr );
-                else                                  val2 = getRegA( instr );
+                if ( extractInstrBit( instr, 19 )) val2 = extractInstrImm15( instr );
+                else                               val2 = getRegA( instr );
                 
                 switch ( extractInstrField( instr, 20, 2 )) {
                         
@@ -729,10 +735,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word val2 = 0;
                 T64Word res  = 0;
                 
-                if ( extractInstrBit( instr, 19 )) 
-                    val2 = dataReadRegBOfsRegX( instr );
-                else                             
-                    val2 = dataReadRegBOfsImm13( instr );
+                if ( extractInstrBit( instr, 19 )) val2 = dataReadRegBOfsRegX( instr );
+                else                               val2 = dataReadRegBOfsImm13( instr );
                 
                 switch ( extractInstrField( instr, 20, 2 )) {
                         
@@ -831,8 +835,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word res   = 0;
                 int     shamt = (int) extractInstrField( instr, 20, 2 );
                 
-                if ( extractInstrBit( instr, 14 )) val2 = extractImm13( instr );
-                else                             val2 = getRegB( instr );
+                if ( extractInstrBit( instr, 14 )) val2 = extractInstrImm13( instr );
+                else                               val2 = getRegB( instr );
                 
                 if ( extractInstrBit( instr, 19 )) { // SHRxA
                     
@@ -856,7 +860,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             case ( OPC_GRP_ALU * 16 + OPC_IMMOP ): {
                 
-                T64Word val = extractImm20U( instr );
+                T64Word val = extractInstrImm20( instr );
                 T64Word res = 0;
                 
                 switch ( extractInstrField( instr, 20, 2 )) {
@@ -875,7 +879,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
             case ( OPC_GRP_ALU * 16 + OPC_LDO ): {
                 
                 T64Word base = getRegB( instr );
-                T64Word ofs  = extractImm15( instr );
+                T64Word ofs  = extractInstrScaledImm13( instr );
                 T64Word res  = addAdrOfs( base, ofs );
                 
                 setRegR( instr, res );
@@ -938,7 +942,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             case ( OPC_GRP_BR * 16 + OPC_B ): {
                 
-                T64Word ofs     = extractImm19( instr ) << 2;
+                T64Word ofs     = extractInstrImm19( instr ) << 2;
                 T64Word rl      = addAdrOfs( pswReg, 4 );
                 T64Word newIA   = addAdrOfs( pswReg, ofs );
                 
@@ -1004,7 +1008,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                
             case ( OPC_GRP_BR * 16 + OPC_BB ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractImm13( instr ));
+                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm13( instr ) << 2 );
                 bool    testVal = extractInstrBit( instr, 19 );
                 bool    testBit = 0;
                 int     pos     = 0;
@@ -1023,7 +1027,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
 
             case ( OPC_GRP_BR * 16 + OPC_ABR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractImm15( instr ));
+                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 int     cond    = (int) extractInstrField( instr, 19, 3 );
@@ -1051,7 +1055,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             case ( OPC_GRP_BR * 16 + OPC_CBR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractImm15( instr ));
+                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
@@ -1072,7 +1076,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             case ( OPC_GRP_BR * 16 + OPC_MBR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractImm15( instr ));
+                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR(instr );
                 T64Word val2    = getRegB(instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
