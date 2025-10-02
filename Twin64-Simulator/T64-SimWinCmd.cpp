@@ -1849,21 +1849,21 @@ void SimCommandsWin::winNewWinCmd( ) {
 
             tok -> checkEOS( );
 
-            switch ( glb -> system -> getModuleSubType( modNum, subModNum )) {
+            switch ( glb -> system -> getModuleType( modNum, subModNum )) {
             
-                case MST_CPU: {
+                case MT_CPU_CORE: {
 
                     glb -> winDisplay -> windowNewProgState( modNum );  
 
                 } break;
 
-                case MST_TLB: {
+                case MT_CPU_TLB: {
 
                     glb -> winDisplay -> windowNewTlb( modNum, subModNum );
 
                 } break;
 
-                case MST_CACHE: {
+                case MT_CPU_CACHE: {
 
                     glb -> winDisplay -> windowNewCache( modNum, subModNum );
 

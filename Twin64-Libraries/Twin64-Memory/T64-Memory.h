@@ -24,6 +24,7 @@
 #ifndef T64_Memory_h
 #define T64_Memory_h
 
+#include "T64-Util.h"
 #include "T64-Common.h"
 #include "T64-System.h"
 
@@ -35,13 +36,13 @@ struct T64Memory : T64Module {
     
 public:
     
-    T64Memory( T64Word size );
+    T64Memory( int modNum, int subModNum, T64Word size );
     
     void        reset( );
     T64Word     read( T64Word pAdr, int len, bool signExtend = false );
     void        write( T64Word pAdr, T64Word arg, int len );
 
-    void        event( T64ModuleEvent evt );
+   
 
     // ??? separate routines for monitor display ?
     // int getWord( T64Word adr, uint32_t *data );

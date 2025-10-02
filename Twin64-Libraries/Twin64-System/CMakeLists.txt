@@ -8,11 +8,11 @@ add_library( ${PROJECT_NAME} STATIC
 
     T64-System.h 
     T64-System.cpp
+    T64-Module.cpp
  ) 
 
 target_link_libraries( ${PROJECT_NAME} PUBLIC 
 
-    Twin64-Module
     Twin64-Processor 
     Twin64-Memory 
     Twin64-Common 

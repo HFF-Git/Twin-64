@@ -47,7 +47,8 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Tlb::T64Tlb( ) : T64SubModule( 0, 0, MST_NIL ) {
+T64Tlb::T64Tlb( int modNum, int subModNum, T64System *sys ) : 
+            T64Module( MT_CPU_TLB, modNum, subModNum ) {
 
 
     reset( );

@@ -34,9 +34,6 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-Common.h"
-#include "T64-Util.h"
-#include "T64-System.h"
 #include "T64-Processor.h"
 
 // We:                          Them:
@@ -215,8 +212,11 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( T64CacheType cacheType, T64System *sys ) : 
-                T64Module( ) { 
+T64Cache::T64Cache( int modNum, 
+                    int subModNum,
+                    T64CacheType cacheType,  
+                    T64System *sys  ) : 
+                    T64Module( MT_CPU_CACHE, modNum, subModNum )  { 
 
     this -> cacheType = cacheType;
 
@@ -297,6 +297,8 @@ void T64Cache::reset( ) {
         cacheInfo[ i ].tag      = 0;
     }
 }
+
+void T64Cache::step( ) { }
 
 //----------------------------------------------------------------------------------------
 // Helper functions.

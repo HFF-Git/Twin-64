@@ -22,9 +22,6 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-Common.h"
-#include "T64-Util.h"
-#include "T64-System.h"
 #include "T64-Processor.h"
 
 //----------------------------------------------------------------------------------------
@@ -36,7 +33,7 @@ namespace {
 };
 
 //****************************************************************************************
-//*******************************FABR*********************************************************
+//****************************************************************************************
 //
 // CPU
 //
@@ -44,13 +41,17 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Cpu::T64Cpu( T64Processor *proc ) : T64Module( 0, 0, MST_NIL ) {
+T64Cpu::T64Cpu( int modNum,
+                int subModNum ) : 
+                T64Module( MT_CPU_CORE, modNum, subModNum ) {
     
-    this -> proc    = proc;
+
+    #if 0
     this -> iTlb    = ( T64Tlb *) proc -> subModTab[ 1 ]; 
     this -> dTlb    = ( T64Tlb *) proc -> subModTab[ 2 ];
     this -> iCache  = ( T64Cache *) proc -> subModTab[ 3 ];
     this -> dCache  = ( T64Cache *) proc -> subModTab[ 4 ];
+    #endif
 
     this -> reset( );
 }
@@ -1264,7 +1265,4 @@ void T64Cpu::step( ) {
     }
 }
 
-void T64Processor::event( T64ModuleEvent evt ) {
 
-
-}

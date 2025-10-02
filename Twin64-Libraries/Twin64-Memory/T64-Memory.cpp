@@ -22,7 +22,6 @@
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Memory.h"
-#include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
 //
@@ -41,7 +40,8 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Memory::T64Memory( T64Word size ) {
+T64Memory::T64Memory( int modNum, int subModNum, T64Word size ) :
+            T64Module( MT_MEM, modNum, subModNum ) {
     
     this -> size = roundup( size, 16 ); // ??? what is the roundup level ?
     this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
@@ -158,10 +158,5 @@ void T64Memory::write( T64Word adr, T64Word arg, int len ) {
 // int putWord( T64Word adr, uint32_t data );
 
 
-
-void T64Memory::event( T64ModuleEvent evt ) {
-
-    
-}
 
 

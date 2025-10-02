@@ -28,7 +28,7 @@
 #define T64_System_h
 
 #include "T64-Common.h"
-#include "T64-Module.h"
+#include "T64-Util.h"
 
 // ??? on a step, all processor modules advance.
 // ??? after that each module is give a change to do processing. I.e. check for
@@ -51,14 +51,39 @@ enum T64ModuleType {
 
     MT_NIL          = 0,
     MT_PROC         = 10,
-    MST_CPU_CORE    = 11,
-    MST_CPU_CACHE   = 12,
-    MST_CPU_TLB     = 13, 
+    MT_CPU_CORE     = 11,
+    MT_CPU_CACHE    = 12,
+    MT_CPU_TLB      = 13, 
     MT_MEM          = 20,
     MT_MEM_BANK     = 21,
-    MT_IO           = 30,
-   
+    MT_IO           = 30   
 };
+
+//----------------------------------------------------------------------------------------
+// Modules have registers in their HPA.
+//
+//----------------------------------------------------------------------------------------
+// 0 - status
+// 1 - command
+// 2 - HPA address
+// 3 - SPA address
+// 4 - SPA len
+// 5 - number of I/O elements
+// 6 - module hardware version 
+// 7 - module software version
+// 8 - interrupt target ( when sending an interrupt -> processor + mask )
+
+// ?? the HPA also has a the IODC, a piece that describes the IO Module and 
+// code to execute module specific functions.
+
+// I/O Element. Allocated in SPA space. Up to 128 bytes in size -> 16 Regs. 
+// ??? need for a larger I/O element ?
+
+// SPA can be USER mode too and directly mapped to user segments, etc.
+
+
+
+
 
 //----------------------------------------------------------------------------------------
 // The T64Module object represents and an object in the system. It is the base class
@@ -170,6 +195,8 @@ struct T64System {
     void            reset( );
     void            run( );
     void            step( int steps = 1 );
+
+    // ??? these routines should rather go into the simulator ?
 
     int             readGeneralReg( int proc, int cpu, int reg, T64Word *val );
     int             writeGeneralReg( int proc, int cpu,int reg, T64Word val );

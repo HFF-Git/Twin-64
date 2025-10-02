@@ -13,5 +13,5 @@ add_library( ${PROJECT_NAME} STATIC
     T64-Cache.cpp
 ) 
 
-target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common Twin64-Module )
+target_link_libraries( ${PROJECT_NAME} PUBLIC Twin64-Common Twin64-System )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )

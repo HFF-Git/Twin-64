@@ -24,7 +24,7 @@
 //
 //----------------------------------------------------------------------------------------
 #include "T64-System.h"
-#include "T64-Util.h"
+
 
 //----------------------------------------------------------------------------------------
 // The T64System object.
@@ -142,46 +142,57 @@ int T64System:: addToModuleMap( T64Module *module ) {
     return( 0 );
 }
     
-T64ModuleType T64System::getModuleType( int modNum, int subModNum = 0 ) {
-
-    T64Module *mod = lookupByModNum( modNum, subModNum );
-    return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
-}
-
-T64Module *T64System::lookupByModNum( int modNum, int subModNum = 0 ) {
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+T64Module *T64System::lookupByModNum( int modNum, int subModNum ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ].modNum == modNum &&
-             moduleMap[ i ].subModNum == subModNum ) {
-            return moduleMap[ i ].module;
+        T64ModuleMapEntry *ptr = &moduleMap[ i ];
+
+        if ( ptr -> modNum == modNum && ptr ->subModNum == subModNum ) {
+
+            return ptr -> module;
         }
     }
     return nullptr;
 }
 
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+T64ModuleType T64System::getModuleType( int modNum, int subModNum ) {
+
+    T64Module *mod = lookupByModNum( modNum, subModNum );
+    return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
 T64Module *T64System::lookupByAdr( T64Word adr ) {
 
     int lo = 0;
     int hi = moduleMapHwm - 1;
 
-    while (lo <= hi) {
+    while ( lo <= hi ) {
 
-        int mid = (lo + hi) / 2;
+        int mid = ( lo + hi ) / 2;
         auto &entry = systemMap[mid];
 
         int64_t start = entry.start;
         int64_t end   = entry.start + entry.len - 1;
 
-        if (adr < start) {
-            hi = mid - 1;
-        } else if (adr > end) {
-            lo = mid + 1;
-        } else {
-            return entry.module;  // found
-        }
+        if      ( adr < start ) hi = mid - 1;
+        else if ( adr > end   ) lo = mid + 1;
+        else                    return entry.module;
     }
-    return nullptr; // not found
+
+    return nullptr;
 }                 
 
 //----------------------------------------------------------------------------------------
@@ -219,6 +230,9 @@ void T64System::step( int steps ) {
     }
 }
 
+
+// ??? this is perhaps too complex. Include file mess...
+
 //----------------------------------------------------------------------------------------
 // Processor CPU register access. The set of routines are used by the simulator to 
 // access the CPU register for display and modify commands.
@@ -226,7 +240,14 @@ void T64System::step( int steps ) {
 //----------------------------------------------------------------------------------------
 int T64System::readGeneralReg( int proc, int cpu, int reg, T64Word *val ) {
 
-    
+    T64Module *mod = lookupByModNum( proc, cpu );
+
+    if (( mod != nullptr ) && ( mod -> getModuleType( ) == MT_CPU_CORE )) {
+
+        *val = 0;
+        // (( T64Cpu *) mod ) -> getGeneralReg( reg );
+        return( 0 );
+    }
 
     *val = 0;
     return( 0 );

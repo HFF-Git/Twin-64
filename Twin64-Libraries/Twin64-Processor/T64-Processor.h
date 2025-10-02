@@ -27,12 +27,12 @@
 #include "T64-Common.h"
 #include "T64-Util.h"
 #include "T64-System.h"
-#include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
 // Forwards.
 //
 //----------------------------------------------------------------------------------------
+struct T64System;
 struct T64Processor;
 
 //----------------------------------------------------------------------------------------
@@ -75,15 +75,19 @@ struct T64CacheLineInfo {
 // maintains a set of statistics.
 //
 //----------------------------------------------------------------------------------------
-struct T64Cache : T64SubModule {
+struct T64Cache : T64Module {
 
     public:
 
     // ??? rethink the constructor... need cache type, sys and module info...
 
-    T64Cache( T64CacheType cacheType, T64System *sys );
+    T64Cache( int           modNum, 
+              int           subModNum,
+              T64CacheType  cacheType,  
+              T64System     *sys );
 
     void                reset( );
+    void                step( );
 
     void                read( T64Word pAdr, T64Word *data, int len, bool cached );
     void                write( T64Word pAdr, T64Word data, int len, bool cached );
@@ -182,12 +186,15 @@ public:
 // for display and directly inserting or removing an entry.
 //
 //----------------------------------------------------------------------------------------
-struct T64Tlb : T64SubModule {
+struct T64Tlb : T64Module {
     
     public:
     // ??? rethink the constructor... need tlb type, sys and module info...
 
-    T64Tlb( );
+    T64Tlb( int modNum, 
+            int subModNum,
+            T64System     *sys
+          );
     
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
@@ -209,13 +216,14 @@ struct T64Tlb : T64SubModule {
 //
 //
 //----------------------------------------------------------------------------------------
-struct T64Cpu : T64SubModule {
+struct T64Cpu : T64Module {
 
     public: 
 
     // ??? rethink the constructor... need proc and module info...
 
-    T64Cpu( T64Processor *proc );
+    T64Cpu( int modNum, 
+            int subModNum );
 
     void            reset( );
     void            step( );
@@ -307,11 +315,11 @@ struct T64Processor : T64Module {
     
 public:
     
-    T64Processor( T64System *sys );
+    T64Processor( int modNum, T64System *sys );
     
     void            reset( );
     void            step( );
-    void            event( T64ModuleEvent evt );
+    
 
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );

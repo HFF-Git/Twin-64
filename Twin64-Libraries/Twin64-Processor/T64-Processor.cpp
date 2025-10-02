@@ -21,9 +21,6 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-Common.h"
-#include "T64-Util.h"
-#include "T64-System.h"
 #include "T64-Processor.h"
 
 //----------------------------------------------------------------------------------------
@@ -44,17 +41,20 @@ namespace {
 // ??? when we have unified caches or TLBs, both submodules refer to the same 
 // object.
 //----------------------------------------------------------------------------------------
-T64Processor::T64Processor( T64System *sys ) {
+T64Processor::T64Processor( int modNum, T64System *sys ) : 
+                T64Module( MT_PROC, modNum, 0 ) {
     
     this -> sys     = sys;
 
     // ??? should we rather register with the fixed numbers ? Too complex ?
 
+    #if 0
     this -> subModTab[ PSM_CPU ]    = new T64Cpu( this );
     this -> subModTab[ PSM_ITLB ]   = new T64Tlb( );
     this -> subModTab[ PSM_DTLB ]   = new T64Tlb( );
     this -> subModTab[ PSM_ICACHE ] = new T64Cache( T64_CT_2W_128S_4L, sys );
     this -> subModTab[ PSM_DCACHE ] = new T64Cache( T64_CT_4W_128S_4L, sys );
+    #endif
     
     this -> reset( );
 }
@@ -70,12 +70,6 @@ void T64Processor::reset( ) {
     instructionCount    = 0;
     cycleCount          = 0;
 
-    for ( int i = 0; i < PSM_MAX; i++ ) {
-
-        if ( subModTab[ i ] != nullptr ) subModTab[ i ] -> reset( );
-    }
-
-    maxSubModules = PSM_MAX;
 }
 
 //----------------------------------------------------------------------------------------

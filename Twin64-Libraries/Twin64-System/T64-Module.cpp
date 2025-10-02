@@ -22,7 +22,6 @@
 //
 //----------------------------------------------------------------------------------------
 #include "T64-System.h"
-#include "T64-Module.h"
 
 //----------------------------------------------------------------------------------------
 //
@@ -32,7 +31,7 @@ namespace {
 
 };
 
-#if 0
+
 //****************************************************************************************
 //****************************************************************************************
 //
@@ -41,8 +40,11 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Module::T64Module( ) {
-    
+T64Module::T64Module( T64ModuleType modType, int modNum, int subModNum ) {
+
+    this -> moduleTyp       = modType;
+    this -> moduleNum       = modNum;
+    this -> subModuleNum    = subModNum;
 }
 
 T64ModuleType T64Module::getModuleType( ) {
@@ -54,7 +56,13 @@ int T64Module::getModuleNum( ) {
 
     return( moduleNum );
 }
+
+int T64Module::getSubModuleNum( ) {
+
+    return( subModuleNum );
+}
   
+#if 0
 int T64Module::getHpaStartAdr( T64Word *val ) {
 
     return( moduleHPA );
@@ -73,44 +81,5 @@ int T64Module:: getSpaStartAdr( T64Word *val ) {
 int T64Module::getSpaSize( T64Word *val ) {
 
     return( moduleSPALen );
-}
-
-T64SubModule *T64Module::lookupBySubModNum( int subModNum ) {
-
-    if ( subModNum < maxSubModules ) return( subModTab[ subModNum ]);
-    else return ( nullptr );
-}
-
-T64SubModuleType T64Module::getSubModuleType( int subModNum ) {
-
-    T64SubModule *ptr = lookupBySubModNum( subModNum );
-    return(( ptr != nullptr ) ? ptr -> getSubModType( ) : MST_NIL );
-}
-
-//****************************************************************************************
-//****************************************************************************************
-//
-// SubModule
-//----------------------------------------------------------------------------------------
-// 
-//
-//----------------------------------------------------------------------------------------
-T64SubModule::T64SubModule( int mNum, 
-                            int subModNum, 
-                            T64SubModuleType smType ) {
-
-    this -> moduleNum   = mNum;
-    this -> subModNum   = subModNum;
-    this -> subModType  = smType;
-}
-
-T64SubModuleType T64SubModule::getSubModType( ) {
-
-    return( subModType );
-}
-
-int T64SubModule::getSubModNum( ) {
-
-    return( subModNum );
 }
 #endif
