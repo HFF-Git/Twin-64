@@ -40,11 +40,14 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Memory::T64Memory( int modNum, int subModNum, T64Word size ) :
-            T64Module( MT_MEM, modNum, subModNum ) {
+T64Memory::T64Memory(   T64System *sys, 
+                        int modNum, 
+                        T64Word size ) : T64Module( MT_MEM, modNum ) {
     
-    this -> size = roundup( size, 16 ); // ??? what is the roundup level ?
-    this -> mem  = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
+    this -> sys     = sys;
+    this -> modNum  = modNum;
+    this -> size    = roundup( size, 16 ); // ??? what is the roundup level ?
+    this -> mem     = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
 }
 
 void T64Memory::reset( ) {
@@ -52,6 +55,8 @@ void T64Memory::reset( ) {
     if ( mem != nullptr ) free( mem );
     this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
 }
+
+void T64Memory::step( ) { }
 
 //----------------------------------------------------------------------------------------
 //

@@ -40,7 +40,7 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Module::T64Module( T64ModuleType modType, int modNum, int subModNum ) {
+T64Module::T64Module( T64ModuleType modType, int modNum ) {
 
     this -> moduleTyp       = modType;
     this -> moduleNum       = modNum;

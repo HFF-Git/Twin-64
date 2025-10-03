@@ -1358,8 +1358,8 @@ void SimCommandsWin::modifyRegCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
-    int pNum    = getWinModuleNum( );
-    int cSet    = getWinToggleVal( );
+    int pNum    = 0; // fix: of current window...
+    int cSet    = 0; // fix: of current window...
     int index   = 0;
     
     ensureWinModeOn( );
@@ -1387,11 +1387,13 @@ void SimCommandsWin::purgeCacheCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
     
-    int pNum    = getWinModuleNum( );
-    int cSet    = getWinToggleVal( );
+    int pNum    = 0; // fix: of current window...
+    int cSet    = 0; // fix: of current window...
     int index   = 0;
 
     ensureWinModeOn( );
+
+    // ??? check current window is a cache window ...
 
     index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
     
@@ -1412,11 +1414,11 @@ void SimCommandsWin::flushCacheCmd( ) {
 // module and submodule is not passed, we pass the window values for module and 
 // submodule. Note that the validation is done at the system object level.
 //
-//  ITLB  <info1> "," <info2> [ "," <proc> "," <tlb> ] 
+//  ITLB  <info1> "," <info2> [ "," <proc> ] 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
-    int     pNum    = getWinModuleNum( );
+    int     pNum    = 0; // fix: of current window...
     T64Word info1   = 0;
     T64Word info2   = 0;
 
@@ -1447,7 +1449,7 @@ void SimCommandsWin::insertTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
-    int pNum    = getWinModuleNum( );
+    int pNum    = 0; // fix: of current window...
     int index   = 0;
 
     ensureWinModeOn( );
@@ -1891,20 +1893,20 @@ void SimCommandsWin::winNewWinCmd( ) {
         case TOK_MEM: {
 
             tok -> acceptComma( );
-            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, MAX_PHYS_MEM_SIZE );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewAbsMem( adr );
+            glb -> winDisplay -> windowNewAbsMem( 0, adr ); // ??? module number ???
         
         }  break;
 
         case TOK_CODE: {  
 
             tok -> acceptComma( );
-            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, MAX_PHYS_MEM_SIZE );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewAbsCode( adr );
+            glb -> winDisplay -> windowNewAbsCode( 0, adr ); // ??? module number ???
         
         }  break;
 

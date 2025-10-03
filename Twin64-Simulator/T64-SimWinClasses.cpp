@@ -185,7 +185,9 @@ void SimWinCpuState::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) " CPU: ", fmtDesc );
+    printTextField((char *) "  ", fmtDesc );
+    printTextField( getWinName( ), fmtDesc );
+    printTextField((char *) ":", fmtDesc );
     printNumericField( modNum, fmtDesc | FMT_DEC );
 
     T64Word psw = proc -> getPswReg( );
@@ -341,9 +343,12 @@ void SimWinCpuState::drawBody( ) {
 // Object constructor.
 //
 //----------------------------------------------------------------------------------------
-SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, T64Word adr ) : SimWinScrollable( glb ) {
+SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, int modNum, T64Word adr ) : 
+                                                        SimWinScrollable( glb ) {
 
-    this -> adr = adr;
+                
+    this -> modNum  = modNum;
+    this -> adr     = adr;
  }
 
 //----------------------------------------------------------------------------------------
@@ -378,10 +383,14 @@ void SimWinAbsMem::setDefaults( ) {
 void SimWinAbsMem::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-    
+
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-    printTextField((char *) "Current: " );
+    printTextField((char *) "  ", fmtDesc );
+    printTextField( getWinName( ), fmtDesc );
+    printTextField((char *) ":", fmtDesc );
+    printNumericField( modNum, fmtDesc | FMT_DEC );
+    printTextField((char *) " Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  Home: " );
     printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
@@ -452,13 +461,15 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 // instructions and also need to remove it when the window is killed. 
 //
 //----------------------------------------------------------------------------------------
-SimWinCode::SimWinCode( SimGlobals *glb, T64Word adr ) : SimWinScrollable( glb ) {
+SimWinCode::SimWinCode( SimGlobals *glb, int modNum, T64Word adr ) : 
+                                                    SimWinScrollable( glb ) {
 
     disAsm = new T64DisAssemble( );
 
     // ??? get the mem object ... 
 
-    this -> adr = adr;
+    this -> modNum  = modNum;
+    this -> adr     = adr;
 }
 
 SimWinCode::  ~  SimWinCode( ) {
@@ -516,7 +527,11 @@ void SimWinCode::drawBanner( ) {
     
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-    printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
+    printTextField((char *) "  ", fmtDesc );
+    printTextField( getWinName( ), fmtDesc );
+    printTextField((char *) ":", fmtDesc );
+    printNumericField( modNum, fmtDesc | FMT_DEC );
+    printTextField((char *) " ", fmtDesc );
     printTextField((char *) "Current: " );
     printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  Home: " );
@@ -625,12 +640,12 @@ void SimWinTlb::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
+    printTextField((char *) "  ", fmtDesc );
+    printTextField( getWinName( ), fmtDesc );
+    printTextField((char *) " ", fmtDesc );
+
     printTextField((char *) "CPU: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
-
-    // ??? how do we know which TLB ?
-
-    printTextField((char *) " xTlb " );
+    printNumericField( modNum, ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
@@ -757,12 +772,12 @@ void SimWinCache::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
+    printTextField((char *) "  ", fmtDesc );
+    printTextField( getWinName( ), fmtDesc );
+    printTextField((char *) " ", fmtDesc );
+
     printTextField((char *) "CPU: " );
     printNumericField( modNum, ( fmtDesc | FMT_DEC ));
-
-    // ?? which cache ???
-
-    printTextField((char *) " xCache" );
 
     printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));

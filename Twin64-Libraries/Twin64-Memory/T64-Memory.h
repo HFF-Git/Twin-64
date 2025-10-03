@@ -36,9 +36,10 @@ struct T64Memory : T64Module {
     
 public:
     
-    T64Memory( int modNum, int subModNum, T64Word size );
+    T64Memory( T64System *sys, int modNum, T64Word size );
     
     void        reset( );
+    void        step( );
     T64Word     read( T64Word pAdr, int len, bool signExtend = false );
     void        write( T64Word pAdr, T64Word arg, int len );
 
@@ -50,8 +51,10 @@ public:
    
 private:
     
-    T64Word    size = 0;
-    uint8_t    *mem = nullptr;
+    T64System   *sys    = nullptr;
+    int         modNum  = 0;
+    T64Word     size    = 0;
+    uint8_t     *mem    = nullptr;
     
 };
 

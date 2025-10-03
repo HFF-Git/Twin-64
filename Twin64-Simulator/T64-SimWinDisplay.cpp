@@ -693,11 +693,12 @@ int SimWinDisplay::getFreeWindowSlot( ) {
     throw( ERR_OUT_OF_WINDOWS );
 }
 
-void SimWinDisplay::windowNewAbsMem( T64Word adr ) {
+void SimWinDisplay::windowNewAbsMem( int modNum, T64Word adr ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb, adr );
+    windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb, modNum, adr );
+    windowList[ slot ] -> setWinName(( char *) "MEM" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
@@ -705,11 +706,12 @@ void SimWinDisplay::windowNewAbsMem( T64Word adr ) {
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewAbsCode( T64Word adr ){
+void SimWinDisplay::windowNewAbsCode( int modNum, T64Word adr ){
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinCode( glb, adr ); 
+    windowList[ slot ] = (SimWin *) new SimWinCode( glb, modNum, adr ); 
+    windowList[ slot ] -> setWinName(( char *) "CODE" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
@@ -722,11 +724,11 @@ void SimWinDisplay::windowNewCpuState( int modNum ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinCpuState( glb, modNum  );
+    windowList[ slot ] -> setWinName(( char *) "CPU" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
@@ -735,11 +737,11 @@ void SimWinDisplay::windowNewITlb( int modNum ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
+    windowList[ slot ] -> setWinName(( char *) "I-TLB" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
@@ -748,11 +750,11 @@ void SimWinDisplay::windowNewDTlb( int modNum ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
+    windowList[ slot ] -> setWinName(( char *) "D-TLB" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
@@ -761,11 +763,11 @@ void SimWinDisplay::windowNewICache( int modNum ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
+    windowList[ slot ] -> setWinName(( char *) "I-CACHE" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
@@ -774,11 +776,11 @@ void SimWinDisplay::windowNewDCache( int modNum ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
+    windowList[ slot ] -> setWinName(( char *) "D-CACHE" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 } 
    
@@ -787,6 +789,7 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
     int slot = getFreeWindowSlot( );
 
     windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
+    windowList[ slot ] -> setWinName(( char *) "TEXT" );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );

@@ -96,7 +96,7 @@ struct T64Module {
     
     public:
 
-    T64Module( T64ModuleType modType, int modNum, int subModNum );
+    T64Module( T64ModuleType modType, int modNum );
 
     virtual void        reset( ) = 0;
     virtual void        step( ) = 0;

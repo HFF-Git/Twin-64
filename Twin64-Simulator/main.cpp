@@ -61,6 +61,12 @@ int main( int argc, const char * argv[] ) {
                                         
 
     glb -> system -> addToModuleMap( proc );
+
+    T64Memory *mem = new T64Memory( glb -> system,
+                                    2, 
+                                    0xFFFFF );
+
+    // ??? need to create a memory module !!!!
     
     // ??? register modules here ?
 

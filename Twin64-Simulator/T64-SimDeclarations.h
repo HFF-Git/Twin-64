@@ -120,6 +120,7 @@ const int MAX_CMD_LINES             = 64;
 const int MAX_CMD_LINE_SIZE         = 256;
 const int MAX_WIN_OUT_LINES         = 256;
 const int MAX_WIN_OUT_LINE_SIZE     = 256;
+const int MAX_WIN_NAME              = 8;
 
 const int MAX_TOK_STR_SIZE          = 256;
 const int MAX_TOK_NAME_SIZE         = 32;
@@ -766,8 +767,8 @@ struct SimWin {
     void            setWinIndex( int index );
     int             getWinIndex( );
 
-    void            setModuleNum( int num );
-    int             getWinModuleNum( );
+    void            setWinName( char *name );
+    char            *getWinName( );
 
     void            setEnable( bool arg );
     bool            isEnabled( );
@@ -850,7 +851,7 @@ struct SimWin {
     
     SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
-    int             winModuleNum        = 0;
+    char            winName[ MAX_WIN_NAME];
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -951,7 +952,7 @@ struct SimWinAbsMem : SimWinScrollable {
     
     public:
     
-    SimWinAbsMem( SimGlobals *glb, T64Word adr );
+    SimWinAbsMem( SimGlobals *glb, int modNum, T64Word adr );
     
     void setDefaults( );
     void drawBanner( );
@@ -959,6 +960,7 @@ struct SimWinAbsMem : SimWinScrollable {
 
     private:
 
+    int         modNum  = 0;
     T64Word     adr     = 0;
     T64Memory   *mem    = nullptr;
 };
@@ -973,7 +975,7 @@ struct SimWinCode : SimWinScrollable {
     
     public:
     
-    SimWinCode( SimGlobals *glb, T64Word adr );
+    SimWinCode( SimGlobals *glb, int modNum, T64Word adr );
     ~ SimWinCode( );
     
     void setDefaults( );
@@ -982,6 +984,7 @@ struct SimWinCode : SimWinScrollable {
     
     private:
 
+    int             modNum  = 0;
     T64Word         adr     = 0;
     T64Memory       *mem    = nullptr;
     T64DisAssemble  *disAsm = nullptr;
@@ -1228,8 +1231,8 @@ public:
     void            windowToggle( int winNum = 0 );
     void            windowExchangeOrder( int winNum );
     
-    void            windowNewAbsMem( T64Word adr );
-    void            windowNewAbsCode( T64Word adr );
+    void            windowNewAbsMem( int modNum, T64Word adr );
+    void            windowNewAbsCode( int modNum, T64Word adr );
     void            windowNewCpuState( int modNum );
     void            windowNewITlb( int modNum );
     void            windowNewDTlb( int modNum );

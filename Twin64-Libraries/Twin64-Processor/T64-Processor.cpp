@@ -50,7 +50,7 @@ T64Processor::T64Processor( T64System       *sys,
                             T64TlbType      dTlbType,
                             T64CacheType    iCacheType,
                             T64CacheType    dCacheType ) : 
-                T64Module( MT_PROC, modNum, 0 ) {
+                T64Module( MT_PROC, modNum ) {
     
     this -> modNum  = modNum;
     this -> sys     = sys;

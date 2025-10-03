@@ -79,14 +79,14 @@ void SimWin::setWinIndex( int arg ) {
     winIndex = arg; 
 }
 
- void SimWin:: setModuleNum( int num ) {
+void SimWin::setWinName( char *name ) {
 
-    winModuleNum = num;
- }
+    strncpy( winName, name, MAX_WIN_NAME - 1 );
+}
 
-int SimWin::getWinModuleNum( ) {
+char *SimWin::getWinName( ) {
 
-    return ( winModuleNum );
+    return( winName );
 }
 
 bool SimWin::isEnabled( ) { 
@@ -400,9 +400,9 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A user defined window has a field that shows the window number as well as this is 
-// the current window. We show wether it is the current window, the window stack and the
-// window number.
+// A user defined window has a field that shows the window number as well as this 
+// is the current window. We show wether it is the current window, the window stack
+// and the window number.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
