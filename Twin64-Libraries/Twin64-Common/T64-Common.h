@@ -50,6 +50,7 @@ const   T64Word IO_MEM_START        = 0xF0000000;
 const   T64Word IO_MEM_LIMIT        = 0xFFFFFFFF;
 
 const   T64Word DEF_PHYS_MEM_SIZE   = 0xFFFFFFFF;
+const   T64Word MAX_PHYS_MEM_SIZE   = 0xFFFFFFFFF;
 
 const int T64_PAGE_SIZE_BYTES       = 4096;
 const int T64_PAGE_OFS_BITS         = 12;

@@ -39,7 +39,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 // A processor is a module with one CPU, TLBs and Caches. We create the component
 // objects right here and pass them our instance, such that they have access to 
-// these components.
+// these components. Typically, they keep local copies of the references they need.
 // 
 //----------------------------------------------------------------------------------------
 T64Processor::T64Processor( T64System       *sys,
@@ -55,14 +55,14 @@ T64Processor::T64Processor( T64System       *sys,
     this -> modNum  = modNum;
     this -> sys     = sys;
 
+    cpu     = new T64Cpu( this, cpuType );
+
     iTlb    = new T64Tlb( this, iTlbType );
     dTlb    = new T64Tlb( this, dTlbType );
 
     iCache  = new T64Cache( this, iCacheType );
     dCache  = new T64Cache( this, dCacheType );
 
-    cpu     = new T64Cpu( this, cpuType );
-    
     this -> reset( );
 }
 
@@ -72,9 +72,14 @@ T64Processor::T64Processor( T64System       *sys,
 //----------------------------------------------------------------------------------------
 void T64Processor::reset( ) {
 
+    this -> cpu -> reset( );
+    this -> iTlb -> reset( );
+    this -> dTlb -> reset( );
+    this -> iCache -> reset( );
+    this -> dCache -> reset( );
+
     instructionCount    = 0;
     cycleCount          = 0;
-
 }
 
 //----------------------------------------------------------------------------------------

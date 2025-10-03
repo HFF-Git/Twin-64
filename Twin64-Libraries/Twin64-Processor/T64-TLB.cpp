@@ -49,10 +49,13 @@ namespace {
 //----------------------------------------------------------------------------------------
 T64Tlb::T64Tlb( T64Processor *proc, T64TlbType tlbType ) {
 
+    this -> proc    = proc;
+    this -> tlbType = tlbType;
+
     switch ( tlbType ) {
 
-        case T64_TT_64S: tlbEntries = 64; break;
-        default: tlbEntries = 64;
+        case T64_TT_64S:    tlbEntries = 64; break;
+        default:            tlbEntries = 64;
     }
 
     map = (T64TlbEntry *) malloc( tlbEntries * sizeof( T64TlbEntry ));
@@ -90,7 +93,7 @@ T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
         T64TlbEntry *ptr = &map[ i ];
        
         if (( ptr -> valid ) && 
-            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> vSize ))) {
+            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> pSize ))) {
          
             ptr -> lastUsed = timeCounter;
             return( ptr );
@@ -124,7 +127,7 @@ void T64Tlb::insert( T64Word vAdr, T64Word info ) {
             ptr -> trapOnBranch  = false;
             ptr -> vAdr          = vAdr;
             ptr -> pAdr          = 0;
-            ptr -> vSize         = 0;
+            ptr -> pSize         = 0;
 
             return;
         }
@@ -150,7 +153,7 @@ void T64Tlb::insert( T64Word vAdr, T64Word info ) {
     victim -> trapOnBranch  = false;
     victim -> vAdr          = vAdr;
     victim -> pAdr          = 0;
-    victim -> vSize         = 0;
+    victim -> pSize         = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -164,7 +167,7 @@ void T64Tlb::purge( T64Word vAdr ) {
         T64TlbEntry *ptr = &map[ i ];
         
         if (( ptr -> valid ) && 
-            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> vSize ))) {
+            ( isInRange( vAdr, ptr ->vAdr, ptr -> vAdr + ptr -> pSize ))) {
         
             ptr -> valid = false;
         }

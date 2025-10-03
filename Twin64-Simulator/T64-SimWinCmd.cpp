@@ -1308,6 +1308,7 @@ void SimCommandsWin::modifyRegCmd( ) {
     SimTokTypeId    regSetId    = TYP_GREG;
     int             regNum      = 0;
     T64Word         val         = 0;
+    T64ModuleType   mType       = MT_NIL;
 
     ensureWinModeOn( );
     
@@ -1325,19 +1326,23 @@ void SimCommandsWin::modifyRegCmd( ) {
 
     if ( tok -> isToken( TOK_COMMA )) {
 
+        tok -> nextToken( );
         modNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
     }
     
     tok -> checkEOS( );
 
+    mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+
     switch( regSetId ) {
 
-        case TYP_PSW_PREG:  
-            glb -> system -> writePswReg( modNum, PSM_CPU, regNum, val );    break;
-        case TYP_GREG:      
-            glb -> system -> writeGeneralReg( modNum, PSM_CPU,regNum, val ); break;
-        case TYP_CREG:      
-            glb -> system -> writeControlReg( modNum, PSM_CPU,regNum, val ); break;
+        case TYP_PSW_PREG:  proc -> setPswReg( val );    break;
+        case TYP_GREG:      proc -> setGeneralReg( regNum, val ); break;
+        case TYP_CREG:      proc -> setControlReg( regNum, val ); break;
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1354,7 +1359,6 @@ void SimCommandsWin::modifyRegCmd( ) {
 void SimCommandsWin::purgeCacheCmd( ) {
     
     int pNum    = getWinModuleNum( );
-    int cNum    = getWinSubModuleNum( );
     int cSet    = getWinToggleVal( );
     int index   = 0;
     
@@ -1366,13 +1370,11 @@ void SimCommandsWin::purgeCacheCmd( ) {
         
         tok -> nextToken( );
         pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
-        tok -> acceptComma( );
-        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     }
     
     tok -> checkEOS( );
 
-    glb -> system -> purgeCacheLine( pNum, cNum, cSet, index );
+    glb -> system -> purgeCacheLine( pNum, 0, cSet, index );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1386,7 +1388,6 @@ void SimCommandsWin::purgeCacheCmd( ) {
 void SimCommandsWin::flushCacheCmd( ) {
     
     int pNum    = getWinModuleNum( );
-    int cNum    = getWinSubModuleNum( );
     int cSet    = getWinToggleVal( );
     int index   = 0;
 
@@ -1399,12 +1400,11 @@ void SimCommandsWin::flushCacheCmd( ) {
         tok -> nextToken( );
         pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
         tok -> acceptComma( );
-        cNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     }
 
     tok -> checkEOS( );
 
-    glb -> system -> flushCacheLine( pNum, cNum, cSet, index );
+    glb -> system -> flushCacheLine( pNum, 0, cSet, index );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1417,7 +1417,6 @@ void SimCommandsWin::flushCacheCmd( ) {
 void SimCommandsWin::insertTLBCmd( ) {
 
     int     pNum    = getWinModuleNum( );
-    int     tlbNum  = getWinSubModuleNum( );
     T64Word info1   = 0;
     T64Word info2   = 0;
 
@@ -1431,13 +1430,11 @@ void SimCommandsWin::insertTLBCmd( ) {
         
         tok -> nextToken( );
         pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-        tok -> acceptComma( );
-        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
     
     tok -> checkEOS( );
 
-    glb -> system -> insertTlbEntry( pNum, tlbNum, info1, info2 );
+    glb -> system -> insertTlbEntry( pNum, 0, info1, info2 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1451,7 +1448,6 @@ void SimCommandsWin::insertTLBCmd( ) {
 void SimCommandsWin::purgeTLBCmd( ) {
 
     int pNum    = getWinModuleNum( );
-    int tlbNum  = getWinSubModuleNum( );
     int index   = 0;
 
     ensureWinModeOn( );
@@ -1462,13 +1458,11 @@ void SimCommandsWin::purgeTLBCmd( ) {
         
         tok -> nextToken( );
         pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-        tok -> acceptComma( );
-        tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
    
     tok -> checkEOS( );
 
-    glb -> system -> purgeTlbEntry( pNum, tlbNum, index );
+    glb -> system -> purgeTlbEntry( pNum, 0, index );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1818,6 +1812,16 @@ void SimCommandsWin::winExchangeCmd( ) {
 // a window to them. So they must exist. The general form of the command is:
 //
 //  WN <winType> [ "," <arg1> [ "," <arg2> ]]]
+//
+//  WN  CPU     "," <proc>
+//  WN  ICACHE  "," <proc>
+//  WN  DCACHE  "," <proc>
+//  WN  ITLB    "," <proc>
+//  WN  DTLB    "," <proc>
+//  WN  MEM     "," <adr>
+//  WN  CODE    "," <adr>
+//  WN  TEXT    "," <str>
+// 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winNewWinCmd( ) {
     
@@ -1834,138 +1838,81 @@ void SimCommandsWin::winNewWinCmd( ) {
 
     switch ( winType ) {
 
-        // PSTATE PS  <proc>
-        // ICACHE IC  <proc>
-        // DCACHE DC  <proc>
-        // ITLB   IT  <proc>
-        // DTLB   DT  <proc>
-        // MEM        <adr>
-        // CODE       <adr>
-        // TEXT       <str>
-
-        case TOK_MODULE: {
-
-            int modNum    = 0;
-            int subModNum = 0;
-
-            tok -> acceptComma( );
-            modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-
-            if ( tok -> isToken( TOK_COMMA )) {
-            
-                subModNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            }
-
-            tok -> checkEOS( );
-
-            switch ( glb -> system -> getModuleType( modNum )) {
-            
-                case MT_CPU_CORE: {
-
-                    glb -> winDisplay -> windowNewProgState( modNum );  
-
-                } break;
-
-                case MT_CPU_TLB: {
-
-                    // two cases and the TLB type...
-
-                    glb -> winDisplay -> windowNewTlb( modNum, subModNum );
-
-                } break;
-
-                case MT_CPU_CACHE: {
-
-                    // two cases and the Cache type...
-
-                    glb -> winDisplay -> windowNewCache( modNum, subModNum );
-
-                } break;
-
-                default: throw( ERR_INVALID_WIN_TYPE ); // ??? fix ...
-            }
-
-        } break;
-
-        // review whether we would need all of them ....
-        // ??? CPU, TLB and CACHE could go away...
-
         case TOK_CPU: {
 
             tok -> acceptComma( );
-            int procNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewProgState( procNum );
+            glb -> winDisplay -> windowNewCpuState( modNum );  
 
         } break;
 
-        case TOK_TLB: {
+        case TOK_ITLB: {
 
             tok -> acceptComma( );
-            int procNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            int tlbNum  = 0;
- 
-            if ( tok -> isToken( TOK_COMMA )) {
-
-                tok -> nextToken( );
-                tlbNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            }
-
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
-            glb -> winDisplay -> windowNewTlb( procNum, tlbNum );
+
+            glb -> winDisplay -> windowNewITlb( modNum );  
 
         } break;
 
-        case TOK_CACHE: {
+        case TOK_DTLB: {
 
             tok -> acceptComma( );
-            int procNum     = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            int cacheNum    = 0;
- 
-            if ( tok -> isToken( TOK_COMMA )) {
-
-                tok -> nextToken( );
-                cacheNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
-            }
-
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
-            glb -> winDisplay -> windowNewCache( procNum, cacheNum );
+
+            glb -> winDisplay -> windowNewDTlb( modNum );  
 
         } break;
 
+        case TOK_ICACHE: {
 
-        // ??? make CODE a toggle of MEM ?
+            tok -> acceptComma( );
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            tok -> checkEOS( );
+
+            glb -> winDisplay -> windowNewICache( modNum );  
+
+        } break;
+
+        case TOK_DCACHE: {
+
+            tok -> acceptComma( );
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            tok -> checkEOS( );
+
+            glb -> winDisplay -> windowNewDCache( modNum );  
+
+        } break;
 
         case TOK_MEM: {
 
-            T64Word adr = 0;
-
-             if ( tok -> isToken( TOK_COMMA )) {
-
-                tok -> nextToken( );
-                adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
-            }
-
+            tok -> acceptComma( );
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
             tok -> checkEOS( );
+
             glb -> winDisplay -> windowNewAbsMem( adr );
         
         }  break;
 
-        case TOK_CODE: {   // necessary 
+        case TOK_CODE: {  
 
-            glb -> winDisplay -> windowNewAbsCode( );
+            tok -> acceptComma( );
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); // ??? max mem ?
+            tok -> checkEOS( );
+
+            glb -> winDisplay -> windowNewAbsCode( adr );
         
         }  break;
-
-
 
         case TOK_TEXT: {  // necessary 
 
             tok -> acceptComma( );
         
             char *argStr = nullptr;
-
             if ( tok -> tokTyp( ) == TYP_STR ) argStr = tok -> tokStr( );
             else throw ( ERR_INVALID_ARG );
 

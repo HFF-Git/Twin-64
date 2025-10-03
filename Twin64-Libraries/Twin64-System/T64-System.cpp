@@ -109,12 +109,14 @@ int T64System::addToSystemMap( T64Module  *module,
 //----------------------------------------------------------------------------------------
 int T64System:: addToModuleMap( T64Module *module ) {
 
-    int modNum = module -> getModuleNum( );
+    int             modNum  = module -> getModuleNum( );
+    T64ModuleType   modType = module -> getModuleType( );
 
     if ( modNum < MAX_MOD_MAP_ENTRIES ) {
 
-        moduleMap[ modNum ].modNum = modNum;
-        moduleMap[ modNum ].module = module;
+        moduleMap[ modNum ].modNum  = modNum;
+        moduleMap[ modNum ].modType = modType;
+        moduleMap[ modNum ].module  = module;
     
         if ( modNum > moduleMapHwm ) moduleMapHwm = modNum + 1;
         return( 0 );

@@ -815,6 +815,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             
         case ( OPC_GRP_ALU * 16 + OPC_NOP ): {
             
+            buf[0] = 0;
             return ( 0 );
         }
             
@@ -846,7 +847,7 @@ int T64DisAssemble::getOperandsFieldWidth( ) {
 
 int T64DisAssemble::formatOpCode( char *buf, int bufLen, uint32_t instr ) {
     
-    if ( bufLen < getOpCodeFieldWidth( )) 
+    if ( bufLen >= getOpCodeFieldWidth( )) 
         return ( buildOpCodeStr( buf, instr ));
     else                                 
         return ( -1 );
@@ -854,7 +855,7 @@ int T64DisAssemble::formatOpCode( char *buf, int bufLen, uint32_t instr ) {
 
 int T64DisAssemble::formatOperands( char *buf, int bufLen, uint32_t instr, int rdx ) {
     
-    if ( bufLen < getOperandsFieldWidth( )) 
+    if ( bufLen >= getOperandsFieldWidth( )) 
         return ( buildOperandStr( buf, instr, rdx ));
     else                                    
         return ( -1 );

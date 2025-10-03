@@ -114,16 +114,12 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
                     if ( isSafeFinalByte( finalByte )) {
                         
                         while ( escSeqStart < src ) *dst++ = *escSeqStart++;
-                        
                     } 
                     else continue;
-                    
                 } 
                 else break;
-                
             } 
             else *dst++ = *src++;
-            
         } 
         else *dst++ = *src++;
     }
@@ -143,9 +139,16 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 // Object creator.
 //
 //----------------------------------------------------------------------------------------
-SimWinProgState::SimWinProgState( SimGlobals *glb, int procModuleNum ) : SimWin( glb ) { 
+SimWinCpuState::SimWinCpuState( SimGlobals *glb, int modNum ) : SimWin( glb ) { 
 
-    this -> procModuleNum = procModuleNum;
+    this -> modNum = modNum;
+    this -> glb    = glb;
+
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    this -> proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
 }
 
 //----------------------------------------------------------------------------------------
@@ -153,7 +156,7 @@ SimWinProgState::SimWinProgState( SimGlobals *glb, int procModuleNum ) : SimWin(
 // time, or for the WDEF command.
 //
 //----------------------------------------------------------------------------------------
-void SimWinProgState::setDefaults( ) {
+void SimWinCpuState::setDefaults( ) {
     
     setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
@@ -175,26 +178,28 @@ void SimWinProgState::setDefaults( ) {
 //  <winId> Proc: n IA: 0x00_0000_0000 ST: [xxxxxxx] <rdx>
 //
 //----------------------------------------------------------------------------------------
-void SimWinProgState::drawBanner( ) {
+void SimWinCpuState::drawBanner( ) {
     
-    uint32_t fmtDesc    = FMT_BOLD | FMT_INVERSE;
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
    
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) " Proc: ", fmtDesc );
-    printNumericField( procModuleNum, fmtDesc | FMT_DEC );
+    printTextField((char *) " CPU: ", fmtDesc );
+    printNumericField( modNum, fmtDesc | FMT_DEC );
+
+    T64Word psw = proc -> getPswReg( );
 
     printTextField((char *) " IA: ", fmtDesc );
-    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
+    printNumericField( psw, fmtDesc | FMT_HEX_2_4_4_4 );
 
     printTextField((char *) " ST: [", fmtDesc );
-    printBitField( 0, 63, 'A', fmtDesc );
-    printBitField( 0, 62, 'B', fmtDesc );
-    printBitField( 0, 61, 'C', fmtDesc );
-    printBitField( 0, 60, 'D', fmtDesc );
-    printBitField( 0, 59, 'E', fmtDesc );
-    printBitField( 0, 58, 'F', fmtDesc );
+    printBitField( psw, 63, 'A', fmtDesc );
+    printBitField( psw, 62, 'B', fmtDesc );
+    printBitField( psw, 61, 'C', fmtDesc );
+    printBitField( psw, 60, 'D', fmtDesc );
+    printBitField( psw, 59, 'E', fmtDesc );
+    printBitField( psw, 58, 'F', fmtDesc );
     printTextField((char *) "]", fmtDesc );
 
     padLine( fmtDesc );
@@ -218,7 +223,7 @@ void SimWinProgState::drawBanner( ) {
 // Toggle to CRs. Perhaps toggle to more formatted screens...
 // 
 //----------------------------------------------------------------------------------------
-void SimWinProgState::drawBody( ) {
+void SimWinCpuState::drawBody( ) {
     
     uint32_t fmtDesc = FMT_DEF_ATTR | FMT_ALIGN_LFT;
     
@@ -234,7 +239,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 0; i < 4; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -243,7 +248,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 4; i < 8; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -252,7 +257,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 8; i < 12; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -261,7 +266,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 12; i < 16; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -278,7 +283,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 0; i < 4; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -287,7 +292,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 4; i < 8; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -296,7 +301,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 8; i < 12; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -305,7 +310,7 @@ void SimWinProgState::drawBody( ) {
     
         for ( int i = 12; i < 16; i++ ) {
 
-            printNumericField( 0, numFmtField, numFlen );
+            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -325,11 +330,6 @@ void SimWinProgState::drawBody( ) {
         setWinCursor( 2, 1 );
         printTextField((char *) "Toggle val 3", fmtDesc );
     }
-}
-
-int  SimWinProgState::getProcModuleNum( ) {
-
-    return( procModuleNum );
 }
 
 //****************************************************************************************
@@ -366,7 +366,7 @@ void SimWinAbsMem::setDefaults( ) {
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrement( 8 * 4 );
-    setLimitItemAdr( UINT_MAX ); // ??? higher for 64-bit ?
+    setLimitItemAdr( MAX_PHYS_MEM_SIZE );
 }
 
 //----------------------------------------------------------------------------------------
@@ -452,9 +452,13 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 // instructions and also need to remove it when the window is killed. 
 //
 //----------------------------------------------------------------------------------------
-SimWinCode::SimWinCode( SimGlobals *glb ) : SimWinScrollable( glb ) {
+SimWinCode::SimWinCode( SimGlobals *glb, T64Word adr ) : SimWinScrollable( glb ) {
 
     disAsm = new T64DisAssemble( );
+
+    // ??? get the mem object ... 
+
+    this -> adr = adr;
 }
 
 SimWinCode::  ~  SimWinCode( ) {
@@ -478,10 +482,10 @@ void SimWinCode::setDefaults( ) {
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
 
-    setHomeItemAdr( 0 );
+    setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
     setLineIncrement( 4 );
-    setLimitItemAdr( UINT_MAX );
+    setLimitItemAdr( MAX_PHYS_MEM_SIZE );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
     setEnable( true );
@@ -514,9 +518,9 @@ void SimWinCode::drawBanner( ) {
     printWindowIdField( fmtDesc );
     printTextField((char *) "Code Memory ", ( fmtDesc | FMT_ALIGN_LFT ), 16 );
     printTextField((char *) "Current: " );
-    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_4_4 );
+    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  Home: " );
-    printNumericField(  getHomeItemAdr( ));
+    printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }
@@ -532,16 +536,13 @@ void SimWinCode::drawBanner( ) {
 void SimWinCode::drawLine( T64Word itemAdr ) {
     
     uint32_t    fmtDesc                     = FMT_DEF_ATTR;
-    uint32_t    instr                       = 0xFFFFFFFF;
+    uint32_t    instr                       = 0x0;
     char        buf[ MAX_TEXT_LINE_SIZE ]   = { 0 };
     
-    printNumericField( itemAdr, fmtDesc | FMT_ALIGN_LFT, 12 );
+    printNumericField( itemAdr, fmtDesc | FMT_ALIGN_LFT | FMT_HEX_2_4_4, 14 );
   
-    if ( itemAdr ==  0 ) {
-        
-        printTextField((char *) "    >", fmtDesc, 5 );
-    }
-    else printTextField((char *) "     ", fmtDesc, 5 );
+    if ( itemAdr ==  0 ) printTextField((char *) "    >", fmtDesc, 5 );
+    else                 printTextField((char *) "     ", fmtDesc, 5 );
    
     printNumericField( instr, fmtDesc | FMT_ALIGN_LFT | FMT_HEX_8, 12 );
     
@@ -571,7 +572,11 @@ void SimWinCode::drawLine( T64Word itemAdr ) {
 // Object constructor. All we do is to remember what kind of TLB this is.
 //
 //----------------------------------------------------------------------------------------
-SimWinTlb::SimWinTlb( SimGlobals *glb ) : SimWinScrollable( glb ) { 
+SimWinTlb::SimWinTlb( SimGlobals *glb, int modNum ) : SimWinScrollable( glb ) { 
+
+    this -> modNum = modNum;
+
+    // ??? get the TLB object ...
 
     setWinType( WT_TLB_WIN );
     setDefaults( );
@@ -620,14 +625,12 @@ void SimWinTlb::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) "Proc: " );
+    printTextField((char *) "CPU: " );
     printNumericField( 0, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "  Tlb: " );
-    printNumericField( 0, ( fmtDesc | FMT_DEC ));
+    // ??? how do we know which TLB ?
 
-    printTextField((char *) "  Set: " );
-    printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
+    printTextField((char *) " xTlb " );
 
     printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
@@ -677,9 +680,11 @@ void SimWinTlb::drawLine( T64Word index ) {
 // Object constructor.
 //
 //----------------------------------------------------------------------------------------
-SimWinCache::SimWinCache( SimGlobals *glb ) : SimWinScrollable( glb ) { 
+SimWinCache::SimWinCache( SimGlobals *glb, int modNum  ) : SimWinScrollable( glb ) { 
 
-    // ??? get the cache....
+    this -> modNum = modNum;
+
+    // ??? get the cache object
 
     // ??? we need to be aware whether this is an 8 word cache line.
     // ??? this line is broken into two, which impact ts the window lines and
@@ -747,16 +752,17 @@ void SimWinCache::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawBanner( ) {
     
-    uint32_t    fmtDesc     = FMT_BOLD | FMT_INVERSE;
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
 
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) "Proc: " );
-    printNumericField( procMuduleNum, ( fmtDesc | FMT_DEC ));
+    printTextField((char *) "CPU: " );
+    printNumericField( modNum, ( fmtDesc | FMT_DEC ));
 
-    printTextField((char *) "  Cache: " );
-    printNumericField( cacheNum, ( fmtDesc | FMT_DEC ));
+    // ?? which cache ???
+
+    printTextField((char *) " xCache" );
 
     printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));

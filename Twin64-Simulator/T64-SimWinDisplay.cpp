@@ -151,8 +151,10 @@ bool SimWinDisplay::validWindowType( SimTokId winType ) {
     
     return( ( winType == TOK_PROC   ) ||
             ( winType == TOK_MEM    ) || 
-            ( winType == TOK_TLB    ) ||
-            ( winType == TOK_CACHE  ) ||
+            ( winType == TOK_ITLB   ) ||
+            ( winType == TOK_DTLB   ) ||
+            ( winType == TOK_ICACHE ) ||
+            ( winType == TOK_DCACHE ) ||
             ( winType == TOK_CODE   ) || 
             ( winType == TOK_TEXT   ));
 }
@@ -703,11 +705,11 @@ void SimWinDisplay::windowNewAbsMem( T64Word adr ) {
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewAbsCode( ){
+void SimWinDisplay::windowNewAbsCode( T64Word adr ){
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinCode( glb ); 
+    windowList[ slot ] = (SimWin *) new SimWinCode( glb, adr ); 
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
@@ -715,49 +717,71 @@ void SimWinDisplay::windowNewAbsCode( ){
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewProgState( int procModuleNum ) {
+void SimWinDisplay::windowNewCpuState( int modNum ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinProgState( glb, procModuleNum  );
+    windowList[ slot ] = (SimWin *) new SimWinCpuState( glb, modNum  );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( procModuleNum );
-    windowList[ slot ] -> setWinSubModuleNum( 0 );
-
+    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewTlb( int procModuleNum, int tlbNum ) {
+void SimWinDisplay::windowNewITlb( int modNum ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinTlb( glb );
+    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( procModuleNum );
-    windowList[ slot ] -> setWinSubModuleNum( tlbNum );
+    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewCache( int procModuleNum, int cacheNum ) {
+void SimWinDisplay::windowNewDTlb( int modNum ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinCache( glb );
+    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
-    windowList[ slot ] -> setModuleNum( procModuleNum );
-    windowList[ slot ] -> setWinSubModuleNum( cacheNum );
+    windowList[ slot ] -> setModuleNum( modNum );
     currentWinNum = slot + 1;
 }
 
+void SimWinDisplay::windowNewICache( int modNum ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setEnable( true );
+    windowList[ slot ] -> setModuleNum( modNum );
+    currentWinNum = slot + 1;
+}
+
+void SimWinDisplay::windowNewDCache( int modNum ) {
+
+    int slot = getFreeWindowSlot( );
+
+    windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
+    windowList[ slot ] -> setDefaults( );
+    windowList[ slot ] -> setWinIndex( slot + 1 );
+    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setEnable( true );
+    windowList[ slot ] -> setModuleNum( modNum );
+    currentWinNum = slot + 1;
+} 
+   
 void SimWinDisplay::windowNewText( char *pathStr ) {
 
     int slot = getFreeWindowSlot( );

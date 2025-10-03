@@ -89,11 +89,7 @@ enum T64ModuleType {
 
 //----------------------------------------------------------------------------------------
 // The T64Module object represents and an object in the system. It is the base class
-// for all concrete modules and submodules. The module may also get a copy of the 
-// address range. 
-//
-// ??? may be not, it can be retrieved by looking at the address map for the matching
-// module... ?
+// for all concrete modules and submodules. 
 //
 //----------------------------------------------------------------------------------------
 struct T64Module {
@@ -128,13 +124,16 @@ struct T64Module {
 };
 
 //----------------------------------------------------------------------------------------
-//
+// Each module is stored in the module map along with its number, the type and
+// reference to the module object. We store this redundant info for checking before
+// getting a pointer to the particular module object.
 //
 //----------------------------------------------------------------------------------------
 struct T64ModuleMapEntry {
 
-    int         modNum  = 0;
-    T64Module   *module = nullptr;
+    int             modNum  = 0;
+    T64ModuleType   modType = MT_NIL;
+    T64Module       *module = nullptr;
 };
 
 //----------------------------------------------------------------------------------------

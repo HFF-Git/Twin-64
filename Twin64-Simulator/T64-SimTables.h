@@ -44,8 +44,10 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
     { .name = "PROC",       .typ = TYP_SYM,     .tid = TOK_PROC               },
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
-    { .name = "TLB",        .typ = TYP_SYM,     .tid = TOK_TLB                },
-    { .name = "CACHE",      .typ = TYP_SYM,     .tid = TOK_CACHE              },
+    { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB               },
+    { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB               },
+    { .name = "ICACHE",     .typ = TYP_SYM,     .tid = TOK_ICACHE             },
+    { .name = "DCACHE",     .typ = TYP_SYM,     .tid = TOK_DCACHE             },
     { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                },
     { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT               },
 
@@ -262,6 +264,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_INVALID_WIN_TYPE,           
       .errStr = (char *) "Invalid window type" },
+
+    { .errNum = ERR_INVALID_MODULE_TYPE,           
+      .errStr = (char *) "Invalid module type" },
 
     { .errNum = ERR_EXPECTED_INSTR_VAL,         
       .errStr = (char *) "Expected the instruction value" },

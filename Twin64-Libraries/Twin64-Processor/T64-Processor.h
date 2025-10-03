@@ -190,16 +190,16 @@ struct T64TlbEntry {
 
     public:
 
-    bool            valid;
-    bool            uncached;
-    bool            locked;
-    bool            modified;
-    bool            trapOnBranch;
-    T64Word         vAdr;
-    T64Word         pAdr;
-    int             vSize;
-    uint8_t         accessRights;
-    T64Word         lastUsed;
+    bool            valid           = false;
+    bool            uncached        = false;
+    bool            locked          = false;
+    bool            modified        = false;
+    bool            trapOnBranch    = false;
+    T64Word         vAdr            = 0;
+    T64Word         pAdr            = 0;
+    int             pSize           = 0;
+    uint8_t         accessRights    = 0;
+    T64Word         lastUsed        = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -320,22 +320,12 @@ struct T64Cpu {
 //
 // end
 //----------------------------------------------------------------------------------------
-enum T64ProcSubModules : int {
-
-   PSM_CPU      = 0,
-   PSM_ITLB     = 1,
-   PSM_DTLB     = 2,
-   PSM_ICACHE   = 3,
-   PSM_DCACHE   = 4,
-   PSM_MAX      = 5
-};
-
 struct T64Processor : T64Module {
     
-public:
+    public:
     
     T64Processor( T64System     *sys,
-                  int            modNum,
+                  int           modNum,
                   T64Options    options,  
                   T64CpuType    cpuType,
                   T64TlbType    iTlbType,
@@ -347,7 +337,6 @@ public:
     void            reset( );
     void            step( );
     
-
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );
 

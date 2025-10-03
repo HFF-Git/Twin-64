@@ -89,26 +89,6 @@ int SimWin::getWinModuleNum( ) {
     return ( winModuleNum );
 }
 
-void SimWin::setWinSubModuleNum( int num ) {
-
-    winSubmoduleNum = num;
-}
-
-int SimWin::getWinSubModuleNum( ) {
-
-   return( winSubmoduleNum ); 
-}
-
-void SimWin::setWinSubModuleInfo( int num ) {
-
-    winSubModuleInfo = num;
-}
-
-int SimWin::getWinSubModuleInfo( ) {
-
-    return ( winSubModuleInfo );
-}
-
 bool SimWin::isEnabled( ) { 
     
     return ( winEnabled ); 

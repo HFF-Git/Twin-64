@@ -38,27 +38,24 @@ namespace {
 // CPU
 //
 //----------------------------------------------------------------------------------------
-//
+// CPU object constructor. We keep references to the individual processor components
+// for quick access.
 //
 //----------------------------------------------------------------------------------------
 T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 
+    this -> proc    = proc;
     this -> cpuType = cpuType;
+    this -> iTlb    = proc -> iTlb;
+    this -> dTlb    = proc -> dTlb;
+    this -> iCache  = proc -> iCache;
+    this -> dCache  = proc -> dCache;
 
     switch ( cpuType ) {
 
         default: ;
     }
-    
 
-    #if 0
-    this -> iTlb    = ( T64Tlb *) proc -> subModTab[ 1 ]; 
-    this -> dTlb    = ( T64Tlb *) proc -> subModTab[ 2 ];
-    this -> iCache  = ( T64Cache *) proc -> subModTab[ 3 ];
-    this -> dCache  = ( T64Cache *) proc -> subModTab[ 4 ];
-    #endif
-
-    this -> proc = proc;
     this -> reset( );
 }
 

@@ -212,7 +212,7 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( T64Processor *proc, T64CacheType cacheTyp )  { 
+T64Cache::T64Cache( T64Processor *proc, T64CacheType cacheType )  { 
 
     this -> cacheType   = cacheType;
     this -> proc        = proc;

@@ -50,7 +50,18 @@ int main( int argc, const char * argv[] ) {
     glb -> env          -> setupPredefined( );
     glb -> winDisplay   -> setupWinDisplay( argc, argv );
 
+    T64Processor *proc = new T64Processor(  glb -> system,
+                                            3,
+                                            T64_PO_NIL,
+                                            T64_CPU_T_NIL,
+                                            T64_TT_64S,
+                                            T64_TT_64S,
+                                            T64_CT_2W_128S_4L,
+                                            T64_CT_2W_128S_4L );
+                                        
 
+    glb -> system -> addToModuleMap( proc );
+    
     // ??? register modules here ?
 
 

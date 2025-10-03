@@ -210,16 +210,15 @@ enum SimTokId : uint16_t {
     TOK_IDENT               = 100,      TOK_NUM                 = 101,      
     TOK_STR                 = 102, 
 
-    TOK_DEC                 = 104,      TOK_HEX                 = 105,
-    TOK_CODE                = 106,
-
     TOK_DEF                 = 200,      TOK_ALL                 = 201,
-    TOK_MODULE              = 202, 
-    TOK_PROC                = 203,      TOK_CPU                 = 204,   
-    TOK_TLB                 = 205,      TOK_CACHE               = 206,      
-    TOK_MEM                 = 207,      TOK_STATS               = 208,      
-    TOK_TEXT                = 209, 
-    
+    TOK_DEC                 = 202,      TOK_HEX                 = 203,
+    TOK_MEM                 = 204,      TOK_CODE                = 205,  
+    TOK_STATS               = 206,      TOK_TEXT                = 207,        
+   
+    TOK_PROC                = 210,      TOK_CPU                 = 211,   
+    TOK_ITLB                = 212,      TOK_DTLB                = 213,  
+    TOK_ICACHE              = 214,      TOK_DCACHE              = 215,
+   
     //------------------------------------------------------------------------------------
     // Line Commands.
     //
@@ -319,6 +318,11 @@ enum SimErrMsgId : int {
     ERR_INVALID_RADIX               = 16,
     ERR_INVALID_REG_ID              = 17,
     ERR_INVALID_FMT_OPT             = 23,
+
+    ERR_INVALID_MODULE_TYPE         = 24,
+
+
+    ERR_INVALID_NUM                 = 25,
     
     // -----
    
@@ -346,8 +350,6 @@ enum SimErrMsgId : int {
    
     
 
-
-    ERR_INVALID_NUM                 = 24,
    
     ERR_INVALID_ELF_FILE            = 700,
     ERR_ELF_INVALID_ADR_RANGE       = 701,
@@ -767,12 +769,6 @@ struct SimWin {
     void            setModuleNum( int num );
     int             getWinModuleNum( );
 
-    void            setWinSubModuleNum( int num );
-    int             getWinSubModuleNum( );
-
-    void            setWinSubModuleInfo( int num );
-    int             getWinSubModuleInfo( );
-
     void            setEnable( bool arg );
     bool            isEnabled( );
     
@@ -855,8 +851,6 @@ struct SimWin {
     SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
     int             winModuleNum        = 0;
-    int             winSubmoduleNum     = 0;
-    int             winSubModuleInfo    = 0;
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -925,26 +919,25 @@ struct SimWinScrollable : SimWin {
 };
 
 //----------------------------------------------------------------------------------------
-// Program State Register Window. This window holds the programmer visible state. The 
-// window is a toggle window, top show different sets of register data. The argStr
-// passed on object creation contains the processor module number.
+// CPU Register Window. This window holds the programmer visible state. The window
+// is a toggle window, top show different sets of register data. The constructor is
+// passed our globals and the module number of the processor.
 //
 //----------------------------------------------------------------------------------------
-struct SimWinProgState : SimWin {
+struct SimWinCpuState : SimWin {
     
     public:
     
-    SimWinProgState( SimGlobals *glb, int procModuleNum );
+    SimWinCpuState( SimGlobals *glb, int modNum );
     
     void setDefaults( );
     void drawBanner( );
     void drawBody( );
 
-    int  getProcModuleNum( );
-
     private:
 
-    int procModuleNum;
+    int          modNum  = 0;
+    T64Processor *proc   = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -966,7 +959,8 @@ struct SimWinAbsMem : SimWinScrollable {
 
     private:
 
-    T64Word adr;
+    T64Word     adr     = 0;
+    T64Memory   *mem    = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -979,7 +973,7 @@ struct SimWinCode : SimWinScrollable {
     
     public:
     
-    SimWinCode( SimGlobals *glb );
+    SimWinCode( SimGlobals *glb, T64Word adr );
     ~ SimWinCode( );
     
     void setDefaults( );
@@ -988,7 +982,9 @@ struct SimWinCode : SimWinScrollable {
     
     private:
 
-    T64DisAssemble *disAsm = nullptr;
+    T64Word         adr     = 0;
+    T64Memory       *mem    = nullptr;
+    T64DisAssemble  *disAsm = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -999,7 +995,7 @@ struct SimWinTlb : SimWinScrollable {
     
     public:
     
-    SimWinTlb( SimGlobals *glb );
+    SimWinTlb( SimGlobals *glb, int modNum );
     
     void setDefaults( );
     void drawBanner( );
@@ -1007,8 +1003,8 @@ struct SimWinTlb : SimWinScrollable {
 
     private:
 
-    int procModuleNum;
-    int tlbNum;
+    int     modNum  = 0;
+    T64Tlb  *tlb    = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1021,7 +1017,7 @@ struct SimWinCache : SimWinScrollable {
     
     public:
     
-    SimWinCache( SimGlobals *glb );
+    SimWinCache( SimGlobals *glb, int modNum );
     
     void setDefaults( );
     void drawBanner( );
@@ -1029,10 +1025,8 @@ struct SimWinCache : SimWinScrollable {
 
     private:
 
-    int         procMuduleNum   = 0;
-    int         cacheNum        = 0;;
-
-    T64Cache    *cache          = nullptr;
+    int         modNum      = 0;
+    T64Cache    *cache      = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1189,7 +1183,6 @@ private:
     T64Assemble         *inlineAsm      = nullptr;
     T64DisAssemble      *disAsm         = nullptr;   
     SimTokId            currentCmd      = TOK_NIL;
-   
 };
 
 //----------------------------------------------------------------------------------------
@@ -1236,10 +1229,12 @@ public:
     void            windowExchangeOrder( int winNum );
     
     void            windowNewAbsMem( T64Word adr );
-    void            windowNewAbsCode( );
-    void            windowNewProgState( int procModuleNum );
-    void            windowNewTlb( int procModuleNum, int tlbNum = 0 );
-    void            windowNewCache( int procModuleNum, int cacheNum = 0 );
+    void            windowNewAbsCode( T64Word adr );
+    void            windowNewCpuState( int modNum );
+    void            windowNewITlb( int modNum );
+    void            windowNewDTlb( int modNum );
+    void            windowNewICache( int modNum );
+    void            windowNewDCache( int modNum );
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd = 0  );
@@ -1270,7 +1265,6 @@ public:
     bool            winModeOn                   = false;
 
     SimGlobals      *glb                        = nullptr;
-   
     SimWin          *windowList[ MAX_WINDOWS ]  = { nullptr };
 
     public: 
