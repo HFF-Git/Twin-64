@@ -554,28 +554,28 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_CACHE,
         .cmdNameStr     = (char *) "pca",
-        .cmdSyntaxStr   = (char *) "pca <proc>, <cache>, <set>, <index>",
+        .cmdSyntaxStr   = (char *) "pca <type> , <vAdr>",
         .helpStr        = (char *) "purges cache line data"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_F_CACHE,
         .cmdNameStr     = (char *) "fca",
-        .cmdSyntaxStr   = (char *) "fca <proc>, <cache>, <set>, <index>",
+        .cmdSyntaxStr   = (char *) "fca <type> , <vAdr>",
         .helpStr        = (char *) "flushes cache line data"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_I_TLB,
         .cmdNameStr     = (char *) "itlb",
-        .cmdSyntaxStr   = (char *) "itlb <proc>, <tlb>, <set>, <info1> <info2>",
+        .cmdSyntaxStr   = (char *) "itlb <type> , <vAdr> , <info>",
         .helpStr        = (char *) "inserts an entry into the TLB"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_TLB,
         .cmdNameStr     = (char *) "ptlb",
-        .cmdSyntaxStr   = (char *) "ptlb <proc>, <tlb>, <set>, <vAdr>",
+        .cmdSyntaxStr   = (char *) "ptlb <type> , <vAdr>",
         .helpStr        = (char *) "purges an entry from the TLB"
     },
     

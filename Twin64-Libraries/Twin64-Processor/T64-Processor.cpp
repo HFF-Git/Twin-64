@@ -144,6 +144,49 @@ void T64Processor::purgeDataTlb( T64Word vAdr ) {
     else throw ( 99 );
 }
 
+bool T64Processor::getInstrTlbEntryByIndex( int index, T64Word *vAdr, T64Word *info ) {
+
+    T64TlbEntry *e = iTlb -> getTlbEntry( index );
+    if ( e != nullptr ) {
+        
+
+        return( true );
+    }
+    else {
+
+        *vAdr = 0;
+        *info = 0;
+        return( false );
+    }     
+}
+
+int T64Processor::getInstrTlbEntries( ) {
+
+    return( iTlb -> getTlbSize( ));
+}
+
+bool T64Processor::getDataTlbEntryByIndex( int index, T64Word *vAdr, T64Word *info ) {
+
+    T64TlbEntry *e = dTlb -> getTlbEntry( index );
+    if ( e != nullptr ) {
+        
+
+        return( true );
+    }
+    else {
+
+        *vAdr = 0;
+        *info = 0;
+        return( false );
+    }     
+}
+
+int T64Processor::getDataTlbEntries( ) {
+
+    return( dTlb -> getTlbSize( ));
+}
+
+
 //----------------------------------------------------------------------------------------
 // Cache routines. Called by the CPU and externally by monitors and debuggers. 
 //
@@ -174,11 +217,6 @@ bool T64Processor::getICacheLineByIndex( uint32_t          way,
 
     return( iCache -> getCacheLineByIndex( way, set, info, data ));
 }
-
-bool T64Processor::purgeICacheLineByIndex( uint32_t way, uint32_t set ) {
-
-    return( iCache -> purgeCacheLineByIndex( way, set ));
-}
    
 bool T64Processor::getDCacheLineByIndex( uint32_t          way,
                                          uint32_t          set, 
@@ -186,16 +224,6 @@ bool T64Processor::getDCacheLineByIndex( uint32_t          way,
                                          uint8_t           **data ) {
 
     return( dCache -> getCacheLineByIndex( way, set, info, data ));
-}
-
-bool T64Processor::purgeDCacheLineByIndex( uint32_t way, uint32_t set ) {
-
-    return( dCache -> purgeCacheLineByIndex( way, set ));
-}
-
-bool T64Processor::fushDCacheLineByIndex( uint32_t way, uint32_t set ) {
-
-    return( dCache -> flushCacheLineByIndex( way, set ));
 }
 
 //----------------------------------------------------------------------------------------

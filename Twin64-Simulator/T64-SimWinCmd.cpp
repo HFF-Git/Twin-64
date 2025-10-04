@@ -1222,13 +1222,12 @@ void SimCommandsWin::redoCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Display absolute memory command. The memory address is a byte address. The offset 
-// address is a byte address, the length is measured in bytes, rounded up to the a 
-// word size. We accept any address and length and only check that the offset plus 
-// length does not exceed the address space. The display routines, who will call the 
-// actual memory object will take care of gaps in the memory address range. The format
-// specifier will allow for HEX, DECIMAL and CODE. In the case of the code option, the
-// default number format option is used for showing the offset value.
+// Display absolute memory command. The offset address is a byte address, the length
+// is measured in bytes, rounded up to the a word size. We accept any address and 
+// length and only check that the offset plus length does not exceed the physical 
+// address space. The format specifier will allow for HEX, DECIMAL and CODE. In the
+// case of the code option, the default number format option is used for showing the
+// offset value.
 //
 //  DA <ofs> [ "," <len> [ "," <fmt> ]]
 //----------------------------------------------------------------------------------------
@@ -1267,7 +1266,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     
     tok -> checkEOS( );
     
-    if (((uint64_t) ofs + len ) < INT64_MAX ) { // ??? rather memory size ?
+    if (((T64Word) ofs + len ) < T64_MAX_PHYS_MEM_SIZE ) { 
         
         if ( asCode ) displayAbsMemContentAsCode( ofs, len );
         else          displayAbsMemContent( ofs, len, rdx );
@@ -1276,9 +1275,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Modify absolute memory command. This command accepts data values for up to eight
-// consecutive locations. We also use this command to populate physical memory from 
-// a script file.
+// Modify absolute memory command. 
 //
 //  MA <ofs> <val>
 //----------------------------------------------------------------------------------------
@@ -1296,7 +1293,6 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 // We must be in windows mode and the current window must be a CPU type window.
 //
 //  MR <reg> <val>
-//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
@@ -1347,8 +1343,7 @@ void SimCommandsWin::modifyRegCmd( ) {
 // Purges a cache line from the cache. We must be in windows mode and the current
 // window must be a cache window. 
 //
-//  PCA <type> "," <index> 
-//
+//  PCA <type> "," <vAdr> 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
@@ -1364,9 +1359,9 @@ void SimCommandsWin::purgeCacheCmd( ) {
     else throw ( ERR_EXPECTED_WIN_ID );
 
     if (( winType != TOK_ICACHE ) && ( winType != TOK_DCACHE ))
-        throw ( 9999 );
+        throw ( 9999 ); // ??? fix ...
   
-    int index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
+    T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
     if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CACHE_WIN ) 
@@ -1380,21 +1375,16 @@ void SimCommandsWin::purgeCacheCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    if ( winType == TOK_ICACHE ) 
-       proc -> purgeICacheLineByIndex( getWinToggleVal( ), index );
-    else if ( winType == TOK_DCACHE ) 
-       proc -> purgeDCacheLineByIndex( getWinToggleVal( ), index );
-    else ;
+    if      ( winType == TOK_ICACHE )   proc -> purgeInstrCache( vAdr );
+    else if ( winType == TOK_DCACHE )   proc -> purgeDataCache( vAdr );
+    else throw ( 9999 ); // ??? fix ...
 }
 
 //----------------------------------------------------------------------------------------
-// Flushes a cache line from the cache. We must be in windows mode. If the module and 
-// submodule is not passed, we use the window values for module, submodule and 
-// the current toggle value for the actual set. Note that the validation is done at
-// the system object level.
+// Flushes a cache line from the cache. We must be in windows mode and the current 
+// window must be a Cache window. 
 //
-//  FCA <type> "," <index> 
-//
+//  FCA <type> "," <vAdr> 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
 
@@ -1412,7 +1402,7 @@ void SimCommandsWin::flushCacheCmd( ) {
     if ( winType != TOK_ICACHE )
         throw ( 9999 );
   
-    int index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
+    T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
     if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CACHE_WIN ) 
@@ -1426,72 +1416,90 @@ void SimCommandsWin::flushCacheCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    proc -> purgeICacheLineByIndex( getWinToggleVal( ), index );
+    proc -> flushDataCache( vAdr );
     // ??? check ?
 }
 
 //----------------------------------------------------------------------------------------
-// Insert into TLB command. We have two modes. We must be in windows mode. If the
-// module and submodule is not passed, we pass the window values for module and 
-// submodule. Note that the validation is done at the system object level.
+// Insert into TLB command. We have two modes. We must be in windows mode and the 
+// current window must be a TLB window. 
 //
-//  ITLB  <info1> "," <info2> [ "," <proc> ] 
-//
-//
-// ??? this command should only work when we point at a TLB ? t
+//  ITLB  <type> "," <vAdr> "," <info>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
-    int     pNum    = 0; // fix: of current window...
-    T64Word info1   = 0;
-    T64Word info2   = 0;
+    SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
 
-    info1 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
-    tok -> acceptComma( );
-    info2 = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
-    
-    if ( tok -> isToken( TOK_COMMA )) {
+    if ( tok -> tokTyp( ) == TYP_SYM ) {
         
+        winType = tok -> tokId( );
         tok -> nextToken( );
-        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
+    else throw ( ERR_EXPECTED_WIN_ID );
+
+    tok -> acceptComma( );
+    T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
+    tok -> acceptComma( );
+    T64Word info = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
     
     tok -> checkEOS( );
 
-    // check if window current is a TLB window
-    // then just call the associated TLB object.
+      if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
+        throw( ERR_INVALID_WIN_TYPE );
+
+    int modNum = glb -> winDisplay -> getCurrentWinModNum( );
+    // ??? check ?
+
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+
+    if      ( winType == TOK_ITLB ) proc -> insertInstrTlb( vAdr, info );
+    else if ( winType == TOK_DTLB ) proc -> insertDataTlb( vAdr, info );
+    else ;
 }
 
 //----------------------------------------------------------------------------------------
-// Purge from TLB command. We have two modes. We must be in windows mode. If the
-// module and submodule is not passed, we pass the window values for module and 
-// submodule. Note that the validation is done at the system object level.
+// Purge from TLB command. We have two modes. We must be in windows mode and the 
+// current window must be a TLB window. 
 //
-//  PTLB <index [ "," <proc> <tlb> ]
-//  
-// ??? this command should only work when we point at a TLB ? 
+//  PTLB  <type> "," <vAdr>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
-    int pNum    = 0; // fix: of current window...
-    int index   = 0;
+    SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
-   
-    index = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
-   
-    if ( tok -> isToken( TOK_COMMA )) {
+
+    if ( tok -> tokTyp( ) == TYP_SYM ) {
         
+        winType = tok -> tokId( );
         tok -> nextToken( );
-        pNum   = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
     }
+    else throw ( ERR_EXPECTED_WIN_ID );
+
+    tok -> acceptComma( );
+    T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
    
     tok -> checkEOS( );
 
-    // check if window current is a TLB window
-    // then just call the associated TLB object.
+      if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
+        throw( ERR_INVALID_WIN_TYPE );
+
+    int modNum = glb -> winDisplay -> getCurrentWinModNum( );
+    // ??? check ?
+
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+
+    if ( winType == TOK_ITLB ) proc -> purgeInstrTlb( vAdr );
+    else if ( winType == TOK_DTLB ) proc -> purgeDataTlb( vAdr );
+    else ;
 }
 
 //----------------------------------------------------------------------------------------

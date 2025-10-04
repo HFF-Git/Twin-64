@@ -185,7 +185,6 @@ T64TlbEntry *T64Tlb::getTlbEntry( int index ) {
     else                                              return( nullptr );
 }
 
-
 int T64Tlb::getTlbSize( ) {
 
     return ( T64_MAX_TLB_SIZE );
