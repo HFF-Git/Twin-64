@@ -155,12 +155,12 @@ T64ModuleType T64System::getModuleType( int modNum ) {
 T64Module *T64System::lookupByAdr( T64Word adr ) {
 
     int lo = 0;
-    int hi = moduleMapHwm - 1;
+    int hi = systemMapHwm - 1;
 
     while ( lo <= hi ) {
 
         int mid = ( lo + hi ) / 2;
-        auto &entry = systemMap[mid];
+        auto &entry = systemMap[ mid ];
 
         int64_t start = entry.start;
         int64_t end   = entry.start + entry.len - 1;
@@ -210,54 +210,7 @@ void T64System::step( int steps ) {
 
 
 // ??? this is perhaps too complex. Include file mess...
-
-//----------------------------------------------------------------------------------------
-// Processor CPU register access. The set of routines are used by the simulator to 
-// access the CPU register for display and modify commands.
-//
-//----------------------------------------------------------------------------------------
-int T64System::readGeneralReg( int proc, int cpu, int reg, T64Word *val ) {
-
-    T64Module *mod = lookupByModNum( proc );
-
-    if (( mod != nullptr ) && ( mod -> getModuleType( ) == MT_CPU_CORE )) {
-
-        *val = 0;
-        // (( T64Cpu *) mod ) -> getGeneralReg( reg );
-        return( 0 );
-    }
-
-    *val = 0;
-    return( 0 );
-}
-
-int T64System::writeGeneralReg( int proc, int cpu, int reg, T64Word val ) {
-
-    return( 0 );
-}
-
-int T64System::readControlReg( int proc, int cpu, int reg, T64Word *val ) {
-
-    *val = 0;
-    return( 0 );
-}
-
-int T64System::writeControlReg( int proc, int cpu, int reg, T64Word val ) {
-
-    return( 0 );
-}
-
-int T64System::readPswReg( int proc, int cpu, int reg, T64Word *val ) {
-
-    *val = 0;
-    return( 0 );
-}
-
-int T64System::writePswReg( int proc, int cpu, int reg, T64Word val ) {
-
-    return( 0 );
-}
-
+#if 0
 //----------------------------------------------------------------------------------------
 //
 // ??? used by simulator to access TLB data in a processor.
@@ -280,7 +233,9 @@ int T64System::purgeTlbEntry( int proc, int tlb, int index ) {
 
     return( 0 );
 }
+#endif
 
+#if 0
 //----------------------------------------------------------------------------------------
 //
 // ??? used by simulator to access cache data in a processor.
@@ -303,6 +258,7 @@ int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
 
     return( 0 );
 }
+#endif
 
 //----------------------------------------------------------------------------------------
 //
@@ -355,31 +311,42 @@ bool T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
     return( true );
 }
 
-//----------------------------------------------------------------------------------------
+
+
+//****************************************************************************************
+//****************************************************************************************
 //
+// Module
+//----------------------------------------------------------------------------------------
+// A module is an object plugged into the imaginary system bus. It has a type and 
+// a module number, which is the slot in that bus. Each module has a dedicated memory
+// page page in the IO HPA space. The address is easily computed from the slot 
+// number. In addition, a module can have several SPA regions. This is however module
+// specific. 
 //
 //----------------------------------------------------------------------------------------
-bool T64System::getHpaStartAdr( int module, T64Word *val ) {
+T64Module::T64Module( T64ModuleType modType, int modNum ) {
 
-    *val = 0;
-    return( true );
+    this -> moduleTyp       = modType;
+    this -> moduleNum       = modNum;
 }
 
-bool T64System::getHpaSize( int module, T64Word *val ) {
+T64ModuleType T64Module::getModuleType( ) {
 
-    *val = 0;
-    return( true );
+    return( moduleTyp );
 }
 
-bool T64System::getSpaStartAdr( int module, T64Word *val ) {
+int T64Module::getModuleNum( ) {
 
-    *val = 0;
-    return( true );
+    return( moduleNum );
 }
 
-bool T64System::getSpaSize( int module, T64Word *val ) {
+T64Word T64Module::getHpaStartAdr( ) {
 
-    *val = 0;
-    return( true );
+    return( T64_IO_HPA_MEM_START + ( moduleNum * T64_PAGE_SIZE_BYTES ));
 }
- 
+
+int T64Module::getHpaSize( ) {
+
+    return( T64_PAGE_SIZE_BYTES );
+}

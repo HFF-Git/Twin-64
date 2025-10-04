@@ -106,9 +106,9 @@ void SimWinDisplay::setWinMode( bool winOn ) {
 
 //----------------------------------------------------------------------------------------
 // The current window number defines which user window is marked "current" as the 
-// default number to use in commands. There is a routine to check that we have a 
-// valid window number, which includes fixed and user numbers. There are also a 
-// routines that returns the first and last index valid for user windows.
+// default number to use in commands. Besides getting and setting the current window
+// number, there are also routines that return the window type and associated
+// module number.
 //
 //----------------------------------------------------------------------------------------
 int  SimWinDisplay::getCurrentWindow( ) {
@@ -125,8 +125,15 @@ void SimWinDisplay::setCurrentWindow( int winNum ) {
 SimWinType SimWinDisplay::getCurrentWinType( ) {
 
     if ( validWindowNum( currentWinNum )) 
-        return( windowList[ currentWinNum ] -> getWinType( ));
+        return( windowList[ currentWinNum - 1 ] -> getWinType( ));
     else throw( ERR_INVALID_WIN_ID );
+}
+
+int SimWinDisplay::getCurrentWinModNum( ) {
+
+     if ( validWindowNum( currentWinNum )) 
+        return( windowList[ currentWinNum - 1 ] -> getWinModNum( ));
+     else throw( ERR_INVALID_WIN_ID );
 }
 
 //----------------------------------------------------------------------------------------
@@ -725,6 +732,7 @@ void SimWinDisplay::windowNewCpuState( int modNum ) {
 
     windowList[ slot ] = (SimWin *) new SimWinCpuState( glb, modNum  );
     windowList[ slot ] -> setWinName(( char *) "CPU" );
+    windowList[ slot ] -> setWinModNum( modNum );
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );

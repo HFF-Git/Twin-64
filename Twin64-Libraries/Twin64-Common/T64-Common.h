@@ -42,32 +42,46 @@ typedef uint32_t    T64Instr;
 //
 //
 //----------------------------------------------------------------------------------------
-const   int     MAX_GREGS           = 16;
-const   int     MAX_CREGS           = 16;
-const   int     PAGE_SIZE           = 4096;
+const   int     T64_MAX_GREGS               = 16;
+const   int     T64_MAX_CREGS               = 16;
 
-const   T64Word IO_MEM_START        = 0xF0000000;
-const   T64Word IO_MEM_LIMIT        = 0xFFFFFFFF;
+const   T64Word T64_IO_MEM_START            = 0xF0000000;
+const   T64Word T64_IO_MEM_LIMIT            = 0xFFFFFFFF;
 
-const   T64Word DEF_PHYS_MEM_SIZE   = 0xFFFFFFFF;
-const   T64Word MAX_PHYS_MEM_SIZE   = 0xFFFFFFFFF;
+const   T64Word T64_PDC_MEM_START           = 0xF0000000;
+const   T64Word T64_PDC_MEM_LIMIT           = 0xFEFFFFFF;
 
-const int T64_PAGE_SIZE_BYTES       = 4096;
-const int T64_PAGE_OFS_BITS         = 12;
-const int T64_VADR_BITS             = 52;
-const int T64_PADR_BITS             = 36;
+const   T64Word T64_IO_SPA_MEM_START        = 0xFF000000;
+const   T64Word T64_IO_SPA_MEM_LIMIT        = 0xFFDFFFFF;
 
-const int T64_MAX_TLB_SIZE          = 64;
+const   T64Word T64_IO_HPA_MEM_START        = 0xFFE00000;
+const   T64Word T64_IO_HPA_MEM_LIMIT        = 0xFFEFFFFF;
 
-const int T64_CACHE_INDEX_BITS      = 7;
-const int T64_LINE_OFS_BITS         = 5;
-const int T64_MAX_CACHE_WAYS        = 8;
-const int T64_MAX_CACHE_SETS        = 128;
-const int T64_WORDS_PER_CACHE_LINE  = 4;
-const int T64_CACHE_LINE_BYTES      = T64_WORDS_PER_CACHE_LINE * sizeof( T64Word );
+const   T64Word T64_IO_BCAST_MEM_START      = 0xFFF00000;
+const   T64Word T64_IO_BCAST_MEM_LIMIT      = 0xFFFFFFFF;
 
-const int T64_CACHE_WORD_BYTES  = sizeof( T64Word );
+const   T64Word T64_DEF_PHYS_MEM_SIZE       = 0xEFFFFFFF;
+const   T64Word T64_MAX_PHYS_MEM_SIZE       = 0xFFFFFFFFF;
 
+const   int     T64_PAGE_SIZE_BYTES         = 4096;
+const   int     T64_PAGE_OFS_BITS           = 12;
+const   int     T64_VADR_BITS               = 52;
+const   int     T64_PADR_BITS               = 36;
+
+
+#if 0
+
+
+const   int     T64_CACHE_INDEX_BITS        = 7;
+const   int     T64_LINE_OFS_BITS           = 5;
+const   int     T64_MAX_CACHE_WAYS          = 8;
+const   int     T64_MAX_CACHE_SETS          = 128;
+const   int     T64_WORDS_PER_CACHE_LINE    = 4;
+const   int     T64_CACHE_WORD_BYTES        = sizeof( T64Word );
+const   int     T64_CACHE_LINE_BYTES        = 
+                                T64_WORDS_PER_CACHE_LINE * T64_CACHE_WORD_BYTES;
+
+#endif
 
 //----------------------------------------------------------------------------------------
 //

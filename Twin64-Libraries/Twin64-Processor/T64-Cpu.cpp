@@ -65,8 +65,8 @@ T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::reset( ) {
 
-    for ( int i = 0; i < MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
-    for ( int i = 0; i < MAX_GREGS; i++ ) genRegFile[ i ] = 0;
+    for ( int i = 0; i < T64_MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
+    for ( int i = 0; i < T64_MAX_GREGS; i++ ) genRegFile[ i ] = 0;
     
     pswReg              = 0;
     instrReg            = 0;
@@ -80,22 +80,22 @@ void T64Cpu::reset( ) {
 T64Word T64Cpu::getGeneralReg( int index ) {
     
     if ( index == 0 )   return( 0 );
-    else                return( genRegFile[ index % MAX_GREGS ] );
+    else                return( genRegFile[ index % T64_MAX_GREGS ] );
 }
 
 void T64Cpu::setGeneralReg( int index, T64Word val ) {
     
-    if ( index != 0 ) genRegFile[ index % MAX_GREGS ] = val;
+    if ( index != 0 ) genRegFile[ index % T64_MAX_GREGS ] = val;
 }
 
 T64Word T64Cpu::getControlReg( int index ) {
     
-    return( ctlRegFile[ index % MAX_CREGS ] );
+    return( ctlRegFile[ index % T64_MAX_CREGS ] );
 }
 
 void T64Cpu::setControlReg( int index, T64Word val ) {
     
-    ctlRegFile[ index % MAX_CREGS ] = val;
+    ctlRegFile[ index % T64_MAX_CREGS ] = val;
 }
 
 T64Word T64Cpu::getPswReg( ) {

@@ -344,7 +344,7 @@ inline T64Word addAdrOfs( T64Word adr, T64Word ofs ) {
 //----------------------------------------------------------------------------------------
 inline bool isInIoAdrRange( T64Word adr ) {
 
-    return(( adr >= IO_MEM_START ) && ( adr <= IO_MEM_LIMIT ));
+    return(( adr >= T64_IO_MEM_START ) && ( adr <= T64_IO_MEM_LIMIT ));
 }
 
 //----------------------------------------------------------------------------------------

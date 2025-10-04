@@ -104,23 +104,13 @@ struct T64Module {
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
 
-    void                setHpaAddressRange( T64Word *startAdr, T64Word len );
-    void                setSpaAddressRange( T64Word *startAdr, T64Word len );
-
-    int                 getHpaStartAdr( T64Word *val );
-    int                 getHpaSize( T64Word *val );
-
-    int                 getSpaStartAdr( T64Word *val );
-    int                 getSpaSize( T64Word *val );
+    T64Word             getHpaStartAdr( );
+    int                 getHpaSize( );
 
     private:
 
     T64ModuleType       moduleTyp           = MT_NIL;
     int                 moduleNum           = 0;
-    T64Word             moduleHPA           = 0;
-    T64Word             moduleHPALen        = 0;
-    T64Word             moduleSPA           = 0;
-    T64Word             moduleSPALen        = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -138,9 +128,8 @@ struct T64ModuleMapEntry {
 
 //----------------------------------------------------------------------------------------
 // A system map entry in the system map table. The purpose is to locate the module
-// responsible for the physical address range. The table also serves as a lookup of
-// the module by module number. Note that a module can have none, one or more than
-// one ranges.
+// responsible for a physical address range. Note that a module has at least the HPA
+// address range, but can have none, one or more than one SPA ranges.
 //
 //----------------------------------------------------------------------------------------
 struct T64SystemMapEntry {
@@ -163,14 +152,11 @@ struct T64System {
 
     T64System( );
 
-    // ??? perhaps have one with SPA and HPA as arguments that just call ...
-    // ??? also maybe one that adds a module to both maps ...
-
     int             addToModuleMap( T64Module  *module );
 
     int             addToSystemMap( T64Module  *module,
-                                    T64Word    start,
-                                    T64Word    len
+                                    T64Word    spaStart,
+                                    T64Word    spaLen
                                   );
     
     T64ModuleType   getModuleType( int modNum );
@@ -183,49 +169,19 @@ struct T64System {
 
     // ??? these routines should rather go into the simulator ?
 
-    int             readGeneralReg( int proc, int cpu, int reg, T64Word *val );
-    int             writeGeneralReg( int proc, int cpu,int reg, T64Word val );
+    bool                readMem( T64Word adr, T64Word *val, int len );
+    bool                writeMem( T64Word adr, T64Word val, int len );
 
-    int             readControlReg( int proc, int cpu,int reg, T64Word *val );
-    int             writeControlReg( int proc, int cpu,int reg, T64Word val );
+    bool                readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool                readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool                writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
+    bool                readWord( int proc, T64Word pAdr, T64Word *word );
+    bool                writeWord( int proc, T64Word pAdr, T64Word *word );
 
-    int             readPswReg( int proc, int cpu,int reg, T64Word *val );
-    int             writePswReg( int proc, int cpu,int reg, T64Word val );
-
-    int             readTlbEntry( int proc, int tlb, int index, 
-                                    T64Word *info1, T64Word *info2 );
-
-    int             insertTlbEntry( int proc, int tlb, 
-                                    T64Word info1, T64Word info2 );
-
-    int             purgeTlbEntry( int proc, int tlb, int index );
-
-    int             readCacheLine( int proc, int cache, int set, int index,
-                                    T64Word *line );
-
-    int             flushCacheLine( int proc, int cache, int set, int index );
-
-    int             purgeCacheLine( int proc, int cache, int set, int index );
-
-    bool            readMem( T64Word adr, T64Word *val, int len );
-    bool            writeMem( T64Word adr, T64Word val, int len );
-
-    bool            readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            readWord( int proc, T64Word pAdr, T64Word *word );
-    bool            writeWord( int proc, T64Word pAdr, T64Word *word );
-
-    bool            getHpaStartAdr( int module, T64Word *val );
-    bool            getHpaSize( int module, T64Word *val );
-
-    bool            getSpaStartAdr( int module, T64Word *val );
-    bool            getSpaSize( int module, T64Word *val );
- 
     private:
 
-    void            initSystemMap( );
-    void            initModuleMap( );
+    void                initSystemMap( );
+    void                initModuleMap( );
 
     T64ModuleMapEntry   moduleMap[ MAX_MOD_MAP_ENTRIES ];
     int                 moduleMapHwm = 0;

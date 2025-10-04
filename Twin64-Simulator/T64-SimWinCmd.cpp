@@ -1295,11 +1295,9 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // Modify register command. This command modifies a register within a register set.
-// We must be in windows mode. If the module number is not passed we use the module 
-// of the current module. Note that the checking whether the module number refers
-// to a processor is checked by the system object.
+// We must be in windows mode and the current window must be a CPU type window.
 //
-// MR <reg> <val> [ "," <moduleNum> ]
+//  MR <reg> <val>
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
@@ -1324,13 +1322,12 @@ void SimCommandsWin::modifyRegCmd( ) {
     
     val = eval -> acceptNumExpr( ERR_INVALID_NUM );
 
-    if ( tok -> isToken( TOK_COMMA )) {
-
-        tok -> nextToken( );
-        modNum = eval -> acceptNumExpr( ERR_INVALID_NUM );
-    }
-    
     tok -> checkEOS( );
+
+    if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CPU_WIN ) 
+        throw( ERR_INVALID_WIN_TYPE );
+
+    modNum = glb -> winDisplay -> getCurrentWinModNum( );
 
     mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
@@ -1355,6 +1352,10 @@ void SimCommandsWin::modifyRegCmd( ) {
 // the system object level.
 //
 //  PCA <index> [ "," <proc> "," <cache> ]
+//
+//
+// ??? this command should only work when we point at a cache ? then cache, set, etc.
+// are a given...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
@@ -1374,7 +1375,8 @@ void SimCommandsWin::purgeCacheCmd( ) {
     
     tok -> checkEOS( );
 
-    glb -> system -> purgeCacheLine( pNum, 0, cSet, index );
+    // check if window current is a Cache window
+    // then just call the associated Cache object.
 }
 
 //----------------------------------------------------------------------------------------
@@ -1384,6 +1386,9 @@ void SimCommandsWin::purgeCacheCmd( ) {
 // the system object level.
 //
 // FCA <index> [ "," <proc> "," <cache> "," <set> ]
+//
+// ??? this command should only work when we point at a cache ? then cache, set, etc.
+// are a given...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
     
@@ -1406,7 +1411,8 @@ void SimCommandsWin::flushCacheCmd( ) {
 
     tok -> checkEOS( );
 
-    glb -> system -> flushCacheLine( pNum, 0, cSet, index );
+    // check if window current is a Cache window
+    // then just call the associated Cache object.
 }
 
 //----------------------------------------------------------------------------------------
@@ -1415,6 +1421,9 @@ void SimCommandsWin::flushCacheCmd( ) {
 // submodule. Note that the validation is done at the system object level.
 //
 //  ITLB  <info1> "," <info2> [ "," <proc> ] 
+//
+//
+// ??? this command should only work when we point at a TLB ? t
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
@@ -1436,7 +1445,8 @@ void SimCommandsWin::insertTLBCmd( ) {
     
     tok -> checkEOS( );
 
-    glb -> system -> insertTlbEntry( pNum, 0, info1, info2 );
+    // check if window current is a TLB window
+    // then just call the associated TLB object.
 }
 
 //----------------------------------------------------------------------------------------
@@ -1446,6 +1456,7 @@ void SimCommandsWin::insertTLBCmd( ) {
 //
 //  PTLB <index [ "," <proc> <tlb> ]
 //  
+// ??? this command should only work when we point at a TLB ? 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
@@ -1464,7 +1475,8 @@ void SimCommandsWin::purgeTLBCmd( ) {
    
     tok -> checkEOS( );
 
-    glb -> system -> purgeTlbEntry( pNum, 0, index );
+    // check if window current is a TLB window
+    // then just call the associated TLB object.
 }
 
 //----------------------------------------------------------------------------------------
@@ -1893,7 +1905,9 @@ void SimCommandsWin::winNewWinCmd( ) {
         case TOK_MEM: {
 
             tok -> acceptComma( );
-            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, MAX_PHYS_MEM_SIZE );
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 
+                                                 0,
+                                                 T64_MAX_PHYS_MEM_SIZE );
             tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewAbsMem( 0, adr ); // ??? module number ???
@@ -1903,7 +1917,9 @@ void SimCommandsWin::winNewWinCmd( ) {
         case TOK_CODE: {  
 
             tok -> acceptComma( );
-            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, MAX_PHYS_MEM_SIZE );
+            T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 
+                                                 0,
+                                                 T64_MAX_PHYS_MEM_SIZE );
             tok -> checkEOS( );
 
             glb -> winDisplay -> windowNewAbsCode( 0, adr ); // ??? module number ???
@@ -1918,6 +1934,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             if ( tok -> tokTyp( ) == TYP_STR ) argStr = tok -> tokStr( );
             else throw ( ERR_INVALID_ARG );
 
+            tok -> nextToken( );
             tok -> checkEOS( );
             glb -> winDisplay -> windowNewText( argStr );
 

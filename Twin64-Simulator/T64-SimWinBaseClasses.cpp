@@ -89,6 +89,16 @@ char *SimWin::getWinName( ) {
     return( winName );
 }
 
+void SimWin::setWinModNum( int modNum ) {
+
+    winModNum = modNum;
+}
+
+int SimWin::getWinModNum( ) {
+
+    return( winModNum );
+}
+
 bool SimWin::isEnabled( ) { 
     
     return ( winEnabled ); 
@@ -418,11 +428,13 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     if ( winIndex <= MAX_WINDOWS ) {
 
         if ( isCurrent ) len += glb -> console -> writeChars((char *) "*(" ); 
-        else             len += glb -> console -> writeChars((char *) "(" );
+        else             len += glb -> console -> writeChars((char *) " (" );
 
         len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack, winIndex ); 
     }    
     else len = glb -> console -> writeChars((char *) "(-***-)" );
+
+    len += glb -> console -> writeChars((char *) " %.8s  ", winName );
    
     lastRowPos  = row;
     lastColPos  = col + len;

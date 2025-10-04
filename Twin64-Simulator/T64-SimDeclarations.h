@@ -563,8 +563,8 @@ struct SimExprEvaluator {
     void            setTokenizer( SimTokenizer *tok );
     void            parseExpr( SimExpr *rExpr );
     T64Word         acceptNumExpr( SimErrMsgId errCode, 
-                                    T64Word low = INT64_MIN, 
-                                    T64Word high = INT64_MAX );
+                                   T64Word low = INT64_MIN, 
+                                   T64Word high = INT64_MAX );
     
     private:
     
@@ -751,7 +751,7 @@ struct SimWinOutBuffer : SimFormatter {
 // toggle mechanism. The window maintains the current toggle value.
 //
 // Most windows will be associated with a submodule. The window also keeps the module
-// submodule number it is associated with.
+// number it is associated with.
 //
 //----------------------------------------------------------------------------------------
 struct SimWin {
@@ -769,6 +769,9 @@ struct SimWin {
 
     void            setWinName( char *name );
     char            *getWinName( );
+
+    void            setWinModNum( int modNum );
+    int             getWinModNum( );
 
     void            setEnable( bool arg );
     bool            isEnabled( );
@@ -852,6 +855,7 @@ struct SimWin {
     SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
     char            winName[ MAX_WIN_NAME];
+    int             winModNum           = -1;
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -960,7 +964,6 @@ struct SimWinAbsMem : SimWinScrollable {
 
     private:
 
-    int         modNum  = 0;
     T64Word     adr     = 0;
     T64Memory   *mem    = nullptr;
 };
@@ -984,7 +987,6 @@ struct SimWinCode : SimWinScrollable {
     
     private:
 
-    int             modNum  = 0;
     T64Word         adr     = 0;
     T64Memory       *mem    = nullptr;
     T64DisAssemble  *disAsm = nullptr;
@@ -1006,8 +1008,7 @@ struct SimWinTlb : SimWinScrollable {
 
     private:
 
-    int     modNum  = 0;
-    T64Tlb  *tlb    = nullptr;
+    T64Processor  *proc = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1028,8 +1029,7 @@ struct SimWinCache : SimWinScrollable {
 
     private:
 
-    int         modNum      = 0;
-    T64Cache    *cache      = nullptr;
+    T64Processor  *proc = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1247,6 +1247,7 @@ public:
     void            setCurrentWindow( int winNum );
     bool            isCurrentWin( int winNum );
     SimWinType      getCurrentWinType( );
+    int             getCurrentWinModNum( );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
     bool            isWinStackOn( );

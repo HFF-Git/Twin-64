@@ -284,8 +284,8 @@ struct T64Cpu {
 
     void            instrExecute( uint32_t instr );
 
-    T64Word         ctlRegFile[ MAX_CREGS ];
-    T64Word         genRegFile[ MAX_GREGS ];
+    T64Word         ctlRegFile[ T64_MAX_CREGS ];
+    T64Word         genRegFile[ T64_MAX_GREGS ];
     T64Word         pswReg;
     uint32_t        instrReg;
     T64Word         resvReg;
