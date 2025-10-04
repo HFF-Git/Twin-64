@@ -167,6 +167,37 @@ void  T64Processor::purgeDataCache( T64Word vAdr ) {
     else throw ( 99 );
 }
 
+bool T64Processor::getICacheLineByIndex( uint32_t          way,
+                                   uint32_t          set, 
+                                   T64CacheLineInfo  **info,
+                                   uint8_t           **data ) {
+
+    return( iCache -> getCacheLineByIndex( way, set, info, data ));
+}
+
+bool T64Processor::purgeICacheLineByIndex( uint32_t way, uint32_t set ) {
+
+    return( iCache -> purgeCacheLineByIndex( way, set ));
+}
+   
+bool T64Processor::getDCacheLineByIndex( uint32_t          way,
+                                         uint32_t          set, 
+                                         T64CacheLineInfo  **info,
+                                         uint8_t           **data ) {
+
+    return( dCache -> getCacheLineByIndex( way, set, info, data ));
+}
+
+bool T64Processor::purgeDCacheLineByIndex( uint32_t way, uint32_t set ) {
+
+    return( dCache -> purgeCacheLineByIndex( way, set ));
+}
+
+bool T64Processor::fushDCacheLineByIndex( uint32_t way, uint32_t set ) {
+
+    return( dCache -> flushCacheLineByIndex( way, set ));
+}
+
 //----------------------------------------------------------------------------------------
 // relay methods for accessing the system bus.
 //

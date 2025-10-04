@@ -395,7 +395,7 @@ bool T64Cache::lookupCache( T64Word          pAdr,
 // the slot is valid.
 //
 //----------------------------------------------------------------------------------------
-bool T64Cache::getCacheLine( uint32_t         way,
+bool T64Cache::getCacheLineByIndex( uint32_t         way,
                              uint32_t         set, 
                              T64CacheLineInfo **info, 
                              uint8_t       **data ) {
@@ -405,6 +405,24 @@ bool T64Cache::getCacheLine( uint32_t         way,
     *info  = &cacheInfo[ way * set ];
     *data = &cacheData[ (( way * sets ) + set ) * lineSize ];
     return ( true );
+}
+
+bool T64Cache::purgeCacheLineByIndex( uint32_t way, uint32_t set ) {
+
+    if (( way > ways ) || ( set > sets )) return ( false );
+
+    // ??? to do ...
+
+    return( true );
+}
+
+bool T64Cache::flushCacheLineByIndex( uint32_t way, uint32_t set ) {
+
+    if (( way > ways ) || ( set > sets )) return ( false );
+
+    // ??? to do ...
+
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -473,7 +491,7 @@ void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
         uint32_t setIndex = getSetIndex( pAdr );
         plruUpdate( );
         
-        if ( ! getCacheLine( vWay, setIndex, &cInfo, &cData )) {
+        if ( ! getCacheLineByIndex( vWay, setIndex, &cInfo, &cData )) {
         
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }
@@ -540,7 +558,7 @@ void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
         cacheMiss ++;
         plruUpdate( );
 
-        if ( ! getCacheLine( vWay, setIndex, &cInfo, &cData )) {
+        if ( ! getCacheLineByIndex( vWay, setIndex, &cInfo, &cData )) {
         
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }

@@ -684,8 +684,6 @@ void SimCommandsWin::ensureWinModeOn( ) {
     if ( ! glb -> winDisplay -> isWindowsOn( )) throw( ERR_NOT_IN_WIN_MODE );
 }
 
-
-
 //----------------------------------------------------------------------------------------
 // Display absolute memory content. We will show the memory starting with offset. The 
 // words per line is an environmental variable setting. The offset is rounded down to 
@@ -1346,37 +1344,47 @@ void SimCommandsWin::modifyRegCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Purges a cache line from the cache. We must be in windows mode. If the module and 
-// submodule is not passed, we use the window values for module, submodule and 
-// the current toggle value for the actual set. Note that the validation is done at
-// the system object level.
+// Purges a cache line from the cache. We must be in windows mode and the current
+// window must be a cache window. 
 //
-//  PCA <index> [ "," <proc> "," <cache> ]
+//  PCA <type> "," <index> 
 //
-//
-// ??? this command should only work when we point at a cache ? then cache, set, etc.
-// are a given...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
-    int pNum    = 0; // fix: of current window...
-    int cSet    = 0; // fix: of current window...
-    int index   = 0;
-    
+    SimTokId winType = TOK_NIL;
+   
     ensureWinModeOn( );
-
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
-    
-    if ( tok -> isToken( TOK_COMMA )) {
+ 
+    if ( tok -> tokTyp( ) == TYP_SYM ) {
         
+        winType = tok -> tokId( );
         tok -> nextToken( );
-        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     }
-    
+    else throw ( ERR_EXPECTED_WIN_ID );
+
+    if (( winType != TOK_ICACHE ) && ( winType != TOK_DCACHE ))
+        throw ( 9999 );
+  
+    int index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
     tok -> checkEOS( );
 
-    // check if window current is a Cache window
-    // then just call the associated Cache object.
+    if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CACHE_WIN ) 
+        throw( ERR_INVALID_WIN_TYPE );
+
+    int modNum = glb -> winDisplay -> getCurrentWinModNum( );
+    // ??? check ?
+
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+
+    if ( winType == TOK_ICACHE ) 
+       proc -> purgeICacheLineByIndex( getWinToggleVal( ), index );
+    else if ( winType == TOK_DCACHE ) 
+       proc -> purgeDCacheLineByIndex( getWinToggleVal( ), index );
+    else ;
 }
 
 //----------------------------------------------------------------------------------------
@@ -1385,34 +1393,41 @@ void SimCommandsWin::purgeCacheCmd( ) {
 // the current toggle value for the actual set. Note that the validation is done at
 // the system object level.
 //
-// FCA <index> [ "," <proc> "," <cache> "," <set> ]
+//  FCA <type> "," <index> 
 //
-// ??? this command should only work when we point at a cache ? then cache, set, etc.
-// are a given...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
-    
-    int pNum    = 0; // fix: of current window...
-    int cSet    = 0; // fix: of current window...
-    int index   = 0;
 
+     SimTokId winType = TOK_NIL;
+   
     ensureWinModeOn( );
-
-    // ??? check current window is a cache window ...
-
-    index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
-    
-    if ( tok -> isToken( TOK_COMMA )) {
+ 
+    if ( tok -> tokTyp( ) == TYP_SYM ) {
         
+        winType = tok -> tokId( );
         tok -> nextToken( );
-        pNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
-        tok -> acceptComma( );
     }
+    else throw ( ERR_EXPECTED_WIN_ID );
 
+    if ( winType != TOK_ICACHE )
+        throw ( 9999 );
+  
+    int index = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, INT32_MAX ); 
     tok -> checkEOS( );
 
-    // check if window current is a Cache window
-    // then just call the associated Cache object.
+    if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CACHE_WIN ) 
+        throw( ERR_INVALID_WIN_TYPE );
+
+    int modNum = glb -> winDisplay -> getCurrentWinModNum( );
+    // ??? check ?
+
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+
+    proc -> purgeICacheLineByIndex( getWinToggleVal( ), index );
+    // ??? check ?
 }
 
 //----------------------------------------------------------------------------------------

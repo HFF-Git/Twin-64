@@ -121,10 +121,13 @@ struct T64Cache {
     void                flush( T64Word pAdr );
     void                purge( T64Word pAdr );
 
-    bool                getCacheLine( uint32_t          way,
-                                      uint32_t          set, 
-                                      T64CacheLineInfo  **info,
-                                      uint8_t           **data );
+    bool                getCacheLineByIndex( uint32_t          way,
+                                             uint32_t          set, 
+                                             T64CacheLineInfo  **info,
+                                             uint8_t           **data );
+
+    bool                purgeCacheLineByIndex( uint32_t way, uint32_t set );
+    bool                flushCacheLineByIndex( uint32_t way, uint32_t set );
 
     int                 getRequestCount( );
     int                 getHitCount( );
@@ -357,6 +360,24 @@ struct T64Processor : T64Module {
     void            purgeInstrCache( T64Word vAdr );
     void            flushDataCache( T64Word vAdr );
     void            purgeDataCache( T64Word vAdr );
+
+    bool            getICacheLineByIndex( uint32_t          way,
+                                          uint32_t          set, 
+                                          T64CacheLineInfo  **info,
+                                          uint8_t           **data );
+    bool            purgeICacheLineByIndex( uint32_t way, uint32_t set );
+   
+    bool            getDCacheLineByIndex( uint32_t          way,
+                                          uint32_t          set, 
+                                          T64CacheLineInfo  **info,
+                                          uint8_t           **data );
+
+    bool            purgeDCacheLineByIndex( uint32_t way, uint32_t set );
+    bool            fushDCacheLineByIndex( uint32_t way, uint32_t set );
+
+    // ??? routines to get a cache line ...
+    // ??? routines to purge a cache line ...
+    // ??? routines to flush a cache line ...
 
     bool            readMem( T64Word adr, T64Word *val, int len );
     bool            writeMem( T64Word adr, T64Word val, int len );

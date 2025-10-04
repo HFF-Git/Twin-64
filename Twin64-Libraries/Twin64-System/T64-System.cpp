@@ -208,61 +208,12 @@ void T64System::step( int steps ) {
     }
 }
 
-
-// ??? this is perhaps too complex. Include file mess...
-#if 0
 //----------------------------------------------------------------------------------------
+// "readMem" is used by the simulator to access physical memory. Address must be 
+// aligned to the len parameter. Note that memory can be physical memory and I/O 
+// memory. We will need therefore first figure out which module is actually to 
+// invoke for retrieving the data and then access the data from there.
 //
-// ??? used by simulator to access TLB data in a processor.
-//----------------------------------------------------------------------------------------
-int T64System::readTlbEntry( int proc, int tlb, int index, 
-                                T64Word *info1, T64Word *info2 )  {
-
-    *info1 = 0;                                
-    *info2 = 0;                                     
-    return( 0 );
-}
-
-int T64System::insertTlbEntry( int proc, int tlb, 
-                                T64Word info1, T64Word info2 ) {
-
-    return( 0 );
-}
-
-int T64System::purgeTlbEntry( int proc, int tlb, int index ) {
-
-    return( 0 );
-}
-#endif
-
-#if 0
-//----------------------------------------------------------------------------------------
-//
-// ??? used by simulator to access cache data in a processor.
-//----------------------------------------------------------------------------------------
-int T64System::readCacheLine( int proc, int cache, int set, int index, T64Word *line ) {
-
-    line[ 0 ] = 0;
-    line[ 1 ] = 0;
-    line[ 2 ] = 0;
-    line[ 3 ] = 0;
-    return( 0 );
-}
-
-int T64System::flushCacheLine( int proc, int cache, int set, int index ) {
-
-    return( 0 );
-}
-
-int T64System::purgeCacheLine( int proc, int cache, int set, int index ) {
-
-    return( 0 );
-}
-#endif
-
-//----------------------------------------------------------------------------------------
-//
-// Used by the simulator to access physical memory. Address must be aligned to len =
 //----------------------------------------------------------------------------------------
 bool T64System::readMem( T64Word adr, T64Word *val, int len ) {
 
@@ -278,6 +229,12 @@ bool T64System::readMem( T64Word adr, T64Word *val, int len ) {
 
 bool T64System::writeMem( T64Word adr, T64Word val, int len ) {
 
+    T64Module *m = lookupByAdr( adr );
+
+    if ( m != nullptr ) {
+
+        // ??? need a method to invoke ...
+    }
     
     return( 0 );
 }
@@ -311,8 +268,6 @@ bool T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
     return( true );
 }
 
-
-
 //****************************************************************************************
 //****************************************************************************************
 //
@@ -322,7 +277,7 @@ bool T64System::writeWord( int proc, T64Word pAdr, T64Word *word ) {
 // a module number, which is the slot in that bus. Each module has a dedicated memory
 // page page in the IO HPA space. The address is easily computed from the slot 
 // number. In addition, a module can have several SPA regions. This is however module
-// specific. 
+// specific and not stored at the common module level.
 //
 //----------------------------------------------------------------------------------------
 T64Module::T64Module( T64ModuleType modType, int modNum ) {
