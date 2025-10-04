@@ -1015,8 +1015,18 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModCmd( ) {
 
-    // ??? to do ...
+    winOut -> writeChars( "Mod   HPA     SPA     Size \n" );
 
+    for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
+
+        T64ModuleMapEntry *mPtr = glb -> system -> getModMapEntry( i );
+        if ( mPtr != nullptr ) {
+
+            winOut -> printNumber( i, FMT_DEC );
+            // ??? to do ...
+        
+        }
+    }
 
     tok -> checkEOS( );
 }

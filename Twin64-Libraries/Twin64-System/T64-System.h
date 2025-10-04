@@ -152,20 +152,21 @@ struct T64System {
 
     T64System( );
 
-    int             addToModuleMap( T64Module  *module );
+    int                 addToModuleMap( T64Module  *module );
 
-    int             addToSystemMap( T64Module  *module,
-                                    T64Word    spaStart,
-                                    T64Word    spaLen
-                                  );
+    int                 addToSystemMap( T64Module  *module,
+                                        T64Word    spaStart,
+                                        T64Word    spaLen
+                                      );
     
-    T64ModuleType   getModuleType( int modNum );
-    T64Module       *lookupByModNum( int modNum );
-    T64Module       *lookupByAdr( T64Word adr );                    
+    T64ModuleType       getModuleType( int modNum );
+    T64Module           *lookupByModNum( int modNum );
+    T64Module           *lookupByAdr( T64Word adr );      
+    T64ModuleMapEntry   *getModMapEntry( int index );             
 
-    void            reset( );
-    void            run( );
-    void            step( int steps = 1 );
+    void                reset( );
+    void                run( );
+    void                step( int steps = 1 );
 
     // ??? these routines should rather go into the simulator ?
 

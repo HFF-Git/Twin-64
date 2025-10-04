@@ -148,6 +148,12 @@ T64ModuleType T64System::getModuleType( int modNum ) {
     return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
 }
 
+T64ModuleMapEntry *T64System::getModMapEntry( int index ) {
+
+    if ( index < MAX_MOD_MAP_ENTRIES ) return( &moduleMap[ index ] );
+    else return ( nullptr );
+}
+
 //----------------------------------------------------------------------------------------
 //
 //
