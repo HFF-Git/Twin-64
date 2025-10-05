@@ -184,7 +184,8 @@ void T64Cpu::protectionCheck( uint32_t pId, bool wMode ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Alignment Check.
+// Alignment Check and Data length check. When we transfer a byte, alf, word or 
+// double word, the alignment and the transfer length need to be correct.
 //
 //----------------------------------------------------------------------------------------
 void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
@@ -203,14 +204,14 @@ void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::instrRead( T64Word vAdr ) {
 
-    T64Word instr = 0;
+    uint32_t instr = 0;
    
     alignMentCheck( vAdr, 4 );
 
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
 
         privModeCheck( );
-        iCache -> read( vAdr, &instr, 4, false );     
+        iCache -> read( vAdr, (uint8_t *) &instr, 4, false );     
     }
     else {
 
@@ -221,7 +222,7 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-        iCache -> read( tlbPtr -> pAdr, &instr, 4, tlbPtr -> uncached );
+        iCache -> read( tlbPtr -> pAdr, (uint8_t *) &instr, 4, tlbPtr -> uncached );
     }
 
     return( instr );
@@ -237,14 +238,15 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 
-    T64Word data = 0;
+    T64Word data    = 0;
+    int     wordOfs = sizeof( T64Word ) - len;
    
     alignMentCheck( vAdr, len );
-
+  
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        dCache -> read( vAdr, &data, 8, false );
+        dCache -> read( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );
     }
     else {
 
@@ -255,7 +257,10 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-        iCache -> read( tlbPtr -> pAdr, &data, len, tlbPtr -> uncached );
+        iCache -> read( tlbPtr -> pAdr, 
+                        ((uint8_t *) &data ) + wordOfs, 
+                        len, 
+                        tlbPtr -> uncached );
     }
 
     // ??? sign extend
@@ -270,14 +275,16 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 // consulted for the translation and security checking. 
 //
 //----------------------------------------------------------------------------------------
-void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
+void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
+
+    int wordOfs = sizeof( T64Word ) - len;
   
     alignMentCheck( vAdr, len );
-        
+ 
     if ( proc -> isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        dCache -> write( vAdr, val, len, false );           
+        dCache -> write( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );           
     }
     else {
 
@@ -288,7 +295,9 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word val, int len ) {
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
-        iCache -> write( tlbPtr -> pAdr, val, len, tlbPtr -> uncached );
+        dCache -> write( tlbPtr -> pAdr, 
+                         ((uint8_t *) &data ) + wordOfs, 
+                         len, tlbPtr -> uncached );
     }
 }
 

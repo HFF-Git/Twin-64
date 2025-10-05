@@ -116,8 +116,8 @@ struct T64Cache {
     void                reset( );
     void                step( );
 
-    void                read( T64Word pAdr, T64Word *data, int len, bool cached );
-    void                write( T64Word pAdr, T64Word data, int len, bool cached );
+    void                read( T64Word pAdr, uint8_t *data, int len, bool cached = true);
+    void                write( T64Word pAdr, uint8_t *data, int len, bool cached = true );
     void                flush( T64Word pAdr );
     void                purge( T64Word pAdr );
 
@@ -142,8 +142,8 @@ struct T64Cache {
                                      T64CacheLineInfo **info, 
                                      uint8_t          **data );
 
-    void                readCacheData( T64Word pAdr, T64Word *data, int len );
-    void                writeCacheData( T64Word pAdr, T64Word data, int len );
+    void                readCacheData( T64Word pAdr, uint8_t *data, int len );
+    void                writeCacheData( T64Word pAdr, uint8_t *data, int len );
     void                flushCacheLine( T64Word pAdr );
     void                purgeCacheLine( T64Word pAdr );
 
@@ -154,7 +154,7 @@ struct T64Cache {
     void                setCacheLineData( uint8_t *line,
                                           int     lineOfs,
                                           int     len,
-                                          T64Word data ); 
+                                          uint8_t *data ); 
                                           
     uint32_t            getTag( T64Word pAdr );                           
     uint32_t            getSetIndex( T64Word  paAdr );
@@ -383,8 +383,8 @@ struct T64Processor : T64Module {
     bool            readShared( T64Word pAdr, uint8_t *data, int len );
     bool            readPrivate( T64Word pAdr, uint8_t *data, int len );
     bool            writeBack( T64Word pAdr, uint8_t *data, int len );
-    bool            readUncached( T64Word adr, T64Word *val, int len );
-    bool            writeUncached( T64Word adr, T64Word val, int len );
+    bool            readUncached( T64Word adr, uint8_t *val, int len );
+    bool            writeUncached( T64Word adr, uint8_t *val, int len );
 
     bool            busReadShared( int srcModNum, T64Word pAdr, uint8_t *data, int len );
     bool            busReadPrivate( int srcModNum, T64Word pAdr, uint8_t *data, int len );

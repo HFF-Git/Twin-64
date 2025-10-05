@@ -447,11 +447,9 @@ T64Word T64Cache::getCacheLineData( uint8_t *line,
 void T64Cache::setCacheLineData( uint8_t *line,
                                  int     lineOfs,
                                  int     len,
-                                 T64Word data ) {
+                                 uint8_t *data ) {
 
-    int wOfs = sizeof( T64Word ) - len;
-
-    memcpy( &line[ lineOfs ], ((uint8_t *) &data + wOfs ), len );
+    memcpy( &line[ lineOfs ], &data, len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -466,7 +464,7 @@ void T64Cache::setCacheLineData( uint8_t *line,
 // SHARED the new cache line into this slot. Finally, we return the requested data.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
+void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( ! isAligned( pAdr, len )) {
         
@@ -533,7 +531,7 @@ void T64Cache::readCacheData( T64Word pAdr, T64Word *data, int len ) {
 // cache line.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::writeCacheData( T64Word pAdr, T64Word data, int len ) {
+void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( ! isAligned( pAdr, len )) {
         
@@ -651,7 +649,7 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 // memory.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
+void T64Cache::read( T64Word pAdr, uint8_t *data, int len, bool cached ) {
     
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 
@@ -668,7 +666,7 @@ void T64Cache::read( T64Word pAdr, T64Word *data, int len, bool cached ) {
 // memory.
 //
 //----------------------------------------------------------------------------------------
-void T64Cache::write( T64Word pAdr, T64Word data, int len, bool cached ) {
+void T64Cache::write( T64Word pAdr, uint8_t *data, int len, bool cached ) {
 
     if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
 

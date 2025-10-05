@@ -236,29 +236,42 @@ bool T64Processor::getDCacheLineByIndex( uint32_t          way,
     return( dCache -> getCacheLineByIndex( way, set, info, data ));
 }
 
+//----------------------------------------------------------------------------------------
+// Cache routines for requesting system bus operations. Straightforward. The 
+// processor offers this facade to the system bus.
+//
+//----------------------------------------------------------------------------------------
 bool T64Processor::readShared( T64Word pAdr, uint8_t *data, int len ) {
 
+    sys -> busReadShared( moduleNum, pAdr, data, len );
 }
 
 bool T64Processor::readPrivate( T64Word pAdr, uint8_t *data, int len ) {
 
+    sys -> busReadPrivate( moduleNum, pAdr, data, len );
 }
 
 bool T64Processor::writeBack( T64Word pAdr, uint8_t *data, int len ) {
 
+    sys -> busWrite( moduleNum, pAdr, data, len );
 }
 
-bool T64Processor::readUncached( T64Word adr, T64Word *val, int len ) {
+bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
 
+    sys -> busReadUncached( moduleNum, pAdr, data, len );
 }
 
-bool T64Processor::writeUncached( T64Word adr, T64Word val, int len ) {
+bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
 
-
+    sys -> busWriteUncached( moduleNum, pAdr, data, len );
 }
 
 //----------------------------------------------------------------------------------------
-// System Bus operations interface routines.
+// System Bus operations interface routines. These routines will snoop on the bus
+// for bus transactions that would concern us. For example, when another module will
+// request an exclusive copy of a cache line and we have that copy, we will need to
+// flush the data first. All interface routines first check that we are not the 
+// source module. 
 //
 //----------------------------------------------------------------------------------------
 bool T64Processor::busReadShared( int srcModNum, 
@@ -266,6 +279,7 @@ bool T64Processor::busReadShared( int srcModNum,
                                   uint8_t *data, 
                                   int len ) {
 
+    // ??? the cache needs to know ...
 
     return( true );
 }
@@ -276,6 +290,7 @@ bool T64Processor::busReadPrivate( int srcModNum,
                                    uint8_t *data, 
                                    int len ) {
 
+    // ??? the cache needs to know ...
     return( true );
 }
 
@@ -284,6 +299,7 @@ bool T64Processor::busWrite( int srcModNum,
                              uint8_t *data, 
                               int   len ) {
 
+    // ??? the cache needs to know ...
     return( true );
 }
 
@@ -292,6 +308,7 @@ bool T64Processor::busReadUncached( int srcModNum,
                                     uint8_t *data, 
                                     int len ) {
 
+    // ??? we are also in HPA and the request may need to be handled there ...
     return( true );
 }
 
@@ -300,6 +317,7 @@ bool T64Processor::busWriteUncached( int srcModNum,
                                      uint8_t *val, 
                                      int len ) {
 
+    // ??? we are also in HPA and the request may need to be handled there ...
     return( true );
 }
 
