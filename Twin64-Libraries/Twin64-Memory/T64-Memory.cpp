@@ -37,131 +37,127 @@ namespace {
 // Physical memory
 //
 //----------------------------------------------------------------------------------------
-//
+// Physical memory. We have a rather simple module for memory. It is a range of bytes.
+// The SPA range describes where in physical memory this memory is allocated. It is
+// possible to have several memory modules, each mapping a different range of physical 
+// memory. The read and write function merely copy data from and to memory. The 
+// address must however be aligned to the length of the data to fetch.
 //
 //----------------------------------------------------------------------------------------
-T64Memory::T64Memory(   T64System *sys, 
-                        int modNum, 
-                        T64Word size ) : T64Module( MT_MEM, modNum ) {
+T64Memory::T64Memory( T64System     *sys, 
+                      int           modNum, 
+                      T64Word       hpaAdr, 
+                      int           hpaLen,
+                      T64Word       spaAdr,
+                      int           spaLen ) : 
+
+                      T64Module(    MT_MEM, 
+                                    modNum,
+                                    hpaAdr, 
+                                    hpaLen,
+                                    spaAdr,
+                                    spaLen
+                                 ) {
     
     this -> sys     = sys;
-    this -> modNum  = modNum;
-    this -> size    = roundup( size, 16 ); // ??? what is the roundup level ?
-    this -> mem     = (uint8_t *) calloc( this -> size, sizeof( uint8_t ));
+    this -> hpaLen  = roundup( hpaLen, T64_PAGE_SIZE_BYTES );
+    this -> spaLen  = roundup( spaLen, T64_PAGE_SIZE_BYTES );
+    this -> memData = (uint8_t *) calloc( spaLen, sizeof( uint8_t ));
 }
 
+//----------------------------------------------------------------------------------------
+// Reset the memory module. We clear out the physical memory range.
+//
+//----------------------------------------------------------------------------------------
 void T64Memory::reset( ) {
 
-    if ( mem != nullptr ) free( mem );
-    this -> mem  = (uint8_t *) calloc( size, sizeof( uint8_t ));
+    if ( memData != nullptr ) free( memData );
+    this -> memData  = (uint8_t *) calloc( spaLen, sizeof( uint8_t ));
 }
 
+//----------------------------------------------------------------------------------------
+// Each module has a step function. Ours does nothing.
+// 
+//----------------------------------------------------------------------------------------
 void T64Memory::step( ) { }
 
 //----------------------------------------------------------------------------------------
+// Read function. We read a block of data from memory. The address the physical address
+// and we compute the offset on our SPA range. The address needs to be aligned with 
+// length parameter.
 //
-// 
 //----------------------------------------------------------------------------------------
-T64Word T64Memory::read( T64Word adr, int len, bool signExtend ) {
-    
-    if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP, adr );
-    
-    if ( len == 1 ) {
-        
-        T64Word val= mem[ adr ];
-        if ( signExtend ) val = extractSignedField64( val, 63, 8 );
-        return( val );
-    }
-    else if ( len == 2 ) {
-        
-      //  if ( ! isAligned( adr, 2))  throw T64Trap( ALIGNMENT_TRAP );
-        
-        T64Word val = 0;
-        val |= (int16_t) mem[ adr ] << 8;
-        val |= (int16_t) mem[ adr + 1 ];
-        if ( signExtend ) val = extractSignedField64( val, 63, 16 );
-        return( val );
-    }
-    else if ( len == 4 ) {
-        
-       // if ( ! isAligned( adr, 4 )) throw T64Trap( ALIGNMENT_TRAP );
-        
-        T64Word val = 0;
-        val |= (int32_t) mem[ adr]     << 24;
-        val |= (int32_t) mem[ adr + 1 ] << 16;
-        val |= (int32_t) mem[ adr + 2 ] << 8;
-        val |= (int32_t) mem[ adr + 3 ];
-        if ( signExtend ) val = extractSignedField64( val, 63, 32 );
-        return( val );
-        
-    }
-    else if ( len == 8 ) {
-        
-      //  if ( ! isAligned( adr, 8 )) throw T64Trap( ALIGNMENT_TRAP );
-        
-        T64Word val = 0;
-        val |= (T64Word) mem[ adr ]     << 56;
-        val |= (T64Word) mem[ adr + 1 ] << 48;
-        val |= (T64Word) mem[ adr + 2 ] << 40;
-        val |= (T64Word) mem[ adr + 3 ] << 32;
-        val |= (T64Word) mem[ adr + 4 ] << 24;
-        val |= (T64Word) mem[ adr + 5 ] << 16;
-        val |= (T64Word) mem[ adr + 6 ] << 8;
-        val |= (T64Word) mem[ adr + 7 ];
-        return ( val );
-    }
-    else throw T64Trap( DATA_ALIGNMENT_TRAP );
+bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
+
+    if ( adr + len >= spaLen ) return( false );
+    if ( ! isAligned( adr, len )) return( false );
+
+    memcpy( data, &memData[ adr - spaAdr ], len );
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Write function. We write a block of data to memory. The address the physical address
+// and we compute the offset on our SPA range. The address needs to be aligned with 
+// length parameter.
 //
 //----------------------------------------------------------------------------------------
-void T64Memory::write( T64Word adr, T64Word arg, int len ) {
-    
-    if ( adr >= size ) throw T64Trap( PHYS_MEM_ADR_TRAP, adr );
-    
-    if ( len == 1 ) {
-        
-        mem[ adr ] = arg & 0xFF;
-    }
-    else if ( len == 2 ) {
-        
-      //  if ( ! isAligned( adr, 2 )) throw T64Trap( ALIGNMENT_TRAP );
-        
-        mem[ adr ]      = ( arg >> 8  ) & 0xFF;
-        mem[ adr + 1 ]  = ( arg       ) & 0xFF;
-    }
-    else if ( len == 4 ) {
-        
-      //  if ( ! isAligned( adr, 4 )) throw T64Trap( ALIGNMENT_TRAP );
-        
-        mem[ adr ]     = ( arg >> 24 ) & 0xFF;
-        mem[ adr + 1 ] = ( arg >> 16 ) & 0xFF;
-        mem[ adr + 2 ] = ( arg >> 8  ) & 0xFF;
-        mem[ adr + 3 ] = ( arg       ) & 0xFF;
-        
-    }
-    else if ( len == 8 ) {
-        
-      //  if ( ! isAligned( adr, 8 )) throw T64Trap( ALIGNMENT_TRAP );
-        
-        mem[ adr]     = ( arg >> 56 ) & 0xFF;
-        mem[ adr + 1] = ( arg >> 48 ) & 0xFF;
-        mem[ adr + 2] = ( arg >> 40 ) & 0xFF;
-        mem[ adr + 3] = ( arg >> 32 ) & 0xFF;
-        mem[ adr + 4] = ( arg >> 24 ) & 0xFF;
-        mem[ adr + 5] = ( arg >> 16 ) & 0xFF;
-        mem[ adr + 6] = ( arg >> 8  ) & 0xFF;
-        mem[ adr + 7] = ( arg >> 8  ) & 0xFF;
-    }
-    else throw T64Trap( DATA_ALIGNMENT_TRAP );
+bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
+
+    if ( adr + len >= spaLen ) return( false );
+    if ( ! isAligned( adr, len )) return( false );
+
+    memcpy( &memData[ adr - spaAdr ], data, len );
+    return( true );
 }
 
-// ??? separate routines for monitor display ?
-// int getWord( T64Word adr, uint32_t *data );
-// int putWord( T64Word adr, uint32_t data );
+//----------------------------------------------------------------------------------------
+// Bus operations. We listen to all of them and if the physical addresses matches our
+// address range and we are not the source module, the request is handled. Since we
+// do not have a cache, the request handling is very simple.
+//
+//----------------------------------------------------------------------------------------
+bool T64Memory::busReadUncached( int     srcModNum,
+                                 T64Word pAdr, 
+                                 uint8_t *data, 
+                                 int len ) {
 
+    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
+    else return( true );
+}
 
+bool T64Memory::busWriteUncached( int     srcModNum,
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int len ) {
 
+    if ( moduleNum != srcModNum ) return( write( pAdr, data, len ));
+    else return( true );
+}
 
+bool T64Memory::busReadShared( int     srcModNum,
+                               T64Word pAdr,
+                               uint8_t *data, 
+                               int len ) {
+
+    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
+    else return( true );
+}
+
+bool T64Memory::busReadPrivate( int     srcModNum, 
+                                T64Word pAdr, 
+                                uint8_t *data, 
+                                int len ) {
+
+    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
+    else return( true );
+}
+
+bool T64Memory::busWrite( int     srcModNum,
+                          T64Word pAdr, 
+                          uint8_t *data, 
+                          int len ) {
+
+    if ( moduleNum != srcModNum ) return( write( pAdr, data, len ));
+    else return( true );
+}

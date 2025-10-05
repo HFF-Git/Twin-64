@@ -89,54 +89,78 @@ enum T64ModuleType {
 
 //----------------------------------------------------------------------------------------
 // The T64Module object represents and an object in the system. It is the base class
-// for all concrete modules and submodules. 
+// for all concrete modules and reacts to bus operations. Each module has a HPA
+// address range and an optional SPA address range in I/O memory.
 //
 //----------------------------------------------------------------------------------------
 struct T64Module {
     
     public:
 
-    T64Module( T64ModuleType modType, int modNum );
+    T64Module( T64ModuleType    modType, 
+               int              modNum,
+               T64Word          hpaAdr,
+               int              hpaLen,
+               T64Word          spaAdr,
+               int              spaLen  );
 
     virtual void        reset( ) = 0;
     virtual void        step( ) = 0;
 
+    virtual bool        busReadUncached( int srcModNum,
+                                         T64Word pAdr, 
+                                         uint8_t *data, 
+                                         int len ) = 0;
+
+    virtual bool        busWriteUncached( int srcModNum,
+                                          T64Word pAdr, 
+                                          uint8_t *data, 
+                                          int len ) = 0;
+
+    virtual bool        busReadShared(  int srcModNum,
+                                        T64Word pAdr,
+                                        uint8_t *data, 
+                                        int len ) = 0;
+
+    virtual bool        busReadPrivate( int srcModNum,
+                                        T64Word pAdr, 
+                                        uint8_t *data, 
+                                        int len ) = 0;
+
+    virtual bool        busWrite( int srcModNum,
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int len ) = 0;
+
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
 
-    T64Word             getHpaStartAdr( );
-    int                 getHpaSize( );
+    public: 
 
-    private:
-
-    T64ModuleType       moduleTyp           = MT_NIL;
-    int                 moduleNum           = 0;
+    T64ModuleType       moduleTyp   = MT_NIL;
+    int                 moduleNum   = 0;
+    T64Word             hpaAdr      = 0;
+    int                 hpaLen      = 0;
+    T64Word             spaAdr      = 0;
+    int                 spaLen      = 0;
 };
 
 //----------------------------------------------------------------------------------------
 // Each module is stored in the module map along with its number, the type and
 // reference to the module object. We store this redundant info for checking before
-// getting a pointer to the particular module object.
+// getting a pointer to the particular module object. Each module has a HPA address
+// range and an optional SPA address range.
 //
 //----------------------------------------------------------------------------------------
 struct T64ModuleMapEntry {
 
     int             modNum  = 0;
     T64ModuleType   modType = MT_NIL;
+    T64Word         hpaAdr  = 0;
+    int             hpaLen  = 0;
+    T64Word         spaAdr  = 0;
+    int             spaLen  = 0;
     T64Module       *module = nullptr;
-};
-
-//----------------------------------------------------------------------------------------
-// A system map entry in the system map table. The purpose is to locate the module
-// responsible for a physical address range. Note that a module has at least the HPA
-// address range, but can have none, one or more than one SPA ranges.
-//
-//----------------------------------------------------------------------------------------
-struct T64SystemMapEntry {
-
-    T64Module       *module     = nullptr;
-    T64Word         start       = 0;
-    T64Word         len         = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -144,7 +168,6 @@ struct T64SystemMapEntry {
 // as a processor, a memory module, an I/O module and so on. At program start we create
 // the module objects and add them to the systemMap and moduleMap. 
 //
-// ??? think about how the modules would recognize a cache operation ...
 //----------------------------------------------------------------------------------------
 struct T64System {
 
@@ -152,44 +175,57 @@ struct T64System {
 
     T64System( );
 
-    int                 addToModuleMap( T64Module  *module );
-
-    int                 addToSystemMap( T64Module  *module,
-                                        T64Word    spaStart,
-                                        T64Word    spaLen
-                                      );
+    int                 addToModuleMap( T64Module *module );
     
     T64ModuleType       getModuleType( int modNum );
     T64Module           *lookupByModNum( int modNum );
     T64Module           *lookupByAdr( T64Word adr );      
-    T64ModuleMapEntry   *getModMapEntry( int index );             
+    T64ModuleMapEntry   *getModMapEntry( int index );            
 
     void                reset( );
     void                run( );
     void                step( int steps = 1 );
 
-    // ??? these routines should rather go into the simulator ?
+    bool                busReadUncached( int     srcModNum,
+                                         T64Word pAdr, 
+                                         uint8_t *data, 
+                                         int     len );
 
-    bool                readMem( T64Word adr, T64Word *val, int len );
-    bool                writeMem( T64Word adr, T64Word val, int len );
+    bool                busWriteUncached( int     srcModNum,
+                                          T64Word pAdr, 
+                                          uint8_t *data, 
+                                          int len );
 
-    bool                readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool                readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool                writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool                readWord( int proc, T64Word pAdr, T64Word *word );
-    bool                writeWord( int proc, T64Word pAdr, T64Word *word );
+    bool                busReadShared(  int     srcModNum,
+                                        T64Word pAdr,
+                                        uint8_t *data, 
+                                        int     len );
+
+    bool                busReadPrivate( int     srcModNum,
+                                        T64Word pAdr, 
+                                        uint8_t *data, 
+                                        int     len );
+
+    bool                busWrite( int     srcModNum,
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int     len );
+
+    
+    bool                readMem( T64Word pAdr, uint8_t *data, int len );
+    bool                writeMem( T64Word pAdr, uint8_t *data, int len );
 
     private:
 
-    void                initSystemMap( );
     void                initModuleMap( );
 
+    int                 addToSystemMap( T64Module  *module,
+                                        T64Word    start,
+                                        int        len );
+                                        
+  
     T64ModuleMapEntry   moduleMap[ MAX_MOD_MAP_ENTRIES ];
     int                 moduleMapHwm = 0;
-
-    T64SystemMapEntry   systemMap[ MAX_SYS_MAP_ENTRIES ];
-    int                 systemMapHwm = 0;
-                       
 };
 
 #endif

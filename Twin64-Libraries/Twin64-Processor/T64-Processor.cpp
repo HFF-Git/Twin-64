@@ -49,9 +49,19 @@ T64Processor::T64Processor( T64System       *sys,
                             T64TlbType      iTlbType,
                             T64TlbType      dTlbType,
                             T64CacheType    iCacheType,
-                            T64CacheType    dCacheType ) : 
-                T64Module( MT_PROC, modNum ) {
-    
+                            T64CacheType    dCacheType,
+                            T64Word         hpaAdr, 
+                            int             hpaLen,
+                            T64Word         spaAdr,
+                            int             spaLen ) : 
+
+                            T64Module(      MT_PROC, 
+                                            modNum,
+                                            hpaAdr,
+                                            hpaLen,
+                                            spaAdr,
+                                            spaLen ) {
+
     this -> modNum  = modNum;
     this -> sys     = sys;
 
@@ -226,41 +236,69 @@ bool T64Processor::getDCacheLineByIndex( uint32_t          way,
     return( dCache -> getCacheLineByIndex( way, set, info, data ));
 }
 
+bool T64Processor::readShared( T64Word pAdr, uint8_t *data, int len ) {
+
+}
+
+bool T64Processor::readPrivate( T64Word pAdr, uint8_t *data, int len ) {
+
+}
+
+bool T64Processor::writeBack( T64Word pAdr, uint8_t *data, int len ) {
+
+}
+
+bool T64Processor::readUncached( T64Word adr, T64Word *val, int len ) {
+
+}
+
+bool T64Processor::writeUncached( T64Word adr, T64Word val, int len ) {
+
+
+}
+
 //----------------------------------------------------------------------------------------
-// relay methods for accessing the system bus.
+// System Bus operations interface routines.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::readMem( T64Word adr, T64Word *val, int len ) {
+bool T64Processor::busReadShared( int srcModNum, 
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int len ) {
+
 
     return( true );
 }
 
-bool T64Processor::writeMem( T64Word adr, T64Word val, int len ) {
+
+bool T64Processor::busReadPrivate( int srcModNum, 
+                                   T64Word pAdr, 
+                                   uint8_t *data, 
+                                   int len ) {
 
     return( true );
 }
 
-bool T64Processor::readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busWrite( int srcModNum, 
+                             T64Word pAdr, 
+                             uint8_t *data, 
+                              int   len ) {
 
     return( true );
 }
 
-bool T64Processor::readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busReadUncached( int srcModNum, 
+                                    T64Word pAdr, 
+                                    uint8_t *data, 
+                                    int len ) {
 
     return( true );
 }
 
-bool T64Processor::writeBlock( int proc, T64Word pAdr, uint8_t *data, int len ) {
-
-    return( true );
-}
-
-bool T64Processor::readWord( int proc, T64Word pAdr, T64Word *word ) {
-
-    return( true );
-}
-
-bool T64Processor::writeWord( int proc, T64Word pAdr, T64Word *word ) {
+bool T64Processor::busWriteUncached( int srcModNum,
+                                     T64Word pAdr, 
+                                     uint8_t *val, 
+                                     int len ) {
 
     return( true );
 }
@@ -273,7 +311,6 @@ bool T64Processor::isPhysicalAdrRange( T64Word vAdr ) {
 
     return( isInRange( vAdr, lowerPhysMemAdr, upperPhysMemAdr ));
 }
-
 
 //----------------------------------------------------------------------------------------
 // The step routine is the entry point to the processor for executing one or more 

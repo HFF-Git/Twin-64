@@ -29,32 +29,58 @@
 #include "T64-System.h"
 
 //----------------------------------------------------------------------------------------
-//
+// T64 Memory module. A physical memory module is an array of pages. Each module 
+// covers a range of physical memory and reacts to read and write bus operations.
+// Although the memory module does not participate in cache coherency operations,
+// it uses the same read / write interfaces.
 //
 //----------------------------------------------------------------------------------------
 struct T64Memory : T64Module {
     
 public:
     
-    T64Memory( T64System *sys, int modNum, T64Word size );
+    T64Memory( T64System    *sys, 
+               int          modNum, 
+               T64Word       hpaAdr, 
+               int           hpaLen,
+               T64Word       spaAdr,
+               int           spaLen);
     
     void        reset( );
     void        step( );
-    T64Word     read( T64Word pAdr, int len, bool signExtend = false );
-    void        write( T64Word pAdr, T64Word arg, int len );
 
-   
+    bool        busReadUncached( int srcModNum,
+                                 T64Word pAdr, 
+                                 uint8_t *data, 
+                                 int len );
 
-    // ??? separate routines for monitor display ?
-    // int getWord( T64Word adr, uint32_t *data );
-    // int putWord( T64Word adr, uint32_t data );
-   
+    bool        busWriteUncached( int srcModNum,
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int len );
+
+    bool        busReadShared( int srcModNum,
+                               T64Word pAdr,
+                               uint8_t *data, 
+                               int len );
+
+    bool        busReadPrivate( int srcModNum, 
+                                T64Word pAdr, 
+                                uint8_t *data, 
+                                int len );
+
+    bool        busWrite( int srcModNum,
+                          T64Word pAdr, 
+                          uint8_t *data, 
+                          int len );
+
 private:
+
+    bool        read( T64Word adr, uint8_t *data, int len );
+    bool        write( T64Word adr, uint8_t *data, int len );
     
-    T64System   *sys    = nullptr;
-    int         modNum  = 0;
-    T64Word     size    = 0;
-    uint8_t     *mem    = nullptr;
+    T64System   *sys        = nullptr;
+    uint8_t     *memData    = nullptr;
     
 };
 

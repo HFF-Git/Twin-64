@@ -706,9 +706,18 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
             
             if ( index < limit ) {
 
-                T64Word val = glb -> system -> readMem( index, &val, 4 );
-                winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
-                winOut -> writeChars( " " );                
+                T64Word val = 0;
+
+                if ( glb -> system -> readMem( index, (uint8_t *) &val, 4 )) {
+
+                    winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
+                    winOut -> writeChars( " " );   
+                }
+                else {
+
+                    winOut -> printNumber( val, FMT_INVALID_NUM | FMT_HEX_4_4_4_4 );
+                    winOut -> writeChars( " " );  
+                }           
             }
             
             winOut -> writeChars( " " );
@@ -738,11 +747,16 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
         winOut -> printNumber( index << 2, FMT_HEX_2_4_4 );
         winOut -> writeChars( ": " );
 
-        glb -> system -> readMem( index, &instr, 4 ); // ??? we have 32-bit instructions !!
-      
-        disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
-        winOut -> writeChars( "%s\n", buf );
-        
+        if ( glb -> system -> readMem( index, (uint8_t *) &instr, 4 )) {
+
+            disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+            winOut -> writeChars( "%s\n", buf ); 
+        }
+        else {
+
+            winOut -> writeChars( "******\n" );
+        }  
+
         index += sizeof( uint32_t );
     }
     
@@ -1295,7 +1309,7 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
     T64Word val = eval -> acceptNumExpr( ERR_INVALID_NUM );
     tok -> checkEOS( );
 
-    glb -> system -> writeMem( adr, val, 4 );
+    if ( glb -> system -> writeMem( adr, (uint8_t *) val, 4 )) ; // fix ...
 }
 
 //----------------------------------------------------------------------------------------

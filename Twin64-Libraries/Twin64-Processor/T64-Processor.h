@@ -337,12 +337,16 @@ struct T64Processor : T64Module {
                   T64TlbType    iTlbType,
                   T64TlbType    dTlbType,
                   T64CacheType  iCacheType,
-                  T64CacheType  dCacheType
-                 );
+                  T64CacheType  dCacheType,
+                  T64Word       hpaAdr, 
+                  int           hpaLen,
+                  T64Word       spaAdr,
+                  int           spaLen
+                );
     
     void            reset( );
     void            step( );
-    
+
     T64Word         getGeneralReg( int index );
     void            setGeneralReg( int index, T64Word val );
 
@@ -376,15 +380,18 @@ struct T64Processor : T64Module {
                                           T64CacheLineInfo  **info,
                                           uint8_t           **data );
 
-    bool            readMem( T64Word adr, T64Word *val, int len );
-    bool            writeMem( T64Word adr, T64Word val, int len );
+    bool            readShared( T64Word pAdr, uint8_t *data, int len );
+    bool            readPrivate( T64Word pAdr, uint8_t *data, int len );
+    bool            writeBack( T64Word pAdr, uint8_t *data, int len );
+    bool            readUncached( T64Word adr, T64Word *val, int len );
+    bool            writeUncached( T64Word adr, T64Word val, int len );
 
-    bool            readBlockShared( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            readBlockPrivate( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            writeBlock( int proc, T64Word pAdr, uint8_t *data, int len );
-    bool            readWord( int proc, T64Word pAdr, T64Word *word );
-    bool            writeWord( int proc, T64Word pAdr, T64Word *word );
-        
+    bool            busReadShared( int srcModNum, T64Word pAdr, uint8_t *data, int len );
+    bool            busReadPrivate( int srcModNum, T64Word pAdr, uint8_t *data, int len );
+    bool            busWrite( int srcModNum, T64Word pAdr, uint8_t *data, int len );
+    bool            busReadUncached( int srcModNum, T64Word adr, uint8_t *val, int len );
+    bool            busWriteUncached( int srcModNum, T64Word adr, uint8_t *val, int len );
+    
 private:
 
     friend struct   T64Cpu;
