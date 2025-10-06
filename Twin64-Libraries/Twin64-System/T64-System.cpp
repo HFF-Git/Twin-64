@@ -31,11 +31,23 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
+//----------------------------------------------------------------------------------------
+// Check whether HPA or SPA address range of two modules overlap.
+//
+//----------------------------------------------------------------------------------------
 bool overlap( T64Module *a, T64Module *b ) {
 
-    T64Word a_end = a -> spaAdr + a -> spaLen;
-    T64Word b_end = b -> spaAdr + b -> spaLen;
-    return (( a -> spaAdr < b_end ) && ( b -> spaAdr < a_end ));
+    T64Word aEnd = a -> spaAdr + a -> spaLen;
+    T64Word bEnd = b -> spaAdr + b -> spaLen;
+
+    bool ovlSpa = (( a -> spaAdr < bEnd ) && ( b -> spaAdr < aEnd ));
+
+    aEnd = a -> hpaAdr + a -> hpaLen;
+    bEnd = b -> hpaAdr + b -> hpaLen;
+
+    bool ovlHpa = (( a -> hpaAdr < bEnd ) && ( b -> hpaAdr < aEnd ));
+
+    return( ovlSpa || ovlHpa );
 }
 
 };
@@ -53,8 +65,7 @@ void T64System::initModuleMap( ) {
 
      for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
 
-        T64ModuleMapEntry e;
-        moduleMap[ i ] = e;
+        moduleMap[ i ] = nullptr;
     }
 }
 
@@ -70,25 +81,19 @@ int T64System::addToModuleMap( T64Module *module ) {
     // Check overlap with existing entries
     for ( int i = 0; i < moduleMapHwm; ++i ) {
 
-        if ( overlap( moduleMap[ i ].module, module )) return ( -2 ); 
+        if ( overlap( moduleMap[ i ], module )) return ( -2 ); 
     }
 
     // Find insertion position to keep sorted by spaAdr
     int pos = 0;
     while (( pos < moduleMapHwm ) && 
-           ( moduleMap[ pos ].spaAdr < module -> spaAdr )) pos++;
+           ( moduleMap[ pos ] -> spaAdr < module -> spaAdr )) pos++;
 
     // Shift later entries up
     for ( int i = moduleMapHwm; i > pos; i-- ) moduleMap[ i ] = moduleMap[ i - 1 ];
 
     // Insert new entry
-    moduleMap[ pos ].modNum     = module -> moduleNum;
-    moduleMap[ pos ].modType    = module -> moduleTyp; 
-    moduleMap[ pos ].hpaAdr     = module -> hpaAdr;
-    moduleMap[ pos ].hpaLen     = module -> hpaAdr; 
-    moduleMap[ pos ].spaAdr     = module -> spaAdr; 
-    moduleMap[ pos ].spaLen     = module -> spaLen; 
-    moduleMap[ pos ].module     = module;
+    moduleMap[ pos ] = module;
    
     moduleMapHwm ++;
 
@@ -103,9 +108,13 @@ T64Module *T64System::lookupByModNum( int modNum ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        T64ModuleMapEntry *ptr = &moduleMap[ i ];
-        if ( ptr -> modNum == modNum ) return ptr -> module;
+        if (( moduleMap[ i ] != nullptr ) &&
+            ( moduleMap[ i ] -> moduleNum == modNum )) {
+                
+            return( moduleMap[ i ] );
+        }
     }
+    
     return nullptr;
 }
 
@@ -119,12 +128,6 @@ T64ModuleType T64System::getModuleType( int modNum ) {
     return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
 }
 
-T64ModuleMapEntry *T64System::getModMapEntry( int index ) {
-
-    if ( index < MAX_MOD_MAP_ENTRIES ) return( &moduleMap[ index ] );
-    else return ( nullptr );
-}
-
 //----------------------------------------------------------------------------------------
 //
 //
@@ -133,13 +136,15 @@ T64Module *T64System::lookupByAdr( T64Word adr ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        T64ModuleMapEntry *mPtr = & moduleMap[ i ];
+        T64Module *mPtr = moduleMap[ i ];
 
-        if (( adr >= mPtr -> hpaAdr ) && ( adr < mPtr -> hpaAdr + mPtr -> hpaLen )) 
-            return( mPtr -> module );
+        if (( adr >= mPtr -> spaAdr ) && 
+            ( adr <  mPtr -> spaAdr + mPtr -> spaLen )) 
+            return( mPtr ); 
 
-         if (( adr >= mPtr -> spaAdr ) && ( adr < mPtr -> spaAdr + mPtr -> spaLen )) 
-            return( mPtr -> module ); 
+        if (( adr >= mPtr -> hpaAdr ) && 
+            ( adr <  mPtr -> hpaAdr + mPtr -> hpaLen )) 
+            return( mPtr );
     }
 
     return nullptr;
@@ -153,7 +158,7 @@ void T64System::reset( ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap -> module != nullptr ) moduleMap[ i ].module -> reset( ); 
+        if ( moduleMap[ i ] != nullptr ) moduleMap[ i ] -> reset( ); 
     }
 }
 
@@ -176,7 +181,7 @@ void T64System::step( int steps ) {
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap -> module != nullptr ) moduleMap[ i ].module -> step( ); 
+        if ( moduleMap[ i ] != nullptr ) moduleMap[ i ] -> step( ); 
     }
 }
 

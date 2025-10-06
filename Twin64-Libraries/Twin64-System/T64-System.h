@@ -146,21 +146,13 @@ struct T64Module {
 };
 
 //----------------------------------------------------------------------------------------
-// Each module is stored in the module map along with its number, the type and
-// reference to the module object. We store this redundant info for checking before
-// getting a pointer to the particular module object. Each module has a HPA address
-// range and an optional SPA address range.
+// Each module is stored in the module map. Since module is an abstract class the 
+// module map cannot be just an array of modules. We package it into a struct.
 //
 //----------------------------------------------------------------------------------------
 struct T64ModuleMapEntry {
 
-    int             modNum  = 0;
-    T64ModuleType   modType = MT_NIL;
-    T64Word         hpaAdr  = 0;
-    int             hpaLen  = 0;
-    T64Word         spaAdr  = 0;
-    int             spaLen  = 0;
-    T64Module       *module = nullptr;
+    T64Module *module = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -179,8 +171,7 @@ struct T64System {
     
     T64ModuleType       getModuleType( int modNum );
     T64Module           *lookupByModNum( int modNum );
-    T64Module           *lookupByAdr( T64Word adr );      
-    T64ModuleMapEntry   *getModMapEntry( int index );            
+    T64Module           *lookupByAdr( T64Word adr );                
 
     void                reset( );
     void                run( );
@@ -222,9 +213,8 @@ struct T64System {
     int                 addToSystemMap( T64Module  *module,
                                         T64Word    start,
                                         int        len );
-                                        
-  
-    T64ModuleMapEntry   moduleMap[ MAX_MOD_MAP_ENTRIES ];
+                                   
+    T64Module           *moduleMap[ MAX_MOD_MAP_ENTRIES ];
     int                 moduleMapHwm = 0;
 };
 

@@ -1029,16 +1029,28 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModCmd( ) {
 
-    winOut -> writeChars( "Mod   HPA     SPA     Size \n" );
+    winOut -> writeChars( "%-5s%-5s%-16s%-16s%-8s\n", 
+                            "Mod", "Typ", "HPA", "SPA", "Size" );
 
     for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
 
-        T64ModuleMapEntry *mPtr = glb -> system -> getModMapEntry( i );
+        T64Module *mPtr = glb -> system -> lookupByModNum( i );
         if ( mPtr != nullptr ) {
 
-            winOut -> printNumber( i, FMT_DEC );
-            // ??? to do ...
-        
+            winOut -> writeChars( "%02d   ", i  );
+
+            winOut -> writeChars( "%2d   ", mPtr -> moduleTyp );
+
+            winOut -> printNumber( mPtr -> hpaAdr, FMT_HEX_2_4_4 );
+            winOut -> writeChars( "  " );
+
+            winOut -> printNumber( mPtr -> spaAdr, FMT_HEX_2_4_4 );
+            winOut -> writeChars( "  " );
+
+            winOut -> printNumber( mPtr -> spaLen, FMT_HEX );
+            winOut -> writeChars( "  " );
+
+            winOut -> writeChars( "\n" );
         }
     }
 
@@ -1048,7 +1060,7 @@ void SimCommandsWin::displayModCmd( ) {
 //----------------------------------------------------------------------------------------
 // Reset command.
 //
-//  RESET [ ( 'PROC' | 'MEM' | 'STATS' | 'ALL' ) ]
+//  RESET [ ( 'CPU' | 'MEM' | 'STATS' | 'ALL' ) ]
 //
 // ??? rethink what we want ... reset the SYSTEM ? all CPUs ?
 //----------------------------------------------------------------------------------------
@@ -1056,6 +1068,7 @@ void SimCommandsWin::resetCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
+        glb -> system -> reset( ); // for now ...
     }
     else if ( tok -> isToken( TOK_CPU )) {
 
@@ -1067,7 +1080,8 @@ void SimCommandsWin::resetCmd( ) {
         
     }
     else if ( tok -> isToken( TOK_ALL )) {
-        
+
+        glb -> system -> reset( );
     }
     else throw ( ERR_INVALID_ARG );
 }
@@ -1262,7 +1276,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     T64Word     len     = sizeof( T64Word );
     bool        asCode  = false;
 
-    ofs = eval -> acceptNumExpr( ERR_EXPECTED_START_OFS );
+    ofs = eval -> acceptNumExpr( ERR_EXPECTED_START_OFS, 0, T64_MAX_PHYS_MEM_SIZE );
     
     if ( tok -> isToken( TOK_COMMA )) {
         
@@ -1309,7 +1323,10 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
     T64Word val = eval -> acceptNumExpr( ERR_INVALID_NUM );
     tok -> checkEOS( );
 
-    if ( glb -> system -> writeMem( adr, (uint8_t *) val, 4 )) ; // fix ...
+    if ( glb -> system -> writeMem( adr, (uint8_t *) &val, sizeof( T64Word ))) {
+
+        // ??? what to do ...
+    }
 }
 
 //----------------------------------------------------------------------------------------

@@ -73,10 +73,7 @@ int main( int argc, const char * argv[] ) {
                                     0,
                                     64 * T64_PAGE_SIZE_BYTES );
 
-    // ??? need to create a memory module !!!!
-    
-    // ??? register modules here ?
-
+    glb -> system -> addToModuleMap( mem );
 
     glb -> winDisplay   -> startWinDisplay( );
 
