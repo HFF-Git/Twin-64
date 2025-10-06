@@ -707,8 +707,7 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
             if ( index < limit ) {
 
                 T64Word val = 0;
-
-                if ( glb -> system -> readMem( index, (uint8_t *) &val, 4 )) {
+                if ( glb -> system -> readMem( index, (uint8_t *) &val, sizeof( val ))) {
 
                     winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
                     winOut -> writeChars( " " );   
@@ -1323,9 +1322,9 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
     T64Word val = eval -> acceptNumExpr( ERR_INVALID_NUM );
     tok -> checkEOS( );
 
-    if ( glb -> system -> writeMem( adr, (uint8_t *) &val, sizeof( T64Word ))) {
+    if ( ! glb -> system -> writeMem( adr, (uint8_t *) &val, sizeof( T64Word ))) {
 
-        // ??? what to do ...
+        throw( 9998 ); // ??? fix ...
     }
 }
 
@@ -1400,8 +1399,8 @@ void SimCommandsWin::purgeCacheCmd( ) {
     else throw ( ERR_EXPECTED_WIN_ID );
 
     if (( winType != TOK_ICACHE ) && ( winType != TOK_DCACHE ))
-        throw ( 9999 ); // ??? fix ...
-  
+        throw ( 9995 ); // ??? fix ...
+        
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
@@ -1409,16 +1408,16 @@ void SimCommandsWin::purgeCacheCmd( ) {
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
-    // ??? check ?
-
+   
     T64ModuleType mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
-
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    
     if      ( winType == TOK_ICACHE )   proc -> purgeInstrCache( vAdr );
     else if ( winType == TOK_DCACHE )   proc -> purgeDataCache( vAdr );
-    else throw ( 9999 ); // ??? fix ...
+    else throw( 9996 ); // ??? fix ...
 }
 
 //----------------------------------------------------------------------------------------

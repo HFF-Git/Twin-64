@@ -86,13 +86,47 @@ void T64Memory::step( ) { }
 // and we compute the offset on our SPA range. The address needs to be aligned with 
 // length parameter.
 //
+// Twin-64 is a big endian machine. Running on a little endian host, this causes the 
+// issue that the data is read into little endian order when just memory copying. 
+// So, we have to convert after reading the data from memory.
 //----------------------------------------------------------------------------------------
 bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 
     if ( adr + len >= spaLen ) return( false );
     if ( ! isAligned( adr, len )) return( false );
 
-    memcpy( data, &memData[ adr - spaAdr ], len );
+    uint8_t *srcPtr = &memData[ adr - spaAdr ];
+
+    switch ( len ) {
+
+        case 2: {
+
+            uint16_t val;
+            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
+            val = toBigEndian16( val );
+            memcpy( data, (uint8_t *) &val, sizeof( val ));
+        
+        } break;
+
+        case 4: {
+
+            uint32_t val;
+            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
+            val = toBigEndian32( val );
+            memcpy( data, (uint8_t *) &val, sizeof( val ));
+    
+        } break;
+
+        case 8: {
+
+            uint64_t val;
+            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
+            val = toBigEndian64( val );
+            memcpy( data, (uint8_t *) &val, sizeof( val ));
+           
+        } break;
+    }
+
     return( true );
 }
 
@@ -101,13 +135,48 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 // and we compute the offset on our SPA range. The address needs to be aligned with 
 // length parameter.
 //
+// Twin-64 is a big endian machine. Running on a little endian host, this causes the 
+// issue that the data is stored in little endian order when just memory copying. 
+// So, we have to convert before writing to memory.
+//
 //----------------------------------------------------------------------------------------
 bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 
     if ( adr + len >= spaLen ) return( false );
     if ( ! isAligned( adr, len )) return( false );
 
-    memcpy( &memData[ adr - spaAdr ], data, len );
+    uint8_t *dstPtr = &memData[ adr - spaAdr ];
+
+    switch ( len ) {
+
+        case 2: {
+
+            uint16_t val;
+            memcpy( (uint8_t *) &val, data, sizeof( val ));
+            val = toBigEndian16( val );
+            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
+            
+        } break;
+
+        case 4: {
+
+            uint32_t val;
+            memcpy( (uint8_t *) &val, data, sizeof( val ));
+            val = toBigEndian32( val );
+            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
+    
+        } break;
+
+        case 8: {
+
+            uint64_t val;
+            memcpy( (uint8_t *) &val, data, sizeof( val ));
+            val = toBigEndian64( val );
+            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
+           
+        } break;
+    }
+
     return( true );
 }
 

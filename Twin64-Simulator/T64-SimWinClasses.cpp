@@ -418,7 +418,7 @@ void SimWinAbsMem::drawBanner( ) {
 void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
     uint32_t    fmtDesc     = FMT_DEF_ATTR;
-    uint32_t    limit       = getLineIncrement( ) - 1;
+    uint32_t    limit       = getLineIncrement( ) - 1; // ??? why - 1?
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( itemAdr, fmtDesc | FMT_HEX_2_4_4 );
@@ -428,8 +428,9 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
         for ( int i = 0; i < limit; i = i + 4 ) {
         
-            // T64Word val = mem -> read( itemAdr + i, 4 );
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4 );
+            uint32_t val = 0;
+            glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
+            printNumericField( val, fmtDesc | FMT_HEX_4_4 );
             printTextField((char *) " " );
         }
     }
@@ -437,8 +438,9 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
         for ( int i = 0; i < limit; i = i + 8 ) {
         
-            // T64Word val = mem -> read( itemAdr + i, 8 );
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
+            T64Word val = 0;
+            glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
+            printNumericField( val, fmtDesc | FMT_HEX_4_4_4_4 );
             printTextField((char *) "   " );
         }
     }
@@ -446,8 +448,9 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
         for ( int i = 0; i < limit; i = i + 4 ) {
         
-            // T64Word val = mem -> read( itemAdr + i, 4 );
-            printNumericField( 0, fmtDesc | FMT_DEC_32 );
+            uint32_t val = 0;
+            glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
+            printNumericField( val, fmtDesc | FMT_DEC_32 );
             printTextField((char *) " " );
         }
     }

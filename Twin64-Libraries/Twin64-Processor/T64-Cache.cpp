@@ -428,6 +428,8 @@ bool T64Cache::flushCacheLineByIndex( uint32_t way, uint32_t set ) {
 //----------------------------------------------------------------------------------------
 // "getCacheLineData" copies data from the cache line. We expect a valid len argument.
 // 
+//
+// ??? we will also fall into the big little endian issue !!!!!
 //----------------------------------------------------------------------------------------
 T64Word T64Cache::getCacheLineData( uint8_t *line, 
                                     int     lineOfs,
@@ -443,6 +445,7 @@ T64Word T64Cache::getCacheLineData( uint8_t *line,
 //----------------------------------------------------------------------------------------
 // "setCacheLineData" copies data to the cache line. We expect a valid len argument.
 //
+// ??? we will also fall into the big little endian issue !!!!!
 //----------------------------------------------------------------------------------------
 void T64Cache::setCacheLineData( uint8_t *line,
                                  int     lineOfs,
@@ -463,6 +466,9 @@ void T64Cache::setCacheLineData( uint8_t *line,
 // to check if it was modified. If so, we need to flush the data first. Then we READ 
 // SHARED the new cache line into this slot. Finally, we return the requested data.
 //
+//
+// ??? on a cache hit, we need to convert the data ???
+// ??? on a cache line read, we just do nothing, the memory is in big endian...
 //----------------------------------------------------------------------------------------
 void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
@@ -530,6 +536,8 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 // Then we READ PRIVATE the new cache line into this slot. Finally, we update the 
 // cache line.
 //
+// ??? on a cache hit, we need to convert the data ???
+// ??? on a cache line read, we just do nothing, the memory is in big endian...
 //----------------------------------------------------------------------------------------
 void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 

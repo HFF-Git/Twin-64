@@ -35,6 +35,8 @@
 //----------------------------------------------------------------------------------------
 // Byte order conversion functions. They are different on Mac and Windows.
 //
+// ??? do we need to have an option for a big endian machine, where we would do
+// nothing ?
 //----------------------------------------------------------------------------------------
 #if __APPLE__
 
