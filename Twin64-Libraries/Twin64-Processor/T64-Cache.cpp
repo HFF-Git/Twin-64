@@ -504,7 +504,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                if ( ! proc -> readShared( pAdrFromTag( cInfo -> tag, setIndex ), 
+                if ( ! proc -> readSharedBlock( pAdrFromTag( cInfo -> tag, setIndex ), 
                                            cData,
                                            lineSize )) {
 
@@ -515,7 +515,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
             cInfo -> valid = false;
         }
 
-        if ( ! proc -> readShared( pAdr, cData, lineSize )) {
+        if ( ! proc -> readSharedBlock( pAdr, cData, lineSize )) {
 
             throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
         }
@@ -572,9 +572,9 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
             if ( cInfo -> modified ) {
 
-                if ( ! proc -> writeBack( pAdrFromTag( cInfo -> tag, setIndex ), 
-                                          cData, 
-                                          lineSize )) {        
+                if ( ! proc -> writeBlock( pAdrFromTag( cInfo -> tag, setIndex ), 
+                                           cData, 
+                                           lineSize )) {        
                     
                     throw( T64Trap( MACHINE_CHECK_TRAP ));
                 }
@@ -583,7 +583,7 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
             cInfo -> valid = false;
         }
 
-        if ( ! proc -> readPrivate( pAdr, cData, lineSize )) {
+        if ( ! proc -> readPrivateBlock( pAdr, cData, lineSize )) {
 
             throw( T64Trap( MACHINE_CHECK_TRAP ));
         }
@@ -609,9 +609,9 @@ void T64Cache::flushCacheLine( T64Word pAdr ) {
             uint32_t setIndex = getSetIndex( pAdr );
 
             // ??? need to mask pAdr ? 
-            if ( ! proc -> writeBack( pAdrFromTag( cInfo -> tag, setIndex ),  
-                                      cData, 
-                                      lineSize )) {
+            if ( ! proc -> writeBlock( pAdrFromTag( cInfo -> tag, setIndex ),  
+                                       cData, 
+                                       lineSize )) {
         
                 throw( T64Trap( MACHINE_CHECK_TRAP ));
             }
@@ -637,9 +637,9 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 
             uint32_t setIndex = getSetIndex( pAdr );
 
-            if ( ! proc -> writeBack( pAdrFromTag( cInfo -> tag, setIndex ), 
-                                      cData, 
-                                      lineSize )) {
+            if ( ! proc -> writeBlock( pAdrFromTag( cInfo -> tag, setIndex ), 
+                                       cData, 
+                                       lineSize )) {
         
                 throw( T64Trap( MACHINE_CHECK_TRAP ));
             }

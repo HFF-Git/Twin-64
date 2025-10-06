@@ -190,7 +190,7 @@ void T64System::step( int steps ) {
 // request.
 //
 //----------------------------------------------------------------------------------------
-bool T64System::busReadUncached( int     srcModNum,
+bool T64System::busReadUncached( int     reqModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 
                                  int     len ) {
@@ -203,7 +203,7 @@ bool T64System::busReadUncached( int     srcModNum,
     return( true );
 }
 
-bool T64System::busWriteUncached( int     srcModNum,
+bool T64System::busWriteUncached( int     reqModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int     len ) {
@@ -217,14 +217,53 @@ bool T64System::busWriteUncached( int     srcModNum,
 }
 
 //----------------------------------------------------------------------------------------
-// Cached coherent bus operation. We first determine the responsible module. For each
-// module on the bus that is not the requesting module nor the responsible module
-// for the physical address, we issue the call to signal that perhaps a cache 
-// coherency operation must take place. Next, we just invoke the responsible module
-// to carry out the request. 
+// Cached coherent bus operation. We first determine the responsible module. Then
+// we tell all other modules about the request so that perhaps a cache coherency 
+// operation takes place before we issue the request to the target module. 
 //
+// ??? in a sense each module executes the request. Just slightly different. If not
+// the target, work to be done is to ensure cache coherency. If the target, we 
+// return the data as asked for. 
 //----------------------------------------------------------------------------------------
-bool T64System::busReadShared( int     srcModNum,
+bool T64System::busReadSharedBlock( int     reqModNum,
+                                    T64Word pAdr, 
+                                    uint8_t *data, 
+                                    int     len ) {
+
+    T64Module *mPtr = lookupByAdr( pAdr );
+    if ( mPtr == nullptr ) return( false );
+
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
+
+        if ( moduleMap[ i ] -> moduleNum != reqModNum ) {
+
+             moduleMap[ i ] -> busReadSharedBlock( reqModNum, pAdr, data, len );
+        }
+    }
+
+    return( mPtr -> busReadSharedBlock( reqModNum, pAdr, data, len ));
+}
+
+bool T64System::busReadPrivateBlock( int     reqModNum,
+                                     T64Word pAdr, 
+                                     uint8_t *data, 
+                                     int     len ) {
+
+    T64Module *mPtr = lookupByAdr( pAdr );
+    if ( mPtr == nullptr ) return( false );
+
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
+
+        if ( moduleMap[ i ] -> moduleNum != mPtr -> moduleNum ) {
+
+             moduleMap[ i ] -> busReadPrivateBlock( reqModNum, pAdr, data, len );
+        }
+    }
+
+    return( mPtr -> busReadPrivateBlock( reqModNum, pAdr, data, len ));
+}
+
+bool T64System::busWriteBlock( int     reqModNum,
                                T64Word pAdr, 
                                uint8_t *data, 
                                int     len ) {
@@ -232,35 +271,15 @@ bool T64System::busReadShared( int     srcModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return( false );
 
-    // ??? to do ...
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-    return( true );
-}
+        if ( moduleMap[ i ] -> moduleNum != mPtr -> moduleNum ) {
 
-bool T64System::busReadPrivate( int     srcModNum,
-                                T64Word pAdr, 
-                                uint8_t *data, 
-                                int     len ) {
+             moduleMap[ i ] -> busWriteBlock( reqModNum, pAdr, data, len );
+        }
+    }
 
-    T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
-
-    // ??? to do ...
-
-    return( true );
-}
-
-bool T64System::busWrite( int     srcModNum,
-                          T64Word pAdr, 
-                          uint8_t *data, 
-                          int     len ) {
-
-    T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
-
-    // ??? to do ...
-
-    return( true );
+    return( mPtr -> busWriteBlock( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------

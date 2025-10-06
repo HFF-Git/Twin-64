@@ -117,20 +117,20 @@ struct T64Module {
                                           uint8_t *data, 
                                           int len ) = 0;
 
-    virtual bool        busReadShared(  int srcModNum,
-                                        T64Word pAdr,
-                                        uint8_t *data, 
-                                        int len ) = 0;
+    virtual bool        busReadSharedBlock( int srcModNum,
+                                            T64Word pAdr,
+                                            uint8_t *data, 
+                                            int len ) = 0;
 
-    virtual bool        busReadPrivate( int srcModNum,
-                                        T64Word pAdr, 
-                                        uint8_t *data, 
-                                        int len ) = 0;
+    virtual bool        busReadPrivateBlock( int srcModNum,
+                                             T64Word pAdr, 
+                                             uint8_t *data, 
+                                             int len ) = 0;
 
-    virtual bool        busWrite( int srcModNum,
-                                  T64Word pAdr, 
-                                  uint8_t *data, 
-                                  int len ) = 0;
+    virtual bool        busWriteBlock( int srcModNum,
+                                       T64Word pAdr, 
+                                       uint8_t *data, 
+                                       int len ) = 0;
 
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
@@ -177,30 +177,30 @@ struct T64System {
     void                run( );
     void                step( int steps = 1 );
 
-    bool                busReadUncached( int     srcModNum,
+    bool                busReadUncached( int     reqModNum,
                                          T64Word pAdr, 
                                          uint8_t *data, 
                                          int     len );
 
-    bool                busWriteUncached( int     srcModNum,
+    bool                busWriteUncached( int     reqModNum,
                                           T64Word pAdr, 
                                           uint8_t *data, 
                                           int len );
 
-    bool                busReadShared(  int     srcModNum,
-                                        T64Word pAdr,
-                                        uint8_t *data, 
-                                        int     len );
+    bool                busReadSharedBlock( int     reqModNum,
+                                            T64Word pAdr,
+                                            uint8_t *data, 
+                                            int     len );
 
-    bool                busReadPrivate( int     srcModNum,
-                                        T64Word pAdr, 
-                                        uint8_t *data, 
-                                        int     len );
+    bool                busReadPrivateBlock( int     reqModNum,
+                                             T64Word pAdr, 
+                                             uint8_t *data, 
+                                             int     len );
 
-    bool                busWrite( int     srcModNum,
-                                  T64Word pAdr, 
-                                  uint8_t *data, 
-                                  int     len );
+    bool                busWriteBlock( int     reqModNum,
+                                       T64Word pAdr, 
+                                       uint8_t *data, 
+                                       int     len );
 
     
     bool                readMem( T64Word pAdr, uint8_t *data, int len );

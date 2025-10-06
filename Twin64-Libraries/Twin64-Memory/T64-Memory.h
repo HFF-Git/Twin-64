@@ -59,20 +59,20 @@ public:
                                   uint8_t *data, 
                                   int len );
 
-    bool        busReadShared( int srcModNum,
-                               T64Word pAdr,
-                               uint8_t *data, 
-                               int len );
+    bool        busReadSharedBlock( int srcModNum,
+                                    T64Word pAdr,
+                                    uint8_t *data, 
+                                    int len );
 
-    bool        busReadPrivate( int srcModNum, 
+    bool        busReadPrivateBlock( int srcModNum, 
+                                     T64Word pAdr, 
+                                     uint8_t *data, 
+                                     int len );
+
+    bool        busWriteBlock(  int srcModNum,
                                 T64Word pAdr, 
                                 uint8_t *data, 
                                 int len );
-
-    bool        busWrite( int srcModNum,
-                          T64Word pAdr, 
-                          uint8_t *data, 
-                          int len );
 
 private:
 

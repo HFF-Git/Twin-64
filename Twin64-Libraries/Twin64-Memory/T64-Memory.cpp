@@ -191,8 +191,7 @@ bool T64Memory::busReadUncached( int     srcModNum,
                                  uint8_t *data, 
                                  int len ) {
 
-    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
-    else return( true );
+    return( read( pAdr, data, len ));
 }
 
 bool T64Memory::busWriteUncached( int     srcModNum,
@@ -200,33 +199,29 @@ bool T64Memory::busWriteUncached( int     srcModNum,
                                   uint8_t *data, 
                                   int len ) {
 
-    if ( moduleNum != srcModNum ) return( write( pAdr, data, len ));
-    else return( true );
+    return( write( pAdr, data, len ));
 }
 
-bool T64Memory::busReadShared( int     srcModNum,
-                               T64Word pAdr,
+bool T64Memory::busReadSharedBlock( int     srcModNum,
+                                    T64Word pAdr,
+                                    uint8_t *data, 
+                                    int len ) {
+
+    return( read( pAdr, data, len ));
+}
+
+bool T64Memory::busReadPrivateBlock( int     srcModNum, 
+                                     T64Word pAdr, 
+                                     uint8_t *data, 
+                                     int len ) {
+
+    return( read( pAdr, data, len ));
+}
+
+bool T64Memory::busWriteBlock( int     srcModNum,
+                               T64Word pAdr, 
                                uint8_t *data, 
                                int len ) {
 
-    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
-    else return( true );
-}
-
-bool T64Memory::busReadPrivate( int     srcModNum, 
-                                T64Word pAdr, 
-                                uint8_t *data, 
-                                int len ) {
-
-    if ( moduleNum != srcModNum ) return( read( pAdr, data, len ));
-    else return( true );
-}
-
-bool T64Memory::busWrite( int     srcModNum,
-                          T64Word pAdr, 
-                          uint8_t *data, 
-                          int len ) {
-
-    if ( moduleNum != srcModNum ) return( write( pAdr, data, len ));
-    else return( true );
+    return( write( pAdr, data, len ));
 }
