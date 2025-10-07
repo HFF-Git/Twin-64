@@ -475,115 +475,162 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
 
             case 1: { // HEX as is
 
-                return ( writeChars((char *) "0x%x", val));
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X ) 
+                    len += writeChars((char *) "0x" );
+                if ( fmtDesc & FMT_INVALID_NUM ) 
+                    len += writeChars((char *) "**" );
+                    
+                len += writeChars((char *) "%x", val );
+                return ( len );
 
             } break;
 
             case 2: { // HEX_2
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x" "**" ));
-                else
-                    return ( writeChars((char *) "0x%02x", val & 0xFF ));
+                    len += writeChars((char *) "**" );
+
+                len += writeChars((char *) "%02x", val & 0xFF );
+                return( len );
 
             } break;
 
             case 3: { // HEX_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x" "****" ));
-                else
-                    return ( writeChars((char *) "0x%04x", val & 0xFFFF ));
+                    len += writeChars((char *) "****" );
+
+                len += writeChars((char *) "%04x", val & 0xFFFF );
+                return( len );
 
             } break;
 
             case 4: { // HEX_8
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x" "****" "****" ));
-                else
-                    return ( writeChars((char *) "0x%08x", val & 0xFFFFFFFF ));
+                    len += writeChars((char *) "****" "****" );
+
+                len += writeChars((char *) "%08x", val & 0xFFFFFFFF );
+                return( len );
 
             } break;
 
             case 5: { // HEX_16
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x" "****" "****" "****" "****" ));
-                else
-                    return ( writeChars((char *) "0x%016x", val ));
+                    len += writeChars((char *) "****" "****" "****" "****" );
+
+                len += writeChars((char *) "%016x", val );
+                return( len );
 
             } break;
 
             case 6: { // FMT_HEX_2_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x**_****" ));
-                else
-                    return ( writeChars((char *) "0x%02x_%04x", 
+                    len += writeChars((char *) "**_****" );
+
+                len += writeChars((char *) "%02x_%04x", 
                                         (( val >> 16 ) & 0xFF   ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
             case 7: { // FMT_HEX_4_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x****_****" ));
-                else
-                    return ( writeChars((char *) "0x%04x_%04x", 
+                    len += writeChars((char *) "****_****" );
+
+                len += writeChars((char *) "%04x_%04x", 
                                         (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
             case 8: { // FMT_HEX_2_4_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x**_****_****" ));
-                else
-                    return ( writeChars((char *) "0x%02x_%04x_%04x", 
+                    len += writeChars((char *) "**_****_****" );
+
+                len += writeChars((char *) "%02x_%04x_%04x", 
                                         (( val >> 32 ) & 0xFF   ),
                                         (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
             case 9: { // FMT_HEX_4_4_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x****_****_****" ));
-                else
-                    return ( writeChars((char *) "0x%04x_%04x_%04x", 
+                    len += writeChars((char *) "****_****_****" );
+
+                len += writeChars((char *) "%04x_%04x_%04x", 
                                         (( val >> 32 ) & 0xFFFF ),
                                         (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
             case 10: { // FMT_HEX_2_4_4_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x**_****_****_****" ));
-                else
-                    return ( writeChars((char *) "0x%02X_%04x_%04x_%04x", 
+                    len += writeChars((char *) "**_****_****_****" );
+
+                len += writeChars((char *) "%02X_%04x_%04x_%04x", 
                                         (( val >> 48 ) & 0xFF   ),
                                         (( val >> 32 ) & 0xFFFF ),
                                         (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
             case 11: { // FMT_HEX_4_4_4_4
 
+                int len = 0;
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                    len += writeChars((char *) "0x" );
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    return ( writeChars((char *) "0x****_****_****_****" ));
-                else
-                    return ( writeChars((char *) "0x%04x_%04x_%04x_%04x", 
+                    len += writeChars((char *) "****_****_****_****" );
+
+                len += writeChars((char *) "%04x_%04x_%04x_%04x", 
                                         (( val >> 48 ) & 0xFFFF ),
                                         (( val >> 32 ) & 0xFFFF ),
                                         (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF )));
+                                        (( val       ) & 0xFFFF ));
+                return( len );
 
             } break;
 
@@ -622,11 +669,13 @@ int SimFormatter::numberFmtLen( uint32_t fmtDesc, T64Word val ) {
     
     if ((( fmtDesc >> 8 ) & 0xF ) > 0 ) {
 
+        int prefixLen = (( fmtDesc & FMT_PREFIX_0X ) ? 2 : 0 );
+
         switch (( fmtDesc >> 8 ) & 0xF ) {
 
             case 1: { // HEX
 
-                int len = 3;
+                int len = prefixLen + 1;
 
                 val = abs( val );
                 
@@ -640,16 +689,16 @@ int SimFormatter::numberFmtLen( uint32_t fmtDesc, T64Word val ) {
 
             } break;
 
-            case 2:     return ( 4  );   // HEX_2
-            case 3:     return ( 6  );   // HEX_4
-            case 4:     return ( 10 );   // HEX_8
-            case 5:     return ( 18 );   // HEX_16
-            case 6:     return ( 9  );   // FMT_HEX_2_4
-            case 7:     return ( 11 );   // FMT_HEX_4_4
-            case 8:     return ( 14 );   // FMT_HEX_2_4_4
-            case 9:     return ( 16 );   // FMT_HEX_4_4_4
-            case 10:    return ( 19 );   // FMT_HEX_2_4_4_4
-            case 11:    return ( 21 );   // FMT_HEX_4_4_4_4
+            case 2:     return (  2 + prefixLen );   // HEX_2
+            case 3:     return (  4 + prefixLen );   // HEX_4
+            case 4:     return (  8 + prefixLen );   // HEX_8
+            case 5:     return ( 16 + prefixLen );   // HEX_16
+            case 6:     return (  7 + prefixLen );   // FMT_HEX_2_4
+            case 7:     return (  9 + prefixLen );   // FMT_HEX_4_4
+            case 8:     return ( 12 + prefixLen );   // FMT_HEX_2_4_4
+            case 9:     return ( 14 + prefixLen );   // FMT_HEX_4_4_4
+            case 10:    return ( 17 + prefixLen );   // FMT_HEX_2_4_4_4
+            case 11:    return ( 19 + prefixLen );   // FMT_HEX_4_4_4_4
             default:    return( 0 );
         }
     }

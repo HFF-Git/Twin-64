@@ -189,6 +189,7 @@ void T64System::step( int steps ) {
 // Uncached bus operations. We locate the responsible module and let it handle the 
 // request.
 //
+// ??? what happens if we call ourselves ?
 //----------------------------------------------------------------------------------------
 bool T64System::busReadUncached( int     reqModNum,
                                  T64Word pAdr, 
@@ -198,9 +199,7 @@ bool T64System::busReadUncached( int     reqModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return( false );
 
-    // ??? to do ...
-
-    return( true );
+    return( mPtr -> busReadUncached( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busWriteUncached( int     reqModNum,
@@ -211,9 +210,7 @@ bool T64System::busWriteUncached( int     reqModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return( false );
 
-    // ??? to do ...
-
-    return( true );
+    return( mPtr -> busWriteUncached( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------

@@ -386,11 +386,30 @@ struct T64Processor : T64Module {
     bool            readUncached( T64Word adr, uint8_t *val, int len );
     bool            writeUncached( T64Word adr, uint8_t *val, int len );
 
-    bool            busReadSharedBlock( int srcModNum, T64Word pAdr, uint8_t *data, int len );
-    bool            busReadPrivateBlock( int srcModNum, T64Word pAdr, uint8_t *data, int len );
-    bool            busWriteBlock( int srcModNum, T64Word pAdr, uint8_t *data, int len );
-    bool            busReadUncached( int srcModNum, T64Word adr, uint8_t *val, int len );
-    bool            busWriteUncached( int srcModNum, T64Word adr, uint8_t *val, int len );
+    bool            busReadSharedBlock( int     reqModNum, 
+                                        T64Word pAdr, 
+                                        uint8_t *data, 
+                                        int     len );
+
+    bool            busReadPrivateBlock( int     reqModNum, 
+                                         T64Word pAdr, 
+                                         uint8_t *data, 
+                                         int     len );
+
+    bool            busWriteBlock( int     reqModNum, 
+                                   T64Word pAdr, 
+                                   uint8_t *data, 
+                                   int     len );
+
+    bool            busReadUncached( int     reqModNum, 
+                                     T64Word adr, 
+                                     uint8_t *val, 
+                                     int     len );
+
+    bool            busWriteUncached( int     reqModNum, 
+                                      T64Word adr, 
+                                      uint8_t *val, 
+                                      int     len );
     
 private:
 

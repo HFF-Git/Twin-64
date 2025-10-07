@@ -431,7 +431,7 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
             uint32_t val = 0;
             glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
             printNumericField( val, fmtDesc | FMT_HEX_4_4 );
-            printTextField((char *) " " );
+            printTextField((char *) "   " );
         }
     }
     else if ( getWinToggleVal( ) == 1 ) {
@@ -451,7 +451,7 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
             uint32_t val = 0;
             glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
             printNumericField( val, fmtDesc | FMT_DEC_32 );
-            printTextField((char *) " " );
+            printTextField((char *) "   " );
         }
     }
 }

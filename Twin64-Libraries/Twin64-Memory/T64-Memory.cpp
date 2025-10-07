@@ -97,37 +97,7 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 
     uint8_t *srcPtr = &memData[ adr - spaAdr ];
 
-    switch ( len ) {
-
-        case 2: {
-
-            uint16_t val;
-            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
-            val = toBigEndian16( val );
-            memcpy( data, (uint8_t *) &val, sizeof( val ));
-        
-        } break;
-
-        case 4: {
-
-            uint32_t val;
-            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
-            val = toBigEndian32( val );
-            memcpy( data, (uint8_t *) &val, sizeof( val ));
-    
-        } break;
-
-        case 8: {
-
-            uint64_t val;
-            memcpy((uint8_t *) &val, srcPtr, sizeof( val ));
-            val = toBigEndian64( val );
-            memcpy( data, (uint8_t *) &val, sizeof( val ));
-           
-        } break;
-    }
-
-    return( true );
+    return( copyToBigEndian( data, srcPtr, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -143,41 +113,12 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 
     if ( adr + len >= spaLen ) return( false );
+
     if ( ! isAligned( adr, len )) return( false );
 
     uint8_t *dstPtr = &memData[ adr - spaAdr ];
 
-    switch ( len ) {
-
-        case 2: {
-
-            uint16_t val;
-            memcpy( (uint8_t *) &val, data, sizeof( val ));
-            val = toBigEndian16( val );
-            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
-            
-        } break;
-
-        case 4: {
-
-            uint32_t val;
-            memcpy( (uint8_t *) &val, data, sizeof( val ));
-            val = toBigEndian32( val );
-            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
-    
-        } break;
-
-        case 8: {
-
-            uint64_t val;
-            memcpy( (uint8_t *) &val, data, sizeof( val ));
-            val = toBigEndian64( val );
-            memcpy( dstPtr, (uint8_t *) &val, sizeof( val ));
-           
-        } break;
-    }
-
-    return( true );
+    return( copyToBigEndian( dstPtr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------

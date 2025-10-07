@@ -1156,9 +1156,12 @@ void SimCommandsWin::writeLineCmd( ) {
             
         case TYP_NUM: {
 
-            if      ( rdx == 16 )   winOut -> printNumber( rExpr.u.val, FMT_HEX );
-            else if ( rdx == 10 )   winOut -> printNumber( rExpr.u.val, FMT_DEC );
-            else                    winOut -> writeChars( "Invalid Radix" );
+            if ( rdx == 16 )   
+                winOut -> printNumber( rExpr.u.val, FMT_HEX | FMT_PREFIX_0X );
+            else if ( rdx == 10 )   
+                winOut -> printNumber( rExpr.u.val, FMT_DEC );
+            else                    
+                winOut -> writeChars( "Invalid Radix" );
         
             winOut -> writeChars( "\n" );
             

@@ -143,6 +143,10 @@ struct T64Module {
     int                 hpaLen      = 0;
     T64Word             spaAdr      = 0;
     int                 spaLen      = 0;
+
+    private:
+
+    uint8_t             *hpaMem     = nullptr;
 };
 
 //----------------------------------------------------------------------------------------

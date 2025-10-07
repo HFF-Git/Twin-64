@@ -33,25 +33,48 @@
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------
-// Byte order conversion functions. They are different on Mac and Windows.
+// Byte order conversion functions. They are different on Mac and Windows and LINUX,
+// GCC and CLANG.
 //
 // ??? do we need to have an option for a big endian machine, where we would do
 // nothing ?
 //----------------------------------------------------------------------------------------
-#if __APPLE__
+#include <stdint.h>
 
-#include <libkern/OSByteOrder.h>
-inline uint16_t toBigEndian16(uint16_t val) { return OSSwapHostToBigInt16(val); }
-inline uint32_t toBigEndian32(uint32_t val) { return OSSwapHostToBigInt32(val); }
-inline uint64_t toBigEndian64(uint64_t val) { return OSSwapHostToBigInt64(val); }
+#if defined(__APPLE__)
+  #include <libkern/OSByteOrder.h>
+  #define HOST_IS_BIG_ENDIAN  (__BIG_ENDIAN__)
+#elif defined(_WIN32)
+  #define HOST_IS_BIG_ENDIAN  0
+#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  #define HOST_IS_BIG_ENDIAN  1
+#else
+  #define HOST_IS_BIG_ENDIAN  0
+#endif
+
+#if HOST_IS_BIG_ENDIAN
+
+inline uint16_t toBigEndian16(uint16_t val) { return val; }
+inline uint32_t toBigEndian32(uint32_t val) { return val; }
+inline uint64_t toBigEndian64(uint64_t val) { return val; }
 
 #else
 
-#include <stdlib.h> // for _byteswap_*
-#include <intrin.h>
-inline uint16_t toBigEndian16(uint16_t val) { return _byteswap_ushort(val); }
-inline uint32_t toBigEndian32(uint32_t val) { return _byteswap_ulong(val); }
-inline uint64_t toBigEndian64(uint64_t val) { return _byteswap_uint64(val); }
+  #if defined(__APPLE__)
+    #include <libkern/OSByteOrder.h>
+    inline uint16_t toBigEndian16(uint16_t val) { return OSSwapHostToBigInt16(val); }
+    inline uint32_t toBigEndian32(uint32_t val) { return OSSwapHostToBigInt32(val); }
+    inline uint64_t toBigEndian64(uint64_t val) { return OSSwapHostToBigInt64(val); }
+  #elif defined(_MSC_VER)
+    #include <intrin.h>
+    inline uint16_t toBigEndian16(uint16_t val) { return _byteswap_ushort(val); }
+    inline uint32_t toBigEndian32(uint32_t val) { return _byteswap_ulong(val); }
+    inline uint64_t toBigEndian64(uint64_t val) { return _byteswap_uint64(val); }
+  #else
+    inline uint16_t toBigEndian16(uint16_t val) { return __builtin_bswap16(val); }
+    inline uint32_t toBigEndian32(uint32_t val) { return __builtin_bswap32(val); }
+    inline uint64_t toBigEndian64(uint64_t val) { return __builtin_bswap64(val); }
+  #endif
 
 #endif
 
@@ -59,6 +82,11 @@ inline uint64_t toBigEndian64(uint64_t val) { return _byteswap_uint64(val); }
 // Helper functions.
 //
 //----------------------------------------------------------------------------------------
+inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
+    
+    return (( adr >= low ) && ( adr <= high ));
+}
+
 inline T64Word roundup( T64Word arg, int round ) {
     
     if ( round == 0 ) return ( arg );
@@ -67,15 +95,65 @@ inline T64Word roundup( T64Word arg, int round ) {
 
 inline bool isAligned( T64Word adr, int align ) {
 
-    if (( align == 1 ) || ( align = 2 ) || ( align == 4 ) || ( align = 8 )) 
+    if (( align == 1 ) || ( align = 2 ) || 
+        ( align == 4 ) || ( align = 8 )) 
+        
         return (( adr & ( align - 1 )) == 0 );
-    else 
-        return( false );
+    
+    else return( false );
 }
 
-inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
+//----------------------------------------------------------------------------------------
+// "copyToBigEndian" converts the input data in little endian format to big endian
+// format. Both source and destination must be aligned to the length of the data
+// input.
+//
+//----------------------------------------------------------------------------------------
+inline bool copyToBigEndian( uint8_t *dst, uint8_t *src, int len ) {
+
+    if (( len != 1 ) && ( len != 2 ) && 
+        ( len != 4 ) && ( len != 8 )) return( false );     
+
+    if (((uintptr_t)dst & (len - 1)) != 0) return false;
+    if (((uintptr_t)src & (len - 1)) != 0) return false;
+
+    switch ( len ) {
+
+        case 1: {
+            
+            *dst = *src;
+
+        } break;
+
+        case 2: {
+
+            uint16_t val;
+            memcpy( &val, src, sizeof( val ));
+            val = toBigEndian16( val );
+            memcpy( dst, &val, sizeof( val ));
+            
+        } break;
+
+        case 4: {
+
+            uint32_t val;
+            memcpy( &val, src, sizeof( val ));
+            val = toBigEndian32( val );
+            memcpy( dst, &val, sizeof( val ));
     
-    return (( adr >= low ) && ( adr <= high ));
+        } break;
+
+        case 8: {
+
+            uint64_t val;
+            memcpy( &val, src, sizeof( val ));
+            val = toBigEndian64( val );
+            memcpy( dst, &val, sizeof( val ));
+           
+        } break;
+    }
+
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------

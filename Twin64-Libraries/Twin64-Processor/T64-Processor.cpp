@@ -238,7 +238,7 @@ bool T64Processor::getDCacheLineByIndex( uint32_t          way,
 
 //----------------------------------------------------------------------------------------
 // Cache interface routines for requesting system bus operations. Straightforward. 
-// The processor offers this facade to the system bus.
+// The processor offers this facade to the cache subsystem.
 //
 //----------------------------------------------------------------------------------------
 bool T64Processor::readSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
@@ -258,94 +258,89 @@ bool T64Processor::writeBlock( T64Word pAdr, uint8_t *data, int len ) {
 
 bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
 
-    // ??? if the address is our own HPA, no point to send a bus request.
-    // ??? anything else we pass to the bus...
+    if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
 
-    sys -> busReadUncached( moduleNum, pAdr, data, len );
+        // ??? this is our own HPA...
+    }
+    else sys -> busReadUncached( moduleNum, pAdr, data, len );
 }
 
 bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
 
-    // ??? if the address is our own HPA, no point to send a bus request.
-    // ??? anything else we pass to the bus...
-    
+    if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
+
+        // ??? this is our own HPA...
+    }
     sys -> busWriteUncached( moduleNum, pAdr, data, len );
 }
 
 //----------------------------------------------------------------------------------------
-// System Bus operations interface routines. When a module issues a request, we will 
-// be informed about it via these routines. We can now check for bus transactions 
-// that would concern us. For example, when another module requests an exclusive 
-// copy of a memory block and we have that block modified in our caches. We will need
-// to flush the data first. If the request concerns us, we will inform the cache 
-// about it, so that it can take action if needed. Since we might be the source of
-// the request, we will only react when we are not the originator. 
+// System Bus operations interface routines. When a module issues a request, any
+// other module will be informed. We can now check whether the bus transactions 
+// would concern us. For example, when another module requests an exclusive copy 
+// of a memory block and we happen to have that block modified in our caches. We 
+// will need to flush the data first. If the request concerns us, we will inform 
+// the cache about it, so that it can take action if needed. Since we might be the
+// source of the request, we will only react when we are not the originator. 
 //
 // Another scenario is the processor HPA address range. These are uncached requests
 // and we will react to them as well.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busReadSharedBlock( int srcModNum, 
-                                       T64Word pAdr, 
-                                       uint8_t *data, 
-                                       int len ) {
+bool T64Processor::busReadSharedBlock( int      reqModNum, 
+                                       T64Word  pAdr, 
+                                       uint8_t  *data, 
+                                       int      len ) {
 
-    if ( srcModNum != moduleNum ) {
+    if ( reqModNum == moduleNum ) return( false );
 
+    // ??? the cache needs to know ...
+    return( true );
+}
 
-        // ??? the cache needs to know ...
-    }
+bool T64Processor::busReadPrivateBlock( int     reqModNum, 
+                                        T64Word pAdr, 
+                                        uint8_t *data, 
+                                        int     len ) {
+
+    if ( reqModNum == moduleNum ) return( false );
+
+    // ??? the cache needs to know ...
 
     return( true );
 }
 
-bool T64Processor::busReadPrivateBlock( int srcModNum, 
-                                   T64Word pAdr, 
-                                   uint8_t *data, 
-                                   int len ) {
-
-    if ( srcModNum != moduleNum ) {
-
-
-        // ??? the cache needs to know ...
-    }
-
-    return( true );
-}
-
-bool T64Processor::busWriteBlock( int srcModNum, 
+bool T64Processor::busWriteBlock( int     reqModNum, 
                                   T64Word pAdr, 
                                   uint8_t *data, 
-                                  int   len ) {
+                                  int     len ) {
 
-    if ( srcModNum != moduleNum ) {
+    if ( reqModNum == moduleNum ) return( false );
 
-
-        // ??? the cache needs to know ...
-    }
-
+    // ??? the cache needs to know ...
+   
     return( true );
 }
 
-bool T64Processor::busReadUncached( int srcModNum, 
+bool T64Processor::busReadUncached( int     reqModNum, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len ) {
+                                    int     len ) {
     
-    if ( srcModNum != moduleNum ) {
+    if ( reqModNum == moduleNum ) return( false );
 
-       // an uncached read request. we check if it is for our HPA.
-    }
+    // an uncached read request. we check if it is for our HPA.
 
     return( true );
 }
 
-bool T64Processor::busWriteUncached( int srcModNum,
+bool T64Processor::busWriteUncached( int     reqModNum,
                                      T64Word pAdr, 
                                      uint8_t *val, 
-                                     int len ) {
+                                     int     len ) {
 
-    // ??? we are also in HPA and the request may need to be handled there ...
+    // an uncached read request. we check if it is for our HPA.
+    
     return( true );
 }
 
