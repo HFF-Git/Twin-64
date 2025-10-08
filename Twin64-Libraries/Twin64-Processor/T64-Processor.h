@@ -53,14 +53,18 @@ enum T64Options : uint32_t {
 //  T64_TT_<sets>S
 //
 //----------------------------------------------------------------------------------------
+enum T64TlbKind : int {
+
+    T64_TK_NIL          = 0,
+    T64_TK_INSTR_TLB    = 1,
+    T64_TK_DATA_TLB     = 2,
+    T64_TK_UNIFIED_TLB  = 3
+};
+
 enum T64TlbType : int {
 
     T64_TT_NIL          = 0,
-    T64_TT_INSTR_TLB    = 1,
-    T64_TT_DATA_TLB     = 2,
-    T64_TT_UNIFIED_TLB  = 3,
-
-    T64_TT_FA_64S       = 4
+    T64_TT_FA_64S       = 1
 };
 
 //----------------------------------------------------------------------------------------
@@ -73,21 +77,25 @@ enum T64TlbType : int {
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
 //----------------------------------------------------------------------------------------
+enum T64CacheKind : int {
+
+    T64_CK_NIL              = 0,
+    T64_CK_INSTR_CACHE      = 1,
+    T64_CK_DATA_CACHE       = 2,
+    T64_CK_UINFIED_CACHE    = 3,
+};
+
+
 enum T64CacheType : int {
 
     T64_CT_NIL              = 0,
+    T64_CT_2W_128S_4L       = 1,
+    T64_CT_4W_128S_4L       = 2,
+    T64_CT_8W_128S_4L       = 3,
 
-    T64_CT_INSTR_CACHE      = 1,
-    T64_CT_DATA_CACHE       = 2,
-    T64_CT_UINFIED_CACHE    = 3,
-
-    T64_CT_2W_128S_4L       = 4,
-    T64_CT_4W_128S_4L       = 5,
-    T64_CT_8W_128S_4L       = 6,
-
-    T64_CT_2W_64S_8L        = 7,
-    T64_CT_4W_64S_8L        = 8,
-    T64_CT_8W_64S_8L        = 9
+    T64_CT_2W_64S_8L        = 4,
+    T64_CT_4W_64S_8L        = 5,
+    T64_CT_8W_64S_8L        = 6
 };
 
 //----------------------------------------------------------------------------------------
@@ -122,7 +130,7 @@ struct T64Cache {
 
     public:
 
-    T64Cache( T64Processor *proc, T64CacheType cacheKind, T64CacheType cacheType );
+    T64Cache( T64Processor *proc, T64CacheKind cacheKind, T64CacheType cacheType );
 
     void                reset( );
     void                step( );
@@ -179,7 +187,7 @@ struct T64Cache {
 
     private: 
 
-    T64CacheType        cacheKind       = T64_CT_NIL;
+    T64CacheKind        cacheKind       = T64_CK_NIL;
     T64CacheType        cacheType       = T64_CT_NIL;
 
     T64CacheLineInfo    *cacheInfo      = nullptr;
@@ -232,7 +240,7 @@ struct T64Tlb {
     
     public:
 
-    T64Tlb( T64Processor *proc, T64TlbType tlbKind, T64TlbType tlbType );
+    T64Tlb( T64Processor *proc, T64TlbKind tlbKind, T64TlbType tlbType );
     
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
@@ -248,7 +256,7 @@ struct T64Tlb {
 
     private:
     
-    T64TlbType      tlbKind         = T64_TT_NIL;
+    T64TlbKind      tlbKind         = T64_TK_NIL;
     T64TlbType      tlbType         = T64_TT_NIL;
     T64TlbEntry     *map            = nullptr; 
     int             tlbEntries      = 0;
@@ -362,41 +370,6 @@ struct T64Processor : T64Module {
     
     void            reset( );
     void            step( );
-
-    T64Word         getGeneralReg( int index );
-    void            setGeneralReg( int index, T64Word val );
-
-    T64Word         getControlReg( int index );
-    void            setControlReg( int index, T64Word val );
-
-    T64Word         getPswReg( );
-    void            setPswReg( T64Word val );
-
-    void            insertInstrTlb( T64Word vAdr, T64Word info );
-    void            purgeInstrTlb( T64Word vAdr );
-    bool            getInstrTlbEntryByIndex( int index, T64Word *vAdr, T64Word *info );
-    int             getInstrTlbEntries( );
-
-    void            insertDataTlb( T64Word vAdr, T64Word info );
-    void            purgeDataTlb( T64Word vAdr );
-    bool            getDataTlbEntryByIndex( int index, T64Word *vAdr, T64Word *info );
-    int             getDataTlbEntries( );
-
-    int             getInstrCacheLineSize( );
-    int             getDataCacheLineSize( );
-    void            purgeInstrCache( T64Word vAdr );
-    void            flushDataCache( T64Word vAdr );
-    void            purgeDataCache( T64Word vAdr );
-
-    bool            getICacheLineByIndex( uint32_t          way,
-                                          uint32_t          set, 
-                                          T64CacheLineInfo  **info,
-                                          uint8_t           **data );
-   
-    bool            getDCacheLineByIndex( uint32_t          way,
-                                          uint32_t          set, 
-                                          T64CacheLineInfo  **info,
-                                          uint8_t           **data );
 
     bool            readSharedBlock( T64Word pAdr, uint8_t *data, int len );
     bool            readPrivateBlock( T64Word pAdr, uint8_t *data, int len );

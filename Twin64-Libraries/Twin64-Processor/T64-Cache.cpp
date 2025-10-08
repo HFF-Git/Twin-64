@@ -213,7 +213,7 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 //
 //----------------------------------------------------------------------------------------
 T64Cache::T64Cache( T64Processor *proc, 
-                    T64CacheType cacheKind, 
+                    T64CacheKind cacheKind, 
                     T64CacheType cacheType )  { 
 
     this -> cacheKind   = cacheKind;

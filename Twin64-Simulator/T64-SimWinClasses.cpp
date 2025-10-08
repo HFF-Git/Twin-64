@@ -188,7 +188,7 @@ void SimWinCpuState::drawBanner( ) {
     printTextField((char *) "Mod:", fmtDesc );
     printNumericField( modNum, fmtDesc | FMT_DEC );
 
-    T64Word psw = proc -> getPswReg( );
+    T64Word psw = proc -> getCpuPtr( ) -> getPswReg( );
 
     printTextField((char *) " IA: ", fmtDesc );
     printNumericField( psw, fmtDesc | FMT_HEX_2_4_4_4 );
@@ -226,6 +226,7 @@ void SimWinCpuState::drawBanner( ) {
 void SimWinCpuState::drawBody( ) {
     
     uint32_t fmtDesc = FMT_DEF_ATTR | FMT_ALIGN_LFT;
+    T64Cpu   *cpu    = proc -> getCpuPtr( );
     
     if ( getWinToggleVal( ) == 0 ) {
 
@@ -239,7 +240,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 0; i < 4; i++ ) {
 
-            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -248,7 +249,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 4; i < 8; i++ ) {
 
-            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -257,7 +258,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 8; i < 12; i++ ) {
 
-            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -266,7 +267,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 12; i < 16; i++ ) {
 
-            printNumericField( proc -> getGeneralReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getGeneralReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -283,7 +284,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 0; i < 4; i++ ) {
 
-            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -292,7 +293,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 4; i < 8; i++ ) {
 
-            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -301,7 +302,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 8; i < 12; i++ ) {
 
-            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -310,7 +311,7 @@ void SimWinCpuState::drawBody( ) {
     
         for ( int i = 12; i < 16; i++ ) {
 
-            printNumericField( proc -> getControlReg( i ), numFmtField, numFlen );
+            printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
         }
 
         padLine( fmtDesc );
@@ -402,9 +403,6 @@ void SimWinAbsMem::drawBanner( ) {
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 
-    mem = (T64Memory *) glb -> system -> lookupByAdr( getCurrentItemAdr( ));
-    if ( mem == nullptr ) ; // address not valid...
-
     setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
 }
 
@@ -425,6 +423,12 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
     uint32_t    fmtDesc     = FMT_DEF_ATTR;
     uint32_t    limit       = getLineIncrementItemAdr( ) - 1; // ??? why - 1?
+
+    T64Memory   *mem = (T64Memory *) glb -> system -> lookupByAdr( getCurrentItemAdr( ));
+    if ( mem == nullptr ) {
+
+        printTextField((char *) "Invalid address" );
+    }; 
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( itemAdr, fmtDesc | FMT_HEX_2_4_4 );
@@ -646,7 +650,7 @@ void SimWinTlb::drawBanner( ) {
    
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-    printTextField((char *) "CPU: " );
+    printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Current: " );
@@ -753,7 +757,7 @@ void SimWinCache::drawBanner( ) {
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
-    printTextField((char *) "CPU: " );
+    printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
 
     printTextField((char *) "  Set: " );

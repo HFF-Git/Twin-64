@@ -1038,12 +1038,13 @@ void SimCommandsWin::displayModCmd( ) {
 
             winOut -> writeChars( "%02d   ", i  );
 
+            // ??? decode type ... readable !!!
             winOut -> writeChars( "%2d   ", mPtr -> moduleTyp );
 
-            winOut -> printNumber( mPtr -> hpaAdr, FMT_HEX_2_4_4 );
+            winOut -> printNumber( mPtr -> hpaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );
 
-            winOut -> printNumber( mPtr -> spaAdr, FMT_HEX_2_4_4 );
+            winOut -> printNumber( mPtr -> spaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );
 
             winOut -> printNumber( mPtr -> spaLen, FMT_HEX );
@@ -1339,12 +1340,10 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
-    int             modNum      = 0;
     SimTokTypeId    regSetId    = TYP_GREG;
     int             regNum      = 0;
     T64Word         val         = 0;
-    T64ModuleType   mType       = MT_NIL;
-
+   
     ensureWinModeOn( );
     
     if (( tok -> tokTyp( ) == TYP_GREG )        ||
@@ -1364,9 +1363,9 @@ void SimCommandsWin::modifyRegCmd( ) {
     if ( glb -> winDisplay -> getCurrentWinType( ) != WT_CPU_WIN ) 
         throw( ERR_INVALID_WIN_TYPE );
 
-    modNum = glb -> winDisplay -> getCurrentWinModNum( );
+    int modNum = glb -> winDisplay -> getCurrentWinModNum( );
 
-    mType = glb -> system -> getModuleType( modNum );
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
@@ -1374,9 +1373,9 @@ void SimCommandsWin::modifyRegCmd( ) {
 
     switch( regSetId ) {
 
-        case TYP_PSW_PREG:  proc -> setPswReg( val );    break;
-        case TYP_GREG:      proc -> setGeneralReg( regNum, val ); break;
-        case TYP_CREG:      proc -> setControlReg( regNum, val ); break;
+        case TYP_PSW_PREG:  proc -> getCpuPtr( ) -> setPswReg( val );    break;
+        case TYP_GREG:      proc -> getCpuPtr( ) -> setGeneralReg( regNum, val ); break;
+        case TYP_CREG:      proc -> getCpuPtr( ) -> setControlReg( regNum, val ); break;
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1418,8 +1417,8 @@ void SimCommandsWin::purgeCacheCmd( ) {
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
     if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
     
-    if      ( winType == TOK_ICACHE )   proc -> purgeInstrCache( vAdr );
-    else if ( winType == TOK_DCACHE )   proc -> purgeDataCache( vAdr );
+    if      ( winType == TOK_ICACHE )   proc -> getICachePtr( ) -> purge( vAdr );
+    else if ( winType == TOK_DCACHE )   proc -> getDCachePtr( ) -> purge( vAdr );
     else throw( 9996 ); // ??? fix ...
 }
 
@@ -1442,7 +1441,7 @@ void SimCommandsWin::flushCacheCmd( ) {
     }
     else throw ( ERR_EXPECTED_WIN_ID );
 
-    if ( winType != TOK_ICACHE )
+    if ( winType == TOK_ICACHE )
         throw ( 9999 );
   
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
@@ -1452,15 +1451,13 @@ void SimCommandsWin::flushCacheCmd( ) {
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
-    // ??? check ?
-
+   
     T64ModuleType mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    proc -> flushDataCache( vAdr );
-    // ??? check ?
+    proc -> getDCachePtr( ) -> flush( vAdr );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1493,15 +1490,14 @@ void SimCommandsWin::insertTLBCmd( ) {
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
-    // ??? check ?
-
+   
     T64ModuleType mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    if      ( winType == TOK_ITLB ) proc -> insertInstrTlb( vAdr, info );
-    else if ( winType == TOK_DTLB ) proc -> insertDataTlb( vAdr, info );
+    if      ( winType == TOK_ITLB ) proc -> getITlbPtr( ) -> insert( vAdr, info );
+    else if ( winType == TOK_DTLB ) proc -> getDTlbPtr( ) -> insert( vAdr, info );
     else ;
 }
 
@@ -1540,8 +1536,8 @@ void SimCommandsWin::purgeTLBCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    if ( winType == TOK_ITLB ) proc -> purgeInstrTlb( vAdr );
-    else if ( winType == TOK_DTLB ) proc -> purgeDataTlb( vAdr );
+    if      ( winType == TOK_ITLB ) proc -> getITlbPtr( ) -> purge( vAdr );
+    else if ( winType == TOK_DTLB ) proc -> getDTlbPtr( ) -> purge( vAdr );
     else ;
 }
 
@@ -1934,7 +1930,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewTlb( modNum, T64_TT_INSTR_TLB );  
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TK_INSTR_TLB );  
 
         } break;
 
@@ -1944,7 +1940,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewTlb( modNum, T64_TT_DATA_TLB );  
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TK_DATA_TLB );  
 
         } break;
 
@@ -1954,7 +1950,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewCache( modNum, T64_CT_INSTR_CACHE );  
+            glb -> winDisplay -> windowNewCache( modNum, T64_CK_INSTR_CACHE );  
 
         } break;
 
@@ -1964,7 +1960,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewCache( modNum, T64_CT_DATA_CACHE );  
+            glb -> winDisplay -> windowNewCache( modNum, T64_CK_DATA_CACHE );  
 
         } break;
 

@@ -1171,15 +1171,16 @@ void T64Cpu::instrExecute( uint32_t instr ) {
             case ( OPC_GRP_SYS * 16 + OPC_TLB ): {
 
                 // ??? should distinguish between instr and data in the opt1 field ?
+                // ??? need a distinction !!!!
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    proc -> insertDataTlb( getRegB( instr ), getRegA( instr ));
+                    dTlb -> insert( getRegB( instr ), getRegA( instr ));
                     setRegR( instr, 1 );
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    proc -> purgeDataTlb( getRegB( instr ));
+                    dTlb -> purge( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
@@ -1193,11 +1194,11 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    proc -> purgeDataCache( getRegB( instr ));
+                    dCache -> purge( getRegB( instr ));
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    proc -> flushDataCache( getRegB( instr ));
+                    dCache -> flush( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 

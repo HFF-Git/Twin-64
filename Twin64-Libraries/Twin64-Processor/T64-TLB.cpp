@@ -48,7 +48,7 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Tlb::T64Tlb( T64Processor *proc, T64TlbType tlbKind, T64TlbType tlbType ) {
+T64Tlb::T64Tlb( T64Processor *proc, T64TlbKind tlbKind, T64TlbType tlbType ) {
 
     this -> proc    = proc;
     this -> tlbKind = tlbKind;

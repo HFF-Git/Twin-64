@@ -964,8 +964,7 @@ struct SimWinAbsMem : SimWinScrollable {
 
     private:
 
-    T64Word     adr     = 0;
-    T64Memory   *mem    = nullptr;
+    T64Word adr = 0;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1235,8 +1234,8 @@ public:
     void            windowNewAbsMem( int modNum, T64Word adr );
     void            windowNewAbsCode( int modNum, T64Word adr );
     void            windowNewCpuState( int modNum );
-    void            windowNewTlb( int modNum, T64TlbType tTyp );
-    void            windowNewCache( int modNum, T64CacheType cTyp );
+    void            windowNewTlb( int modNum, T64TlbKind tTyp );
+    void            windowNewCache( int modNum, T64CacheKind cTyp );
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd = 0  );
