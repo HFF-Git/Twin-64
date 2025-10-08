@@ -188,7 +188,7 @@ int SimWin::getWinToggleLimit( ) {
 
 void SimWin::setWinToggleVal( int val ) { 
     
-    winToggleVal = ( val > winToggleLimit ) ? winToggleLimit : val; 
+    winToggleVal = ( val >= winToggleLimit ) ? winToggleLimit - 1 : val; 
 }
 
 int  SimWin::getWinToggleVal( ) { 
@@ -200,7 +200,7 @@ void SimWin::toggleWin( ) {
 
     winToggleVal++;
 
-    if ( winToggleVal > winToggleLimit ) winToggleVal = 0;
+    if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -481,7 +481,6 @@ void SimWin::reDraw( ) {
         drawBody( );
     }
 }
-
 
 //****************************************************************************************
 //****************************************************************************************

@@ -1021,7 +1021,9 @@ struct SimWinCache : SimWinScrollable {
     
     public:
     
-    SimWinCache( SimGlobals *glb, int modNum );
+    SimWinCache( SimGlobals     *glb, 
+                 int            modNum, 
+                 T64Cache       *cache );
     
     void setDefaults( );
     void drawBanner( );
@@ -1029,7 +1031,7 @@ struct SimWinCache : SimWinScrollable {
 
     private:
 
-    T64Processor  *proc = nullptr;
+    T64Cache    *cache  = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1236,8 +1238,7 @@ public:
     void            windowNewCpuState( int modNum );
     void            windowNewITlb( int modNum );
     void            windowNewDTlb( int modNum );
-    void            windowNewICache( int modNum );
-    void            windowNewDCache( int modNum );
+    void            windowNewCache( int modNum, T64CacheType cTyp );
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd = 0  );

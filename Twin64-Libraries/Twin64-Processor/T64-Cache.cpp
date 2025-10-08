@@ -212,23 +212,26 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( T64Processor *proc, T64CacheType cacheType )  { 
+T64Cache::T64Cache( T64Processor *proc, 
+                    T64CacheType cacheKind, 
+                    T64CacheType cacheType )  { 
 
+    this -> cacheKind   = cacheKind;
     this -> cacheType   = cacheType;
     this -> proc        = proc;
 
     switch ( cacheType ) {
 
         case T64_CT_2W_64S_8L: 
-        case T64_CT_2W_128S_4L:    ways = 2;   break;
+        case T64_CT_2W_128S_4L:     ways = 2;   break;
 
         case T64_CT_4W_64S_8L:
-        case T64_CT_4W_128S_4L:    ways = 4;   break;
+        case T64_CT_4W_128S_4L:     ways = 4;   break;
 
         case T64_CT_8W_64S_8L:
-        case T64_CT_8W_128S_4L:    ways = 8;   break;
+        case T64_CT_8W_128S_4L:     ways = 8;   break;
 
-        default:                   ways = 2; 
+        default:                    ways = 2; 
     }
 
     switch ( cacheType ) {
@@ -427,32 +430,33 @@ bool T64Cache::flushCacheLineByIndex( uint32_t way, uint32_t set ) {
 
 //----------------------------------------------------------------------------------------
 // "getCacheLineData" copies data from the cache line. We expect a valid len argument.
+// We essentially copy data from the cache line to the target location. Care has to 
+// be taken about the endianess of the host CPU. Our simulator is big endian. 
+// Depending on the endianess of the host CPU, the data needs to be converted.
 // 
-//
-// ??? we will also fall into the big little endian issue !!!!!
 //----------------------------------------------------------------------------------------
-T64Word T64Cache::getCacheLineData( uint8_t *line, 
+bool T64Cache::getCacheLineData( uint8_t *line, 
                                     int     lineOfs,
-                                    int     len ) {
+                                    int     len, 
+                                    uint8_t *data ) {
 
     int wOfs = sizeof( T64Word ) - len;
-
-    T64Word tmp;
-    memcpy(((uint8_t *) &tmp + wOfs ), &line[ lineOfs ], len );
-    return( tmp );
+    return ( copyToBigEndian(( data + wOfs ), &line[ lineOfs ], len )); 
 }
 
 //----------------------------------------------------------------------------------------
 // "setCacheLineData" copies data to the cache line. We expect a valid len argument.
+// We essentially copy data from the source to the cache line to the target location. 
+// Care has to be taken about the endianess of the host CPU. Our simulator is big 
+// endian. Depending on the endianess of the host CPU, the data needs to be converted.
 //
-// ??? we will also fall into the big little endian issue !!!!!
 //----------------------------------------------------------------------------------------
-void T64Cache::setCacheLineData( uint8_t *line,
+bool T64Cache::setCacheLineData( uint8_t *line,
                                  int     lineOfs,
                                  int     len,
                                  uint8_t *data ) {
 
-    memcpy( &line[ lineOfs ], &data, len );
+    return( copyToBigEndian( &line[ lineOfs ], data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -485,7 +489,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
         cacheHits ++;
         plruUpdate( );
 
-        *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
+        getCacheLineData( cData, getLineOfs( pAdr ), len, data );
     }
     else {
 
@@ -521,7 +525,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
         }
     }
 
-    *data = getCacheLineData( cData, getLineOfs( pAdr ), len );
+    getCacheLineData( cData, getLineOfs( pAdr ), len, data );
 }
 
 //----------------------------------------------------------------------------------------

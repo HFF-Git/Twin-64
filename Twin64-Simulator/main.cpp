@@ -50,28 +50,30 @@ int main( int argc, const char * argv[] ) {
     glb -> env          -> setupPredefined( );
     glb -> winDisplay   -> setupWinDisplay( argc, argv );
 
-    T64Processor *proc = new T64Processor(  glb -> system,
-                                            3,
-                                            T64_PO_NIL,
-                                            T64_CPU_T_NIL,
-                                            T64_TT_64S,
-                                            T64_TT_64S,
-                                            T64_CT_2W_128S_4L,
-                                            T64_CT_2W_128S_4L,
-                                            T64_IO_HPA_MEM_START + ( 3 * T64_PAGE_SIZE_BYTES ),
-                                            T64_PAGE_SIZE_BYTES,
-                                            0,
-                                            0 );
+    T64Processor *proc = 
+        new T64Processor(   glb -> system,
+                            3,
+                            T64_PO_NIL,
+                            T64_CPU_T_NIL,
+                            T64_TT_64S,
+                            T64_TT_64S,
+                            T64_CT_2W_128S_4L,
+                            T64_CT_4W_128S_4L,
+                            T64_IO_HPA_MEM_START + ( 3 * T64_PAGE_SIZE_BYTES ),
+                            T64_PAGE_SIZE_BYTES,
+                            0,
+                            0 );
                                         
 
     glb -> system -> addToModuleMap( proc );
 
-    T64Memory *mem = new T64Memory( glb -> system,
-                                    2, 
-                                    T64_IO_HPA_MEM_START + ( 2 * T64_PAGE_SIZE_BYTES ),
-                                    T64_PAGE_SIZE_BYTES,
-                                    0,
-                                    64 * T64_PAGE_SIZE_BYTES );
+    T64Memory *mem = 
+        new T64Memory(  glb -> system,
+                        2, 
+                        T64_IO_HPA_MEM_START + ( 2 * T64_PAGE_SIZE_BYTES ),
+                        T64_PAGE_SIZE_BYTES,
+                        0,
+                        64 * T64_PAGE_SIZE_BYTES );
 
     glb -> system -> addToModuleMap( mem );
 

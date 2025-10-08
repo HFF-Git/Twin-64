@@ -766,31 +766,38 @@ void SimWinDisplay::windowNewDTlb( int modNum ) {
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewICache( int modNum ) {
+void SimWinDisplay::windowNewCache( int modNum, T64CacheType cKind ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
-    windowList[ slot ] -> setWinName(( char *) "I-CACHE" );
+    T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    if ( cKind == T64_CT_INSTR_CACHE ) {
+
+        windowList[ slot ] = 
+            (SimWin *) new SimWinCache( glb, modNum, proc -> getICachePtr( ));
+        
+        windowList[ slot ] -> setWinName(( char *) "I-CACHE" );
+    }
+    else if ( cKind == T64_CT_DATA_CACHE ) {
+        
+        windowList[ slot ] = 
+            (SimWin *) new SimWinCache( glb, modNum, proc -> getDCachePtr( ));
+        
+        windowList[ slot ] -> setWinName(( char *) "D-CACHE" );
+    }
+    else ;
+
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
-
-void SimWinDisplay::windowNewDCache( int modNum ) {
-
-    int slot = getFreeWindowSlot( );
-
-    windowList[ slot ] = (SimWin *) new SimWinCache( glb, modNum );
-    windowList[ slot ] -> setWinName(( char *) "D-CACHE" );
-    windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
-    windowList[ slot ] -> setEnable( true );
-    currentWinNum = slot + 1;
-} 
    
 void SimWinDisplay::windowNewText( char *pathStr ) {
 

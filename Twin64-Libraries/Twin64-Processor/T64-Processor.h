@@ -59,24 +59,30 @@ enum T64TlbType : int {
 };
 
 //----------------------------------------------------------------------------------------
-// Caches. Caches are sub modules to the processor. We support set associative caches,
-// 2, 4, and 8-way. There is a cache line info with flags and the tag and an array of
-// bytes which holds the cache data. Cache type is encoded as follows:
+// Caches. Caches are sub modules to the processor. We support a cache kind, set 
+// associative caches, 2, 4, and 8-way. There is a cache line info with flags and 
+// the tag and an array of bytes which holds the cache data. There is an instruction
+// and a data cache type. Cache kind specifies the kind of cache, i.e. 
+// instruction, data or unified cache. Cache type encoded as follows:
 //
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
 //----------------------------------------------------------------------------------------
 enum T64CacheType : int {
 
-    T64_CT_NIL         = 0,
+    T64_CT_NIL              = 0,
 
-    T64_CT_2W_128S_4L  = 1,
-    T64_CT_4W_128S_4L  = 2,
-    T64_CT_8W_128S_4L  = 3,
+    T64_CT_INSTR_CACHE      = 1,
+    T64_CT_DATA_CACHE       = 2,
+    T64_CT_UINFIED_CACHE    = 3,
 
-    T64_CT_2W_64S_8L   = 4,
-    T64_CT_4W_64S_8L   = 5,
-    T64_CT_8W_64S_8L   = 6,
+    T64_CT_2W_128S_4L       = 4,
+    T64_CT_4W_128S_4L       = 5,
+    T64_CT_8W_128S_4L       = 6,
+
+    T64_CT_2W_64S_8L        = 7,
+    T64_CT_4W_64S_8L        = 8,
+    T64_CT_8W_64S_8L        = 9
 };
 
 //----------------------------------------------------------------------------------------
@@ -111,7 +117,7 @@ struct T64Cache {
 
     public:
 
-    T64Cache( T64Processor *proc, T64CacheType cacheType );
+    T64Cache( T64Processor *proc, T64CacheType cacheKind, T64CacheType cacheType );
 
     void                reset( );
     void                step( );
@@ -135,6 +141,8 @@ struct T64Cache {
     int                 getWays( );
     int                 getSetSize( );
     int                 getCacheLineSize( );
+    T64CacheType        getCacheKind( );
+    T64CacheType        getCacheType( );
 
     private: 
 
@@ -147,11 +155,12 @@ struct T64Cache {
     void                flushCacheLine( T64Word pAdr );
     void                purgeCacheLine( T64Word pAdr );
 
-    T64Word             getCacheLineData( uint8_t *line, 
+    bool                getCacheLineData( uint8_t *line, 
                                           int     lineOfs,
-                                          int     len );
+                                          int     len,
+                                          uint8_t *data );
 
-    void                setCacheLineData( uint8_t *line,
+    bool                setCacheLineData( uint8_t *line,
                                           int     lineOfs,
                                           int     len,
                                           uint8_t *data ); 
@@ -165,7 +174,9 @@ struct T64Cache {
 
     private: 
 
+    T64CacheType        cacheKind       = T64_CT_NIL;
     T64CacheType        cacheType       = T64_CT_NIL;
+
     T64CacheLineInfo    *cacheInfo      = nullptr;
     uint8_t             *cacheData      = nullptr;
     T64Processor        *proc           = nullptr;
@@ -307,7 +318,6 @@ struct T64Cpu {
     T64Word         upperPhysMemAdr     = 0;
 };
 
-
 //----------------------------------------------------------------------------------------
 // The CPU core executes the instructions. The processor has the interfaces called by
 // the simulator. This includes interfaces to TLBs and caches. 
@@ -366,6 +376,8 @@ struct T64Processor : T64Module {
     bool            getDataTlbEntryByIndex( int index, T64Word *vAdr, T64Word *info );
     int             getDataTlbEntries( );
 
+    int             getInstrCacheLineSize( );
+    int             getDataCacheLineSize( );
     void            purgeInstrCache( T64Word vAdr );
     void            flushDataCache( T64Word vAdr );
     void            purgeDataCache( T64Word vAdr );
@@ -410,6 +422,13 @@ struct T64Processor : T64Module {
                                       T64Word adr, 
                                       uint8_t *val, 
                                       int     len );
+
+    T64Cpu          *getCpuPtr( );
+    T64Tlb          *getITlbPtr( );
+    T64Tlb          *getDTlbPtr( );
+    T64Cache        *getICachePtr( );
+    T64Cache        *getDCachePtr( );
+
     
 private:
 

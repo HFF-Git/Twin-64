@@ -381,6 +381,16 @@ void SimWinAbsMem::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
 
+    switch ( getWinToggleVal( )) {
+
+        case 0:
+        case 1: setRadix( 16 ); break;
+
+        case 2: setRadix( 10 ); break;
+
+        default: setRadix( 16 );
+    }
+
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:", fmtDesc );
@@ -392,12 +402,8 @@ void SimWinAbsMem::drawBanner( ) {
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 
-    // we need to get the module that handles the memory access
-
     mem = (T64Memory *) glb -> system -> lookupByAdr( getCurrentItemAdr( ));
     if ( mem == nullptr ) ; // address not valid...
-
-
 
     setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
 }
@@ -693,19 +699,17 @@ void SimWinTlb::drawLine( T64Word index ) {
 // Methods for the Cache class.
 //
 //----------------------------------------------------------------------------------------
-// Object constructor.
+// Object constructor. We are passed reference to global, the processor module number
+// and the reference to the cache object.
 //
 //----------------------------------------------------------------------------------------
-SimWinCache::SimWinCache( SimGlobals *glb, int modNum  ) : SimWinScrollable( glb ) { 
+SimWinCache::SimWinCache( SimGlobals    *glb, 
+                          int           modNum,
+                          T64Cache      *cache  ) : SimWinScrollable( glb ) { 
 
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
-    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
-    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    this -> cache = cache;
 
     setWinModNum( modNum );
-    setWinType( WT_CACHE_WIN );
     setDefaults( );
 }
 
@@ -720,45 +724,14 @@ void SimWinCache::setDefaults( ) {
 
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-
-    // ??? how do we map a cache line size of 8 and 16 32-bit words ?
-
-
-    // ??? get the cache object
-
-    // ??? we need to be aware whether this is an 8 word cache line.
-    // ??? this line is broken into two, which impact ts the window lines and
-    // item address calculation.
-    //
-    // Our window lines is divided by two to determine the items we can put
-    // into the window. 
-
-   #if 0
-    if ( cache -> getCacheLineSize( ) == 32 ) {
-
-        setDefRows( 6 );
-        setDefColumns( 128 );
-    }
-    else if ( cache -> getCacheLineSize( ) == 64 ) { 
-
-    } 
-    else {
-
-        // ??? would a two line approach work ?
-        // ??? what if someone sets rows to an odd number ?
-
-        setDefRows( 6 );
-        setDefColumns( 128 * 2 );
-    }
-    #endif
-
+    setDefRows( 6 );
+    setDefColumns( 128 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
-
     setCurrentItemAdr( 0 );
     setLineIncrement( 1 );
-   // setLimitItemAdr( cache -> getSetSize( ));
-   // setWinToggleLimit( cache -> getWays( ));
+    setLimitItemAdr( cache -> getSetSize( ));
+    setWinToggleLimit( cache -> getWays( ));
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -771,7 +744,7 @@ void SimWinCache::setDefaults( ) {
 //
 // Format:
 //
-//  <windId> Proc: n Cache: n Set: n Current: 0x0000.  <rdx>
+//  <windId> Cpu: n Set: n Current: 0x0000.  <rdx>
 //
 //----------------------------------------------------------------------------------------
 void SimWinCache::drawBanner( ) {
@@ -807,17 +780,14 @@ void SimWinCache::drawLine( T64Word index ) {
     uint32_t fmtDesc = FMT_DEF_ATTR;
 
     T64CacheLineInfo *cInfo;
-    uint8_t          *cData; // ?? this is byte...
+    uint8_t          *cData;
 
-    #if 0
-    if ( ! cache -> getCacheLine( getWinToggleVal( ),
+    if ( ! cache -> getCacheLineByIndex( getWinToggleVal( ),
                                   index,
                                   &cInfo, 
                                   &cData )) {
 
-
     }
-    #endif
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
@@ -844,11 +814,21 @@ void SimWinCache::drawLine( T64Word index ) {
         printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4 );
         printTextField((char *) "] ", fmtDesc );
 
-        for ( int i = 0; i < 4; i++ ) { // ??? fix ... cache line size
-            
-            printNumericField( 0, fmtDesc | FMT_HEX_4_4_4_4 );
-            printTextField((char *) "  " );
+        if ( cache -> getCacheLineSize( ) == 32 ) {
+
+            for ( int i = 0; i < 4; i++ ) { 
+
+                T64Word tmp;
+                copyToBigEndian((uint8_t *) &tmp, cData, sizeof( T64Word ));
+                printNumericField( tmp, fmtDesc | FMT_HEX_4_4_4_4 );
+                printTextField((char *) "  " );
+            } 
         }
+        else if ( cache -> getCacheLineSize( ) == 64 ) {
+
+            // ??? to do ...
+        }
+        else ; // ??? fix ...         
     }
 }
 
@@ -1066,10 +1046,9 @@ void SimWinConsole::putChar( char ch ) {
 
 // ??? what about the read part. Do we just get a character from the terminal input 
 // and add it to the output side ? Or is this a function of the console driver code
-// written for the emulator ?
+// written for the simulator ?
 
 // ??? should we add the switch to and from the console in this class ?
-
 
 //----------------------------------------------------------------------------------------
 // The banner line for console window.

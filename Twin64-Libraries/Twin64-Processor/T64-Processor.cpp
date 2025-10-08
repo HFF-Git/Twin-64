@@ -70,8 +70,8 @@ T64Processor::T64Processor( T64System       *sys,
     iTlb    = new T64Tlb( this, iTlbType );
     dTlb    = new T64Tlb( this, dTlbType );
 
-    iCache  = new T64Cache( this, iCacheType );
-    dCache  = new T64Cache( this, dCacheType );
+    iCache  = new T64Cache( this, T64_CT_INSTR_CACHE, iCacheType );
+    dCache  = new T64Cache( this, T64_CT_DATA_CACHE, dCacheType );
 
     this -> reset( );
 }
@@ -125,6 +125,37 @@ void T64Processor::setPswReg( T64Word val ) {
     
     cpu -> setPswReg( val );
 }
+
+//----------------------------------------------------------------------------------------
+// Get the reference to the processor components.
+//
+//----------------------------------------------------------------------------------------
+T64Cpu *T64Processor::getCpuPtr( ) {
+
+    return ( cpu );
+}
+
+T64Tlb *T64Processor::getITlbPtr( ) {
+
+    return( iTlb );
+}
+
+T64Tlb *T64Processor::getDTlbPtr( ) {
+
+    return( dTlb );
+}
+
+T64Cache *T64Processor::getICachePtr( ) {
+
+    return( iCache );
+}
+
+T64Cache *T64Processor::getDCachePtr( ) {
+
+    return( dCache );
+}
+
+
 
 //----------------------------------------------------------------------------------------
 // TLB routines. Called by the CPU and externally by monitors and debuggers. 
@@ -196,11 +227,20 @@ int T64Processor::getDataTlbEntries( ) {
     return( dTlb -> getTlbSize( ));
 }
 
-
 //----------------------------------------------------------------------------------------
 // Cache routines. Called by the CPU and externally by monitors and debuggers. 
 //
 //----------------------------------------------------------------------------------------
+int T64Processor::getInstrCacheLineSize( ) {
+
+    return ( iCache -> getCacheLineSize( ));
+}
+
+int T64Processor::getDataCacheLineSize( ) {
+
+    return( dCache -> getCacheLineSize( ));
+}
+
 void T64Processor::purgeInstrCache( T64Word vAdr ) {
 
 

@@ -1954,7 +1954,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewICache( modNum );  
+            glb -> winDisplay -> windowNewCache( modNum, T64_CT_INSTR_CACHE );  
 
         } break;
 
@@ -1964,7 +1964,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewDCache( modNum );  
+            glb -> winDisplay -> windowNewCache( modNum, T64_CT_DATA_CACHE );  
 
         } break;
 
