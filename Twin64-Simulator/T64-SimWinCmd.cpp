@@ -1934,7 +1934,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewITlb( modNum );  
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TT_INSTR_TLB );  
 
         } break;
 
@@ -1944,7 +1944,7 @@ void SimCommandsWin::winNewWinCmd( ) {
             int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewDTlb( modNum );  
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TT_DATA_TLB );  
 
         } break;
 

@@ -67,8 +67,8 @@ T64Processor::T64Processor( T64System       *sys,
 
     cpu     = new T64Cpu( this, cpuType );
 
-    iTlb    = new T64Tlb( this, iTlbType );
-    dTlb    = new T64Tlb( this, dTlbType );
+    iTlb    = new T64Tlb( this, T64_TT_INSTR_TLB, iTlbType );
+    dTlb    = new T64Tlb( this, T64_TT_DATA_TLB, dTlbType );
 
     iCache  = new T64Cache( this, T64_CT_INSTR_CACHE, iCacheType );
     dCache  = new T64Cache( this, T64_CT_DATA_CACHE, dCacheType );

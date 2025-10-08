@@ -46,24 +46,29 @@ enum T64Options : uint32_t {
 };
 
 //----------------------------------------------------------------------------------------
-// TLBs. A translation lookaside buffer is essential. We support fully associative 
-// TLBs. TLB type is encoded as follows:
+// TLBs. A translation lookaside buffer is essential. We support a TLB kind, and
+// fully associative TLBs. TLB kind specifies the kind of cache, i.e. instruction, 
+// data or unified TLB. TLB type encoded as follows:
 //
 //  T64_TT_<sets>S
 //
 //----------------------------------------------------------------------------------------
 enum T64TlbType : int {
 
-    T64_TT_NIL = 0,
-    T64_TT_64S = 1
+    T64_TT_NIL          = 0,
+    T64_TT_INSTR_TLB    = 1,
+    T64_TT_DATA_TLB     = 2,
+    T64_TT_UNIFIED_TLB  = 3,
+
+    T64_TT_FA_64S       = 4
 };
 
 //----------------------------------------------------------------------------------------
 // Caches. Caches are sub modules to the processor. We support a cache kind, set 
 // associative caches, 2, 4, and 8-way. There is a cache line info with flags and 
-// the tag and an array of bytes which holds the cache data. There is an instruction
-// and a data cache type. Cache kind specifies the kind of cache, i.e. 
-// instruction, data or unified cache. Cache type encoded as follows:
+// the tag and an array of bytes which holds the cache data. Cache kind specifies 
+// the kind of cache, i.e. instruction, data or unified cache. Cache type encoded
+// as follows:
 //
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
@@ -227,7 +232,7 @@ struct T64Tlb {
     
     public:
 
-    T64Tlb( T64Processor *proc, T64TlbType tlbType );
+    T64Tlb( T64Processor *proc, T64TlbType tlbKind, T64TlbType tlbType );
     
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
@@ -243,6 +248,7 @@ struct T64Tlb {
 
     private:
     
+    T64TlbType      tlbKind         = T64_TT_NIL;
     T64TlbType      tlbType         = T64_TT_NIL;
     T64TlbEntry     *map            = nullptr; 
     int             tlbEntries      = 0;

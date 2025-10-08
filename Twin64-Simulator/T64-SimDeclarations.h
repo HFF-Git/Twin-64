@@ -903,8 +903,8 @@ struct SimWinScrollable : SimWin {
     void            setLimitItemAdr( T64Word adr );
     T64Word         getLimitItemAdr( );
     
-    void            setLineIncrement( int arg );
-    int             getLineIncrement( );
+    void            setLineIncrementItemAdr( int arg );
+    int             getLineIncrementItemAdr( );
 
     void            winHome( T64Word pos = 0 );
     void            winJump( T64Word pos );
@@ -988,7 +988,6 @@ struct SimWinCode : SimWinScrollable {
     private:
 
     T64Word         adr     = 0;
-    T64Memory       *mem    = nullptr;
     T64DisAssemble  *disAsm = nullptr;
 };
 
@@ -1000,7 +999,7 @@ struct SimWinTlb : SimWinScrollable {
     
     public:
     
-    SimWinTlb( SimGlobals *glb, int modNum );
+    SimWinTlb( SimGlobals *glb, int modNum, T64Tlb *tlb );
     
     void setDefaults( );
     void drawBanner( );
@@ -1008,7 +1007,7 @@ struct SimWinTlb : SimWinScrollable {
 
     private:
 
-    T64Processor  *proc = nullptr;
+    T64Tlb *tlb = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1021,13 +1020,13 @@ struct SimWinCache : SimWinScrollable {
     
     public:
     
-    SimWinCache( SimGlobals     *glb, 
-                 int            modNum, 
-                 T64Cache       *cache );
+    SimWinCache( SimGlobals *glb, int modNum, T64Cache *cache );
     
     void setDefaults( );
     void drawBanner( );
     void drawLine( T64Word index );
+
+    // ??? override drawBody ? 
 
     private:
 
@@ -1236,8 +1235,7 @@ public:
     void            windowNewAbsMem( int modNum, T64Word adr );
     void            windowNewAbsCode( int modNum, T64Word adr );
     void            windowNewCpuState( int modNum );
-    void            windowNewITlb( int modNum );
-    void            windowNewDTlb( int modNum );
+    void            windowNewTlb( int modNum, T64TlbType tTyp );
     void            windowNewCache( int modNum, T64CacheType cTyp );
     void            windowNewText( char *pathStr );
 

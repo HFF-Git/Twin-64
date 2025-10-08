@@ -740,25 +740,30 @@ void SimWinDisplay::windowNewCpuState( int modNum ) {
     currentWinNum = slot + 1;
 }
 
-void SimWinDisplay::windowNewITlb( int modNum ) {
+void SimWinDisplay::windowNewTlb( int modNum, T64TlbType tKind ) {
 
     int slot = getFreeWindowSlot( );
 
-    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
-    windowList[ slot ] -> setWinName(( char *) "I-TLB" );
-    windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
-    windowList[ slot ] -> setEnable( true );
-    currentWinNum = slot + 1;
-}
+     T64ModuleType mType = glb -> system -> getModuleType( modNum );
+    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
-void SimWinDisplay::windowNewDTlb( int modNum ) {
+    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
 
-    int slot = getFreeWindowSlot( );
+    if ( tKind == T64_TT_INSTR_TLB ) {
 
-    windowList[ slot ] = (SimWin *) new SimWinTlb( glb, modNum );
-    windowList[ slot ] -> setWinName(( char *) "D-TLB" );
+        windowList[ slot ] = 
+            (SimWin *) new SimWinTlb( glb, modNum, proc -> getITlbPtr( ));
+        windowList[ slot ] -> setWinName(( char *) "I-TLB" );
+    }
+    else if ( tKind == T64_TT_DATA_TLB ) {
+
+        windowList[ slot ] = 
+            (SimWin *) new SimWinTlb( glb, modNum, proc -> getDTlbPtr( ));
+        windowList[ slot ] -> setWinName(( char *) "D-TLB" );
+    }
+    else ;
+
     windowList[ slot ] -> setDefaults( );
     windowList[ slot ] -> setWinIndex( slot + 1 );
     windowList[ slot ] -> setWinStack( 1 );

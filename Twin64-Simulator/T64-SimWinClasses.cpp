@@ -342,9 +342,9 @@ void SimWinCpuState::drawBody( ) {
 //
 //----------------------------------------------------------------------------------------
 SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, int modNum, T64Word adr ) : 
-                                                        SimWinScrollable( glb ) {
+                                                         SimWinScrollable( glb ) {
 
-    this -> adr     = adr;
+    this -> adr = rounddown( adr, 8 );
     setWinModNum( modNum );
  }
 
@@ -367,7 +367,7 @@ void SimWinAbsMem::setDefaults( ) {
     setWinToggleVal( 0 );
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
-    setLineIncrement( 8 * 4 );
+    setLineIncrementItemAdr( 8 * 4 );
     setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
 }
 
@@ -424,7 +424,7 @@ void SimWinAbsMem::drawBanner( ) {
 void SimWinAbsMem::drawLine( T64Word itemAdr ) {
 
     uint32_t    fmtDesc     = FMT_DEF_ATTR;
-    uint32_t    limit       = getLineIncrement( ) - 1; // ??? why - 1?
+    uint32_t    limit       = getLineIncrementItemAdr( ) - 1; // ??? why - 1?
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( itemAdr, fmtDesc | FMT_HEX_2_4_4 );
@@ -478,7 +478,7 @@ SimWinCode::SimWinCode( SimGlobals *glb, int modNum, T64Word adr ) :
     disAsm = new T64DisAssemble( );
 
     setWinModNum( modNum );
-    this -> adr = adr;
+    this -> adr = rounddown( adr, 8 );
 }
 
 SimWinCode::  ~  SimWinCode( ) {
@@ -504,7 +504,7 @@ void SimWinCode::setDefaults( ) {
 
     setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
-    setLineIncrement( 4 );
+    setLineIncrementItemAdr( 4 );
     setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
@@ -521,7 +521,8 @@ void SimWinCode::drawBanner( ) {
     
     uint32_t    fmtDesc         = FMT_BOLD | FMT_INVERSE;
     T64Word     currentIa       = getCurrentItemAdr( );
-    T64Word     currentIaLimit  = currentIa + (( getRows( ) - 1 ) * getLineIncrement( ));
+    T64Word     currentIaLimit  = 
+                currentIa + (( getRows( ) - 1 ) * getLineIncrementItemAdr( ));
     T64Word     currentIaOfs    = 0;
     
     SimTokId    currentCmd      = glb -> winDisplay -> getCurrentCmd( );
@@ -591,19 +592,16 @@ void SimWinCode::drawLine( T64Word itemAdr ) {
 // Methods for the TLB class.
 //
 //----------------------------------------------------------------------------------------
-// Object constructor. All we do is to remember what kind of TLB this is.
+// Object constructor. All we do is to remember the reference to the TLB object.
 //
 //----------------------------------------------------------------------------------------
-SimWinTlb::SimWinTlb( SimGlobals *glb, int modNum ) : SimWinScrollable( glb ) { 
+SimWinTlb::SimWinTlb( SimGlobals *glb, 
+                      int        modNum, 
+                      T64Tlb     *tlb ) : SimWinScrollable( glb ) { 
 
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
-    T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
-    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    this -> tlb = tlb;
 
     setWinModNum( modNum );
-    setWinType( WT_TLB_WIN );
     setDefaults( );
 }
 
@@ -624,8 +622,8 @@ void SimWinTlb::setDefaults( ) {
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
-    setLineIncrement( 1 );
-    setLimitItemAdr( UINT32_MAX );
+    setLineIncrementItemAdr( 1 );
+    setLimitItemAdr( tlb -> getTlbSize( ));
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
     setEnable( true );
@@ -641,7 +639,6 @@ void SimWinTlb::setDefaults( ) {
 //
 //  <windId> Proc: n Tlb: n Set: n Current: 0x0000.  <rdx>
 // 
-// ??? set item limit adr...
 //----------------------------------------------------------------------------------------
 void SimWinTlb::drawBanner( ) {
     
@@ -672,20 +669,18 @@ void SimWinTlb::drawLine( T64Word index ) {
 
     uint32_t  fmtDesc = FMT_DEF_ATTR;
 
-    // ??? get the entry .... 
-
-    // we cal the proc methods...
+    T64TlbEntry *ePtr = tlb -> getTlbEntry( index );
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
     printTextField((char *) "): [", fmtDesc );
-    printBitField( 0, 63, 'A', fmtDesc );
-    printBitField( 0, 62, 'B', fmtDesc );
-    printBitField( 0, 61, 'C', fmtDesc );
-    printBitField( 0, 60, 'D', fmtDesc );
-    printBitField( 0, 59, 'E', fmtDesc );
+    printTextField(( ePtr -> valid ) ? (char *) "V" : (char *) "v" );
+    printTextField(( ePtr -> modified ) ? (char *) "M" : (char *) "m" );
+    printTextField(( ePtr -> locked ) ? (char *) "L" : (char *) "l" );
+    printTextField(( ePtr -> uncached ) ? (char *) "U" : (char *) "u" );
+    printTextField(( ePtr -> trapOnBranch ) ? (char *) "T" : (char *) "t" );
     printTextField((char *) "] [", fmtDesc );
-    printTextField((char *) "xx", fmtDesc ); // ??? page size.... decoded ?
+    printNumericField( ePtr -> accessRights, fmtDesc | FMT_HEX_2 );
     printTextField((char *) "]", fmtDesc );
     printTextField((char *) "  vAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
@@ -724,13 +719,17 @@ void SimWinCache::setDefaults( ) {
 
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 6 );
+    setDefRows( 7 );
     setDefColumns( 128 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
-    setLineIncrement( 1 );
-    setLimitItemAdr( cache -> getSetSize( ));
+    setLineIncrementItemAdr( 1 );
+
+    if ( cache -> getCacheLineSize( ) == 32 ) 
+        setLimitItemAdr( cache -> getSetSize( ));
+    else setLimitItemAdr( cache -> getSetSize( ) * 2 );
+    
     setWinToggleLimit( cache -> getWays( ));
     setWinToggleVal( 0 );
     setEnable( true );
@@ -769,7 +768,11 @@ void SimWinCache::drawBanner( ) {
 
 //----------------------------------------------------------------------------------------
 // The draw line methods for the cache lists a cache entry. There are various cache
-// line sizes. And there are up to two sets of cache data.
+// line sizes. And there are up to two sets of cache data. For the 32 byte size, we
+// will print four words, all fits in one row. For the 64 byte size, two lines will
+// be printed. We will still increment the lineItem index by one, but fetch only
+// every other time the cache. On an even index a new cache line start and the first
+// half of the line is printed, on an odd index the second half is printed.
 //
 // Format:
 //
@@ -781,6 +784,14 @@ void SimWinCache::drawLine( T64Word index ) {
 
     T64CacheLineInfo *cInfo;
     uint8_t          *cData;
+    bool             firstHalf = true;
+    
+    ( index % 2 == 0 );
+    if ( cache -> getCacheLineSize( ) == 64 ) {
+        
+        firstHalf = ( index % 2 == 0 );
+        index = index / 2;
+    }
 
     if ( ! cache -> getCacheLineByIndex( getWinToggleVal( ),
                                   index,
@@ -788,6 +799,7 @@ void SimWinCache::drawLine( T64Word index ) {
                                   &cData )) {
 
     }
+    else ;
 
     printTextField((char *) "(", fmtDesc );
     printNumericField( index, fmtDesc | FMT_HEX_4 );
@@ -802,33 +814,36 @@ void SimWinCache::drawLine( T64Word index ) {
     }
     else {
 
-        printTextField((char *) "[", fmtDesc );
+        if ( firstHalf ) {
 
-        if ( cInfo -> valid ) printTextField((char *) "V", fmtDesc );
-        else printTextField((char *) "v", fmtDesc );
+            printTextField((char *) "[", fmtDesc );
 
-         if ( cInfo -> modified ) printTextField((char *) "M", fmtDesc );
-        else printTextField((char *) "m", fmtDesc );
+            if ( cInfo -> valid ) printTextField((char *) "V", fmtDesc );
+            else printTextField((char *) "v", fmtDesc );
 
-        printTextField((char *) "] [", fmtDesc );
-        printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4 );
-        printTextField((char *) "] ", fmtDesc );
+            if ( cInfo -> modified ) printTextField((char *) "M", fmtDesc );
+            else printTextField((char *) "m", fmtDesc );
 
-        if ( cache -> getCacheLineSize( ) == 32 ) {
-
-            for ( int i = 0; i < 4; i++ ) { 
-
-                T64Word tmp;
-                copyToBigEndian((uint8_t *) &tmp, cData, sizeof( T64Word ));
-                printNumericField( tmp, fmtDesc | FMT_HEX_4_4_4_4 );
-                printTextField((char *) "  " );
-            } 
+            printTextField((char *) "] [", fmtDesc );
+            printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4 );
+            printTextField((char *) "] ", fmtDesc );
         }
-        else if ( cache -> getCacheLineSize( ) == 64 ) {
+        else {
 
-            // ??? to do ...
+            printTextField(( char *) "               " );
         }
-        else ; // ??? fix ...         
+
+        int start = ( firstHalf ? 0 : 4 );
+       
+        for ( int i = 0; i < 4; i++ ) { 
+
+            T64Word tmp;
+            copyToBigEndian((uint8_t *) &tmp, 
+                             cData + (( start + i ) * sizeof( T64Word )), 
+                             sizeof( T64Word ));
+            printNumericField( tmp, fmtDesc | FMT_HEX_4_4_4_4 );
+            printTextField((char *) "  " ); 
+        }         
     }
 }
 
@@ -875,7 +890,7 @@ void SimWinText::setDefaults( ) {
     
     setRadix( 10 );
     setCurrentItemAdr( 0 );
-    setLineIncrement( 1 );
+    setLineIncrementItemAdr( 1 );
     setLimitItemAdr( 1 );
 }
 

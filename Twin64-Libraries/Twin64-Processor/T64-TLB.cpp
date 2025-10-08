@@ -48,24 +48,24 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-T64Tlb::T64Tlb( T64Processor *proc, T64TlbType tlbType ) {
+T64Tlb::T64Tlb( T64Processor *proc, T64TlbType tlbKind, T64TlbType tlbType ) {
 
     this -> proc    = proc;
+    this -> tlbKind = tlbKind;
     this -> tlbType = tlbType;
 
     switch ( tlbType ) {
 
-        case T64_TT_64S:    tlbEntries = 64; break;
-        default:            tlbEntries = 64;
+        case T64_TT_FA_64S:     tlbEntries = 64; break;
+        default:                tlbEntries = 64;
     }
 
     map = (T64TlbEntry *) malloc( tlbEntries * sizeof( T64TlbEntry ));
-
     reset( );
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Reset a TLB.
 //
 //----------------------------------------------------------------------------------------
 void T64Tlb::reset( ) {

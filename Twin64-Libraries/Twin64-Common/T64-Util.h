@@ -87,10 +87,14 @@ inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
     return (( adr >= low ) && ( adr <= high ));
 }
 
-inline T64Word roundup( T64Word arg, int round ) {
-    
-    if ( round == 0 ) return ( arg );
-    return ((( arg + round - 1 ) / round ) * round );
+inline T64Word roundup(T64Word arg, int round) {
+    if (round == 0) return arg;
+    return ((arg + round - 1) / round) * round;
+}
+
+inline T64Word rounddown(T64Word arg, int round) {
+    if (round == 0) return arg;
+    return (arg / round) * round;
 }
 
 inline bool isAligned( T64Word adr, int align ) {

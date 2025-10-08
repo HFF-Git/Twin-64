@@ -527,12 +527,12 @@ void SimWinScrollable::setLimitItemAdr( T64Word adr ) {
     limitItemAdr = adr; 
 }
 
-int SimWinScrollable::getLineIncrement( ) { 
+int SimWinScrollable::getLineIncrementItemAdr( ) { 
     
     return ( lineIncrement ); 
 }
 
-void SimWinScrollable::setLineIncrement( int arg ) { 
+void SimWinScrollable::setLineIncrementItemAdr( int arg ) { 
     
     lineIncrement = arg; 
 }
