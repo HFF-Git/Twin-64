@@ -52,3 +52,15 @@ void addChar( char *buf, int size, char ch ) {
         buf[ len + 1 ] = 0;
     }
 }
+
+const char *pageTypeStr( uint8_t pTyp ) {
+
+    switch ( pTyp ) {
+
+        case 0: return( "R" );
+        case 1: return( "W" );
+        case 2: return( "X" );
+        case 3: return( "G" );
+        default: return( "*" );
+    }
+}

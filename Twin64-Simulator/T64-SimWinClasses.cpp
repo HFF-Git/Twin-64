@@ -684,7 +684,11 @@ void SimWinTlb::drawLine( T64Word index ) {
     printTextField(( ePtr -> uncached ) ? (char *) "U" : (char *) "u" );
     printTextField(( ePtr -> trapOnBranch ) ? (char *) "T" : (char *) "t" );
     printTextField((char *) "] [", fmtDesc );
-    printNumericField( ePtr -> accessRights, fmtDesc | FMT_HEX_2 );
+    printTextField((char *) pageTypeStr( ePtr -> pageType ));
+    printTextField((char *) ":", fmtDesc );
+    printTextField(( ePtr ->pLev1 ) ? (char *) "P" : (char *) "p" );
+    printTextField((char *) ":", fmtDesc );
+    printTextField(( ePtr ->pLev2 ) ? (char *) "P" : (char *) "p" );
     printTextField((char *) "]", fmtDesc );
     printTextField((char *) "  vAdr: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );

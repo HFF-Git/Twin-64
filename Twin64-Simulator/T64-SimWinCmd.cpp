@@ -1028,8 +1028,8 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModCmd( ) {
 
-    winOut -> writeChars( "%-5s%-5s%-16s%-16s%-8s\n", 
-                            "Mod", "Typ", "HPA", "SPA", "Size" );
+    winOut -> writeChars( "%-5s%-7s%-16s%-16s%-8s\n", 
+                            "Mod", "Type", "HPA", "SPA", "Size" );
 
     for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
 
@@ -1038,8 +1038,7 @@ void SimCommandsWin::displayModCmd( ) {
 
             winOut -> writeChars( "%02d   ", i  );
 
-            // ??? decode type ... readable !!!
-            winOut -> writeChars( "%2d   ", mPtr -> moduleTyp );
+            winOut -> writeChars( "%-7s", mPtr -> getModuleTypeName( ));
 
             winOut -> printNumber( mPtr -> hpaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );

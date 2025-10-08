@@ -31,6 +31,7 @@
 #define T64_InlineAsm_h
 
 #include "T64-Common.h"
+#include "T64-Util.h"
 
 //----------------------------------------------------------------------------------------
 // "T64Assemble" is a one line assembler. It just parses the instruction string and 

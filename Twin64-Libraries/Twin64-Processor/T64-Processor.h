@@ -225,7 +225,9 @@ struct T64TlbEntry {
     T64Word         vAdr            = 0;
     T64Word         pAdr            = 0;
     int             pSize           = 0;
-    uint8_t         accessRights    = 0;
+    uint8_t         pageType        = 0;
+    bool            pLev1           = false;
+    bool            pLev2           = false;
     T64Word         lastUsed        = 0;
 };
 

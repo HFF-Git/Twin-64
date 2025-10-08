@@ -68,26 +68,11 @@ const   int     T64_PAGE_OFS_BITS           = 12;
 const   int     T64_VADR_BITS               = 52;
 const   int     T64_PADR_BITS               = 36;
 
-
-#if 0
-
-
-const   int     T64_CACHE_INDEX_BITS        = 7;
-const   int     T64_LINE_OFS_BITS           = 5;
-const   int     T64_MAX_CACHE_WAYS          = 8;
-const   int     T64_MAX_CACHE_SETS          = 128;
-const   int     T64_WORDS_PER_CACHE_LINE    = 4;
-const   int     T64_CACHE_WORD_BYTES        = sizeof( T64Word );
-const   int     T64_CACHE_LINE_BYTES        = 
-                                T64_WORDS_PER_CACHE_LINE * T64_CACHE_WORD_BYTES;
-
-#endif
-
 //----------------------------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------------------------
-enum AccRights : int {
+enum T64PageType : int {
 
     ACC_NONE        = 0,
     ACC_READ_ONLY   = 1,
@@ -100,7 +85,7 @@ enum AccRights : int {
 //
 // ??? fix trap numbers... IVA relevant...
 //----------------------------------------------------------------------------------------
-enum TrapCode : int {
+enum T64TrapCode : int {
     
     NO_TRAP                 = 0,
     ILLEGAL_INSTR_TRAP      = 1,
@@ -129,10 +114,10 @@ struct T64Trap {
     
 public:
     
-    T64Trap( int    trapCode,
-             int    trapInfo1 = 0,
-             int    trapInfo2 = 0,
-             int    trapInfo3 = 0 ) {
+    T64Trap( T64TrapCode    trapCode,
+             int            trapInfo1 = 0,
+             int            trapInfo2 = 0,
+             int            trapInfo3 = 0 ) {
         
         this -> trapCode  = trapCode;
         this -> trapInfo1 = trapInfo1;
@@ -161,8 +146,7 @@ enum ControlRegId : int {
     CTL_REG_PID1        = 5,
     CTL_REG_PID2        = 6,
     CTL_REG_PID3        = 7,
-    CTL_REG_IVA         = 8,
-    
+    CTL_REG_IVA         = 8
 };
 
 //----------------------------------------------------------------------------------------

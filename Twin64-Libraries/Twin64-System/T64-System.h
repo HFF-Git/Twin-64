@@ -57,7 +57,6 @@ enum T64ModuleType {
     MT_CPU_CACHE    = 12,
     MT_CPU_TLB      = 13, 
     MT_MEM          = 20,
-    MT_MEM_BANK     = 21,
     MT_IO           = 30   
 };
 
@@ -134,6 +133,7 @@ struct T64Module {
 
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
+    const char          *getModuleTypeName( );
 
     public: 
 
