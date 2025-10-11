@@ -1877,6 +1877,7 @@ void SimCommandsWin::winExchangeCmd( ) {
     
     if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
     glb -> winDisplay -> windowExchangeOrder( winNum );
+    glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------

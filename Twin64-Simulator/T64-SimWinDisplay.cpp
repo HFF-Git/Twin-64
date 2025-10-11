@@ -677,11 +677,12 @@ void SimWinDisplay::windowToggle( int winNum ) {
 void SimWinDisplay::windowExchangeOrder( int winNum ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
+    if ( ! validWindowNum( winNum )) return;
+
     int currentWindow = getCurrentWindow( );
     if ( winNum == currentWindow ) return;
-    if ( ! validWindowNum( winNum )) return;
-    
-    std::swap( windowList[ winNum - 1 ], windowList[ currentWindow ]);
+   
+    std::swap( windowList[ winNum - 1 ], windowList[ currentWindow - 1 ]);
 }
 
 //----------------------------------------------------------------------------------------
