@@ -345,7 +345,7 @@ void SimCommandsWin::setDefaults( ) {
     setWinType( WT_CMD_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 21 );
-    setDefColumns( 128 );
+    setDefColumns( 100 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setEnable( true );
@@ -449,7 +449,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
                         
                         glb -> console -> eraseChar( );
                         glb -> console -> writeCursorLeft( );
-                        glb -> console -> writeChar( cmdBuf[ cmdBufCursor ] );
+                        glb -> console -> writeChars( "%c", cmdBuf[ cmdBufCursor ] );
                     }
                 }
                 else {
@@ -1559,19 +1559,19 @@ void SimCommandsWin::winOffCmd( ) {
 void SimCommandsWin::winDefCmd( ) {
 
     glb -> winDisplay -> windowDefaults( );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 void SimCommandsWin::winStacksEnable( ) {
     
     glb -> winDisplay -> winStacksEnable( true );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 void SimCommandsWin::winStacksDisable( ) {
    
     glb -> winDisplay -> winStacksEnable( false );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1592,7 +1592,8 @@ void SimCommandsWin::winEnableCmd( ) {
 
     tok -> checkEOS( );
     glb -> winDisplay -> windowEnable( winNum, true );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
+  //  glb -> winDisplay -> reDraw( true );
 }
 
 void SimCommandsWin::winDisableCmd( ) {
@@ -1606,7 +1607,8 @@ void SimCommandsWin::winDisableCmd( ) {
 
     tok -> checkEOS( );
     glb -> winDisplay -> windowEnable( winNum, false );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
+  //  glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1792,7 +1794,8 @@ void SimCommandsWin::winSetRowsCmd( ) {
 
         tok -> checkEOS( );
         glb -> winDisplay -> windowSetRows( winLines, winNum );
-        glb -> winDisplay -> reDraw( true );
+        glb -> winDisplay -> setWinReFormat( );
+      //  glb -> winDisplay -> reDraw( true );
     }    
 }
 
@@ -1856,7 +1859,8 @@ void  SimCommandsWin::winToggleCmd( ) {
         glb -> winDisplay -> windowToggle( tok -> tokVal( ));
     }
 
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
+   // glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1877,7 +1881,7 @@ void SimCommandsWin::winExchangeCmd( ) {
     
     if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
     glb -> winDisplay -> windowExchangeOrder( winNum );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2005,7 +2009,7 @@ void SimCommandsWin::winNewWinCmd( ) {
         default: throw( ERR_INVALID_WIN_TYPE );
     }
     
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2048,7 +2052,7 @@ void SimCommandsWin::winKillWinCmd( ) {
     }
     
     glb -> winDisplay -> windowKill( winNumStart, winNumEnd );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2088,7 +2092,7 @@ void SimCommandsWin::winSetStackCmd( ) {
     else throw ( ERR_EXPECTED_COMMA );
    
     glb -> winDisplay -> windowSetStack( winStack, winNumStart, winNumEnd );
-    glb -> winDisplay -> reDraw( true );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2207,8 +2211,12 @@ void SimCommandsWin::cmdInterpreterLoop( ) {
     
     char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
     char cmdPrompt[ MAX_CMD_LINE_SIZE ];
+
+    glb -> winDisplay -> setWinReFormat( );
+    glb -> winDisplay -> reDraw( );
    
     printWelcome( );
+    glb -> winDisplay -> setWinReFormat( );
     glb -> winDisplay -> reDraw( );
     
     while ( true ) {

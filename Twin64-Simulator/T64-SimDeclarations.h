@@ -1209,10 +1209,13 @@ public:
     void            setupWinDisplay( int argc, const char *argv[ ] );
     void            startWinDisplay( );
     SimTokId        getCurrentCmd( );
+
+    void            setWinMode( bool winOn );
     bool            isWinModeOn( );
     
-    void            reDraw( bool mustRedraw = false );
-    void            setWinMode( bool winOn );
+    void            setWinReFormat( );
+    bool            isWinReFormat( );
+    void            reDraw( );
     
     void            windowsOn( );
     void            windowsOff( );
@@ -1265,6 +1268,7 @@ public:
     int             currentWinNum               = -1;
     bool            winStacksOn                 = false;
     bool            winModeOn                   = false;
+    bool            winReFormatPending          = false;
 
     SimGlobals      *glb                        = nullptr;
     SimWin          *windowList[ MAX_WINDOWS ]  = { nullptr };

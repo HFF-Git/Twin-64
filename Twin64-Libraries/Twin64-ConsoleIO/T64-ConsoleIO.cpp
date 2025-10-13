@@ -250,22 +250,23 @@ int SimConsoleIO::readChar( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "writeChar" is the single entry point to write to the terminal. On Mac/Linux, this
-// is the "write" system call. On windows there is a similar call, which does just 
-// prints one character at a time.
+// I still get from time time garbled screens, which disappear on a redraw. Perhaps
+// the single character write logic is too much for the terminal driver. So, let's
+// accumulate larger sequences and only use "writeChars" for printing.
 //
 //----------------------------------------------------------------------------------------
-int SimConsoleIO::writeChar( char ch  ) {
-    
-#if __APPLE__
-    write( STDOUT_FILENO, &ch, 1 );
-    return( 1 );
-#else
-    _putch( int(ch) );
-    return( 1 );
-#endif
-    
-}
+
+//----------------------------------------------------------------------------------------
+// "writeChars" is the single entry point to write to the terminal. On Mac/Linux, 
+// we still try to send out the data in batches to the terminal emulator for better
+// stability. In Windows this does not seems to be an issue, we send a single char
+// at a time.
+//
+//----------------------------------------------------------------------------------------
+
+#if 0
+
+// ??? old version 
 
 int SimConsoleIO::writeChars( const char *format, ... ) {
     
@@ -277,12 +278,63 @@ int SimConsoleIO::writeChars( const char *format, ... ) {
     
     if ( len > 0 ) {
         
-        for ( int i = 0; i < len; i++  ) writeChar( outputBuffer[ i ] );
+        for ( int i = 0; i < len; i++  ) {
+          
+            #if __APPLE__
+            write( STDOUT_FILENO, &outputBuffer[ i ], 1 );
+
+             #else
+            
+             _putch( int( outputBuffer[ i ]) );
+            
+            #endif
+        }
     }
     
     return( len );
 }
 
+#else
+
+int SimConsoleIO::writeChars( const char *format, ... ) {
+
+    va_list args;
+    va_start( args, format );
+    int len = vsnprintf( outputBuffer, sizeof( outputBuffer ), format, args );
+    va_end( args );
+
+     if (len <= 0) return 0;
+
+    #if __APPLE__ || __linux__
+
+    const char  *p          = outputBuffer;
+    size_t      remaining   = len;
+
+    while ( remaining > 0   ) {
+
+        ssize_t n = write( STDOUT_FILENO, p, remaining );
+
+        if (( n < 0 ) && ( errno == EINTR )) continue;
+        if ( n <= 0 ) break;
+        
+        p         += n;
+        remaining -= n;
+    }
+
+    tcdrain( STDOUT_FILENO );
+
+    #else
+
+    for (int i = 0; i < len; i++) {
+
+        _putch((unsigned char)outputBuffer[i]);
+    }
+    
+    #endif
+
+    return len;
+}
+#endif
 
 //****************************************************************************************
 //****************************************************************************************
@@ -413,7 +465,7 @@ void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
 //----------------------------------------------------------------------------------------
 int SimFormatter::printBlanks( int len ) {
 
-    for ( int i = 0; i < len; i++ ) writeChar( ' ' );
+    for ( int i = 0; i < len; i++ ) writeChars((char *) " ");
     return( len );
 }
 
@@ -432,14 +484,14 @@ int SimFormatter::printText( char *text, int maxLen ) {
      
         if ( maxLen > 4 ) {
 
-            for ( int i = 0; i < maxLen - 3; i++  ) writeChar( text[ i ] );
+            for ( int i = 0; i < maxLen - 3; i++  ) writeChars( "%c", text[ i ] );
             writeChars((char *) "..." );
 
             return( maxLen );
         }
         else {
 
-            for ( int i = 0; i < maxLen; i++  ) writeChar( '.' );
+            for ( int i = 0; i < maxLen; i++  ) writeChars((char *) "." );
             return( maxLen );
         }
     }

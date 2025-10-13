@@ -164,7 +164,7 @@ enum FmtDescOptions : uint32_t {
 //----------------------------------------------------------------------------------------
 struct SimFormatter {
 
-    virtual int     writeChar( const char ch ) = 0;
+//    virtual int     writeChar( const char ch ) = 0;
     virtual int     writeChars( const char *format, ... ) = 0;
     
     void            writeCarriageReturn( );
@@ -212,8 +212,6 @@ struct SimConsoleIO : SimFormatter {
     bool    isConsole( );
     int     readChar( );
 
-
-    int     writeChar( const char ch  );
     int     writeChars( const char *format, ... );
     
     private:

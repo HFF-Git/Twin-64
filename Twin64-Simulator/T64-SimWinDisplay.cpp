@@ -83,7 +83,6 @@ void SimWinDisplay::setupWinDisplay( int argc, const char *argv[ ] ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::startWinDisplay( ) {
     
-    reDraw( true );
     cmdWin -> cmdInterpreterLoop( );
 }
 
@@ -102,6 +101,16 @@ bool SimWinDisplay::isWinModeOn( ) {
 void SimWinDisplay::setWinMode( bool winOn ) {
     
     winModeOn = winOn;
+}
+
+void SimWinDisplay::setWinReFormat( ) {
+
+    winReFormatPending = true;
+}
+
+bool SimWinDisplay::isWinReFormat( ) {
+
+    return( winReFormatPending );
 }
 
 //----------------------------------------------------------------------------------------
@@ -310,7 +319,7 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 //
 // ??? sometimes the gap between the stacks has stale characters...
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::reDraw( bool mustRedraw ) {
+void SimWinDisplay::reDraw( ) {
     
     int winStackColumns[ MAX_WIN_STACKS ]   = { 0 };
     int winStackRows[ MAX_WIN_STACKS ]      = { 0 };
@@ -346,7 +355,8 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
             }
         }
 
-        if ( winStacksOn ) maxColumnsNeeded -= stackColumnGap;
+        if (( winStacksOn ) && ( maxColumnsNeeded > 0 )) 
+            maxColumnsNeeded -= stackColumnGap;
         
         int curColumn = 1;
         int curRows   = 1;
@@ -392,7 +402,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
         cmdWin -> setWinOrigin( 1, 1 );
     }
    
-    if ( mustRedraw ) {
+    if ( winReFormatPending ) {
        
         glb -> console -> setWindowSize( maxRowsNeeded, maxColumnsNeeded );
         glb -> console -> setAbsCursor( 1, 1 );
@@ -418,6 +428,9 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
     
     cmdWin -> reDraw( );
     glb -> console -> setAbsCursor( maxRowsNeeded, 1 );
+
+    usleep(1000);
+    winReFormatPending = false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -432,7 +445,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
 void SimWinDisplay::windowsOn( ) {
 
     winModeOn = true;
-    reDraw( true );
+    setWinReFormat( );
 }
 
 void SimWinDisplay::windowsOff( ) {
@@ -444,7 +457,7 @@ void SimWinDisplay::windowsOff( ) {
     glb -> console -> clearScreen( );
     
     cmdWin -> setDefaults( );
-    reDraw( true );
+    setWinReFormat( );
 }
 
 void SimWinDisplay::windowDefaults( ) {
@@ -502,9 +515,10 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
         if ( windowList[ i - 1 ] != nullptr ) {
             
             windowList[ i - 1 ] -> setWinStack( winStack );
-            currentWinNum = i;
         }
     }
+
+    currentWinNum = winNumEnd;
 }
 
 //----------------------------------------------------------------------------------------
@@ -523,7 +537,7 @@ void SimWinDisplay::windowEnable( int winNum, bool show ) {
     windowList[ winNum - 1 ] -> setEnable( show );
     currentWinNum = winNum;
 
-    reDraw( true );
+    setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -543,7 +557,7 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
     windowList[ winNum - 1 ] -> setRadix( rdx );
     currentWinNum = winNum;
     
-    reDraw( true );
+    setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -564,7 +578,7 @@ void SimWinDisplay::windowSetRows( int rows, int winNum ) {
     windowList[ winNum - 1 ] -> setRows( rows );
     currentWinNum = winNum;
 
-    reDraw( true );
+    setWinReFormat( );
 }
 
 void SimWinDisplay::windowSetCmdWinRows( int rows ) {
@@ -574,7 +588,7 @@ void SimWinDisplay::windowSetCmdWinRows( int rows ) {
     if ( rows == 0 ) rows = cmdWin -> getDefRows( );
     cmdWin -> setRows( rows );
 
-    reDraw( true );
+    setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -682,6 +696,7 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
     int currentWindow = getCurrentWindow( );
     if ( winNum == currentWindow ) return;
    
+    // ??? simple swap does take care of potentially different stacks...!!!!
     std::swap( windowList[ winNum - 1 ], windowList[ currentWindow - 1 ]);
 }
 
