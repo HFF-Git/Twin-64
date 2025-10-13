@@ -161,7 +161,7 @@ void SimWinCpuState::setDefaults( ) {
     setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 5 );
-    setDefColumns( 110 );
+    setDefColumns( 100 );
     setRows( getDefRows( ));
     setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
@@ -360,7 +360,7 @@ void SimWinAbsMem::setDefaults( ) {
     setWinType( WT_MEM_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 5 );
-    setDefColumns( 116 );
+    setDefColumns( 112 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setEnable( false );
@@ -502,7 +502,7 @@ void SimWinCode::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setDefRows( 9 );
-    setDefColumns( 116 );
+    setDefColumns( 80 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
 
@@ -622,7 +622,7 @@ void SimWinTlb::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setDefRows( 5 );
-    setDefColumns( 116 );
+    setDefColumns( 80 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
@@ -728,7 +728,7 @@ void SimWinCache::setDefaults( ) {
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 7 );
-    setDefColumns( 128 );
+    setDefColumns( 110 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );

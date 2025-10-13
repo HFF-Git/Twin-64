@@ -309,7 +309,6 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // The command screen will have a columns size across all visible stacks.
 //
 // ??? sometimes the gap between the stacks has stale characters...
-// ??? the data sees to be coming from about the middle of the first stack column ?
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( bool mustRedraw ) {
     
@@ -332,7 +331,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
                 if ( winStackColumns[ i ] > 0 ) {
 
                     maxColumnsNeeded += winStackColumns[ i ];
-                    if ( i > 0 ) maxColumnsNeeded += stackColumnGap;
+                    maxColumnsNeeded += stackColumnGap;
                 }
                 
                 if ( winStackRows[ i ] > maxRowsNeeded ) 
@@ -346,6 +345,8 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
                 maxRowsNeeded += winStackRows[ i ];
             }
         }
+
+        if ( winStacksOn ) maxColumnsNeeded -= stackColumnGap;
         
         int curColumn = 1;
         int curRows   = 1;
@@ -358,7 +359,7 @@ void SimWinDisplay::reDraw( bool mustRedraw ) {
             if ( winStacksOn ) {
                 
                 curColumn += winStackColumns[ i ];
-                if ( winStackColumns[ i ] > 0 ) curColumn += stackColumnGap;
+                curColumn += stackColumnGap;
             }
             else {
                 
@@ -459,7 +460,6 @@ void SimWinDisplay::windowDefaults( ) {
 void SimWinDisplay::winStacksEnable( bool arg ) {
 
     if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
-        
     winStacksOn = arg;
 }
 
