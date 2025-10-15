@@ -216,7 +216,7 @@ enum SimTokId : uint16_t {
     TOK_MEM                 = 204,      TOK_CODE                = 205,  
     TOK_STATS               = 206,      TOK_TEXT                = 207,        
    
-    TOK_PROC                = 210,      TOK_CPU                 = 211,   
+    TOK_SYS                 = 210,      TOK_CPU                 = 211,   
     TOK_ITLB                = 212,      TOK_DTLB                = 213,  
     TOK_ICACHE              = 214,      TOK_DCACHE              = 215,
    
@@ -235,8 +235,10 @@ enum SimTokId : uint16_t {
     CMD_RESET               = 1011,     CMD_RUN                 = 1012,     
     CMD_STEP                = 1013,     CMD_MR                  = 1014,
     CMD_DA                  = 1015,     CMD_MA                  = 1016,
-    CMD_I_TLB               = 1017,     CMD_P_TLB               = 1018,
-    CMD_F_CACHE             = 1019,     CMD_P_CACHE             = 1020,
+    CMD_ITLB_I              = 1017,     CMD_ITLB_D              = 1018, 
+    CMD_PTLB_I              = 1019,     CMD_PTLB_D              = 1020,
+    CMD_PCA_I               = 1021,     CMD_PCA_D               = 1022,
+    CMD_FCA_D               = 1023,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -513,6 +515,7 @@ struct SimTokenizer {
     void            acceptComma( );
     void            acceptLparen( );
     void            acceptRparen( );
+    SimTokId        acceptTokSym( SimErrMsgId errId );
 
     private:
     

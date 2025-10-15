@@ -42,7 +42,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u.val = 0  },
     
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
-    { .name = "PROC",       .typ = TYP_SYM,     .tid = TOK_PROC               },
+    { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                },
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
     { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB               },
     { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB               },
@@ -55,10 +55,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "HEX",        .typ = TYP_SYM,     .tid = TOK_HEX,   .u.val = 16 },
     { .name = "CODE",       .typ = TYP_SYM,     .tid = TOK_CODE               },
     
-    //------------------------------------------------------------------------------------
-    //
-    //
-    //------------------------------------------------------------------------------------
     { .name = "COMMANDS",   .typ = TYP_CMD,     .tid = CMD_SET                },
     { .name = "WCOMMANDS",  .typ = TYP_WCMD,    .tid = WCMD_SET               },
     { .name = "PREDEFINED", .typ = TYP_P_FUNC,  .tid = PF_SET                 },
@@ -91,11 +87,14 @@ const SimToken cmdTokTab[ ] = {
     { .name = "DA",         .typ = TYP_CMD,     .tid = CMD_DA                 },
     { .name = "MA",         .typ = TYP_CMD,     .tid = CMD_MA                 },
     
-    { .name = "ITLB",       .typ = TYP_CMD,     .tid = CMD_I_TLB              },
-    { .name = "PTLB",       .typ = TYP_CMD,     .tid = CMD_P_TLB              },
+    { .name = "IITLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_I             },
+    { .name = "IDTLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_D             },
+    { .name = "PITLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_I             },
+    { .name = "PDTLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_D             },
     
-    { .name = "PCA",        .typ = TYP_CMD,     .tid = CMD_P_CACHE            },
-    { .name = "FCA",        .typ = TYP_CMD,     .tid = CMD_F_CACHE            },
+    { .name = "PICA",       .typ = TYP_CMD,     .tid = CMD_PCA_I              },
+    { .name = "PDCA",       .typ = TYP_CMD,     .tid = CMD_PCA_D              },
+    { .name = "FDCA",       .typ = TYP_CMD,     .tid = CMD_FCA_D              },
     
     //------------------------------------------------------------------------------------
     // Window command tokens.
@@ -494,12 +493,12 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdSyntaxStr   = (char *) "xf \"<filePath>\"",
         .helpStr        = (char *) "execute commands from a file"
     },
-    
+
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RESET,
         .cmdNameStr     = (char *) "reset",
-        .cmdSyntaxStr   = (char *) "reset ( 'tbd' | 'MEM' | 'STATS' | 'ALL' )",
-        .helpStr        = (char *) "resets the CPU"
+        .cmdSyntaxStr   = (char *) "reset ( 'SYS' | 'STATS' )",
+        .helpStr        = (char *) "resets the system, etc."
     },
     
     {
@@ -527,7 +526,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DM,
         .cmdNameStr     = (char *) "dm",
         .cmdSyntaxStr   = (char *) "dm",
-        .helpStr        = (char *) "display registers modules for the system"
+        .helpStr        = (char *) "display registered modules for the system"
     },
     
     {
@@ -552,31 +551,52 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
     
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_CACHE,
-        .cmdNameStr     = (char *) "pca",
-        .cmdSyntaxStr   = (char *) "pca <type> , <vAdr>",
-        .helpStr        = (char *) "purges cache line data"
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PCA_I,
+        .cmdNameStr     = (char *) "pica",
+        .cmdSyntaxStr   = (char *) "pica <vAdr>",
+        .helpStr        = (char *) "purges instruction cache line data"
     },
 
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_F_CACHE,
-        .cmdNameStr     = (char *) "fca",
-        .cmdSyntaxStr   = (char *) "fca <type> , <vAdr>",
-        .helpStr        = (char *) "flushes cache line data"
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PCA_I,
+        .cmdNameStr     = (char *) "pdca",
+        .cmdSyntaxStr   = (char *) "pdca <vAdr>",
+        .helpStr        = (char *) "purges data cache line data"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_FCA_D,
+        .cmdNameStr     = (char *) "fdca",
+        .cmdSyntaxStr   = (char *) "fdca <vAdr>",
+        .helpStr        = (char *) "flushes data cache line data"
     },
     
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_I_TLB,
-        .cmdNameStr     = (char *) "itlb",
-        .cmdSyntaxStr   = (char *) "itlb <type> , <vAdr> , <info>",
-        .helpStr        = (char *) "inserts an entry into the TLB"
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ITLB_I,
+        .cmdNameStr     = (char *) "iitlb",
+        .cmdSyntaxStr   = (char *) "iitlb <vAdr> , <pAdr> , <size> , <acc> , <flags>",
+        .helpStr        = (char *) "inserts an entry into the instruction TLB"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ITLB_D,
+        .cmdNameStr     = (char *) "idtlb",
+        .cmdSyntaxStr   = (char *) "idtlb <vAdr> , <pAdr> , <info>",
+        .helpStr        = (char *) "inserts an entry into the data TLB"
     },
     
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_P_TLB,
-        .cmdNameStr     = (char *) "ptlb",
-        .cmdSyntaxStr   = (char *) "ptlb <type> , <vAdr>",
-        .helpStr        = (char *) "purges an entry from the TLB"
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PTLB_I,
+        .cmdNameStr     = (char *) "pitlb",
+        .cmdSyntaxStr   = (char *) "pitlb <vAdr>",
+        .helpStr        = (char *) "purges an entry from the instruction TLB"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PTLB_D,
+        .cmdNameStr     = (char *) "pdtlb",
+        .cmdSyntaxStr   = (char *) "pdtlb <vAdr>",
+        .helpStr        = (char *) "purges an entry from the data TLB"
     },
     
     {
@@ -700,21 +720,21 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdNameStr     = (char *)  "wn",
         .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
         .helpStr        = (char *)  "create a new window " 
-                                    "( CPU, TLB, CACHE, MEM, CODE, TEXT )"
+                                    "( CPU, ITLB, DTLB, ICACHE, DCACHE, MEM, CODE, TEXT )"
     },
 
      {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WK,
         .cmdNameStr     = (char *)  "wk",
         .cmdSyntaxStr   = (char *)  "wk [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *)  "removes a range of windows"
+        .helpStr        = (char *)  "remove a range of windows"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WS,
         .cmdNameStr     = (char *)  "ws",
         .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <wStart> ] [ , <wEnd>]",
-        .helpStr        = (char *)  "moves a range of user windows into stack <stackNum>"
+        .helpStr        = (char *)  "move a range of windows into stack <stackNum>"
     },
 
     {

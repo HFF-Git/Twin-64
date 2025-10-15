@@ -105,61 +105,88 @@ T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The insert method inserts a new entry. If the TLB is full, a victim is selected 
-// based on the lastUsed data. 
-// 
-// ??? a check that we do not insert a physical range ?
+// The insert method inserts a new entry. First wr check if the virtual address is 
+// in the physical address range. We do not enter such ranges in the TLB. Next, we
+// check whether the new entry would overlap an existing virtual address range. If
+// there is an overlap, the entry found is invalidated. If none found, find a free 
+// entry to use. If none found, we replace the least recently used entry. If all 
+// entries are locked, we cannot find a free entry.In this case, we just unlock entry
+// zero. Note that this is a rather unlikely case, OS software has to ensure that we
+// do not lock all entries.
+//
+// ??? map info fields to the tlb fields...
 //----------------------------------------------------------------------------------------
 void T64Tlb::insert( T64Word vAdr, T64Word info ) {
 
     timeCounter++;
 
+    if ( isInIoAdrRange( vAdr )) return;
+
+    #if 0
+    for (int i = 0; i < T64_MAX_TLB_SIZE; i++) {
+    
+        T64TlbEntry *ptr = &map[i];
+        if ( !ptr->valid ) continue;
+
+        T64Word vStart1 = ptr->vAdr;
+        T64Word vEnd1   = ptr->vAdr + ptr->pSize - 1;
+        T64Word vStart2 = vAdr;
+        T64Word vEnd2   = vAdr + 00000 - 1; // fix.... needs to be size...
+
+        if ((vStart1 <= vEnd2) && (vEnd1 >= vStart2)) {
+            // overlap detected — replace the old entry
+            ptr->valid = false;
+        }
+    }
+    #endif
+
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
-        
+
         T64TlbEntry *ptr = &map[ i ];
+        if ( !ptr->valid ) {
 
-        if ( ! ptr -> valid ) {
-
-             // ??? fill in ...
-            ptr -> valid         = true; 
-            ptr -> uncached      = false;
-            ptr -> locked        = false;
-            ptr -> modified      = false;
-            ptr -> trapOnBranch  = false;
-            ptr -> vAdr          = vAdr;
-            ptr -> pAdr          = 0;
-            ptr -> pSize         = 0;
-
+            ptr->valid        = true;
+            ptr->uncached     = extractBit64( info, 62 );
+            ptr->locked       = extractBit64( info, 61 );
+            ptr->modified     = extractBit64( info, 60 );
+            ptr->trapOnBranch = extractBit64( info, 59 );
+            ptr->vAdr         = vAdr;
+            ptr->pAdr         = extractField64( info, 12, 24 );
+            ptr->pSize        = 0;
+            ptr->lastUsed     = timeCounter;
             return;
         }
     }
-        
-    T64TlbEntry *victim = &map[ 0 ];
 
+    T64TlbEntry *victim = nullptr;
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
-        
-        T64TlbEntry *ptr = &map[ i ];
 
-        if (( ! ptr -> valid ) && ( ptr -> lastUsed < timeCounter  )) {
+        T64TlbEntry *ptr = &map[i];
+        if (( ptr->valid ) && ( !ptr->locked )) {
 
-            victim = ptr;
+            if (( victim == nullptr ) || ( ptr->lastUsed < victim->lastUsed )) {
+
+                victim = ptr;
+            }
         }
     }
-     
-    // ??? fill in ...
-    victim -> valid         = true; 
-    victim -> uncached      = false;
-    victim -> locked        = false;
-    victim -> modified      = false;
-    victim -> trapOnBranch  = false;
-    victim -> vAdr          = vAdr;
-    victim -> pAdr          = 0;
-    victim -> pSize         = 0;
+
+    if ( victim == nullptr ) victim = &map[ 0 ];
+
+    victim->valid        = true;
+    victim->uncached     = false;
+    victim->locked       = false;
+    victim->modified     = false;
+    victim->trapOnBranch = false;
+    victim->vAdr         = vAdr;
+    victim->pAdr         = 0;
+    victim->pSize        = 0;
+    victim->lastUsed     = timeCounter;
 }
 
 //----------------------------------------------------------------------------------------
-//
-// ??? find entry and remove. Move HWM slot to the freed place, dec HWM.
+// Remove the TLB entry that contains the virtual address.
+// 
 //----------------------------------------------------------------------------------------
 void T64Tlb::purge( T64Word vAdr ) {
     

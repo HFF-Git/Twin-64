@@ -548,3 +548,14 @@ void SimTokenizer::acceptRparen( ) {
     if ( isToken( TOK_RPAREN )) nextToken( );
     else throw ( ERR_EXPECTED_LPAREN );
 }
+
+SimTokId SimTokenizer::acceptTokSym( SimErrMsgId errId ) {
+
+    if ( isTokenTyp( TYP_SYM )) {
+        
+        SimTokId tmp = tokId( );
+        nextToken( );
+        return( tmp );
+    }
+    else throw ( errId );
+}

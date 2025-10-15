@@ -61,7 +61,10 @@ const   T64Word T64_IO_BCAST_MEM_START      = 0xFFF00000;
 const   T64Word T64_IO_BCAST_MEM_LIMIT      = 0xFFFFFFFF;
 
 const   T64Word T64_DEF_PHYS_MEM_SIZE       = 0xEFFFFFFF;
-const   T64Word T64_MAX_PHYS_MEM_SIZE       = 0xFFFFFFFFF;
+const   T64Word T64_MAX_PHYS_MEM_LIMIT       = 0xFFFFFFFFF;
+
+const   T64Word T64_MAX_REGION_ID           = 0xFFFFF;
+const   T64Word T64_MAX_VIRT_MEM_LIMIT      = 0xFFFFFFFFFFFFF;
 
 const   int     T64_PAGE_SIZE_BYTES         = 4096;
 const   int     T64_PAGE_OFS_BITS           = 12;

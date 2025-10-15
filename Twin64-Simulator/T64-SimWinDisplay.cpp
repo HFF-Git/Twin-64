@@ -165,7 +165,7 @@ bool SimWinDisplay::validWindowStackNum( int stackNum ) {
 
 bool SimWinDisplay::validWindowType( SimTokId winType ) {
     
-    return( ( winType == TOK_PROC   ) ||
+    return( ( winType == TOK_CPU    ) ||
             ( winType == TOK_MEM    ) || 
             ( winType == TOK_ITLB   ) ||
             ( winType == TOK_DTLB   ) ||
@@ -317,7 +317,9 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // screen size changed, we just redraw the screen with the command screen going last. 
 // The command screen will have a columns size across all visible stacks.
 //
-// ??? sometimes the gap between the stacks has stale characters...
+// Sometimes the gap between the stacks has stale characters. This could be an issue
+// with the terminal program if you send to many escape sequences at once. We will 
+// pause a little after redraw so that the terminal window can catch up.
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
     
@@ -429,7 +431,7 @@ void SimWinDisplay::reDraw( ) {
     cmdWin -> reDraw( );
     glb -> console -> setAbsCursor( maxRowsNeeded, 1 );
 
-    usleep(1000);
+    usleep( 1000 );
     winReFormatPending = false;
 }
 
@@ -685,7 +687,8 @@ void SimWinDisplay::windowToggle( int winNum ) {
 //----------------------------------------------------------------------------------------
 // The display order of the windows is determined by the window index. It would however
 // be convenient to modify the display order. The window exchange command will exchange
-// the current window with the window specified by the index of another window.
+// the current window with the window specified by the index of another window. If
+// the windows are from different window stacks, we also exchange the winStack.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowExchangeOrder( int winNum ) {
@@ -695,8 +698,16 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 
     int currentWindow = getCurrentWindow( );
     if ( winNum == currentWindow ) return;
+
+    int winStackA = windowList[ winNum - 1 ] -> getWinStack( );
+    int winStackB = windowList[ currentWindow - 1 ] -> getWinStack( );
+
+    if ( winStackA != winStackB ) {
+
+        windowList[ winNum - 1 ] -> setWinStack( winStackB );
+        windowList[ currentWindow - 1 ] -> setWinStack( winStackA );
+    }
    
-    // ??? simple swap does take care of potentially different stacks...!!!!
     std::swap( windowList[ winNum - 1 ], windowList[ currentWindow - 1 ]);
 }
 
@@ -846,7 +857,7 @@ void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
     if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS ))  return;
     if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
 
-    if ( ! (( validWindowNum( winNumStart )) && ( ! validWindowNum( winNumEnd )))) 
+    if (( ! validWindowNum( winNumStart )) && ( ! validWindowNum( winNumEnd ))) 
         throw ( ERR_INVALID_WIN_ID );
     
     for ( int i = winNumStart - 1; i <= winNumEnd - 1; i++ ) {

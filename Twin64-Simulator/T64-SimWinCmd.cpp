@@ -104,11 +104,10 @@ int removeComment( char *cmdBuf ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "removeChar" will remove a character from the input buffer left of the cursor 
+// "removeChar" will removes the character from the input buffer left of the cursor 
 // position and adjust the input buffer string size accordingly. If the cursor is at
 // the end of the string, both string size and cursor position are decremented by one.
 //
-// ??? can we simplify this ?
 //----------------------------------------------------------------------------------------
 void removeChar( char *buf, int *strSize, int *pos ) {
     
@@ -129,9 +128,9 @@ void removeChar( char *buf, int *strSize, int *pos ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "insertChar" will insert a character in the input buffer at the cursor position and
-// adjust cursor and overall string size accordingly. There are two basic cases. The
-// first is simply appending to the buffer when both current string size and cursor
+// "insertChar" will insert a character into the input buffer at the cursor position
+// and adjust cursor and overall string size accordingly. There are two basic cases. 
+// The first is simply appending to the buffer when both current string size and cursor
 // position are equal. The second is when the cursor is somewhere in the input buffer. 
 // In this case we need to shift the characters to the right to make room first.
 //
@@ -154,13 +153,14 @@ void insertChar( char *buf, int ch, int *strSize, int *pos ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Line sanitizing. We cannot just print out whatever is in the line buffer, since it
-// may contains dangerous escape sequences, which would garble our terminal screen
-// layout. In the command window we just allow "safe" escape sequences, such as changing
-// the font color and so on. When we encounter an escape character followed by a "[" 
-// character we scan the escape sequence until the final character, which lies between
-// 0x40 and 0x7E. Based on the last character, we distinguish between "safe" and 
-// "unsafe" escape sequences. In the other cases, we just copy input to output.
+// Line sanitizing. We cannot just print out whatever is in the line buffer, since 
+// it may contains dangerous escape sequences, which would garble our terminal screen
+// layout. In the command window we just allow "safe" escape sequences, such as 
+// changing the font color and so on. When we encounter an escape character followed 
+// by a "[" character we scan the escape sequence until the final character, which 
+// lies between 0x40 and 0x7E. Based on the last character, we distinguish between 
+// "safe" and "unsafe" escape sequences. In the other cases, we just copy input to
+// output.
 //
 //----------------------------------------------------------------------------------------
 bool isSafeFinalByte( char finalByte ) {
@@ -312,7 +312,6 @@ int  SimCmdHistory::getCmdCount( ) {
     
     return ( count );
 }
-
 
 //****************************************************************************************
 //****************************************************************************************
@@ -593,13 +592,13 @@ void SimCommandsWin::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The body lines of the command window are displayed after the banner line. The window
-// is filled from the output buffer. We first set the screen lines as the length of 
-// the command window may have changed.
+// The body lines of the command window are displayed after the banner line. The 
+// window is filled from the output buffer. We first set the screen lines as the
+// length of the command window may have changed.
 //
-// Rows to show is the number of lines between the header line and the last line, which
-// is out command input line. We fill from the lowest line upward to the header line.
-// Finally, we set the cursor to the last line in the command window.
+// Rows to show is the number of lines between the header line and the last line,
+// which is out command input line. We fill from the lowest line upward to the header
+// line. Finally, we set the cursor to the last line in the command window.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBody( ) {
@@ -629,10 +628,7 @@ void SimCommandsWin::drawBody( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "commandLineError" is a little helper that prints out the error encountered. We
-// will print a caret marker where we found the error, and then return a false. Note 
-// that the position needs to add the prompt part of the command line to where the 
-// error was found in the command input.
+// "commandLineError" is a little helper that prints out the error encountered.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::cmdLineError( SimErrMsgId errNum, char *argStr ) {
@@ -675,91 +671,12 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
-//
+// A little helper function to ensure that windows are enabled.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::ensureWinModeOn( ) {
 
     if ( ! glb -> winDisplay -> isWindowsOn( )) throw( ERR_NOT_IN_WIN_MODE );
-}
-
-//----------------------------------------------------------------------------------------
-// Display absolute memory content. We will show the memory starting with offset. The 
-// words per line is an environmental variable setting. The offset is rounded down to 
-// the next 8-byte boundary, the limit is rounded up to the next 8-byte boundary. We 
-// display the data in words.
-//
-//----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) {
-    
-    T64Word index = ( ofs / sizeof( T64Word )) * sizeof( T64Word );
-    T64Word limit = ((( index + len ) + 7 ) / sizeof( T64Word ) ) * sizeof( T64Word );
-    int     wordsPerLine = 4;
-
-    while ( index < limit ) {
-
-        winOut -> printNumber( index, FMT_HEX_2_4_4 );
-        winOut -> writeChars( ": " );
-        
-        for ( uint32_t i = 0; i < wordsPerLine; i++ ) {
-            
-            if ( index < limit ) {
-
-                T64Word val = 0;
-                if ( glb -> system -> readMem( index, (uint8_t *) &val, sizeof( val ))) {
-
-                    winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
-                    winOut -> writeChars( " " );   
-                }
-                else {
-
-                    winOut -> printNumber( val, FMT_INVALID_NUM | FMT_HEX_4_4_4_4 );
-                    winOut -> writeChars( " " );  
-                }           
-            }
-            
-            winOut -> writeChars( " " );
-            index += sizeof( T64Word );
-        }
-        
-        winOut -> writeChars( "\n" );
-    }
-    
-    winOut -> writeChars( "\n" );
-}
-
-//----------------------------------------------------------------------------------------
-// Display absolute memory content as code shown in assembler syntax. There is one
-// word per line.
-//
-//----------------------------------------------------------------------------------------
-void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
-    
-    T64Word  index  = ( adr / 4 ) * 4;
-    T64Word  limit  = ((( index + len ) + 3 ) / 4 );
-    T64Word  instr  = 0;
-    char     buf[ MAX_TEXT_FIELD_LEN ];
-
-    while ( index < limit ) {
-
-        winOut -> printNumber( index << 2, FMT_HEX_2_4_4 );
-        winOut -> writeChars( ": " );
-
-        if ( glb -> system -> readMem( index, (uint8_t *) &instr, 4 )) {
-
-            disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
-            winOut -> writeChars( "%s\n", buf ); 
-        }
-        else {
-
-            winOut -> writeChars( "******\n" );
-        }  
-
-        index += sizeof( uint32_t );
-    }
-    
-    winOut -> writeChars( "\n" );
 }
 
 //----------------------------------------------------------------------------------------
@@ -810,13 +727,88 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Display absolute memory content. We will show the memory starting with offset. 
+// The words per line is an environmental variable setting. The offset is rounded 
+// down to the next 8-byte boundary, the limit is rounded up to the next 8-byte 
+// boundary. We display the data in words.
+//
+//----------------------------------------------------------------------------------------
+void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) {
+    
+    T64Word index        = rounddown( ofs, sizeof( T64Word ));
+    T64Word limit        = roundup(( index + len ), sizeof( T64Word ));
+    int     wordsPerLine = 4;
+
+    while ( index < limit ) {
+
+        winOut -> printNumber( index, FMT_HEX_2_4_4 );
+        winOut -> writeChars( ": " );
+        
+        for ( uint32_t i = 0; i < wordsPerLine; i++ ) {
+            
+            if ( index < limit ) {
+
+                T64Word val = 0;
+                if ( glb -> system -> readMem( index, 
+                                               (uint8_t *) &val, 
+                                               sizeof( val ))) {
+
+                    winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
+                    winOut -> writeChars( " " );   
+                }
+                else {
+
+                    winOut -> printNumber( val, FMT_INVALID_NUM | FMT_HEX_4_4_4_4 );
+                    winOut -> writeChars( " " );  
+                }           
+            }
+            
+            winOut -> writeChars( " " );
+            index += sizeof( T64Word );
+        }
+        
+        winOut -> writeChars( "\n" );
+    }
+    
+    winOut -> writeChars( "\n" );
+}
+
+//----------------------------------------------------------------------------------------
+// Display absolute memory content as code shown in assembler syntax. There is one
+// word per line.
+//
+//----------------------------------------------------------------------------------------
+void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
+    
+    T64Word  index  = rounddown( adr, 4 );
+    T64Word  limit  = roundup(( index + len ), 4 );
+    T64Word  instr  = 0;
+    char     buf[ MAX_TEXT_FIELD_LEN ];
+
+    while ( index < limit ) {
+
+        winOut -> printNumber( index << 2, FMT_HEX_2_4_4 );
+        winOut -> writeChars( ": " );
+
+        if ( glb -> system -> readMem( index, (uint8_t *) &instr, 4 )) {
+
+            disAsm -> formatInstr( buf, sizeof( buf ), instr, 16 );
+            winOut -> writeChars( "%s\n", buf ); 
+        }
+        else winOut -> writeChars( "******\n" );
+
+        index += sizeof( uint32_t );
+    }
+    
+    winOut -> writeChars( "\n" );
+}
+
+//----------------------------------------------------------------------------------------
 // "execCmdsFromFile" will open a text file and interpret each line as a command. This
 // routine is used by the "XF" command and also as the handler for the program argument
 // option to execute a file before entering the command loop.
 //
 // XF "<file-path>"
-//
-// ??? which error would we like to report here vs. pass on to outer command loop ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execCmdsFromFile( char* fileName ) {
     
@@ -868,7 +860,7 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
 // Help command. With no arguments, a short help overview is printed. There are 
 // commands, widow commands and predefined functions.
 //
-//  help ( cmdId | ‘commands‘ | 'wcommands‘ | ‘wtypes‘ | ‘predefined‘ | 'regset' )
+//  HELP ( cmdId | ‘commands‘ | 'wcommands‘ | ‘wtypes‘ | ‘predefined‘ | 'regset' )
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::helpCmd( ) {
     
@@ -946,9 +938,9 @@ void SimCommandsWin::exitCmd( ) {
 // command count and so on. The ENV command list them all, one in particular and also
 // modifies one if a value is specified. If the ENV variable dos not exist, it will be
 // allocated with the type of the value. A value of the token NIL will remove a user
-//  defined variable.
+// defined variable.
 //
-//  ENV [ <var> [ <val> ]]",
+//  ENV [ <var> [ <val> ]]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::envCmd( ) {
     
@@ -1020,11 +1012,10 @@ void SimCommandsWin::loadElfFileCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Display Module Table command.
+// Display Module Table command. The simulator features a system bus to which the 
+// modules are plugged in. This command shows all known modules.
 //
 //  DM
-//
-// ??? perhaps have some options ... later.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModCmd( ) {
 
@@ -1059,34 +1050,31 @@ void SimCommandsWin::displayModCmd( ) {
 //----------------------------------------------------------------------------------------
 // Reset command.
 //
-//  RESET [ ( 'CPU' | 'MEM' | 'STATS' | 'ALL' ) ]
+//  RESET [ ( 'SYS' | 'STATS' ) ]
 //
 // ??? rethink what we want ... reset the SYSTEM ? all CPUs ?
+// ??? do we want to reset a module ? Then we would not need MEM and CPU...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::resetCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        glb -> system -> reset( ); // for now ...
+        glb -> system -> reset( );
     }
-    else if ( tok -> isToken( TOK_CPU )) {
+     else if ( tok -> isToken( TOK_SYS )) {
 
-    }
-    else if ( tok -> isToken( TOK_MEM )) {
-        
+        throw( ERR_NOT_SUPPORTED );
     }
     else if ( tok -> isToken( TOK_STATS )) {
-        
-    }
-    else if ( tok -> isToken( TOK_ALL )) {
-
-        glb -> system -> reset( );
+     
+        throw( ERR_NOT_SUPPORTED );
     }
     else throw ( ERR_INVALID_ARG );
 }
 
 //----------------------------------------------------------------------------------------
-// Run command. The command will just run the CPU until a "halt" instruction is detected.
+// Run command. The command will just run the CPU until a "halt" instruction is 
+// detected.
 //
 //  RUN
 //----------------------------------------------------------------------------------------
@@ -1120,7 +1108,7 @@ void SimCommandsWin::stepCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Write line command. We analyze the expression and ping out the result.
+// Write line command. We analyze the expression and print out the result.
 //
 //  W <expr> [ , <rdx> ]
 //----------------------------------------------------------------------------------------
@@ -1278,7 +1266,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     T64Word     len     = sizeof( T64Word );
     bool        asCode  = false;
 
-    ofs = eval -> acceptNumExpr( ERR_EXPECTED_START_OFS, 0, T64_MAX_PHYS_MEM_SIZE );
+    ofs = eval -> acceptNumExpr( ERR_EXPECTED_START_OFS, 0, T64_MAX_PHYS_MEM_LIMIT );
     
     if ( tok -> isToken( TOK_COMMA )) {
         
@@ -1306,7 +1294,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
     
     tok -> checkEOS( );
     
-    if (((T64Word) ofs + len ) < T64_MAX_PHYS_MEM_SIZE ) { 
+    if (((T64Word) ofs + len ) <= T64_MAX_PHYS_MEM_LIMIT ) { 
         
         if ( asCode ) displayAbsMemContentAsCode( ofs, len );
         else          displayAbsMemContent( ofs, len, rdx );
@@ -1384,24 +1372,14 @@ void SimCommandsWin::modifyRegCmd( ) {
 // Purges a cache line from the cache. We must be in windows mode and the current
 // window must be a cache window. 
 //
-//  PCA <type> "," <vAdr> 
+//  PICA <vAdr> 
+//  PDCA <vAdr> 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
     
     SimTokId winType = TOK_NIL;
    
     ensureWinModeOn( );
- 
-    if ( tok -> tokTyp( ) == TYP_SYM ) {
-        
-        winType = tok -> tokId( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_WIN_ID );
-
-    if (( winType != TOK_ICACHE ) && ( winType != TOK_DCACHE ))
-        throw ( 9995 ); // ??? fix ...
-        
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
@@ -1416,33 +1394,24 @@ void SimCommandsWin::purgeCacheCmd( ) {
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
     if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
     
-    if      ( winType == TOK_ICACHE )   proc -> getICachePtr( ) -> purge( vAdr );
-    else if ( winType == TOK_DCACHE )   proc -> getDCachePtr( ) -> purge( vAdr );
+    if      ( currentCmd == CMD_PCA_I ) proc -> getICachePtr( ) -> purge( vAdr );
+    else if ( currentCmd == CMD_PCA_D ) proc -> getDCachePtr( ) -> purge( vAdr );
     else throw( 9996 ); // ??? fix ...
 }
 
 //----------------------------------------------------------------------------------------
-// Flushes a cache line from the cache. We must be in windows mode and the current 
-// window must be a Cache window. 
+// Flushes a cache line from the data cache. We must be in windows mode and the
+// current window must be a Cache window. 
 //
-//  FCA <type> "," <vAdr> 
+//  FDCA <vAdr> 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
 
      SimTokId winType = TOK_NIL;
    
     ensureWinModeOn( );
- 
-    if ( tok -> tokTyp( ) == TYP_SYM ) {
-        
-        winType = tok -> tokId( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_WIN_ID );
+    winType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
 
-    if ( winType == TOK_ICACHE )
-        throw ( 9999 );
-  
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
@@ -1463,29 +1432,35 @@ void SimCommandsWin::flushCacheCmd( ) {
 // Insert into TLB command. We have two modes. We must be in windows mode and the 
 // current window must be a TLB window. 
 //
-//  ITLB  <type> "," <vAdr> "," <info>
+//  IITLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
+//  IDTLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
     SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
-
-    if ( tok -> tokTyp( ) == TYP_SYM ) {
-        
-        winType = tok -> tokId( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_WIN_ID );
-
+    T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, T64_MAX_VIRT_MEM_LIMIT ); 
     tok -> acceptComma( );
-    T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
+    T64Word pAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, T64_MAX_PHYS_MEM_LIMIT ); 
     tok -> acceptComma( );
-    T64Word info = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
-    
+    T64Word size = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, 15 );
+    tok -> acceptComma( );
+    T64Word acc = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, 15 );
+    tok -> acceptComma( );
+    T64Word flags = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
     tok -> checkEOS( );
 
-      if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
+    // ??? find a way to make to constants for the bits, which my change ...
+    // ??? e.g. "buildTlbInfoWord" ...
+    
+    T64Word info = 0;    
+    info = depositField( info, 56, 8, flags );
+    info = depositField( info, 40, 4, acc );
+    info = depositField( info, 36, 4, size );
+    info = depositField( info, 12, 24, pAdr );
+
+    if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
@@ -1495,48 +1470,38 @@ void SimCommandsWin::insertTLBCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    if      ( winType == TOK_ITLB ) proc -> getITlbPtr( ) -> insert( vAdr, info );
-    else if ( winType == TOK_DTLB ) proc -> getDTlbPtr( ) -> insert( vAdr, info );
-    else ;
+    if      ( currentCmd == CMD_ITLB_I ) proc -> getITlbPtr( ) -> insert( vAdr, info );
+    else if ( currentCmd == CMD_ITLB_D ) proc -> getDTlbPtr( ) -> insert( vAdr, info );
+    else throw( 9940 ); // ??? mark as internal error...
 }
 
 //----------------------------------------------------------------------------------------
 // Purge from TLB command. We have two modes. We must be in windows mode and the 
 // current window must be a TLB window. 
 //
-//  PTLB  <type> "," <vAdr>
+//  PITLB  <vAdr>
+//  PDTLB  <vAdr>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
     SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
-
-    if ( tok -> tokTyp( ) == TYP_SYM ) {
-        
-        winType = tok -> tokId( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_WIN_ID );
-
-    tok -> acceptComma( );
     T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
-   
     tok -> checkEOS( );
 
-      if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
+    if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
-    // ??? check ?
-
+    
     T64ModuleType mType = glb -> system -> getModuleType( modNum );
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    if      ( winType == TOK_ITLB ) proc -> getITlbPtr( ) -> purge( vAdr );
-    else if ( winType == TOK_DTLB ) proc -> getDTlbPtr( ) -> purge( vAdr );
+    if      ( currentCmd == CMD_PTLB_I ) proc -> getITlbPtr( ) -> purge( vAdr );
+    else if ( currentCmd == CMD_PTLB_D ) proc -> getDTlbPtr( ) -> purge( vAdr );
     else ;
 }
 
@@ -1593,7 +1558,6 @@ void SimCommandsWin::winEnableCmd( ) {
     tok -> checkEOS( );
     glb -> winDisplay -> windowEnable( winNum, true );
     glb -> winDisplay -> setWinReFormat( );
-  //  glb -> winDisplay -> reDraw( true );
 }
 
 void SimCommandsWin::winDisableCmd( ) {
@@ -1608,7 +1572,6 @@ void SimCommandsWin::winDisableCmd( ) {
     tok -> checkEOS( );
     glb -> winDisplay -> windowEnable( winNum, false );
     glb -> winDisplay -> setWinReFormat( );
-  //  glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1795,7 +1758,6 @@ void SimCommandsWin::winSetRowsCmd( ) {
         tok -> checkEOS( );
         glb -> winDisplay -> windowSetRows( winLines, winNum );
         glb -> winDisplay -> setWinReFormat( );
-      //  glb -> winDisplay -> reDraw( true );
     }    
 }
 
@@ -1860,7 +1822,6 @@ void  SimCommandsWin::winToggleCmd( ) {
     }
 
     glb -> winDisplay -> setWinReFormat( );
-   // glb -> winDisplay -> reDraw( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1891,7 +1852,7 @@ void SimCommandsWin::winExchangeCmd( ) {
 // number. Note that we do not create simulator module objects, we merely attach
 // a window to them. So they must exist. The general form of the command is:
 //
-//  WN <winType> [ "," <arg1> [ "," <arg2> ]]]
+//  WN <winType> [ "," <arg1> [ "," <arg2> ]]
 //
 //  WN  CPU     "," <proc>
 //  WN  ICACHE  "," <proc>
@@ -1908,14 +1869,8 @@ void SimCommandsWin::winNewWinCmd( ) {
     SimTokId  winType = TOK_NIL;
 
     ensureWinModeOn( );
+    winType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
  
-    if ( tok -> tokTyp( ) == TYP_SYM ) {
-        
-        winType = tok -> tokId( );
-        tok -> nextToken( );
-    }
-    else throw ( ERR_EXPECTED_WIN_ID );
-
     switch ( winType ) {
 
         case TOK_CPU: {
@@ -1973,11 +1928,16 @@ void SimCommandsWin::winNewWinCmd( ) {
             tok -> acceptComma( );
             T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 
                                                  0,
-                                                 T64_MAX_PHYS_MEM_SIZE );
+                                                 T64_MAX_PHYS_MEM_LIMIT );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewAbsMem( 0, adr ); // ??? module number ???
-        
+            T64Module *mod = glb -> system -> lookupByAdr( adr );
+            if ( mod != nullptr ) {
+
+                glb -> winDisplay -> windowNewAbsMem( mod -> getModuleNum( ), adr );
+            }
+            else throw( 9997 );
+
         }  break;
 
         case TOK_CODE: {  
@@ -1985,14 +1945,19 @@ void SimCommandsWin::winNewWinCmd( ) {
             tok -> acceptComma( );
             T64Word adr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 
                                                  0,
-                                                 T64_MAX_PHYS_MEM_SIZE );
+                                                 T64_MAX_PHYS_MEM_LIMIT );
             tok -> checkEOS( );
 
-            glb -> winDisplay -> windowNewAbsCode( 0, adr ); // ??? module number ???
-        
+             T64Module *mod = glb -> system -> lookupByAdr( adr );
+            if ( mod != nullptr ) {
+
+                glb -> winDisplay -> windowNewAbsCode( mod -> getModuleNum( ), adr );
+            }
+            else throw( 9997 );
+
         }  break;
 
-        case TOK_TEXT: {  // necessary 
+        case TOK_TEXT: {
 
             tok -> acceptComma( );
         
@@ -2152,11 +2117,16 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_DA:            displayAbsMemCmd( );            break;
                     case CMD_MA:            modifyAbsMemCmd( );             break;
                         
-                    case CMD_I_TLB:         insertTLBCmd( );                break;
-                    case CMD_P_TLB:         purgeTLBCmd( );                 break;
+                    case CMD_ITLB_I: 
+                    case CMD_ITLB_D:        insertTLBCmd( );                break;
+
+                    case CMD_PTLB_I:
+                    case CMD_PTLB_D:        purgeTLBCmd( );                 break;
                         
-                    case CMD_P_CACHE:       purgeCacheCmd( );               break;
-                    case CMD_F_CACHE:       flushCacheCmd( );               break;
+                    case CMD_PCA_I:  
+                    case CMD_PCA_D:         purgeCacheCmd( );               break;
+
+                    case CMD_FCA_D:         flushCacheCmd( );               break;
                         
                     case CMD_WON:           winOnCmd( );                    break;
                     case CMD_WOFF:          winOffCmd( );                   break;

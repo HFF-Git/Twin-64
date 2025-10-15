@@ -369,7 +369,7 @@ void SimWinAbsMem::setDefaults( ) {
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrementItemAdr( 8 * 4 );
-    setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
+    setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
 }
 
 //----------------------------------------------------------------------------------------
@@ -403,7 +403,7 @@ void SimWinAbsMem::drawBanner( ) {
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 
-    setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
+    setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
 }
 
 //----------------------------------------------------------------------------------------
@@ -509,7 +509,7 @@ void SimWinCode::setDefaults( ) {
     setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 4 );
-    setLimitItemAdr( T64_MAX_PHYS_MEM_SIZE );
+    setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
     setWinToggleLimit( 0 );
     setWinToggleVal( 0 );
     setEnable( true );
@@ -686,14 +686,14 @@ void SimWinTlb::drawLine( T64Word index ) {
     printTextField((char *) "] [", fmtDesc );
     printTextField((char *) pageTypeStr( ePtr -> pageType ));
     printTextField((char *) ":", fmtDesc );
-    printTextField(( ePtr ->pLev1 ) ? (char *) "P" : (char *) "p" );
+    printTextField(( ePtr -> pLev1 ) ? (char *) "P" : (char *) "p" );
     printTextField((char *) ":", fmtDesc );
-    printTextField(( ePtr ->pLev2 ) ? (char *) "P" : (char *) "p" );
+    printTextField(( ePtr -> pLev2 ) ? (char *) "P" : (char *) "p" );
     printTextField((char *) "]", fmtDesc );
     printTextField((char *) "  vAdr: ", fmtDesc );
-    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4_4 );
+    printNumericField( ePtr -> vAdr, fmtDesc | FMT_HEX_2_4_4_4 );
     printTextField((char *) "  pAdr: ", fmtDesc );
-    printNumericField( 0, fmtDesc | FMT_HEX_2_4_4 );
+    printNumericField( ePtr -> pAdr, fmtDesc | FMT_HEX_2_4_4 );
 }
 
 //****************************************************************************************

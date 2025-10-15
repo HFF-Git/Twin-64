@@ -88,11 +88,11 @@ inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
 }
 
 inline T64Word roundup(T64Word arg, int round) {
-    if (round == 0) return arg;
-    return ((arg + round - 1) / round) * round;
+    if ( round == 0 ) return arg;
+    return (( arg + round - 1 ) / round ) * round;
 }
 
-inline T64Word rounddown(T64Word arg, int round) {
+inline T64Word rounddown( T64Word arg, int round ) {
     if (round == 0) return arg;
     return (arg / round) * round;
 }

@@ -508,6 +508,7 @@ T64Word SimExprEvaluator::acceptNumExpr( SimErrMsgId errCode, T64Word low, T64Wo
 
      SimExpr rExpr;
      parseExpr( &rExpr );
+     
      if ( rExpr.typ == TYP_NUM ) {
         
         if ( !isInRange( rExpr.u.val, low, high )) throw( errCode );
