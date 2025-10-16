@@ -1316,7 +1316,8 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         nextToken( );
         
-        // ??? what is this ???
+        // ??? what is this ??? token as branch and "B" option ?
+        // ??? we recognize a Branch but in this context it is a symbol.
 
         if ( isToken( TOK_OP_B )) {
             
@@ -1327,8 +1328,6 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         if ( ! isToken( TOK_IDENT )) throw ( ERR_EXPECTED_INSTR_OPT );
 
-        // ???
-          
         char        *optBuf     = currentToken.name;
         int         optStrLen   = (int) strlen( optBuf );
         

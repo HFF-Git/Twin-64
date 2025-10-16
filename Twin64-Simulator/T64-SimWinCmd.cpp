@@ -1434,6 +1434,8 @@ void SimCommandsWin::flushCacheCmd( ) {
 //
 //  IITLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
 //  IDTLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
+//
+// We could get the flags as an identifier string and parse the individual characters.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 

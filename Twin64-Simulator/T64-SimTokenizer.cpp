@@ -286,7 +286,7 @@ void SimTokenizer::parseString( ) {
 // identifier symbol. There is one more thing. There are qualified constants 
 // that begin with a character followed by a percent character, followed by a 
 // numeric value. During the character analysis, We first check for these kind
-//  of qualifiers and if found hand over to parse a number.
+// of qualifiers and if found hand over to parse a number.
 //
 //----------------------------------------------------------------------------------------
 void SimTokenizer::parseIdent( ) {
@@ -381,6 +381,9 @@ void SimTokenizer::parseIdent( ) {
         addChar( identBuf, sizeof( identBuf ), currentChar );
         nextChar( );
     }
+    
+    // ??? should we rather do the upshift in the lookup ?
+    // ??? should we keep the name case sensitive ?
     
     upshiftStr( identBuf );
     

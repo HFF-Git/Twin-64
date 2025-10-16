@@ -728,7 +728,7 @@ void SimWinCache::setDefaults( ) {
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     setDefRows( 7 );
-    setDefColumns( 110 );
+    setDefColumns( 112 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
@@ -833,7 +833,7 @@ void SimWinCache::drawLine( T64Word index ) {
             else printTextField((char *) "m", fmtDesc );
 
             printTextField((char *) "] [", fmtDesc );
-            printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4 );
+            printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4_4 );
             printTextField((char *) "] ", fmtDesc );
         }
         else {
