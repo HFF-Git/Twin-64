@@ -836,10 +836,7 @@ void SimWinCache::drawLine( T64Word index ) {
             printNumericField( cInfo -> tag, fmtDesc | FMT_HEX_2_4_4 );
             printTextField((char *) "] ", fmtDesc );
         }
-        else {
-
-            printTextField(( char *) "               " );
-        }
+        else printTextField(( char *) " ", fmtDesc, 20 );
 
         int start = ( firstHalf ? 0 : 4 );
        

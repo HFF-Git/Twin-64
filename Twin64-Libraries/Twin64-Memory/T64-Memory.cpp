@@ -92,7 +92,7 @@ void T64Memory::step( ) { }
 //----------------------------------------------------------------------------------------
 bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 
-    if ( adr + len >= spaLen ) return( false );
+    if ( adr + len >= spaAdr + spaLen ) return( false );
     if ( ! isAligned( adr, len )) return( false );
 
     uint8_t *srcPtr = &memData[ adr - spaAdr ];
@@ -112,8 +112,7 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 //----------------------------------------------------------------------------------------
 bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 
-    if ( adr + len >= spaLen ) return( false );
-
+    if ( adr + len >= spaAdr + spaLen ) return( false );
     if ( ! isAligned( adr, len )) return( false );
 
     uint8_t *dstPtr = &memData[ adr - spaAdr ];

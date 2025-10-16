@@ -67,15 +67,26 @@ int main( int argc, const char * argv[] ) {
 
     glb -> system -> addToModuleMap( proc );
 
-    T64Memory *mem = 
+    T64Memory *mem1 = 
         new T64Memory(  glb -> system,
-                        2, 
-                        T64_IO_HPA_MEM_START + ( 2 * T64_PAGE_SIZE_BYTES ),
+                        1, 
+                        T64_IO_HPA_MEM_START + ( 1 * T64_PAGE_SIZE_BYTES ),
                         T64_PAGE_SIZE_BYTES,
                         0,
                         64 * T64_PAGE_SIZE_BYTES );
 
-    glb -> system -> addToModuleMap( mem );
+    glb -> system -> addToModuleMap( mem1 );
+
+    T64Memory *mem2 = 
+        new T64Memory(  glb -> system,
+                        2, 
+                        T64_IO_HPA_MEM_START + ( 2 * T64_PAGE_SIZE_BYTES ),
+                        T64_PAGE_SIZE_BYTES,
+                        64 * T64_PAGE_SIZE_BYTES,
+                        64 * T64_PAGE_SIZE_BYTES );
+
+    glb -> system -> addToModuleMap( mem2 );
+
 
     glb -> winDisplay   -> startWinDisplay( );
 

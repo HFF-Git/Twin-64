@@ -204,10 +204,10 @@ void SimWin::toggleWin( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "setWinOrigin" sets the absolute cursor position for the terminal screen. We maintain
-// absolute positions, which only may change when the terminal screen is redrawn with 
-// different window sizes. The window relative rows and column cursor position are set at
-// (1,1).
+// "setWinOrigin" sets the absolute cursor position for the terminal screen. We 
+// maintain absolute positions, which only may change when the terminal screen is 
+// redrawn with different window sizes. The window relative rows and column cursor 
+// position are set at (1,1).
 //
 //----------------------------------------------------------------------------------------
 void SimWin::setWinOrigin( int row, int col ) {
@@ -219,11 +219,11 @@ void SimWin::setWinOrigin( int row, int col ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "setWinCursor" sets the cursor to a windows relative position if row and column are
-// non-zero. If they are zero, the last relative cursor position is used. The final
-// absolute position is computed from the windows absolute row and column on the 
-// terminal screen plus the window relative row and column. Rows and numbers are values
-// starting with 1.
+// "setWinCursor" sets the cursor to a windows relative position if row and column
+// are non-zero. If they are zero, the last relative cursor position is used. The 
+// final absolute position is computed from the windows absolute row and column on 
+// the terminal screen plus the window relative row and column. Rows and numbers are
+// values starting with 1.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::setWinCursor( int row, int col ) {
@@ -244,9 +244,9 @@ int SimWin::getWinCursorRow( ) { return ( lastRowPos ); }
 int SimWin::getWinCursorCol( ) { return ( lastColPos ); }
 
 //----------------------------------------------------------------------------------------
-// Fields that have a larger size than the actual argument length in the field need to
-// be padded left or right. This routine is just a simple loop emitting blanks in the
-// current format set.
+// Fields that have a larger size than the actual argument length in the field need
+// to be padded left or right. This routine is just a simple loop emitting blanks in 
+// the current format set.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::padField( int dLen, int fLen ) {
@@ -260,8 +260,9 @@ void SimWin::padField( int dLen, int fLen ) {
 
 //----------------------------------------------------------------------------------------
 // Print out a numeric field. Each call will set the format options passed via the 
-// format descriptor. If the field length is larger than the positions needed to print
-// the data in the field, the data will be printed left or right justified in the field.
+// format descriptor. If the field length is larger than the positions needed to 
+// print the data in the field, the data will be printed left or right justified in
+// the field.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printNumericField( T64Word     val, 

@@ -465,7 +465,7 @@ void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
 //----------------------------------------------------------------------------------------
 int SimFormatter::printBlanks( int len ) {
 
-    for ( int i = 0; i < len; i++ ) writeChars((char *) " ");
+    for ( int i = 0; i < len; i++ ) writeChars((char *) " " );
     return( len );
 }
 

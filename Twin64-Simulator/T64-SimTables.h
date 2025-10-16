@@ -558,7 +558,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
 
     {
-        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PCA_I,
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PCA_D,
         .cmdNameStr     = (char *) "pdca",
         .cmdSyntaxStr   = (char *) "pdca <vAdr>",
         .helpStr        = (char *) "purges data cache line data"

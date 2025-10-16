@@ -164,7 +164,6 @@ enum FmtDescOptions : uint32_t {
 //----------------------------------------------------------------------------------------
 struct SimFormatter {
 
-//    virtual int     writeChar( const char ch ) = 0;
     virtual int     writeChars( const char *format, ... ) = 0;
     
     void            writeCarriageReturn( );
