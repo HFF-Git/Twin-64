@@ -163,7 +163,7 @@ void SimWinCpuState::setDefaults( ) {
     setDefRows( 5 );
     setDefColumns( 100 );
     setRows( getDefRows( ));
-    setWinToggleLimit( 4 );
+    setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -228,7 +228,7 @@ void SimWinCpuState::drawBody( ) {
     uint32_t fmtDesc = FMT_DEF_ATTR | FMT_ALIGN_LFT;
     T64Cpu   *cpu    = proc -> getCpuPtr( );
     
-    if ( getWinToggleVal( ) == 0 ) {
+    if (( getWinToggleVal( ) == 0 ) || (( getWinToggleVal( ) == 1 ))) {
 
         int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
         int      labelFlen      = 8;
@@ -272,7 +272,25 @@ void SimWinCpuState::drawBody( ) {
 
         padLine( fmtDesc );
     } 
-    else if ( getWinToggleVal( ) == 1 ) {
+
+    if ( getWinToggleVal( ) == 1 ) {
+
+        int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
+        int      labelFlen      = 8;
+        uint32_t numFmtField    = fmtDesc | FMT_HEX_4_4_4_4;
+        uint32_t labelFmtField  = fmtDesc | FMT_BOLD;
+
+        padLine( fmtDesc );
+        setWinCursor( 6, 1 );
+        printTextField((char *) "PID=", labelFmtField, labelFlen );
+    
+        for ( int i = 4; i < 8; i++ ) {
+
+            printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
+        }
+    }
+    
+    if ( getWinToggleVal( ) == 2 ) {
 
         int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
         int      labelFlen      = 8;
@@ -315,21 +333,6 @@ void SimWinCpuState::drawBody( ) {
         }
 
         padLine( fmtDesc );
-
-        // ??? the control regs ?
-
-        // ??? other toggle windows to come ...
-
-    }
-    else if ( getWinToggleVal( ) == 2 ) {
-
-        setWinCursor( 2, 1 );
-        printTextField((char *) "Toggle val 2", fmtDesc );
-    }
-     else if ( getWinToggleVal( ) == 3 ) {
-
-        setWinCursor( 2, 1 );
-        printTextField((char *) "Toggle val 3", fmtDesc );
     }
 }
 
@@ -364,7 +367,7 @@ void SimWinAbsMem::setDefaults( ) {
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setEnable( false );
-    setWinToggleLimit( 3 );
+    setWinToggleLimit( 4 );
     setWinToggleVal( 0 );
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
@@ -373,9 +376,8 @@ void SimWinAbsMem::setDefaults( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The banner line shows the item address, which is the current absolute physical memory
-// address where the window body will start to display. We also need to set the item 
-// address limit. 
+// In addition to the module and window info, the banner line shows the item home
+// address.
 //
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawBanner( ) {
@@ -396,14 +398,10 @@ void SimWinAbsMem::drawBanner( ) {
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:", fmtDesc );
     printNumericField( getWinModNum( ), fmtDesc | FMT_DEC );
-    printTextField((char *) "  Current: " );
-    printNumericField( getCurrentItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  Home: " );
     printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
-
-    setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
 }
 
 //----------------------------------------------------------------------------------------
@@ -416,7 +414,7 @@ void SimWinAbsMem::drawBanner( ) {
 // Toggle 0: (0x00_0000_0000) 0x0000_0000             ... 8 times HEX.
 // Toggle 1: (0x00_0000_0000) 0x0000_0000_0000_0000   ... 4 times HEX.
 // Toggle 2: (0x00_0000_0000)           0             ... 8 times DEC.
-// Toggle 3: ??? 
+// Toggle 3: (0x00_0000_0000) "...." "...."           ... 8 times ASCII in "" 
 //
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawLine( T64Word itemAdr ) {
@@ -461,6 +459,16 @@ void SimWinAbsMem::drawLine( T64Word itemAdr ) {
             uint32_t val = 0;
             glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
             printNumericField( val, fmtDesc | FMT_DEC_32 );
+            printTextField((char *) "   " );
+        }
+    }
+    else if ( getWinToggleVal( ) == 3 ) {
+
+        for ( int i = 0; i < limit; i = i + 4 ) {
+        
+            uint32_t val = 0;
+            glb -> system -> readMem( itemAdr + i, (uint8_t *)&val, sizeof( val ));
+            printNumericField( val, fmtDesc | FMT_ASCII_4 );
             printTextField((char *) "   " );
         }
     }

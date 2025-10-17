@@ -1034,6 +1034,8 @@ void SimCommandsWin::displayModCmd( ) {
             winOut -> printNumber( mPtr -> hpaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );
 
+            // ??? no spa area set ? need perhaps a flag ...
+
             winOut -> printNumber( mPtr -> spaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );
 

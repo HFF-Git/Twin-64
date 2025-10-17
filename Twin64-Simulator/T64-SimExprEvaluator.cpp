@@ -327,8 +327,11 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         if ( tok -> isToken( TOK_COLON )) {
 
             tok -> nextToken( );
-            if ( tok -> isTokenTyp( TYP_NUM )) procId = tok -> tokVal( );
-            else throw ( 999 );
+            if ( tok -> isTokenTyp( TYP_NUM )) {
+                
+               // ??? get the module pointer to the CPU ( if it is one )
+            }
+            else throw ( ERR_EXPECTED_NUMERIC );
 
             tok -> nextToken( );
         }

@@ -327,6 +327,10 @@ T64Module::T64Module( T64ModuleType    modType,
     this -> hpaLen          = hpaLen;
     this -> spaAdr          = spaAdr;
     this -> spaLen          = spaLen;
+
+    // ??? cross check start, len and limit ?
+    
+    this -> spaLimit        = spaAdr + spaLen - 1;
 }
 
 T64ModuleType T64Module::getModuleType( ) {

@@ -709,6 +709,47 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
          }
 
     }
+    else if ( fmtDesc & FMT_ASCII_4 ) {
+
+        int           len = 0;
+        unsigned char bytes[ 4 ];
+
+        for ( int i = 0; i < 4; i++ )
+            bytes[ i ] = ( val >> ( 8 * ( 3 - i ))) & 0xFF;
+
+        len += writeChars( "\"");
+        for ( int i = 0; i < 4; i++ ) {
+            
+            unsigned char c = bytes[i];
+            
+            if ( isprint(c)) len += writeChars( "%c", c );
+            else             len += writeChars( "." );
+        }
+        
+        len += writeChars( "\"" );
+
+        return( len );
+    }
+    else if ( fmtDesc & FMT_ASCII_8 ) {
+
+        int           len = 0;
+        unsigned char bytes[ 8 ];
+
+        for ( int i = 0; i < 8; i++ )
+            bytes[ i ] = ( val >> (8 * ( 7 - i ))) & 0xFF;
+
+        len += writeChars( "\"" );
+        for ( int i = 0; i < 8; i++ ) {
+            
+            unsigned char c = bytes[ i ];
+            
+            if (isprint(c)) len += writeChars( "%c", c );
+            else            len += writeChars( "." );
+        }
+        len += writeChars( "\"" );
+
+        return( len );
+    }
     else return( writeChars( "*num*" ));
 }
 
@@ -778,6 +819,14 @@ int SimFormatter::numberFmtLen( uint32_t fmtDesc, T64Word val ) {
 
             default: return( 0 );
         }
+    }
+    else if ( fmtDesc & FMT_ASCII_4 ) {
+
+        return( 6 );
+    }
+    else if (  fmtDesc & FMT_ASCII_8 ) {
+
+        return( 10 );
     }
     else return ( 0 );
 }

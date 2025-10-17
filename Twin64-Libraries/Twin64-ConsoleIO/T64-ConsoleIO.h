@@ -151,6 +151,9 @@ enum FmtDescOptions : uint32_t {
     FMT_LAST_FIELD      = 0x00200000,
     FMT_PREFIX_0X       = 0x00400000,
     FMT_INVALID_NUM     = 0x00800000,
+    
+    FMT_ASCII_4         = 0x01000000,
+    FMT_ASCII_8         = 0x02000000,
    
     FMT_DEF_ATTR        = 0x10000000
 };
