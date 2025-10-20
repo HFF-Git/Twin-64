@@ -318,7 +318,9 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         rExpr -> u.str = tok -> tokStr( );
         tok -> nextToken( );
     }
-    else if (( tok -> isTokenTyp( TYP_GREG )) || ( tok -> isTokenTyp( TYP_CREG )))  {
+    else if (( tok -> isTokenTyp( TYP_GREG )) || 
+             ( tok -> isTokenTyp( TYP_CREG )) ||
+             ( tok -> isTokenTyp( TYP_PREG )))  {
 
         SimTokTypeId regType    = tok -> tokTyp( );
         int          regId      = tok -> tokVal( );
@@ -350,11 +352,14 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
             rExpr -> u.val =  proc -> getCpuPtr( ) -> getControlReg( regId );
             rExpr -> typ = TYP_NUM;
         }
-        else ;    
+        else if ( regType == TYP_PREG ) {
+
+            T64Word tmp = proc -> getCpuPtr( ) -> getPswReg( );
+            if      ( regId == 1 ) rExpr -> u.val = extractField64( tmp, 0, 52 );
+            else if ( regId == 2 ) rExpr -> u.val = extractField64( tmp, 52, 12 );  
+            rExpr -> typ = TYP_NUM;
+        }
     }
-
-    // ??? missing PSW some how ?
-
     else if ( tok -> isToken( TOK_NEG )) {
         
         tok -> nextToken( );

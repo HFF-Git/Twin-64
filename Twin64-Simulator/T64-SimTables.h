@@ -123,9 +123,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WT",         .typ = TYP_WCMD,    .tid = CMD_WT                 },
     { .name = "WX",         .typ = TYP_WCMD,    .tid = CMD_WX                 },
     
-   // { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_MEM                },
-   // { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_CODE               },
-
     //------------------------------------------------------------------------------------
     // General registers.
     //
@@ -194,6 +191,13 @@ const SimToken cmdTokTab[ ] = {
     { .name = "C13",        .typ = TYP_CREG,    .tid = CR_13,    .u.val =  13 },
     { .name = "C14",        .typ = TYP_CREG,    .tid = CR_14,    .u.val =  14 },
     { .name = "C15",        .typ = TYP_CREG,    .tid = CR_15,    .u.val =  15 },
+
+    //------------------------------------------------------------------------------------
+    // Program State Register
+    //
+    //------------------------------------------------------------------------------------
+    { .name = "IA",         .typ = TYP_PREG,    .tid = PR_IA,    .u.val =  1  },
+    { .name = "ST",         .typ = TYP_PREG,    .tid = PR_ST,    .u.val =  2  },
     
     //------------------------------------------------------------------------------------
     // Predefined functions.

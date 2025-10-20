@@ -1336,9 +1336,9 @@ void SimCommandsWin::modifyRegCmd( ) {
    
     ensureWinModeOn( );
     
-    if (( tok -> tokTyp( ) == TYP_GREG )        ||
-        ( tok -> tokTyp( ) == TYP_CREG )        ||
-        ( tok -> tokTyp( ) == TYP_PSW_PREG )) {
+    if (( tok -> tokTyp( ) == TYP_GREG ) ||
+        ( tok -> tokTyp( ) == TYP_CREG ) ||
+        ( tok -> tokTyp( ) == TYP_PREG )) {
         
         regSetId    = tok -> tokTyp( );
         regNum      = tok -> tokVal( );
@@ -1363,9 +1363,20 @@ void SimCommandsWin::modifyRegCmd( ) {
 
     switch( regSetId ) {
 
-        case TYP_PSW_PREG:  proc -> getCpuPtr( ) -> setPswReg( val );    break;
-        case TYP_GREG:      proc -> getCpuPtr( ) -> setGeneralReg( regNum, val ); break;
-        case TYP_CREG:      proc -> getCpuPtr( ) -> setControlReg( regNum, val ); break;
+        case TYP_GREG:  proc -> getCpuPtr( ) -> setGeneralReg( regNum, val ); break;
+        case TYP_CREG:  proc -> getCpuPtr( ) -> setControlReg( regNum, val ); break;
+
+        case TYP_PREG:  {
+
+            T64Word tmp = proc -> getCpuPtr( ) -> getPswReg( );
+            
+            if      ( regNum == 1 ) tmp = depositField( tmp, 0, 52, val );
+            else if ( regNum == 2 ) tmp = depositField( tmp, 52, 12, val );
+
+            proc -> getCpuPtr( ) -> setPswReg( tmp );     
+            
+        } break;
+
             
         default: throw( ERR_EXPECTED_REG_SET );
     }
@@ -1379,8 +1390,6 @@ void SimCommandsWin::modifyRegCmd( ) {
 //  PDCA <vAdr> 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
-    
-    SimTokId winType = TOK_NIL;
    
     ensureWinModeOn( );
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
@@ -1410,11 +1419,8 @@ void SimCommandsWin::purgeCacheCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
 
-     SimTokId winType = TOK_NIL;
-   
     ensureWinModeOn( );
-    winType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
-
+   
     T64Word vAdr = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC ); 
     tok -> checkEOS( );
 
@@ -1441,8 +1447,6 @@ void SimCommandsWin::flushCacheCmd( ) {
 // We could get the flags as an identifier string and parse the individual characters.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
-
-    SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
     T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, T64_MAX_VIRT_MEM_LIMIT ); 
@@ -1488,8 +1492,6 @@ void SimCommandsWin::insertTLBCmd( ) {
 //  PDTLB  <vAdr>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
-
-    SimTokId winType = TOK_NIL;
 
     ensureWinModeOn( );
     T64Word vAdr = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); 
