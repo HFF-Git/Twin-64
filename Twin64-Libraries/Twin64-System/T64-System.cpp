@@ -37,17 +37,31 @@ namespace {
 //----------------------------------------------------------------------------------------
 bool overlap( T64Module *a, T64Module *b ) {
 
-    T64Word aEnd = a -> spaAdr + a -> spaLen;
-    T64Word bEnd = b -> spaAdr + b -> spaLen;
+    T64Word aSpaStart = a -> getSpaAdr( );
+    if ( a -> getSpaLen( ) > UINT64_MAX - aSpaStart ) return ( true );
 
-    bool ovlSpa = (( a -> spaAdr < bEnd ) && ( b -> spaAdr < aEnd ));
+    T64Word aSpaEnd   = aSpaStart + a -> getSpaLen( ) - 1;
 
-    aEnd = a -> hpaAdr + a -> hpaLen;
-    bEnd = b -> hpaAdr + b -> hpaLen;
+    T64Word bSpaStart = b -> getSpaAdr( );
+    if ( b -> getSpaLen( ) > UINT64_MAX - bSpaStart ) return ( true );
 
-    bool ovlHpa = (( a -> hpaAdr < bEnd ) && ( b -> hpaAdr < aEnd ));
+    T64Word bSpaEnd   = bSpaStart + b -> getSpaLen( ) - 1;
 
-    return( ovlSpa || ovlHpa );
+    bool ovlSpa = ( aSpaStart <= bSpaEnd ) && ( aSpaEnd >= bSpaStart );
+
+    T64Word aHpaStart = a -> getHpaAdr( );
+    if ( a -> getHpaLen( ) > UINT64_MAX - aHpaStart ) return ( true );
+
+    T64Word aHpaEnd   = aHpaStart + a -> getHpaLen( ) - 1;
+
+    T64Word bHpaStart = b -> getHpaAdr( );
+    if ( b -> getHpaLen( ) > UINT64_MAX - bHpaStart ) return ( true );
+
+    T64Word bHpaEnd   = bHpaStart + b -> getHpaLen( ) - 1;
+
+    bool ovlHpa = ( aHpaStart <= bHpaEnd ) && ( aHpaEnd >= bHpaStart );
+
+    return ( ovlSpa || ovlHpa );
 }
 
 };
@@ -71,37 +85,33 @@ void T64System::initModuleMap( ) {
 
 //----------------------------------------------------------------------------------------
 // Add to the module map. The entries in the module map are sorted by the SPA 
-// address range, which also cannot overlap.
+// address range, which also cannot overlap. We look for the insertion position,
+// shift all entries up after this position and insert the new entry.
 //
 //----------------------------------------------------------------------------------------
 int T64System::addToModuleMap( T64Module *module ) {
 
-    if ( module -> moduleNum >= MAX_MOD_MAP_ENTRIES ) return( -1 );
-
-    // Check overlap with existing entries
+    if ( module -> getModuleNum( ) >= MAX_MOD_MAP_ENTRIES ) return ( -1 );
+    
     for ( int i = 0; i < moduleMapHwm; ++i ) {
 
         if ( overlap( moduleMap[ i ], module )) return ( -2 ); 
     }
 
-    // Find insertion position to keep sorted by spaAdr
     int pos = 0;
     while (( pos < moduleMapHwm ) && 
-           ( moduleMap[ pos ] -> spaAdr < module -> spaAdr )) pos++;
+           ( moduleMap[ pos ] -> getSpaAdr( ) < module -> getSpaAdr( ))) pos++;
 
-    // Shift later entries up
     for ( int i = moduleMapHwm; i > pos; i-- ) moduleMap[ i ] = moduleMap[ i - 1 ];
 
-    // Insert new entry
     moduleMap[ pos ] = module;
-   
     moduleMapHwm ++;
 
     return ( 0 );
 }
     
 //----------------------------------------------------------------------------------------
-//
+// Find the entry by its module number.
 //
 //----------------------------------------------------------------------------------------
 T64Module *T64System::lookupByModNum( int modNum ) {
@@ -109,9 +119,9 @@ T64Module *T64System::lookupByModNum( int modNum ) {
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
         if (( moduleMap[ i ] != nullptr ) &&
-            ( moduleMap[ i ] -> moduleNum == modNum )) {
+            ( moduleMap[ i ] -> getModuleNum( ) == modNum )) {
                 
-            return( moduleMap[ i ] );
+            return ( moduleMap[ i ] );
         }
     }
     
@@ -119,17 +129,7 @@ T64Module *T64System::lookupByModNum( int modNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-T64ModuleType T64System::getModuleType( int modNum ) {
-
-    T64Module *mod = lookupByModNum( modNum );
-    return(( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
-}
-
-//----------------------------------------------------------------------------------------
-//
+// Find the entry that covers the address.
 //
 //----------------------------------------------------------------------------------------
 T64Module *T64System::lookupByAdr( T64Word adr ) {
@@ -138,17 +138,27 @@ T64Module *T64System::lookupByAdr( T64Word adr ) {
 
         T64Module *mPtr = moduleMap[ i ];
 
-        if (( adr >= mPtr -> spaAdr ) && 
-            ( adr <  mPtr -> spaAdr + mPtr -> spaLen )) 
-            return( mPtr ); 
+        if (( adr >= mPtr -> getSpaAdr( )) && 
+            ( adr <  mPtr -> getSpaAdr( ) + mPtr -> getSpaLen( ))) 
+            return ( mPtr ); 
 
-        if (( adr >= mPtr -> hpaAdr ) && 
-            ( adr <  mPtr -> hpaAdr + mPtr -> hpaLen )) 
-            return( mPtr );
+        if (( adr >= mPtr -> getHpaAdr( )) && 
+            ( adr <  mPtr -> getHpaAdr( ) + mPtr -> getHpaLen( ))) 
+            return ( mPtr );
     }
 
     return nullptr;
-}                 
+} 
+
+//----------------------------------------------------------------------------------------
+// Get the module type.
+//
+//----------------------------------------------------------------------------------------
+T64ModuleType T64System::getModuleType( int modNum ) {
+
+    T64Module *mod = lookupByModNum( modNum );
+    return (( mod != nullptr ) ? mod -> getModuleType( ) : MT_NIL );
+}
 
 //----------------------------------------------------------------------------------------
 // Reset the system. We just invoke the module handler for each registered module.
@@ -197,9 +207,9 @@ bool T64System::busReadUncached( int     reqModNum,
                                  int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
-    return( mPtr -> busReadUncached( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busReadUncached( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busWriteUncached( int     reqModNum,
@@ -208,19 +218,18 @@ bool T64System::busWriteUncached( int     reqModNum,
                                   int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
-    return( mPtr -> busWriteUncached( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busWriteUncached( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
-// Cached coherent bus operation. We first determine the responsible module. Then
-// we tell all other modules about the request so that perhaps a cache coherency 
-// operation takes place before we issue the request to the target module. 
+// Cached coherent bus operations. We first determine the responsible module for the
+// requested data. Before asking the responsible module to execute the request, we
+// will inform all others about the upcoming request so that perhaps a cache coherency 
+// operation at other processors can take place before we issue the request to the
+// target module. 
 //
-// ??? in a sense each module executes the request. Just slightly different. If not
-// the target, work to be done is to ensure cache coherency. If the target, we 
-// return the data as asked for. 
 //----------------------------------------------------------------------------------------
 bool T64System::busReadSharedBlock( int     reqModNum,
                                     T64Word pAdr, 
@@ -228,17 +237,17 @@ bool T64System::busReadSharedBlock( int     reqModNum,
                                     int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> moduleNum != reqModNum ) {
+        if ( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) {
 
              moduleMap[ i ] -> busReadSharedBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return( mPtr -> busReadSharedBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busReadSharedBlock( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busReadPrivateBlock( int     reqModNum,
@@ -247,17 +256,17 @@ bool T64System::busReadPrivateBlock( int     reqModNum,
                                      int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> moduleNum != mPtr -> moduleNum ) {
+        if ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( )) {
 
              moduleMap[ i ] -> busReadPrivateBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return( mPtr -> busReadPrivateBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busReadPrivateBlock( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busWriteBlock( int     reqModNum,
@@ -266,17 +275,17 @@ bool T64System::busWriteBlock( int     reqModNum,
                                int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> moduleNum != mPtr -> moduleNum ) {
+        if ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( )) {
 
              moduleMap[ i ] -> busWriteBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return( mPtr -> busWriteBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busWriteBlock( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -289,17 +298,17 @@ bool T64System::busWriteBlock( int     reqModNum,
 bool T64System::readMem( T64Word pAdr, uint8_t *data, int len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
-    return( mPtr -> busReadUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busReadUncached( -1, pAdr, data, len ));
 }
 
 bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return( false );
+    if ( mPtr == nullptr ) return ( false );
 
-    return( mPtr -> busWriteUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busWriteUncached( -1, pAdr, data, len ));
 }
 
 //****************************************************************************************
@@ -327,33 +336,55 @@ T64Module::T64Module( T64ModuleType    modType,
     this -> hpaLen          = hpaLen;
     this -> spaAdr          = spaAdr;
     this -> spaLen          = spaLen;
+    this -> spaLimit        = spaAdr + spaLen - 1;
 
     // ??? cross check start, len and limit ?
-    
-    this -> spaLimit        = spaAdr + spaLen - 1;
-}
-
-T64ModuleType T64Module::getModuleType( ) {
-
-    return( moduleTyp );
 }
 
 int T64Module::getModuleNum( ) {
 
-    return( moduleNum );
+    return ( moduleNum );
+}
+
+T64ModuleType T64Module::getModuleType( ) {
+
+    return ( moduleTyp );
 }
 
 const char *T64Module::getModuleTypeName( ) {
 
     switch ( moduleTyp ) {
 
-        case MT_PROC:       return((char *) "PROC" );
-        case MT_CPU_TLB:    return((char *) "TLB"  );
-        case MT_CPU_CACHE:  return((char *) "CACHE" );
-        case MT_IO:         return((char *) "IO" );
-        case MT_MEM:        return((char *) "MEM" );
+        case MT_PROC:       return ((char *) "PROC" );
+        case MT_CPU_TLB:    return ((char *) "TLB"  );
+        case MT_CPU_CACHE:  return ((char *) "CACHE" );
+        case MT_IO:         return ((char *) "IO" );
+        case MT_MEM:        return ((char *) "MEM" );
 
         case MT_NIL:
-        default:            return((char *) "NIL" );
+        default:            return ((char *) "NIL" );
     }
+}
+
+T64Word T64Module::getHpaAdr( ) {
+
+    return ( hpaAdr );
+
+}
+
+int T64Module::getHpaLen( ) {
+
+
+    return ( hpaLen );
+}
+
+T64Word T64Module::getSpaAdr( )  {
+
+    return ( spaAdr );
+
+}
+
+int T64Module::getSpaLen( )  {
+
+    return ( spaLen );
 }

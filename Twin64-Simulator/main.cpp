@@ -63,9 +63,6 @@ int main( int argc, const char * argv[] ) {
                             T64_PAGE_SIZE_BYTES,
                             0,
                             0 );
-                                        
-
-    glb -> system -> addToModuleMap( proc );
 
     T64Memory *mem1 = 
         new T64Memory(  glb -> system,
@@ -75,8 +72,7 @@ int main( int argc, const char * argv[] ) {
                         0,
                         64 * T64_PAGE_SIZE_BYTES );
 
-    glb -> system -> addToModuleMap( mem1 );
-
+    
     T64Memory *mem2 = 
         new T64Memory(  glb -> system,
                         2, 
@@ -85,10 +81,26 @@ int main( int argc, const char * argv[] ) {
                         64 * T64_PAGE_SIZE_BYTES,
                         64 * T64_PAGE_SIZE_BYTES );
 
-    glb -> system -> addToModuleMap( mem2 );
+    
+    if ( glb -> system -> addToModuleMap( mem1 ) != 0 ) {
 
+        glb -> console -> writeChars( "Config Error: Module MEM 1\n" );
+        return( -1 );
+    }
+    
+    if ( glb -> system -> addToModuleMap( mem2 ) != 0 ) {
+
+        glb -> console -> writeChars( "Config Error: Module MEM 2\n" );
+        return( -1 );
+    }
+
+    if ( glb -> system -> addToModuleMap( proc ) != 0 ) {
+
+        glb -> console -> writeChars( "Config Error: Module PROC\n" );
+        return( -1 );
+    }
 
     glb -> winDisplay   -> startWinDisplay( );
-
+    
     return 0;
 }

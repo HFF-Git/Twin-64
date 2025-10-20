@@ -134,10 +134,12 @@ struct T64Module {
     T64ModuleType       getModuleType( );
     int                 getModuleNum( );
     const char          *getModuleTypeName( );
+    T64Word             getHpaAdr( );
+    int                 getHpaLen( );
+    T64Word             getSpaAdr( );
+    int                 getSpaLen( );
 
-    // ??? getter / setter for variables ?
-
-    public: 
+    protected: 
 
     T64ModuleType       moduleTyp   = MT_NIL;
     int                 moduleNum   = 0;
@@ -145,9 +147,6 @@ struct T64Module {
     int                 hpaLen      = 0;
     T64Word             spaAdr      = 0;
     int                 spaLen      = 0;
-
-    private:
-
     T64Word             spaLimit    = 0;
 };
 

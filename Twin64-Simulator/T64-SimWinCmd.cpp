@@ -1031,15 +1031,17 @@ void SimCommandsWin::displayModCmd( ) {
 
             winOut -> writeChars( "%-7s", mPtr -> getModuleTypeName( ));
 
-            winOut -> printNumber( mPtr -> hpaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
+            winOut -> printNumber( mPtr -> getHpaAdr( ), 
+                                   FMT_PREFIX_0X | FMT_HEX_2_4_4 );
             winOut -> writeChars( "  " );
 
-            if ( mPtr -> spaLen > 0 ) {
+            if ( mPtr -> getSpaLen( ) > 0 ) {
 
-                winOut -> printNumber( mPtr -> spaAdr, FMT_PREFIX_0X | FMT_HEX_2_4_4 );
+                winOut -> printNumber( mPtr -> getSpaAdr( ), 
+                                       FMT_PREFIX_0X | FMT_HEX_2_4_4 );
                 winOut -> writeChars( "  " );
 
-                winOut -> printNumber( mPtr -> spaLen, FMT_HEX );
+                winOut -> printNumber( mPtr -> getSpaLen( ), FMT_HEX_4_4 );
                 winOut -> writeChars( "  " );
             }
             
@@ -1064,7 +1066,7 @@ void SimCommandsWin::resetCmd( ) {
         
         glb -> system -> reset( );
     }
-     else if ( tok -> isToken( TOK_SYS )) {
+    else if ( tok -> isToken( TOK_SYS )) {
 
         throw( ERR_NOT_SUPPORTED );
     }
