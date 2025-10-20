@@ -128,17 +128,17 @@ T64Cache *T64Processor::getDCachePtr( ) {
 //----------------------------------------------------------------------------------------
 bool T64Processor::readSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    sys -> busReadSharedBlock( moduleNum, pAdr, data, len );
+    return ( sys -> busReadSharedBlock( moduleNum, pAdr, data, len ));
 }
 
 bool T64Processor::readPrivateBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    sys -> busReadPrivateBlock( moduleNum, pAdr, data, len );
+    return ( sys -> busReadPrivateBlock( moduleNum, pAdr, data, len ));
 }
 
 bool T64Processor::writeBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    sys -> busWriteBlock( moduleNum, pAdr, data, len );
+    return ( sys -> busWriteBlock( moduleNum, pAdr, data, len ));
 }
 
 bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
@@ -146,8 +146,11 @@ bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
     if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
 
         // ??? this is our own HPA...
+
+        *data = 0;
+        return( true );
     }
-    else sys -> busReadUncached( moduleNum, pAdr, data, len );
+    else return ( sys -> busReadUncached( moduleNum, pAdr, data, len ));
 }
 
 bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
@@ -155,8 +158,11 @@ bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
     if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
 
         // ??? this is our own HPA...
+        
+        *data = 0;
+        return( true );
     }
-    sys -> busWriteUncached( moduleNum, pAdr, data, len );
+    else return ( sys -> busWriteUncached( moduleNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
