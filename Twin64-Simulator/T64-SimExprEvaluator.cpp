@@ -318,55 +318,43 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         rExpr -> u.str = tok -> tokStr( );
         tok -> nextToken( );
     }
-    else if ( tok -> isTokenTyp( TYP_GREG ))  {
-        
-        int regId   = tok -> tokVal( );
-        int procId  = 0;
+    else if (( tok -> isTokenTyp( TYP_GREG )) || ( tok -> isTokenTyp( TYP_CREG )))  {
+
+        SimTokTypeId regType    = tok -> tokTyp( );
+        int          regId      = tok -> tokVal( );
+        int          modNum     = glb -> winDisplay -> getCurrentWinModNum( );
 
         tok -> nextToken( );
         if ( tok -> isToken( TOK_COLON )) {
 
             tok -> nextToken( );
-            if ( tok -> isTokenTyp( TYP_NUM )) {
-                
-               // ??? get the module pointer to the CPU ( if it is one )
-            }
-            else throw ( ERR_EXPECTED_NUMERIC );
+            if ( tok -> isTokenTyp( TYP_NUM )) modNum = tok -> tokVal( );
+            else throw( ERR_EXPECTED_NUMERIC ); 
 
             tok -> nextToken( );
         }
-        else {
+            
+        T64ModuleType mType = glb -> system -> getModuleType( modNum );
+        if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
-            procId = 0; // fix ??? get actual current proc...
-        } 
+        T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+        if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
 
-        // ??? read the register from system into rExpr -> u.val;
+        if ( regType == TYP_GREG ) {
 
-        rExpr -> typ = TYP_NUM;
+            rExpr -> u.val =  proc -> getCpuPtr( ) -> getGeneralReg( regId );
+            rExpr -> typ = TYP_NUM;
+        }
+        else if ( regType == TYP_CREG ) {
+
+            rExpr -> u.val =  proc -> getCpuPtr( ) -> getControlReg( regId );
+            rExpr -> typ = TYP_NUM;
+        }
+        else ;    
     }
-    else if ( tok -> isTokenTyp( TYP_CREG ))  {
-        
-        int regId   = tok -> tokVal( );
-        int procId  = 0;
-        
-        tok -> nextToken( );
-        if ( tok -> isToken( TOK_COLON )) {
 
-            tok -> nextToken( );
-            if ( tok -> isTokenTyp( TYP_NUM )) procId = tok -> tokVal( );
-            else throw ( 999 );
+    // ??? missing PSW some how ?
 
-            tok -> nextToken( );
-        } 
-        else {
-
-            procId = 0; // fix ??? get actual current proc...
-        } 
-
-        // ??? read the register from system into rExpr -> u.val;
-
-        rExpr -> typ = TYP_NUM;
-    }
     else if ( tok -> isToken( TOK_NEG )) {
         
         tok -> nextToken( );
@@ -383,28 +371,23 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     }
      else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
 
-        // ??? would be nicer if the functions are just identifier names...
-        // ??? how would we handle overwrite through ENVs ?
-        
         parsePredefinedFunction( tok -> token( ), rExpr );
     }
     else if ( tok -> isToken( TOK_IDENT )) {
     
         SimEnvTabEntry *entry = glb -> env -> getEnvEntry( tok -> tokName( ));
         
-        if ( entry != nullptr ) {
+        if ( entry == nullptr ) throw( ERR_ENV_VAR_NOT_FOUND );
             
-            rExpr -> typ = entry -> typ;
+        rExpr -> typ = entry -> typ;
             
-            switch( rExpr -> typ ) {
+        switch( rExpr -> typ ) {
                     
-                case TYP_BOOL:  rExpr -> u.bVal     =  entry -> u.bVal;         break;
-                case TYP_NUM:   rExpr -> u.val      =  entry -> u.iVal;         break;
-                case TYP_STR:   strcpy( rExpr -> u.str, entry -> u.strVal );    break;
-                default: throw( 9999 );
-            }
+            case TYP_BOOL:  rExpr -> u.bVal     =  entry -> u.bVal;         break;
+            case TYP_NUM:   rExpr -> u.val      =  entry -> u.iVal;         break;
+            case TYP_STR:   strcpy( rExpr -> u.str, entry -> u.strVal );    break;
+            default: throw( 9999 );
         }
-        else throw( ERR_ENV_VAR_NOT_FOUND );
        
         tok -> nextToken( );
     }

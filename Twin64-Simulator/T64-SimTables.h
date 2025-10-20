@@ -123,8 +123,8 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WT",         .typ = TYP_WCMD,    .tid = CMD_WT                 },
     { .name = "WX",         .typ = TYP_WCMD,    .tid = CMD_WX                 },
     
-    { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_MEM                },
-    { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_CODE               },
+   // { .name = "PM",         .typ = TYP_SYM,     .tid = TOK_MEM                },
+   // { .name = "PC",         .typ = TYP_SYM,     .tid = TOK_CODE               },
 
     //------------------------------------------------------------------------------------
     // General registers.
