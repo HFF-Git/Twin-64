@@ -934,13 +934,15 @@ void SimCommandsWin::exitCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// ENV command. The test driver has a few global environment variables for data format, 
-// command count and so on. The ENV command list them all, one in particular and also
-// modifies one if a value is specified. If the ENV variable dos not exist, it will be
-// allocated with the type of the value. A value of the token NIL will remove a user
-// defined variable.
+// ENV command. The test driver has a few global environment variables for data 
+// format, command count and so on. The ENV command list them all, one in particular
+// and also modifies one if a value is specified. If the ENV variable dos not exist, 
+// it will be allocated with the type of the value. A value of the token NIL will 
+// remove a user defined variable.
 //
 //  ENV [ <var> [ <val> ]]
+//
+// ??? how do we remove a user environment variable ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::envCmd( ) {
     
@@ -1017,7 +1019,7 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //
 //  DM
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::displayModCmd( ) {
+void SimCommandsWin::displayModuleCmd( ) {
 
     winOut -> writeChars( "%-5s%-7s%-16s%-16s%-8s\n", 
                             "Mod", "Type", "HPA", "SPA", "Size" );
@@ -2119,7 +2121,7 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_RUN:           runCmd( );                      break;
                     case CMD_STEP:          stepCmd( );                     break;
 
-                    case CMD_DM:            displayModCmd( );               break;
+                    case CMD_DM:            displayModuleCmd( );               break;
                         
                     case CMD_MR:            modifyRegCmd( );                break;
                         

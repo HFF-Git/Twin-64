@@ -333,9 +333,10 @@ void SimEnv::enterVar( char *name, char *str, bool predefined, bool rOnly ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Remove a user defined ENV variable. If the ENV variable is predefined it is an error.
-// If the ENV variable type is a string, free the string space. The entry is marked 
-// invalid, i.e. free. Finally, if the entry was at the high water mark, adjust the HWM.
+// Remove a user defined ENV variable. If the ENV variable is predefined it is an 
+// error. If the ENV variable type is a string, free the string space. The entry is
+// marked invalid, i.e. free. Finally, if the entry was at the high water mark, 
+// adjust the HWM.
 //
 //----------------------------------------------------------------------------------------
 void SimEnv::removeEnvVar( char *name ) {

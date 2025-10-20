@@ -43,7 +43,6 @@
 //----------------------------------------------------------------------------------------
 const int MAX_MODULES           = 16;
 const int MAX_MOD_MAP_ENTRIES   = MAX_MODULES;
-const int MAX_SYS_MAP_ENTRIES   = MAX_MODULES * 4;
 
 //----------------------------------------------------------------------------------------
 // Modules have a type, submodules a subtype.
@@ -81,10 +80,6 @@ enum T64ModuleType {
 // ??? need for a larger I/O element ?
 
 // SPA can be USER mode too and directly mapped to user segments, etc.
-
-
-
-
 
 //----------------------------------------------------------------------------------------
 // The T64Module object represents and an object in the system. It is the base class

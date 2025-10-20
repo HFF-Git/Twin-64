@@ -1138,7 +1138,7 @@ private:
     void            doCmd( );
     void            redoCmd( );
     
-    void            displayModCmd( );
+    void            displayModuleCmd( );
     void            resetCmd( );
     void            runCmd( );
     void            stepCmd( );
