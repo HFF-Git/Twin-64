@@ -64,6 +64,14 @@ int main( int argc, const char * argv[] ) {
                             0,
                             0 );
 
+    T64Memory *pdc = 
+        new T64Memory(  glb -> system,
+                        0, 
+                        T64_IO_HPA_MEM_START + ( 0 * T64_PAGE_SIZE_BYTES ),
+                        T64_PAGE_SIZE_BYTES,
+                        T64_PDC_MEM_START,
+                        4 * T64_PAGE_SIZE_BYTES );
+
     T64Memory *mem1 = 
         new T64Memory(  glb -> system,
                         1, 
@@ -72,7 +80,6 @@ int main( int argc, const char * argv[] ) {
                         0,
                         64 * T64_PAGE_SIZE_BYTES );
 
-    
     T64Memory *mem2 = 
         new T64Memory(  glb -> system,
                         2, 
@@ -81,6 +88,13 @@ int main( int argc, const char * argv[] ) {
                         64 * T64_PAGE_SIZE_BYTES,
                         64 * T64_PAGE_SIZE_BYTES );
 
+    if ( glb -> system -> addToModuleMap( pdc ) != 0 ) {
+
+        glb -> console -> writeChars( "Config Error: Module PDC\n" );
+        return( -1 );
+    }
+
+    pdc -> setSpaReadOnly( true );
     
     if ( glb -> system -> addToModuleMap( mem1 ) != 0 ) {
 

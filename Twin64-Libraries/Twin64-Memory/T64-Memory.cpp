@@ -89,15 +89,24 @@ void T64Memory::step( ) { }
 // Twin-64 is a big endian machine. Running on a little endian host, this causes the 
 // issue that the data is read into little endian order when just memory copying. 
 // So, we have to convert after reading the data from memory.
+//
 //----------------------------------------------------------------------------------------
 bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 
-    if ( adr + len >= spaAdr + spaLen ) return( false );
-    if ( ! isAligned( adr, len )) return( false );
+    if ( isInIoAdrRange( adr )) {
 
-    uint8_t *srcPtr = &memData[ adr - spaAdr ];
+         // for now ...
+        *data = 0;
+        return ( false );
+    }
+    else {
 
-    return( copyToBigEndian( data, srcPtr, len ));
+        if ( adr + len >= spaAdr + spaLen ) return( false );
+        if ( ! isAligned( adr, len )) return( false );
+
+        uint8_t *srcPtr = &memData[ adr - spaAdr ];
+        return( copyToBigEndian( data, srcPtr, len ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -109,15 +118,26 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 // issue that the data is stored in little endian order when just memory copying. 
 // So, we have to convert before writing to memory.
 //
+//
+// ??? enhance to also write to HPA
 //----------------------------------------------------------------------------------------
 bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 
-    if ( adr + len >= spaAdr + spaLen ) return( false );
-    if ( ! isAligned( adr, len )) return( false );
+    if ( isInIoAdrRange( adr )) {
 
-    uint8_t *dstPtr = &memData[ adr - spaAdr ];
+         // for now ...
+        *data = 0;
+        return ( false );
+    }
+    else {
 
-    return( copyToBigEndian( dstPtr, data, len ));
+        if ( adr + len >= spaAdr + spaLen ) return( false );
+        if ( ! isAligned( adr, len )) return( false );
+        if ( spaReadOnly ) return ( false );
+
+        uint8_t *dstPtr = &memData[ adr - spaAdr ];
+        return( copyToBigEndian( dstPtr, data, len ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -137,7 +157,7 @@ bool T64Memory::busReadUncached( int     srcModNum,
 bool T64Memory::busWriteUncached( int     srcModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
-                                  int len ) {
+                                  int     len ) {
 
     return( write( pAdr, data, len ));
 }
@@ -145,7 +165,7 @@ bool T64Memory::busWriteUncached( int     srcModNum,
 bool T64Memory::busReadSharedBlock( int     srcModNum,
                                     T64Word pAdr,
                                     uint8_t *data, 
-                                    int len ) {
+                                    int     len ) {
 
     return( read( pAdr, data, len ));
 }
@@ -153,7 +173,7 @@ bool T64Memory::busReadSharedBlock( int     srcModNum,
 bool T64Memory::busReadPrivateBlock( int     srcModNum, 
                                      T64Word pAdr, 
                                      uint8_t *data, 
-                                     int len ) {
+                                     int     len ) {
 
     return( read( pAdr, data, len ));
 }
@@ -161,7 +181,12 @@ bool T64Memory::busReadPrivateBlock( int     srcModNum,
 bool T64Memory::busWriteBlock( int     srcModNum,
                                T64Word pAdr, 
                                uint8_t *data, 
-                               int len ) {
+                               int     len ) {
 
     return( write( pAdr, data, len ));
+}
+
+void  T64Memory::setSpaReadOnly( bool arg ) {
+
+    spaReadOnly = arg;
 }

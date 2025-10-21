@@ -41,10 +41,10 @@ public:
     
     T64Memory( T64System    *sys, 
                int          modNum, 
-               T64Word       hpaAdr, 
-               int           hpaLen,
-               T64Word       spaAdr,
-               int           spaLen);
+               T64Word      hpaAdr, 
+               int          hpaLen,
+               T64Word      spaAdr,
+               int          spaLen);
     
     void        reset( );
     void        step( );
@@ -74,6 +74,10 @@ public:
                                 uint8_t *data, 
                                 int len );
 
+    void        setSpaReadOnly( bool arg );
+
+    // ??? routines to load/save memory ?
+
 private:
 
     bool        read( T64Word adr, uint8_t *data, int len );
@@ -81,6 +85,7 @@ private:
     
     T64System   *sys        = nullptr;
     uint8_t     *memData    = nullptr;
+    bool        spaReadOnly = false;
     
 };
 

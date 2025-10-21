@@ -49,7 +49,7 @@ const   T64Word T64_IO_MEM_START            = 0xF0000000;
 const   T64Word T64_IO_MEM_LIMIT            = 0xFFFFFFFF;
 
 const   T64Word T64_PDC_MEM_START           = 0xF0000000;
-const   T64Word T64_PDC_MEM_LIMIT           = 0xFEFFFFFF;
+const   T64Word T64_PDC_MEM_LIMIT           = 0xFEFFFFFF;  
 
 const   T64Word T64_IO_SPA_MEM_START        = 0xFF000000;
 const   T64Word T64_IO_SPA_MEM_LIMIT        = 0xFFDFFFFF;
