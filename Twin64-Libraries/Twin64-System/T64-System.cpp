@@ -356,6 +356,7 @@ const char *T64Module::getModuleTypeName( ) {
     switch ( moduleTyp ) {
 
         case MT_PROC:       return ((char *) "PROC" );
+        case MT_CPU_CORE:   return ((char *) "CPU" );
         case MT_CPU_TLB:    return ((char *) "TLB"  );
         case MT_CPU_CACHE:  return ((char *) "CACHE" );
         case MT_IO:         return ((char *) "IO" );

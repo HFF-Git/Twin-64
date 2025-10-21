@@ -110,16 +110,14 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Write function. We write a block of data to memory. The address the physical address
-// and we compute the offset on our SPA range. The address needs to be aligned with 
-// length parameter.
+// Write function. We write a block of data to memory. The address the physical 
+// address and we compute the offset on our SPA range. The address needs to be 
+// aligned with length parameter.
 //
-// Twin-64 is a big endian machine. Running on a little endian host, this causes the 
-// issue that the data is stored in little endian order when just memory copying. 
-// So, we have to convert before writing to memory.
+// Twin-64 is a big endian machine. Running on a little endian host, this causes
+// the issue that the data is stored in little endian order when just memory 
+// copying. So, we have to convert before writing to memory.
 //
-//
-// ??? enhance to also write to HPA
 //----------------------------------------------------------------------------------------
 bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 
@@ -141,9 +139,9 @@ bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Bus operations. We listen to all of them and if the physical addresses matches our
-// address range and we are not the source module, the request is handled. Since we
-// do not have a cache, the request handling is very simple.
+// Bus operations. We listen to all of them and if the physical addresses matches 
+// our address range and we are not the source module, the request is handled. 
+// Since we do not have a cache, the request handling is very simple.
 //
 //----------------------------------------------------------------------------------------
 bool T64Memory::busReadUncached( int     srcModNum,

@@ -274,10 +274,7 @@ char *SimEnv::getEnvVarStr( char *name, char *def ) {
 // for the ENV command.
 //
 //----------------------------------------------------------------------------------------
-void SimEnv::enterVar( char *name, 
-                          T64Word val, 
-                          bool predefined, 
-                          bool rOnly ) {
+void SimEnv::enterVar( char *name, T64Word  val, bool predefined, bool rOnly ) {
     
     int index = findFreeEntry( );
     
@@ -334,8 +331,8 @@ void SimEnv::enterVar( char *name, char *str, bool predefined, bool rOnly ) {
 
 //----------------------------------------------------------------------------------------
 // Remove a user defined ENV variable. If the ENV variable is predefined it is an 
-// error. If the ENV variable type is a string, free the string space. The entry is
-// marked invalid, i.e. free. Finally, if the entry was at the high water mark, 
+// error. If the ENV variable type is a string, free the string space. The entry 
+// is marked invalid, i.e. free. Finally, if the entry was at the high water mark, 
 // adjust the HWM.
 //
 //----------------------------------------------------------------------------------------
@@ -405,8 +402,10 @@ int SimEnv::formatEnvEntry( int index, char *buf, int bufLen ) {
                 
                 case TYP_BOOL: {
                     
-                    if ( e -> u.bVal )  len += snprintf( buf + len, 128, "BOOL:    TRUE");
-                    else                len += snprintf( buf + len, 128, "BOOL:    FALSE"); 
+                    if ( e -> u.bVal )  
+                        len += snprintf( buf + len, 128, "BOOL:    TRUE");
+                    else                
+                        len += snprintf( buf + len, 128, "BOOL:    FALSE"); 
                 
                 } break;
 
@@ -425,7 +424,7 @@ int SimEnv::formatEnvEntry( int index, char *buf, int bufLen ) {
 //
 //----------------------------------------------------------------------------------------
 void SimEnv::setupPredefined( ) {
-    
+
     enterVar((char *) ENV_TRUE, (bool) true, true, true );
     enterVar((char *) ENV_FALSE, (bool) false, true, true );
     

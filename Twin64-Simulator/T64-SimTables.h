@@ -40,7 +40,6 @@ const SimToken cmdTokTab[ ] = {
     //
     //------------------------------------------------------------------------------------
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u.val = 0  },
-    
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
     { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                },
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
@@ -487,7 +486,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ENV,
         .cmdNameStr     = (char *) "env",
-        .cmdSyntaxStr   = (char *) "env [ <var> [ <val> ]]",
+        .cmdSyntaxStr   = (char *) "env [ <var> [ <val> ]] | env <var> - ",
         .helpStr        = (char *) "lists the env tab, a variable, sets a variable"
     },
     

@@ -980,13 +980,23 @@ void SimCommandsWin::envCmd( ) {
             else throw ( ERR_ENV_VAR_NOT_FOUND );
         }
         else {
-            
-            SimExpr rExpr;
-            eval -> parseExpr( &rExpr );
-            
-            if ( rExpr.typ == TYP_NUM )       env -> setEnvVar( envName, rExpr.u.val );
-            else if ( rExpr.typ == TYP_BOOL ) env -> setEnvVar( envName, rExpr.u.bVal );
-            else if ( rExpr.typ == TYP_STR )  env -> setEnvVar( envName, rExpr.u.str );
+
+            if ( tok -> isToken( TOK_MINUS )) {
+
+                env -> removeEnvVar( envName );
+            }
+            else {
+
+                SimExpr rExpr;
+                eval -> parseExpr( &rExpr );
+
+                if ( rExpr.typ == TYP_NUM )       
+                    env -> setEnvVar( envName, rExpr.u.val );
+                else if ( rExpr.typ == TYP_BOOL ) 
+                    env -> setEnvVar( envName, rExpr.u.bVal );
+                else if ( rExpr.typ == TYP_STR )  
+                    env -> setEnvVar( envName, rExpr.u.str );
+            }
         }
     }
 }

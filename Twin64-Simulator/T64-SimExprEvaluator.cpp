@@ -303,10 +303,19 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
-    rExpr -> typ       = TYP_NIL;
+e    rExpr -> typ       = TYP_NIL;
     rExpr -> u.val    = 0;
-    
-    if ( tok -> isTokenTyp( TYP_NUM ))  {
+
+    if ( tok -> isTokenTyp( TYP_NIL )) {
+
+        if ( tok -> isToken( TOK_NIL )) {
+
+            rExpr -> typ = TYP_NIL;
+            rExpr -> u.val    = 0;
+        }
+        else throw ( ERR_EXPR_FACTOR );
+    }
+    else if ( tok -> isTokenTyp( TYP_NUM )) {
         
         rExpr -> typ     = TYP_NUM;
         rExpr -> u.val  = tok -> tokVal( );
@@ -381,17 +390,17 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     else if ( tok -> isToken( TOK_IDENT )) {
     
         SimEnvTabEntry *entry = glb -> env -> getEnvEntry( tok -> tokName( ));
-        
         if ( entry == nullptr ) throw( ERR_ENV_VAR_NOT_FOUND );
             
         rExpr -> typ = entry -> typ;
             
         switch( rExpr -> typ ) {
                     
-            case TYP_BOOL:  rExpr -> u.bVal     =  entry -> u.bVal;         break;
-            case TYP_NUM:   rExpr -> u.val      =  entry -> u.iVal;         break;
-            case TYP_STR:   strcpy( rExpr -> u.str, entry -> u.strVal );    break;
-            default: throw( 9999 );
+            case TYP_NIL:                                                break;
+            case TYP_BOOL:  rExpr -> u.bVal =  entry -> u.bVal;          break;
+            case TYP_NUM:   rExpr -> u.val  =  entry -> u.iVal;          break;
+            case TYP_STR:   strcpy( rExpr -> u.str, entry -> u.strVal ); break;
+            default: throw( ERR_INVALID_EXPR );
         }
        
         tok -> nextToken( );

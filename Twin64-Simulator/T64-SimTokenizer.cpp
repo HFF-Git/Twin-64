@@ -82,7 +82,6 @@ void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
     this -> currentCharIndex        = 0;
     this -> currentTokCharIndex     = 0;
     this -> currentChar             = ' ';
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -516,12 +515,8 @@ void SimTokenizer::nextToken( ) {
     else {
     
         currentToken.tid = TOK_ERR;
-        {
-         
-            printf( "invalid ch: %d\n", currentChar );
-            throw ( ERR_INVALID_CHAR_IN_IDENT );
-            
-        }
+        printf( "invalid ch: %d\n", currentChar );
+        throw ( ERR_INVALID_CHAR_IN_IDENT );
     }
 }
 

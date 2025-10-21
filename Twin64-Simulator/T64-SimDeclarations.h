@@ -228,10 +228,10 @@ enum SimTokId : uint16_t {
     
     CMD_EXIT                = 1001,     CMD_HELP                = 1002,
     CMD_DO                  = 1003,     CMD_REDO                = 1004,     
-    CMD_HIST                = 1005,     CMD_ENV                 = 1006,     
+    CMD_HIST                = 1005,     CMD_ENV                 = 1006,
+         
     CMD_XF                  = 1007,     CMD_LF                  = 1008,
     CMD_WRITE_LINE          = 1009,     CMD_DM                  = 1010,
-    
     CMD_RESET               = 1011,     CMD_RUN                 = 1012,     
     CMD_STEP                = 1013,     CMD_MR                  = 1014,
     CMD_DA                  = 1015,     CMD_MA                  = 1016,
@@ -412,6 +412,7 @@ enum SimErrMsgId : int {
 //
 // ??? what to keep....
 //----------------------------------------------------------------------------------------
+const char ENV_NIL[ ]                   = "NIL";
 const char ENV_TRUE[ ]                  = "TRUE";
 const char ENV_FALSE[ ]                 = "FALSE";
 
