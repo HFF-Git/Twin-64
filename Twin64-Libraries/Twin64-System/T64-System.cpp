@@ -185,7 +185,6 @@ void T64System::run( ) {
 //----------------------------------------------------------------------------------------
 // Single step. 
 //
-// ??? crucial what to do here.... explain.
 //----------------------------------------------------------------------------------------
 void T64System::step( int steps ) {
 
@@ -241,7 +240,8 @@ bool T64System::busReadSharedBlock( int     reqModNum,
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) {
+        if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
+            ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
              moduleMap[ i ] -> busReadSharedBlock( reqModNum, pAdr, data, len );
         }
@@ -260,7 +260,8 @@ bool T64System::busReadPrivateBlock( int     reqModNum,
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( )) {
+        if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
+            ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
              moduleMap[ i ] -> busReadPrivateBlock( reqModNum, pAdr, data, len );
         }
@@ -279,7 +280,8 @@ bool T64System::busWriteBlock( int     reqModNum,
 
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-        if ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( )) {
+        if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
+            ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
              moduleMap[ i ] -> busWriteBlock( reqModNum, pAdr, data, len );
         }

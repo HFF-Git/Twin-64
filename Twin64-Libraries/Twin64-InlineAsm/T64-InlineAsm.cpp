@@ -29,7 +29,6 @@
 //----------------------------------------------------------------------------------------
 #include "T64-InlineAsm.h"
 
-
 //----------------------------------------------------------------------------------------
 // Local namespace. These routines are not visible outside this source file.
 //
@@ -358,8 +357,10 @@ enum InstrFlags : uint32_t {
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
     IM_LPA_OP   = ( IF_M ),
-    IM_CHK_OP   = ( IF_B | IF_H | IF_W | IF_D )
-    
+    IM_ITLB_OP  = ( IF_I | IF_D ),
+    IM_PTLB_OP  = ( IF_I | IF_D ),
+    IM_PCA_OP   = ( IF_I | IF_D )
+
     // ??? synthetic instructions also need a mask constant.
 };
 
@@ -1717,6 +1718,7 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
+
     if ((( instrOpToken == TOK_OP_SHL1A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHL2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
         (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) {
@@ -2251,41 +2253,75 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrTlbOp" insert or removes a translation in the TLB. RegB contains the 
-// virtual address. For TLB inserts RegA contains the info on access rights and 
-// physical address. The result is in RegR.
+// "parseInstrInsertTlbOp" inserts a translation in the TLB. RegB contains the virtual
+// address. RegA contains the info on access rights and physical address. The result
+// is in RegR.
 //
 //      IITLB <targetReg> "," <RegB> "," <RegA>
 //      IDTLB <targetReg> "," <RegB> "," <RegA>
-//      PITLB <targetReg> "," <RegB>
-//      PDTLB <targetReg> "," <RegB>
 //
 //----------------------------------------------------------------------------------------
-void parseInstrTlbOp( uint32_t *instr, uint32_t instrOpToken ) {
-   
+void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
+
+    if      ( instrOpToken == TOK_OP_IITLB ) depositInstrFieldU( instr, 31, 2, 0 );
+    else if ( instrOpToken == TOK_OP_IDTLB ) depositInstrFieldU( instr, 31, 2, 1 );
+
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
     acceptRegB( instr );
-    
-    if (( instrOpToken == TOK_OP_IITLB ) || ( instrOpToken == TOK_OP_IDTLB )) {
-        
-        acceptComma( );
-        acceptRegA( instr );
-    }
-    
+    acceptComma( );
+    acceptRegA( instr );
     acceptEOS( );
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrCacheOp" assemble the cache flush and purge operation.
+// "parseInstrPurgeTlbOp" removes a translation in the TLB. RegB contains the virtual
+// address. The result is in RegR.
 //
-//      PICA <targetReg> "," <RegB>
-//      PDCA <targetReg> "," <RegB>
+//      PITLB <targetReg> "," <RegB>
+//      PDTLB <targetReg> "," <RegB>
+//
+//----------------------------------------------------------------------------------------
+void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
+
+    if      ( instrOpToken == TOK_OP_PITLB ) depositInstrFieldU( instr, 31, 2, 0 );
+    else if ( instrOpToken == TOK_OP_PDTLB ) depositInstrFieldU( instr, 31, 2, 1 );
+
+    nextToken( );
+    acceptRegR( instr );
+    acceptComma( );
+    acceptRegB( instr );
+    acceptEOS( );
+}
+
+//----------------------------------------------------------------------------------------
+// "parseInstrFlushCacheOp" assemble the cache flush operation. This only applies 
+// to data or unified caches.
+//
 //      FDCA <targetReg> "," <RegB>
 //
 //----------------------------------------------------------------------------------------
-void parseInstrCacheOp( uint32_t *instr, uint32_t instrOpToken ) {
+void parseInstrFlushCache( uint32_t *instr, uint32_t instrOpToken ) {
+    
+    nextToken( );
+    acceptRegR( instr );
+    acceptComma( );
+    acceptRegB( instr );
+    acceptEOS( );
+}
+
+//----------------------------------------------------------------------------------------
+// "parseInstrPurgeCacheOp" assemble the cache purge operation.
+//
+//      PICA <targetReg> "," <RegB>
+//      PDCA <targetReg> "," <RegB≤
+//
+//----------------------------------------------------------------------------------------
+void parseInstrPurgeCache( uint32_t *instr, uint32_t instrOpToken ) {
+
+    if      ( instrOpToken == TOK_OP_PICA ) depositInstrFieldU( instr, 31, 2, 0 );
+    else if ( instrOpToken == TOK_OP_PDCA ) depositInstrFieldU( instr, 31, 2, 1 );
     
     nextToken( );
     acceptRegR( instr );
@@ -2451,13 +2487,15 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_PRB:    parseInstrPRB( instr, instrOpToken );       break;
                 
             case TOK_OP_IITLB:
-            case TOK_OP_IDTLB:  
+            case TOK_OP_IDTLB:  parseInstrInsertTlb( instr, instrOpToken ); break;
+
             case TOK_OP_PITLB:
-            case TOK_OP_PDTLB:  parseInstrTlbOp( instr, instrOpToken );     break;
+            case TOK_OP_PDTLB:  parseInstrPurgeTlb( instr, instrOpToken );  break;
                 
             case TOK_OP_PICA:
-            case TOK_OP_PDCA:
-            case TOK_OP_FDCA:   parseInstrCacheOp( instr, instrOpToken );   break;
+            case TOK_OP_PDCA:   parseInstrPurgeCache( instr, instrOpToken );break;
+
+            case TOK_OP_FDCA:   parseInstrFlushCache( instr, instrOpToken );break;
                 
             case TOK_OP_SSM:
             case TOK_OP_RSM:    parseInstrSregOp( instr, instrOpToken );    break;

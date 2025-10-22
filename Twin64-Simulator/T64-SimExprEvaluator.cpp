@@ -303,7 +303,7 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
     
-e    rExpr -> typ       = TYP_NIL;
+    rExpr -> typ       = TYP_NIL;
     rExpr -> u.val    = 0;
 
     if ( tok -> isTokenTyp( TYP_NIL )) {
