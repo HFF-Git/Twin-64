@@ -183,10 +183,25 @@ bool T64Processor::busReadSharedBlock( int      reqModNum,
                                        uint8_t  *data, 
                                        int      len ) {
 
+    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
-    // ??? the cache needs to know ...
-    return( true );
+    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
+    if ( proc == nullptr ) {
+
+        // ??? we are not the target for the request. 
+        // ??? check that our caches do not have the block as exclusive 
+        // ??? if exclusive -> if ( modified ) flush and mark shared
+
+        return (true );
+    }
+    else {
+
+        // ??? we are the target.
+        // ?? we are not memory, so we cannot be the target ...
+
+        return (false );
+    }
 }
 
 bool T64Processor::busReadPrivateBlock( int     reqModNum, 
@@ -194,11 +209,27 @@ bool T64Processor::busReadPrivateBlock( int     reqModNum,
                                         uint8_t *data, 
                                         int     len ) {
 
+    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
-    // ??? the cache needs to know ...
+    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
+    if ( proc == nullptr ) {
 
-    return( true );
+        // ??? we are not the target for the request. 
+        // ??? check that our caches do not have the block as exclusive or shared
+        // ??? if exclusive and modified -> flush
+        // ??? if exclusive - > purge
+        // ??? if shared -> purge
+
+        return (true );
+    }
+    else {
+
+        // ??? we are the target.
+        // ??? we are not memory, so we cannot be the target ...
+
+        return (false );
+    }
 }
 
 bool T64Processor::busWriteBlock( int     reqModNum, 
@@ -206,11 +237,24 @@ bool T64Processor::busWriteBlock( int     reqModNum,
                                   uint8_t *data, 
                                   int     len ) {
 
+    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
-    // ??? the cache needs to know ...
-   
-    return( true );
+    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
+    if ( proc == nullptr ) {
+
+        // ??? we are not the target for the request. 
+        // ??? if shared -> purge
+
+        return (true );
+    }
+    else {
+
+        // ??? we are the target.
+        // ??? we are not memory, so we cannot be the target ...
+
+        return (false );
+    }
 }
 
 bool T64Processor::busReadUncached( int     reqModNum, 
@@ -218,11 +262,24 @@ bool T64Processor::busReadUncached( int     reqModNum,
                                     uint8_t *data, 
                                     int     len ) {
     
+    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
-    // an uncached read request. we check if it is for our HPA.
+    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
+    if ( proc == nullptr ) {
 
-    return( true );
+        // ??? we are not the target for the request. 
+        // ??? do nothing
+
+        return (true );
+    }
+    else {
+
+        // ??? we are the target.
+        // ??? if HPA space return the data ...
+
+        return (true );
+    }
 }
 
 bool T64Processor::busWriteUncached( int     reqModNum,
@@ -230,9 +287,24 @@ bool T64Processor::busWriteUncached( int     reqModNum,
                                      uint8_t *val, 
                                      int     len ) {
 
-    // an uncached read request. we check if it is for our HPA.
-    
-    return( true );
+    // sanity check, we are the requestor ?
+    if ( reqModNum == moduleNum ) return( false );
+
+    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
+    if ( proc == nullptr ) {
+
+        // ??? we are not the target for the request. 
+        // ??? do nothing
+
+        return (true );
+    }
+    else {
+
+        // ??? we are the target.
+        // ??? if HPA space write the data ...
+
+        return( true );
+    }
 }
 
 //----------------------------------------------------------------------------------------
