@@ -330,6 +330,9 @@ struct T64Cpu {
     T64Cache        *iCache = nullptr;
     T64Cache        *dCache = nullptr;
 
+   
+    // ??? rework ....
+    bool            isPhysicalAdrRange( T64Word vAdr );
     T64Word         lowerPhysMemAdr     = 0;
     T64Word         upperPhysMemAdr     = 0;
 };
@@ -425,10 +428,6 @@ private:
     int             modNum              = 0;
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;
-
-    bool            isPhysicalAdrRange( T64Word vAdr );
-    T64Word         lowerPhysMemAdr     = 0;
-    T64Word         upperPhysMemAdr     = 0;
 };
 
 #endif // T64_Processor_h

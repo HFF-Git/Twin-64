@@ -196,11 +196,23 @@ void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
     }
 }
 
+
+//----------------------------------------------------------------------------------------
+//
+// ??? be more specific: IO address range, physical memory range, physical total range
+//----------------------------------------------------------------------------------------
+bool T64Cpu::isPhysicalAdrRange( T64Word vAdr ) {
+
+    return( isInRange( vAdr, lowerPhysMemAdr, upperPhysMemAdr ));
+}
+
+
 //----------------------------------------------------------------------------------------
 // Instruction read. This is the central routine that fetches an instruction word. We
 // first check the address range. For a physical address we must be in priv mode. For
 // a virtual address, the TLB is consulted for the translation and security checking.
 //
+// ??? if read fails, machine check ?
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::instrRead( T64Word vAdr ) {
 
@@ -208,7 +220,7 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
    
     alignMentCheck( vAdr, 4 );
 
-    if ( proc -> isPhysicalAdrRange( vAdr )) { 
+    if ( isPhysicalAdrRange( vAdr )) { 
 
         privModeCheck( );
         iCache -> read( vAdr, (uint8_t *) &instr, 4, false );     
@@ -235,6 +247,7 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
 // address we must be in priv mode. For a virtual address, the TLB is consulted for the
 // translation and security checking. 
 //
+// ??? if read fails, machine check ?
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 
@@ -243,7 +256,7 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
    
     alignMentCheck( vAdr, len );
   
-    if ( proc -> isPhysicalAdrRange( vAdr )) { 
+    if ( isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
         dCache -> read( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );
@@ -274,6 +287,7 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 // a physical address we must be in priv mode. For a virtual address, the TLB is 
 // consulted for the translation and security checking. 
 //
+// ??? if write fails, machine check ?
 //----------------------------------------------------------------------------------------
 void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
 
@@ -281,7 +295,7 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
   
     alignMentCheck( vAdr, len );
  
-    if ( proc -> isPhysicalAdrRange( vAdr )) { 
+    if ( isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
         dCache -> write( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );           

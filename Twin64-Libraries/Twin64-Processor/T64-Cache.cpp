@@ -641,6 +641,7 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 
             uint32_t setIndex = getSetIndex( pAdr );
 
+            // ??? need to mask pAdr ? 
             if ( ! proc -> writeBlock( pAdrFromTag( cInfo -> tag, setIndex ), 
                                        cData, 
                                        lineSize )) {
@@ -691,7 +692,8 @@ void T64Cache::write( T64Word pAdr, uint8_t *data, int len, bool cached ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A cache flush operation. Only valid for non-I/O address range.
+// A cache flush operation. Only valid for non-I/O address range. The cache line
+// flush function will issue a write back when the line was modified.
 //
 //----------------------------------------------------------------------------------------
 void T64Cache::flush( T64Word pAdr ) {
@@ -700,10 +702,11 @@ void T64Cache::flush( T64Word pAdr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A cache purge operation. Only valid for non-I/O address range.
+// A cache purge operation. Only valid for non-I/O address range. The cache line
+// purge function will invalidate the cache line entry.
 //
 //----------------------------------------------------------------------------------------
 void T64Cache::purge( T64Word pAdr ) {
 
-     if ( ! isInIoAdrRange( pAdr )) purgeCacheLine( pAdr );
+    if ( ! isInIoAdrRange( pAdr )) purgeCacheLine( pAdr );   
 }

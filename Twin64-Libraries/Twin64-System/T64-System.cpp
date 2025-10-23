@@ -198,7 +198,6 @@ void T64System::step( int steps ) {
 // Uncached bus operations. We locate the responsible module and let it handle the 
 // request.
 //
-// ??? what happens if we call ourselves ?
 //----------------------------------------------------------------------------------------
 bool T64System::busReadUncached( int     reqModNum,
                                  T64Word pAdr, 

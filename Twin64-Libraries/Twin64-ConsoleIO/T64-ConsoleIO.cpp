@@ -528,12 +528,15 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 1: { // HEX as is
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X ) 
-                    len += writeChars((char *) "0x" );
+                        len += writeChars((char *) "0x" ); 
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
-                    len += writeChars((char *) "**" );
-                    
-                len += writeChars((char *) "%x", val );
+                    len += writeChars((char *) "**" );          
+                else                             
+                    len += writeChars((char *) "%x", val );
+
                 return ( len );
 
             } break;
@@ -541,12 +544,15 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 2: { // HEX_2
 
                 int len = 0;
-                if ( fmtDesc & FMT_PREFIX_0X )   
-                    len += writeChars((char *) "0x" );
-                if ( fmtDesc & FMT_INVALID_NUM ) 
-                    len += writeChars((char *) "**" );
 
-                len += writeChars((char *) "%02x", val & 0xFF );
+                if ( fmtDesc & FMT_PREFIX_0X )   
+                        len += writeChars((char *) "0x" );
+
+                if ( fmtDesc & FMT_INVALID_NUM )
+                    len += writeChars((char *) "**" );          
+                else 
+                    len += writeChars((char *) "%02x", val & 0xFF );
+                
                 return( len );
 
             } break;
@@ -554,12 +560,15 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 3: { // HEX_4
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
-                if ( fmtDesc & FMT_INVALID_NUM ) 
-                    len += writeChars((char *) "****" );
 
-                len += writeChars((char *) "%04x", val & 0xFFFF );
+                if ( fmtDesc & FMT_INVALID_NUM )
+                    len += writeChars((char *) "****" );          
+                else 
+                    len += writeChars((char *) "%04x", val & 0xFFFF );
+
                 return( len );
 
             } break;
@@ -567,12 +576,15 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 4: { // HEX_8
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
-                if ( fmtDesc & FMT_INVALID_NUM ) 
-                    len += writeChars((char *) "****" "****" );
 
-                len += writeChars((char *) "%08x", val & 0xFFFFFFFF );
+                if ( fmtDesc & FMT_INVALID_NUM )
+                    len += writeChars((char *) "****" "****" );         
+                else 
+                    len += writeChars((char *) "%08x", val & 0xFFFFFFFF );
+                
                 return( len );
 
             } break;
@@ -580,27 +592,33 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 5: { // HEX_16
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "****" "****" "****" "****" );
-
-                len += writeChars((char *) "%016x", val );
-                return( len );
+                else 
+                    len += writeChars((char *) "%016x", val );
+                
+                    return( len );
 
             } break;
 
             case 6: { // FMT_HEX_2_4
 
                 int len = 0;
+                
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "**_****" );
-
-                len += writeChars((char *) "%02x_%04x", 
-                                        (( val >> 16 ) & 0xFF   ),
-                                        (( val       ) & 0xFFFF ));
+                else
+                    len += writeChars((char *) "%02x_%04x", 
+                                      (( val >> 16 ) & 0xFF   ),
+                                      (( val       ) & 0xFFFF ));
+                
                 return( len );
 
             } break;
@@ -608,14 +626,16 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 7: { // FMT_HEX_4_4
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "****_****" );
-
-                len += writeChars((char *) "%04x_%04x", 
-                                        (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF ));
+                else
+                    len += writeChars((char *) "%04x_%04x", 
+                                      (( val >> 16 ) & 0xFFFF ),
+                                      (( val       ) & 0xFFFF ));
                 return( len );
 
             } break;
@@ -623,15 +643,18 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 8: { // FMT_HEX_2_4_4
 
                 int len = 0;
+                
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "**_****_****" );
+                else 
+                    len += writeChars((char *) "%02x_%04x_%04x", 
+                                      (( val >> 32 ) & 0xFF   ),
+                                      (( val >> 16 ) & 0xFFFF ),
+                                      (( val       ) & 0xFFFF ));
 
-                len += writeChars((char *) "%02x_%04x_%04x", 
-                                        (( val >> 32 ) & 0xFF   ),
-                                        (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF ));
                 return( len );
 
             } break;
@@ -639,15 +662,18 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 9: { // FMT_HEX_4_4_4
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "****_****_****" );
+                else 
+                    len += writeChars((char *) "%04x_%04x_%04x", 
+                                      (( val >> 32 ) & 0xFFFF ),
+                                      (( val >> 16 ) & 0xFFFF ),
+                                      (( val       ) & 0xFFFF ));
 
-                len += writeChars((char *) "%04x_%04x_%04x", 
-                                        (( val >> 32 ) & 0xFFFF ),
-                                        (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF ));
                 return( len );
 
             } break;
@@ -655,16 +681,19 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 10: { // FMT_HEX_2_4_4_4
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "**_****_****_****" );
+                else
+                    len += writeChars((char *) "%02X_%04x_%04x_%04x", 
+                                      (( val >> 48 ) & 0xFF   ),
+                                      (( val >> 32 ) & 0xFFFF ),
+                                      (( val >> 16 ) & 0xFFFF ),
+                                      (( val       ) & 0xFFFF ));
 
-                len += writeChars((char *) "%02X_%04x_%04x_%04x", 
-                                        (( val >> 48 ) & 0xFF   ),
-                                        (( val >> 32 ) & 0xFFFF ),
-                                        (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF ));
                 return( len );
 
             } break;
@@ -672,16 +701,18 @@ int SimFormatter::printNumber( T64Word val, uint32_t fmtDesc ) {
             case 11: { // FMT_HEX_4_4_4_4
 
                 int len = 0;
+
                 if ( fmtDesc & FMT_PREFIX_0X )   
                     len += writeChars((char *) "0x" );
+
                 if ( fmtDesc & FMT_INVALID_NUM ) 
                     len += writeChars((char *) "****_****_****_****" );
-
-                len += writeChars((char *) "%04x_%04x_%04x_%04x", 
-                                        (( val >> 48 ) & 0xFFFF ),
-                                        (( val >> 32 ) & 0xFFFF ),
-                                        (( val >> 16 ) & 0xFFFF ),
-                                        (( val       ) & 0xFFFF ));
+                else
+                    len += writeChars((char *) "%04x_%04x_%04x_%04x", 
+                                      (( val >> 48 ) & 0xFFFF ),
+                                      (( val >> 32 ) & 0xFFFF ),
+                                      (( val >> 16 ) & 0xFFFF ),
+                                      (( val       ) & 0xFFFF ));
                 return( len );
 
             } break;

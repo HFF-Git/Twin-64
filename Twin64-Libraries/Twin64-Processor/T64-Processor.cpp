@@ -123,7 +123,8 @@ T64Cache *T64Processor::getDCachePtr( ) {
 
 //----------------------------------------------------------------------------------------
 // Cache interface routines for requesting system bus operations. Straightforward. 
-// The processor offers this facade to the cache subsystem.
+// The processor offers this facade to the cache subsystems. We augment the request
+// with our module number and pass on to the system bus.
 //
 //----------------------------------------------------------------------------------------
 bool T64Processor::readSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
@@ -159,23 +160,47 @@ bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
 
         // ??? this is our own HPA...
         
-        *data = 0;
         return( true );
     }
     else return ( sys -> busWriteUncached( moduleNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
-// System Bus operations interface routines. When a module issues a request, any
-// other module will be informed. We can now check whether the bus transactions 
-// would concern us. For example, when another module requests an exclusive copy 
-// of a memory block and we happen to have that block modified in our caches. We 
-// will need to flush the data first. If the request concerns us, we will inform 
-// the cache about it, so that it can take action if needed. Since we might be the
-// source of the request, we will only react when we are not the originator. 
+// System Bus operations cache interface routines. When a module issues a request,
+// any other module will be informed. We can now check whether the bus transactions 
+// would concern us.
 //
-// Another scenario is the processor HPA address range. These are uncached requests
-// and we will react to them as well.
+//      busReadSharedBlock:
+//
+//      Another module is requesting a shared cache block read. If we are a 
+//      an observer, we need to check that we do not have the block exclusive.
+//      If so and modified, the block is written back to memory and marked as 
+//      shared. Note that a modified cache line only applies to a unified or data
+//      cache. Since we read into an instruction cache only shared, no need to 
+//      check the iCache.
+//
+//      busReadPrivateBlock:
+//      
+//      Another module is requesting a private copy. If we are an observer, we
+//      need to check that we do not have that copy exclusive or shared. In the 
+//      exclusive case, we flush and purge the block. In the shared case we just 
+//      purge the block from our cache. Note that this request applies to a data
+//      and an instruction cache as well.
+//      
+//      busWriteBlock:
+//
+//      Another module is writing back an exclusive copy if its cache block. By
+//      definition, we do not own that block in any case.
+//
+// For all cases, we first check that we are not the originator of that request. 
+// Just a little sanity check. Next, we lookup the responsible module by the physical 
+// address of the request. If we are not the address range owner, we perform the 
+// operations described above on our caches. If we are the owner, we simply carry 
+// the request.
+//
+// A processor cannot be the target of a cache operation. It does not own a physical
+// address range other then its HPA address range. And this range can only be accessed
+// uncached.
 //
 //----------------------------------------------------------------------------------------
 bool T64Processor::busReadSharedBlock( int      reqModNum, 
@@ -183,24 +208,13 @@ bool T64Processor::busReadSharedBlock( int      reqModNum,
                                        uint8_t  *data, 
                                        int      len ) {
 
-    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
     if ( proc == nullptr ) {
 
-        // ??? we are not the target for the request. 
-        // ??? check that our caches do not have the block as exclusive 
-        // ??? if exclusive -> if ( modified ) flush and mark shared
-
+        getDCachePtr( ) -> flush( pAdr );
         return (true );
-    }
-    else {
-
-        // ??? we are the target.
-        // ?? we are not memory, so we cannot be the target ...
-
-        return (false );
     }
 }
 
@@ -209,26 +223,14 @@ bool T64Processor::busReadPrivateBlock( int     reqModNum,
                                         uint8_t *data, 
                                         int     len ) {
 
-    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
     if ( proc == nullptr ) {
 
-        // ??? we are not the target for the request. 
-        // ??? check that our caches do not have the block as exclusive or shared
-        // ??? if exclusive and modified -> flush
-        // ??? if exclusive - > purge
-        // ??? if shared -> purge
-
+        getDCachePtr( ) -> purge( pAdr );
+        getICachePtr( ) -> purge( pAdr );
         return (true );
-    }
-    else {
-
-        // ??? we are the target.
-        // ??? we are not memory, so we cannot be the target ...
-
-        return (false );
     }
 }
 
@@ -237,49 +239,44 @@ bool T64Processor::busWriteBlock( int     reqModNum,
                                   uint8_t *data, 
                                   int     len ) {
 
-    // sanity check, we are the requestor ?
-    if ( reqModNum == moduleNum ) return( false );
-
-    T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc == nullptr ) {
-
-        // ??? we are not the target for the request. 
-        // ??? if shared -> purge
-
-        return (true );
-    }
-    else {
-
-        // ??? we are the target.
-        // ??? we are not memory, so we cannot be the target ...
-
-        return (false );
-    }
+    // do nothing,
+    return( false );
 }
 
+//----------------------------------------------------------------------------------------
+// System Bus operations non-cache interface routines. When a module issues a request,
+// any other module will be informed. We can now check whether the bus transactions 
+// would concern us.
+//
+//      busReadUncached:
+//
+//      Another module issued an uncached read. We check wether this concerns our
+//      HPA address range. If so, we return the data from the HPA space.
+//
+//      busWriteUncached:
+//
+//      Another module issued an uncached write. We check wether this concerns our
+//      HPA address range. If so, we update the data in our HPA space.
+//    
+//    
+//
+//----------------------------------------------------------------------------------------
 bool T64Processor::busReadUncached( int     reqModNum, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
                                     int     len ) {
     
-    // sanity check, we are the requestor ?
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc == nullptr ) {
-
-        // ??? we are not the target for the request. 
-        // ??? do nothing
-
-        return (true );
-    }
-    else {
+    if ( proc != nullptr ) {
 
         // ??? we are the target.
         // ??? if HPA space return the data ...
 
         return (true );
     }
+    else return( false );
 }
 
 bool T64Processor::busWriteUncached( int     reqModNum,
@@ -287,33 +284,17 @@ bool T64Processor::busWriteUncached( int     reqModNum,
                                      uint8_t *val, 
                                      int     len ) {
 
-    // sanity check, we are the requestor ?
-    if ( reqModNum == moduleNum ) return( false );
+   if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc == nullptr ) {
+    if ( proc != nullptr ) {
 
-        // ??? we are not the target for the request. 
-        // ??? do nothing
+        // ??? we are the target.
+        // ??? if HPA space return the data ...
 
         return (true );
     }
-    else {
-
-        // ??? we are the target.
-        // ??? if HPA space write the data ...
-
-        return( true );
-    }
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-bool T64Processor::isPhysicalAdrRange( T64Word vAdr ) {
-
-    return( isInRange( vAdr, lowerPhysMemAdr, upperPhysMemAdr ));
+    else return( false );
 }
 
 //----------------------------------------------------------------------------------------
