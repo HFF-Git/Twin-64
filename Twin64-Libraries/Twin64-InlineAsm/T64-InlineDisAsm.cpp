@@ -81,7 +81,7 @@ int printDwField( char *buf, uint32_t dw ) {
         case 1:  return ( snprintf( buf, 4, ".H" ));
         case 2:  return ( snprintf( buf, 4, ".W" ));
         case 3:  return ( 0 );
-        default: return ( snprintf( buf, 4, ".*" ));
+        default: return ( snprintf( buf, 8, ".*dw*" ));
     }
 }
 
@@ -433,7 +433,8 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
 
                 case 0: return ( snprintf( buf, LEN_16, "PICA" ));
                 case 1: return ( snprintf( buf, LEN_16, "PDCA" ));
-                case 2: return ( snprintf( buf, LEN_16, "FDCA" ));
+                case 2: return ( snprintf( buf, LEN_16, "FICA" ));
+                case 3: return ( snprintf( buf, LEN_16, "FDCA" ));
                 default: return ( snprintf( buf, 8, "**CA**" ));
             }
         }

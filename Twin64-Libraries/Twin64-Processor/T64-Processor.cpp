@@ -175,17 +175,14 @@ bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
 //      Another module is requesting a shared cache block read. If we are a 
 //      an observer, we need to check that we do not have the block exclusive.
 //      If so and modified, the block is written back to memory and marked as 
-//      shared. Note that a modified cache line only applies to a unified or data
-//      cache. Since we read into an instruction cache only shared, no need to 
-//      check the iCache.
+//      shared.
 //
 //      busReadPrivateBlock:
 //      
 //      Another module is requesting a private copy. If we are an observer, we
 //      need to check that we do not have that copy exclusive or shared. In the 
 //      exclusive case, we flush and purge the block. In the shared case we just 
-//      purge the block from our cache. Note that this request applies to a data
-//      and an instruction cache as well.
+//      purge the block from our cache.
 //      
 //      busWriteBlock:
 //
@@ -213,6 +210,7 @@ bool T64Processor::busReadSharedBlock( int      reqModNum,
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
     if ( proc == nullptr ) {
 
+        getICachePtr( ) -> flush( pAdr );
         getDCachePtr( ) -> flush( pAdr );
         return (true );
     }
@@ -258,7 +256,7 @@ bool T64Processor::busWriteBlock( int     reqModNum,
 //      Another module issued an uncached write. We check wether this concerns our
 //      HPA address range. If so, we update the data in our HPA space.
 //    
-//    
+// ??? need a function to call for processor HPA data
 //
 //----------------------------------------------------------------------------------------
 bool T64Processor::busReadUncached( int     reqModNum, 
@@ -272,8 +270,7 @@ bool T64Processor::busReadUncached( int     reqModNum,
     if ( proc != nullptr ) {
 
         // ??? we are the target.
-        // ??? if HPA space return the data ...
-
+        *data = 0;
         return (true );
     }
     else return( false );
@@ -290,7 +287,6 @@ bool T64Processor::busWriteUncached( int     reqModNum,
     if ( proc != nullptr ) {
 
         // ??? we are the target.
-        // ??? if HPA space return the data ...
 
         return (true );
     }

@@ -2263,9 +2263,6 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 
-    if      ( instrOpToken == TOK_OP_IITLB ) depositInstrFieldU( instr, 31, 2, 0 );
-    else if ( instrOpToken == TOK_OP_IDTLB ) depositInstrFieldU( instr, 31, 2, 1 );
-
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
@@ -2279,19 +2276,27 @@ void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseInstrPurgeTlbOp" removes a translation in the TLB. RegB contains the virtual
 // address. The result is in RegR.
 //
-//      PITLB <targetReg> "," <RegB>
-//      PDTLB <targetReg> "," <RegB>
+//      PITLB <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      PDTLB <targetReg> "," [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
 
-    if      ( instrOpToken == TOK_OP_PITLB ) depositInstrFieldU( instr, 31, 2, 0 );
-    else if ( instrOpToken == TOK_OP_PDTLB ) depositInstrFieldU( instr, 31, 2, 1 );
+    Expr rExpr = INIT_EXPR;
 
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
+
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG) {
+        
+        depositInstrRegA( instr, (uint32_t) rExpr.val );
+    }
+    
+    acceptLparen( );
     acceptRegB( instr );
+    acceptRparen( );
     acceptEOS( );
 }
 
@@ -2299,40 +2304,59 @@ void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseInstrFlushCacheOp" assemble the cache flush operation. This only applies 
 // to data or unified caches.
 //
-//      FDCA <targetReg> "," <RegB>
+//      FICA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      FDCA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrFlushCache( uint32_t *instr, uint32_t instrOpToken ) {
     
+    Expr rExpr = INIT_EXPR;
+
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
+
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG) {
+        
+        depositInstrRegA( instr, (uint32_t) rExpr.val );
+    }
+    
+    acceptLparen( );
     acceptRegB( instr );
+    acceptRparen( );
     acceptEOS( );
 }
 
 //----------------------------------------------------------------------------------------
 // "parseInstrPurgeCacheOp" assemble the cache purge operation.
 //
-//      PICA <targetReg> "," <RegB>
-//      PDCA <targetReg> "," <RegB≤
+//      PICA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      PDCA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrPurgeCache( uint32_t *instr, uint32_t instrOpToken ) {
 
-    if      ( instrOpToken == TOK_OP_PICA ) depositInstrFieldU( instr, 31, 2, 0 );
-    else if ( instrOpToken == TOK_OP_PDCA ) depositInstrFieldU( instr, 31, 2, 1 );
-    
+    Expr rExpr = INIT_EXPR;
+
     nextToken( );
     acceptRegR( instr );
     acceptComma( );
+
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_GREG) {
+        
+        depositInstrRegA( instr, (uint32_t) rExpr.val );
+    }
+    
+    acceptLparen( );
     acceptRegB( instr );
+    acceptRparen( );
     acceptEOS( );
 }
 
 //----------------------------------------------------------------------------------------
 // "parseInstrSregOp" sets or clears status register bits. 
-// Under construction ...
 //
 //      RSM <RegR> "," <val>
 //      SSM <RegR> "," <val>
