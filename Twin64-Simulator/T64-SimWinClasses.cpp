@@ -29,10 +29,35 @@
 #include "T64-SimDeclarations.h"
 
 //----------------------------------------------------------------------------------------
-// Local name space. We try to keep utility functions local to the file.
+// Local name space. We try to keep utility functions and constants local to the 
+// file.
 //
 //----------------------------------------------------------------------------------------
 namespace {
+
+//----------------------------------------------------------------------------------------
+//
+// 
+//----------------------------------------------------------------------------------------
+const int DEF_WIN_COL_ABS_MEM   = 112;
+const int DEF_WIN_ROW_ABS_MEM   = 4;
+
+const int DEF_WIN_COL_CODE_MEM  = 80;
+const int DEF_WIN_ROW_CODE_MEM  = 8;
+
+const int DEF_WIN_COL_CPU_STATE = 96;
+const int DEF_WIN_ROW_CPU_STATE = 6;
+
+const int DEF_WIN_COL_TLB       = 70;
+const int DEF_WIN_ROW_TLB       = 4;
+
+const int DEF_WIN_COL_CACHE     = 112;
+const int DEF_WIN_ROW_CACHE     = 4;
+
+const int DEF_WIN_ROW_TEXT      = 10;
+
+const int DEF_WIN_COL_CONSOLE   = 112;
+const int DEF_WIN_ROW_CONSOLE   = 24;
 
 //----------------------------------------------------------------------------------------
 // Routine for creating the access rights string. It consists of the page access and 
@@ -160,8 +185,8 @@ void SimWinCpuState::setDefaults( ) {
     
     setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 5 );
-    setDefColumns( 100 );
+    setDefRows( DEF_WIN_ROW_CPU_STATE );
+    setDefColumns( DEF_WIN_COL_CPU_STATE );
     setRows( getDefRows( ));
     setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
@@ -181,7 +206,7 @@ void SimWinCpuState::setDefaults( ) {
 void SimWinCpuState::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-   
+
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
 
@@ -362,8 +387,8 @@ void SimWinAbsMem::setDefaults( ) {
     
     setWinType( WT_MEM_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 5 );
-    setDefColumns( 112 );
+    setDefRows( DEF_WIN_ROW_ABS_MEM );
+    setDefColumns( DEF_WIN_COL_ABS_MEM );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setEnable( false );
@@ -509,8 +534,8 @@ void SimWinCode::setDefaults( ) {
     setWinType( WT_CODE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setDefRows( 9 );
-    setDefColumns( 80 );
+    setDefRows( DEF_WIN_ROW_CODE_MEM );
+    setDefColumns( DEF_WIN_COL_CODE_MEM );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
 
@@ -629,8 +654,8 @@ void SimWinTlb::setDefaults( ) {
     setWinType( WT_TLB_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setDefRows( 5 );
-    setDefColumns( 80 );
+    setDefRows( DEF_WIN_ROW_TLB );
+    setDefColumns( DEF_WIN_COL_TLB );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
@@ -735,8 +760,8 @@ void SimWinCache::setDefaults( ) {
 
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 7 );
-    setDefColumns( 112 );
+    setDefRows( DEF_WIN_ROW_CACHE );
+    setDefColumns( DEF_WIN_COL_CACHE );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setCurrentItemAdr( 0 );
@@ -896,7 +921,7 @@ void SimWinText::setDefaults( ) {
     setWinType( WT_TEXT_WIN );
     setEnable( true );
 
-    setDefRows( 11 );
+    setDefRows( DEF_WIN_ROW_TEXT );
     setDefColumns( txWidth );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
@@ -1052,8 +1077,8 @@ void SimWinConsole::setDefaults( ) {
     
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
     
-    setDefRows( 10 );
-    setDefColumns( 110 );
+    setDefRows( DEF_WIN_ROW_CONSOLE );
+    setDefColumns( DEF_WIN_COL_CONSOLE );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     

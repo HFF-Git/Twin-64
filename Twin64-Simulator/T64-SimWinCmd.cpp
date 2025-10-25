@@ -343,11 +343,69 @@ void SimCommandsWin::setDefaults( ) {
     
     setWinType( WT_CMD_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 21 );
+    setDefRows( 24 );
     setDefColumns( 100 );
     setRows( getDefRows( ));
     setColumns( getDefColumns( ));
     setEnable( true );
+}
+
+//----------------------------------------------------------------------------------------
+// The banner line for command window. For now, we just label the banner line and show
+// a little indicate whether we are in WIN mode or not.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::drawBanner( ) {
+    
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
+    
+    setWinCursor( 1, 1 );
+    printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ));
+    padLine( fmtDesc ); 
+
+    if ( glb -> winDisplay -> isWindowsOn( )) {
+
+        if ( glb -> winDisplay -> isWinStackOn( )) 
+            printTextField((char *) "WS", ( fmtDesc | FMT_LAST_FIELD ));
+        else 
+            printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// The body lines of the command window are displayed after the banner line. The 
+// window is filled from the output buffer. We first set the screen lines as the
+// length of the command window may have changed.
+//
+// Rows to show is the number of lines between the header line and the last line,
+// which is out command input line. We fill from the lowest line upward to the header
+// line. Finally, we set the cursor to the last line in the command window.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::drawBody( ) {
+    
+    char lineOutBuf[ MAX_WIN_OUT_LINE_SIZE ];
+    
+    glb -> console ->setFmtAttributes( FMT_DEF_ATTR );
+  
+    int rowsToShow = getRows( ) - 2;
+    winOut -> setScrollWindowSize( rowsToShow );
+    setWinCursor( rowsToShow + 1, 1 );
+    
+    for ( int i = 0; i < rowsToShow; i++ ) {
+        
+        char *lineBufPtr = winOut -> getLineRelative( i );
+        if ( lineBufPtr != nullptr ) {
+            
+            sanitizeLine( lineBufPtr, lineOutBuf );
+            glb -> console -> clearLine( );
+            glb -> console -> writeChars( "%s", lineBufPtr );
+        }
+        
+        setWinCursor( rowsToShow - i, 1 );
+    }
+    
+    setWinCursor( getRows( ), 1 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -567,64 +625,6 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
             } break;
         }
     }
-}
-
-//----------------------------------------------------------------------------------------
-// The banner line for command window. For now, we just label the banner line and show
-// a little indicate whether we are in WIN mode or not.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::drawBanner( ) {
-    
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
-    
-    setWinCursor( 1, 1 );
-    printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ));
-    padLine( fmtDesc ); 
-
-    if ( glb -> winDisplay -> isWindowsOn( )) {
-
-        if ( glb -> winDisplay -> isWinStackOn( )) 
-            printTextField((char *) "WS", ( fmtDesc | FMT_LAST_FIELD ));
-        else 
-            printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
-    }
-}
-
-//----------------------------------------------------------------------------------------
-// The body lines of the command window are displayed after the banner line. The 
-// window is filled from the output buffer. We first set the screen lines as the
-// length of the command window may have changed.
-//
-// Rows to show is the number of lines between the header line and the last line,
-// which is out command input line. We fill from the lowest line upward to the header
-// line. Finally, we set the cursor to the last line in the command window.
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::drawBody( ) {
-    
-    char lineOutBuf[ MAX_WIN_OUT_LINE_SIZE ];
-    
-    glb -> console ->setFmtAttributes( FMT_DEF_ATTR );
-  
-    int rowsToShow = getRows( ) - 2;
-    winOut -> setScrollWindowSize( rowsToShow );
-    setWinCursor( rowsToShow + 1, 1 );
-    
-    for ( int i = 0; i < rowsToShow; i++ ) {
-        
-        char *lineBufPtr = winOut -> getLineRelative( i );
-        if ( lineBufPtr != nullptr ) {
-            
-            sanitizeLine( lineBufPtr, lineOutBuf );
-            glb -> console -> clearLine( );
-            glb -> console -> writeChars( "%s", lineBufPtr );
-        }
-        
-        setWinCursor( rowsToShow - i, 1 );
-    }
-    
-    setWinCursor( getRows( ), 1 );
 }
 
 //----------------------------------------------------------------------------------------

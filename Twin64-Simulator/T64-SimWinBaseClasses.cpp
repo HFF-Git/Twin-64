@@ -110,7 +110,7 @@ void SimWin::setEnable( bool arg ) {
 }
 
 int SimWin::getRows( ) { 
-    
+
     return ( winRows ); 
 }
 
@@ -175,6 +175,11 @@ int SimWin::getDefColumns( ) {
 // of this capability is entirely up to the specific window. On the "WT" command, these
 // functions are used.
 //
+// ??? if the window size is different for a toggle value, we would need to keep
+// the sizes for a toggle value...
+// 
+// ??? how about an array of toggle win sizes used by getColumns and getRows for 
+// size computation ?
 //----------------------------------------------------------------------------------------
 void SimWin::setWinToggleLimit( int limit ) { 
     
