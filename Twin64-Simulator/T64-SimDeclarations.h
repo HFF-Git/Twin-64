@@ -121,6 +121,7 @@ const int MAX_CMD_LINE_SIZE         = 256;
 const int MAX_WIN_OUT_LINES         = 256;
 const int MAX_WIN_OUT_LINE_SIZE     = 256;
 const int MAX_WIN_NAME              = 8;
+const int MAX_WIN_TOGGLES           = 8;
 
 const int MAX_TOK_STR_SIZE          = 256;
 const int MAX_TOK_NAME_SIZE         = 32;
@@ -743,6 +744,16 @@ struct SimWinOutBuffer : SimFormatter {
 };
 
 //----------------------------------------------------------------------------------------
+// A window area is defined by the number of rows and columns.e
+// 
+//----------------------------------------------------------------------------------------
+struct SimWinSize {
+
+    int         col = 0;
+    int         row = 0;
+};
+
+//----------------------------------------------------------------------------------------
 // The "SimWin" class. The simulator will in screen mode feature a set of stacks each 
 // with a list of screen sub windows. The default is one stack, the general register
 // set window and the command line window, which also spans all stacks. Each sub window
@@ -752,10 +763,11 @@ struct SimWinOutBuffer : SimFormatter {
 // Examples are to initialize a window, redraw and so on.
 //
 // A window can also implement different views of the data. This is handled by a 
-// toggle mechanism. The window maintains the current toggle value.
+// toggle mechanism. The window maintains the current toggle value as well as the
+// default and actual sizes of the windows for each toggle view.
 //
-// Most windows will be associated with a submodule. The window also keeps the module
-// number it is associated with.
+// Most windows will be associated with a module or submodule. The window also keeps
+// the simulator module number it is associated with.
 //
 //----------------------------------------------------------------------------------------
 struct SimWin {
@@ -789,12 +801,6 @@ struct SimWin {
     void            setColumns( int arg );
     int             getColumns( );
     
-    void            setDefRows( int rows );
-    int             getDefRows( );
-
-    void            setDefColumns( int rdx );
-    int             getDefColumns( );
-    
     void            setWinOrigin( int row, int col );
     void            setWinCursor( int row, int col );
     
@@ -806,9 +812,14 @@ struct SimWin {
 
     void            setWinToggleLimit( int limit );
     int             getWinToggleLimit( );
-    
+
     int             getWinToggleVal( );
     void            setWinToggleVal( int val );
+
+    SimWinSize      getWinToggleDefSize( int toggleVal );
+    void            setWinToggleDefSize( int toggleVal, int row, int col );
+
+    void            initWinToggleSizes( );
     
     void            printNumericField(  T64Word val,
                                         uint32_t fmtDesc = 0,
@@ -864,12 +875,19 @@ struct SimWin {
     bool            winEnabled          = false;
     int             winRadix            = 16;
     int             winStack            = 0;
+    
+    int             winToggleLimit      = 0;
+    int             winToggleVal        = 0;
+
+    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ]  = { 0 };
+    SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ]     = { 0 };
+
+    #if 0
     int             winRows             = 0;
     int             winColumns          = 0;
     int             winDefRows          = 0;
     int             winDefColumns       = 0;
-    int             winToggleLimit      = 0;
-    int             winToggleVal        = 0;
+   #endif
     
     int             winAbsCursorRow     = 0;
     int             winAbsCursorCol     = 0;

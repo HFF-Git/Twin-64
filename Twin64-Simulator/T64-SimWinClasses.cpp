@@ -46,7 +46,7 @@ const int DEF_WIN_COL_CODE_MEM  = 80;
 const int DEF_WIN_ROW_CODE_MEM  = 8;
 
 const int DEF_WIN_COL_CPU_STATE = 96;
-const int DEF_WIN_ROW_CPU_STATE = 6;
+const int DEF_WIN_ROW_CPU_STATE = 5;
 
 const int DEF_WIN_COL_TLB       = 70;
 const int DEF_WIN_ROW_TLB       = 4;
@@ -92,13 +92,14 @@ int buildAccessRightsStr( char *bufStr, int type, int p1, int p2 ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Line sanitizing. We cannot just print out whatever is in the line buffer, since it 
-// may contains dangerous escape sequences, which would garble our terminal screen 
-// layout. In the command window we just allow "safe" escape sequences, such as changing
-// the font color and so on. When we encounter an escape character followed by a "[" 
-// character we scan the escape sequence until the final character, which lies between
-// 0x40 and 0x7E. Based on the last character, we distinguish between "safe" and 
-// "unsafe" escape sequences. In the other cases, we just copy input to output.
+// Line sanitizing. We cannot just print out whatever is in the line buffer, since 
+// it may contains dangerous escape sequences, which would garble our terminal screen 
+// layout. In the command window we just allow "safe" escape sequences, such as 
+// changing the font color and so on. When we encounter an escape character followed
+// by a "[" character we scan the escape sequence until the final character, which 
+// lies between 0x40 and 0x7E. Based on the last character, we distinguish between
+// "safe" and "unsafe" escape sequences. In the other cases, we just copy input to 
+// output.
 //
 //----------------------------------------------------------------------------------------
 bool isSafeFinalByte( char finalByte ) {
@@ -174,6 +175,8 @@ SimWinCpuState::SimWinCpuState( SimGlobals *glb, int modNum ) : SimWin( glb ) {
 
     this -> proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
     if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+
+    setDefaults( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -185,11 +188,13 @@ void SimWinCpuState::setDefaults( ) {
     
     setWinType( WT_CPU_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( DEF_WIN_ROW_CPU_STATE );
-    setDefColumns( DEF_WIN_COL_CPU_STATE );
-    setRows( getDefRows( ));
+
     setWinToggleLimit( 3 );
-    setWinToggleVal( 0 );
+    setWinToggleDefSize( 0, DEF_WIN_ROW_CPU_STATE ,DEF_WIN_COL_CPU_STATE );
+    setWinToggleDefSize( 1, DEF_WIN_ROW_CPU_STATE + 1, DEF_WIN_COL_CPU_STATE );
+    setWinToggleDefSize( 2, DEF_WIN_ROW_CPU_STATE, DEF_WIN_COL_CPU_STATE );
+    initWinToggleSizes( );
+
     setEnable( true );
 }
 
@@ -375,6 +380,7 @@ SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, int modNum, T64Word adr ) :
 
     this -> adr = rounddown( adr, 8 );
     setWinModNum( modNum );
+    setDefaults( );
  }
 
 //----------------------------------------------------------------------------------------
@@ -387,17 +393,17 @@ void SimWinAbsMem::setDefaults( ) {
     
     setWinType( WT_MEM_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( DEF_WIN_ROW_ABS_MEM );
-    setDefColumns( DEF_WIN_COL_ABS_MEM );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
-    setEnable( false );
+
     setWinToggleLimit( 4 );
-    setWinToggleVal( 0 );
+    for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
+        setWinToggleDefSize( i, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    initWinToggleSizes( );
+    
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrementItemAdr( 8 * 4 );
     setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
+    setEnable( false );
 }
 
 //----------------------------------------------------------------------------------------
@@ -409,15 +415,8 @@ void SimWinAbsMem::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
 
-    switch ( getWinToggleVal( )) {
-
-        case 0:
-        case 1: setRadix( 16 ); break;
-
-        case 2: setRadix( 10 ); break;
-
-        default: setRadix( 16 );
-    }
+    if ( getWinToggleVal( ) == 2 )  setRadix( 10 ); 
+    else                            setRadix( 16 ); 
 
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
@@ -516,6 +515,7 @@ SimWinCode::SimWinCode( SimGlobals *glb, int modNum, T64Word adr ) :
 
     setWinModNum( modNum );
     this -> adr = rounddown( adr, 8 );
+    setDefaults( );
 }
 
 SimWinCode::  ~  SimWinCode( ) {
@@ -534,10 +534,9 @@ void SimWinCode::setDefaults( ) {
     setWinType( WT_CODE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setDefRows( DEF_WIN_ROW_CODE_MEM );
-    setDefColumns( DEF_WIN_COL_CODE_MEM );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
+    setWinToggleLimit( 1 );
+    setWinToggleDefSize( 0, DEF_WIN_ROW_CODE_MEM, DEF_WIN_COL_CODE_MEM );
+    initWinToggleSizes( );
 
     setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
@@ -654,15 +653,13 @@ void SimWinTlb::setDefaults( ) {
     setWinType( WT_TLB_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setDefRows( DEF_WIN_ROW_TLB );
-    setDefColumns( DEF_WIN_COL_TLB );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
+    setWinToggleLimit( 1 );
+    setWinToggleDefSize( 0, DEF_WIN_ROW_TLB, DEF_WIN_COL_TLB );
+    initWinToggleSizes( );
+
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
     setLimitItemAdr( tlb -> getTlbSize( ));
-    setWinToggleLimit( 0 );
-    setWinToggleVal( 0 );
     setEnable( true );
 }
 
@@ -760,10 +757,12 @@ void SimWinCache::setDefaults( ) {
 
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( DEF_WIN_ROW_CACHE );
-    setDefColumns( DEF_WIN_COL_CACHE );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
+
+    setWinToggleLimit( cache -> getWays( ) );
+    for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
+        setWinToggleDefSize( i, DEF_WIN_ROW_CACHE, DEF_WIN_COL_CACHE );
+    initWinToggleSizes( );
+
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
 
@@ -771,8 +770,6 @@ void SimWinCache::setDefaults( ) {
         setLimitItemAdr( cache -> getSetSize( ));
     else setLimitItemAdr( cache -> getSetSize( ) * 2 );
     
-    setWinToggleLimit( cache -> getWays( ));
-    setWinToggleVal( 0 );
     setEnable( true );
 }
 
@@ -827,7 +824,6 @@ void SimWinCache::drawLine( T64Word index ) {
     uint8_t          *cData;
     bool             firstHalf = true;
     
-    ( index % 2 == 0 );
     if ( cache -> getCacheLineSize( ) == 64 ) {
         
         firstHalf = ( index % 2 == 0 );
@@ -902,6 +898,7 @@ SimWinText::SimWinText( SimGlobals *glb, char *fName ) : SimWinScrollable( glb )
     else throw ( ERR_EXPECTED_FILE_NAME );
 
     setWinModNum ( -1 );
+    setDefaults( );
 }
 
 SimWinText:: ~SimWinText( ) {
@@ -919,17 +916,16 @@ void SimWinText::setDefaults( ) {
     int txWidth = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_LINE_WIDTH );
     
     setWinType( WT_TEXT_WIN );
-    setEnable( true );
-
-    setDefRows( DEF_WIN_ROW_TEXT );
-    setDefColumns( txWidth );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
     
+    setWinToggleLimit( 1 );
+    setWinToggleDefSize( 0, DEF_WIN_ROW_TEXT, txWidth );
+    initWinToggleSizes( );
+
     setRadix( 10 );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
     setLimitItemAdr( 1 );
+    setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1066,6 +1062,8 @@ SimWinConsole::SimWinConsole( SimGlobals *glb ) : SimWin( glb ) {
     
     this -> glb = glb;
     winOut      = new SimWinOutBuffer( );
+
+    setDefaults( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1075,14 +1073,13 @@ SimWinConsole::SimWinConsole( SimGlobals *glb ) : SimWin( glb ) {
 //----------------------------------------------------------------------------------------
 void SimWinConsole::setDefaults( ) {
     
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    
-    setDefRows( DEF_WIN_ROW_CONSOLE );
-    setDefColumns( DEF_WIN_COL_CONSOLE );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
-    
     setWinType( WT_CONSOLE_WIN );
+    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
+
+    setWinToggleLimit( 1 );
+    setWinToggleDefSize( 0, DEF_WIN_ROW_CONSOLE, DEF_WIN_COL_CONSOLE );
+    initWinToggleSizes( );
+    
     setEnable( true );
 }
 

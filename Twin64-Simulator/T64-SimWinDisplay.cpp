@@ -215,7 +215,7 @@ int SimWinDisplay::computeColumnsNeeded( int winStack ) {
             ( windowList[ i ] -> isEnabled( )) &&
             ( windowList[ i ] -> getWinStack( ) == winStack )) {
             
-            int columns = windowList[ i ] -> getDefColumns( );
+            int columns = windowList[ i ] -> getColumns( );
             if ( columns > columnSize ) columnSize = columns;
         }
     }
@@ -389,7 +389,7 @@ void SimWinDisplay::reDraw( ) {
         
         if ( maxColumnsNeeded == 0 ) {
 
-            maxColumnsNeeded = cmdWin -> getDefColumns( );
+            maxColumnsNeeded = cmdWin -> getColumns( );
             if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
         }
        
@@ -399,7 +399,7 @@ void SimWinDisplay::reDraw( ) {
     else {
         
         maxRowsNeeded       = cmdWin -> getRows( );
-        maxColumnsNeeded    = cmdWin -> getDefColumns( );
+        maxColumnsNeeded    = cmdWin -> getColumns( );
         
         cmdWin -> setWinOrigin( 1, 1 );
     }
@@ -575,7 +575,7 @@ void SimWinDisplay::windowSetRows( int rows, int winNum ) {
     if ( winNum == 0 ) winNum = currentWinNum;
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
       
-    if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getDefRows( );
+    if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getRows( );
                 
     windowList[ winNum - 1 ] -> setRows( rows );
     currentWinNum = winNum;
@@ -587,7 +587,7 @@ void SimWinDisplay::windowSetCmdWinRows( int rows ) {
 
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
 
-    if ( rows == 0 ) rows = cmdWin -> getDefRows( );
+    if ( rows == 0 ) rows = cmdWin -> getRows( );
     cmdWin -> setRows( rows );
 
     setWinReFormat( );

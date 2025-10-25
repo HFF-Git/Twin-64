@@ -111,22 +111,24 @@ void SimWin::setEnable( bool arg ) {
 
 int SimWin::getRows( ) { 
 
-    return ( winRows ); 
+    return ( winToggleSizes[ winToggleVal ].row ); 
 }
 
 void SimWin::setRows( int arg ) { 
-    
-    winRows = (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
+
+    winToggleSizes[ winToggleVal ].row  = 
+        (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
 }
 
 int SimWin::getColumns( ) { 
     
-    return ( winColumns ); 
+    return ( winToggleSizes[ winToggleVal ].col );
 }
 
 void SimWin::setColumns( int arg ) { 
     
-    winColumns = (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
+    winToggleSizes[ winToggleVal ].col = 
+        (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
 }
 
 void SimWin::setRadix( int rdx ) { 
@@ -150,46 +152,57 @@ void SimWin::setWinStack( int wStack ) {
     winStack = wStack; 
 }
 
- void SimWin::setDefRows( int rows ) {
-
-    winDefRows = rows;
- }
-
-int SimWin::getDefRows( ) {
-
-    return ( winDefRows );
-}
-
-void SimWin::setDefColumns( int rdx ) {
-
-    winDefColumns = rdx;
-}
-
-int SimWin::getDefColumns( ) {
-
-    return( winDefColumns );
-}
-
 //----------------------------------------------------------------------------------------
-// Each window allows perhaps toggling through different content. The implementation 
-// of this capability is entirely up to the specific window. On the "WT" command, these
-// functions are used.
+// Each window allows the toggling through different content. The implementation of
+// what the particular toggle value means is entirely up to the specific window. 
+// When a window is created, the default values for the number of defied views is 
+// set. Routines that get and set window rows and column sizes are always referring 
+// to the actual toggled view. The "WT" command advances through the defined toggle
+// view.
 //
-// ??? if the window size is different for a toggle value, we would need to keep
-// the sizes for a toggle value...
-// 
-// ??? how about an array of toggle win sizes used by getColumns and getRows for 
-// size computation ?
+// Win toggle limit is the number of defined toggles. There needs to be at least one
+// toggle view defined. 
 //----------------------------------------------------------------------------------------
 void SimWin::setWinToggleLimit( int limit ) { 
     
-    winToggleLimit = limit; 
+    winToggleLimit = limit % MAX_WIN_TOGGLES; 
 }
 
 int SimWin::getWinToggleLimit( ) { 
     
     return ( winToggleLimit ); 
 }
+
+void SimWin::setWinToggleDefSize( int toggleVal, int row, int col ) {
+
+    toggleVal = toggleVal % MAX_WIN_TOGGLES;
+
+    winToggleDefSizes[ toggleVal ].row = row;
+    winToggleDefSizes[ toggleVal ].col = col;
+}
+
+SimWinSize SimWin::getWinToggleDefSize( int toggleVal ) {
+
+    return( winToggleDefSizes[ toggleVal % MAX_WIN_TOGGLES ]);
+}
+
+void SimWin::initWinToggleSizes( ) {
+
+    for ( int i = 0; i < MAX_WIN_TOGGLES; i++ ) 
+    winToggleSizes[ i ] = winToggleDefSizes[ i ];
+
+    winToggleVal = 0;
+}
+
+void SimWin::toggleWin( ) { 
+
+    winToggleVal++;
+
+    if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
+}
+
+
+// ??? needed ???
 
 void SimWin::setWinToggleVal( int val ) { 
     
@@ -201,12 +214,11 @@ int  SimWin::getWinToggleVal( ) {
     return ( winToggleVal ); 
 }
 
-void SimWin::toggleWin( ) { 
 
-    winToggleVal++;
 
-    if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
-}
+
+
+
 
 //----------------------------------------------------------------------------------------
 // "setWinOrigin" sets the absolute cursor position for the terminal screen. We 
@@ -236,7 +248,8 @@ void SimWin::setWinCursor( int row, int col ) {
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
     
-    if ( row > winRows )            row = winRows;
+    if ( row > winToggleSizes[ winToggleVal ].row ) 
+        row = winToggleSizes[ winToggleVal ].row;
     if ( col > MAX_WIN_COL_SIZE )   col = MAX_WIN_COL_SIZE;
     
     glb -> console -> setAbsCursor( winAbsCursorRow + row - 1, winAbsCursorCol + col );
@@ -278,7 +291,8 @@ void SimWin::printNumericField( T64Word     val,
     
     if ( row == 0 )                     row     = lastRowPos;
     if ( col == 0 )                     col     = lastColPos;
-    if ( fmtDesc & FMT_LAST_FIELD )     col     = winColumns - fLen;
+    if ( fmtDesc & FMT_LAST_FIELD )     
+        col = winToggleSizes[ winToggleVal ].col - fLen;
 
     int maxLen = glb -> console -> numberFmtLen( fmtDesc, val );
    
@@ -331,7 +345,7 @@ void SimWin::printTextField( char       *text,
         fLen = dLen;
     }
     
-    if ( fmtDesc & FMT_LAST_FIELD ) col = winColumns - fLen;
+    if ( fmtDesc & FMT_LAST_FIELD ) col = winToggleSizes[ winToggleVal ].col - fLen;
     
     setWinCursor( row, col );
     glb -> console -> setFmtAttributes( fmtDesc );
@@ -405,7 +419,7 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if ( fmtDesc & FMT_LAST_FIELD ) col = winColumns - fLen;
+    if ( fmtDesc & FMT_LAST_FIELD ) col = winToggleSizes[ winToggleVal ].col - fLen;
     
     switch ( winRadix ) {
             
@@ -455,7 +469,7 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
 void SimWin::padLine( uint32_t fmtDesc ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
-    padField( lastColPos, winColumns );
+    padField( lastColPos, winToggleSizes[ winToggleVal ].col );
 }
 
 //----------------------------------------------------------------------------------------
@@ -466,7 +480,8 @@ void SimWin::clearField( int len, uint32_t fmtDesc ) {
     
     int pos = lastColPos;
     
-    if ( pos + len > winColumns ) len = winColumns - pos;
+    if ( pos + len > winToggleSizes[ winToggleVal ].col ) 
+        len = winToggleSizes[ winToggleVal ].col - pos;
     
     glb -> console -> setFmtAttributes( fmtDesc );
     padField( lastColPos, lastColPos + len );

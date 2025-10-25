@@ -332,6 +332,8 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
     winOut      = new SimWinOutBuffer( );
     disAsm      = new T64DisAssemble( );
     inlineAsm   = new T64Assemble( );
+
+    setDefaults( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -343,10 +345,11 @@ void SimCommandsWin::setDefaults( ) {
     
     setWinType( WT_CMD_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
-    setDefRows( 24 );
-    setDefColumns( 100 );
-    setRows( getDefRows( ));
-    setColumns( getDefColumns( ));
+
+    setWinToggleLimit( 1 );
+    setWinToggleDefSize( 0, 24, 100 );
+    initWinToggleSizes( );
+
     setEnable( true );
 }
 
@@ -1787,20 +1790,13 @@ void SimCommandsWin::winSetRowsCmd( ) {
 // window. The number includes the banner line. If the "lines" argument is omitted, 
 // the window default value will be used. 
 //
-//  CWL [ <lines> ]
+//  CWL <lines>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
-    if ( tok -> isToken( TOK_EOS )) {
-
-        glb -> winDisplay -> windowSetCmdWinRows( getDefRows( ));
-    }
-    else {
-
-        int winLines = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
-        tok -> checkEOS( );
-        glb -> winDisplay -> windowSetCmdWinRows( winLines );
-    }
+    int winLines = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_LINES );
+    tok -> checkEOS( );
+    glb -> winDisplay -> windowSetCmdWinRows( winLines );
 }
 
 //----------------------------------------------------------------------------------------
