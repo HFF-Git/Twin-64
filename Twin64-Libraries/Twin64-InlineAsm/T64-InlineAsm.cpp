@@ -355,7 +355,7 @@ enum InstrFlags : uint32_t {
     IM_B_OP     = ( IF_G ),
     IM_BE_OP    = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
-    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
+    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE ),
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
     IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
     IM_LPA_OP   = ( IF_M ),
@@ -1270,7 +1270,6 @@ inline void replaceInstrGroupField( T64Instr *instr, uint32_t instrMask ) {
 //----------------------------------------------------------------------------------------
 // Set the condition field for compare type instructions based on the instruction flags.
 //
-// ??? fix numbers ....
 //----------------------------------------------------------------------------------------
 void setInstrCmpCondField( uint32_t *instr, uint32_t instrFlags ) {
    
@@ -1290,7 +1289,6 @@ void setInstrXbrCondField( uint32_t *instr, uint32_t instrFlags ) {
     else if ( instrFlags & IF_EV )  depositInstrFieldU( instr, 20, 2, 5 );
     else if ( instrFlags & IF_GT )  depositInstrFieldU( instr, 20, 2, 6 );
     else if ( instrFlags & IF_OD )  depositInstrFieldU( instr, 20, 2, 7 );
-    
 }
 
 //----------------------------------------------------------------------------------------
@@ -1324,6 +1322,10 @@ void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
 // There are some instruction options that are exclusive to each other. There will 
 // be a check for this case after all options have been analyzed.
 //
+// One final quirk. The branch instruction "B" conflicts with the ".B" option. We
+// need to check the context. The tokenizer recognizes an opCOde, we patch the token
+// to be an identifier.
+//
 //----------------------------------------------------------------------------------------
 void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
     
@@ -1333,9 +1335,6 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         nextToken( );
         
-        // ??? what is this ??? token as branch and "B" option ?
-        // ??? we recognize a Branch but in this context it is a symbol.
-
         if ( isToken( TOK_OP_B )) {
             
             currentToken.typ = TYP_IDENT;
@@ -1352,6 +1351,10 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrMask |= IF_LT;
         else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrMask |= IF_NE;
         else if ( strcmp( optBuf, ((char *) "GE" )) == 0 ) instrMask |= IF_GE;
+        else if ( strcmp( optBuf, ((char *) "GT" )) == 0 ) instrMask |= IF_GT;
+        else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrMask |= IF_LE;
+        else if ( strcmp( optBuf, ((char *) "OD" )) == 0 ) instrMask |= IF_OD;
+        else if ( strcmp( optBuf, ((char *) "EV" )) == 0 ) instrMask |= IF_EV;
             
         else {
             
@@ -1391,6 +1394,10 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         if ( instrMask & IF_LT ) cnt ++;
         if ( instrMask & IF_NE ) cnt ++;
         if ( instrMask & IF_LE ) cnt ++;
+        if ( instrMask & IF_GT ) cnt ++;
+        if ( instrMask & IF_GE ) cnt ++;
+        if ( instrMask & IF_OD ) cnt ++;
+        if ( instrMask & IF_EV ) cnt ++;
         if ( cnt > 1 ) throw ( ERR_DUPLICATE_INSTR_OPT );
         
         cnt = 0;
@@ -2406,24 +2413,27 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 // "parseInstrTrapOp" assembles the trap operations.
 //
-//      Generic. TRAP <info> "," RegB "," RegA "," <val>
+//      Generic. TRAP <info> "," RegB "," RegA
 //
-// We have up to 32 trap group IDs. Group zero should be the BRK group ID..
+// We have up to 32 trap group IDs. Group zero should be the BRK group ID.
 //
-// ??? to be designed ...
 //----------------------------------------------------------------------------------------
 void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    switch ( extractInstrOptField( *instr )) {
-            
-        case 0: ;
-        case 1: ;
-        case 2: ;
-        case 3: ;
-        case 4: ;
-        default: ;
+
+    Expr rExpr = INIT_EXPR;
+
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
+
+        depositInstrField( instr, 13, 2, ( rExpr.val & 0x3 ));
+        depositInstrField( instr, 19, 3, (( rExpr.val >> 2 ) & 0x7 ));
     }
-   
+    else throw ( ERR_EXPECTED_NUMERIC );
+    
+    acceptComma( );
+    acceptRegB( instr );
+    acceptComma( );
+    acceptRegA( instr );
     acceptEOS( );
 }
 
