@@ -332,8 +332,10 @@ enum InstrFlags : uint32_t {
     IF_LT       = ( 1U << 25 ),
     IF_NE       = ( 1U << 26 ),
     IF_LE       = ( 1U << 27 ),
-    IF_EV       = ( 1U << 28 ),
-    IF_OD       = ( 1U << 29 ),
+    IF_GT       = ( 1U << 28 ),
+    IF_GE       = ( 1U << 29 ),
+    IF_EV       = ( 1U << 30 ),
+    IF_OD       = ( 1U << 31 ),
     
     IM_NIL      = 0,
     IM_ADD_OP   = ( IF_B | IF_H | IF_W | IF_D ),
@@ -341,7 +343,7 @@ enum InstrFlags : uint32_t {
     IM_AND_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N | IF_C ),
     IM_OR_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
     IM_XOR_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
-    IM_CMP_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_EQ | IF_LT | IF_NE | IF_LE ),
+    IM_CMP_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_EQ | IF_LT | IF_NE | IF_GE ),
     IM_EXTR_OP  = ( IF_S ),
     IM_DEP_OP   = ( IF_Z | IF_I ),
     IM_SHLxA_OP = ( IF_I ),
@@ -353,9 +355,9 @@ enum InstrFlags : uint32_t {
     IM_B_OP     = ( IF_G ),
     IM_BE_OP    = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
-    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
-    IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
-    IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_EV | IF_OD ),
+    IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
+    IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
+    IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
     IM_LPA_OP   = ( IF_M ),
     IM_ITLB_OP  = ( IF_I | IF_D ),
     IM_PTLB_OP  = ( IF_I | IF_D ),
@@ -1268,13 +1270,27 @@ inline void replaceInstrGroupField( T64Instr *instr, uint32_t instrMask ) {
 //----------------------------------------------------------------------------------------
 // Set the condition field for compare type instructions based on the instruction flags.
 //
+// ??? fix numbers ....
 //----------------------------------------------------------------------------------------
-void setInstrCondField( uint32_t *instr, uint32_t instrFlags ) {
+void setInstrCmpCondField( uint32_t *instr, uint32_t instrFlags ) {
    
     if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 20, 2, 0 );
     else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 20, 2, 1 );
     else if ( instrFlags & IF_NE )  depositInstrFieldU( instr, 20, 2, 2 );
-    else if ( instrFlags & IF_LE )  depositInstrFieldU( instr, 20, 2, 3 );
+    else if ( instrFlags & IF_GE )  depositInstrFieldU( instr, 20, 2, 3 );
+}
+
+void setInstrXbrCondField( uint32_t *instr, uint32_t instrFlags ) {
+
+    if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 20, 2, 0 );
+    else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 20, 2, 1 );
+    else if ( instrFlags & IF_NE )  depositInstrFieldU( instr, 20, 2, 2 );
+    else if ( instrFlags & IF_GE )  depositInstrFieldU( instr, 20, 2, 3 );
+    else if ( instrFlags & IF_LE )  depositInstrFieldU( instr, 20, 2, 4 );
+    else if ( instrFlags & IF_EV )  depositInstrFieldU( instr, 20, 2, 5 );
+    else if ( instrFlags & IF_GT )  depositInstrFieldU( instr, 20, 2, 6 );
+    else if ( instrFlags & IF_OD )  depositInstrFieldU( instr, 20, 2, 7 );
+    
 }
 
 //----------------------------------------------------------------------------------------
@@ -1335,7 +1351,7 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         if      ( strcmp( optBuf, ((char *) "EQ" )) == 0 ) instrMask |= IF_EQ;
         else if ( strcmp( optBuf, ((char *) "LT" )) == 0 ) instrMask |= IF_LT;
         else if ( strcmp( optBuf, ((char *) "NE" )) == 0 ) instrMask |= IF_NE;
-        else if ( strcmp( optBuf, ((char *) "LE" )) == 0 ) instrMask |= IF_LE;
+        else if ( strcmp( optBuf, ((char *) "GE" )) == 0 ) instrMask |= IF_GE;
             
         else {
             
@@ -1545,7 +1561,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else if ( instrOpToken == TOK_OP_CMP ) {
         
-        setInstrCondField( instr, instrFlags );
+        setInstrCmpCondField( instr, instrFlags );
     }
 }
 
@@ -2096,17 +2112,21 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 // "parseOpCBR" performa a compare and a branch based on the condition.
 //
-//      CBR ".EQ/LT/NE/LE" RegR "," RegB "," <ofs>
+//      ABR ".EQ/NE/LT/LE/GT/GE/OD/EV" RegR "," RegB "," <ofs>
+//      CBR ".EQ/NE/LT/LE/GT/GE/OD/EV" RegR "," RegB "," <ofs>
+//      MBR ".EQ/NE/LT/LE/GT/GE/OD/EV" RegR "," RegB "," <ofs>
 //
 //----------------------------------------------------------------------------------------
-void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
+void parseInstrXBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) {
+    if ((( instrOpToken == TOK_OP_ABR  ) && ( instrFlags & ~IM_ABR_OP )) ||
+        (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) ||
+        (( instrOpToken == TOK_OP_MBR  ) && ( instrFlags & ~IM_MBR_OP ))) {
         
         throw ( ERR_INVALID_INSTR_OPT );
     }
@@ -2124,44 +2144,7 @@ void parseInstrCBR( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else throw ( ERR_EXPECTED_BR_OFS );
     
-    setInstrCondField( instr, instrFlags );
-    acceptEOS( );
-}
-
-//----------------------------------------------------------------------------------------
-// "parseInstrMBR" move the source reg to the target reg and branches on the condition
-// specified.
-//
-//      MBR ".EQ/LT/NE/LE/EV/OD" RegR "," RegB "," <ofs>
-//
-// ??? same conditions that CMP ?
-//----------------------------------------------------------------------------------------
-void parseInstrMBR( uint32_t *instr, uint32_t instrOpToken ) {
-    
-    Expr        rExpr       = INIT_EXPR;
-    uint32_t    instrFlags  = IF_NIL;
-    
-    nextToken( );
-    parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) {
-        
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-  
-    acceptRegR( instr ); 
-    acceptComma( );
-    acceptRegB( instr );
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) {
-        
-        rExpr.val = rExpr.val >> 2;
-        depositInstrImm19( instr, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_BR_OFS );
-    
-    setInstrCondField( instr, instrFlags );
+    setInstrXbrCondField( instr, instrFlags );
     acceptEOS( );
 }
 
@@ -2498,8 +2481,10 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_BV:     parseInstrBV( instr, instrOpToken );        break;
             case TOK_OP_BB:     parseInstrBB( instr, instrOpToken );        break;
                 
-            case TOK_OP_CBR:    parseInstrCBR( instr, instrOpToken );       break;
-            case TOK_OP_MBR:    parseInstrMBR( instr, instrOpToken );       break;
+            case TOK_OP_ABR:
+            case TOK_OP_MBR:
+            case TOK_OP_CBR:    parseInstrXBR( instr, instrOpToken );       break;
+                
                 
             case TOK_OP_MFCR:
             case TOK_OP_MTCR:   parseInstrMxCR( instr, instrOpToken );      break;
