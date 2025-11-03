@@ -110,7 +110,9 @@ enum T64TrapCode : int {
 };
 
 //----------------------------------------------------------------------------------------
-// Trap definition. A Trap will consist of a trap code and up to three info parameters.
+// Trap definition. A Trap will consist of a trap code, the trapping instruction 
+// address and up to two additional arguments. On an error condition,tThe processor
+// subsystems throw a trap. 
 //
 //----------------------------------------------------------------------------------------
 struct T64Trap {
@@ -118,26 +120,26 @@ struct T64Trap {
 public:
     
     T64Trap( T64TrapCode    trapCode,
-             int            trapInfo1 = 0,
-             int            trapInfo2 = 0,
-             int            trapInfo3 = 0 ) {
+             T64Word        instrAdr = 0,
+             T64Word        arg0     = 0,
+             T64Word        arg1     = 0 ) {
         
-        this -> trapCode  = trapCode;
-        this -> trapInfo1 = trapInfo1;
-        this -> trapInfo2 = trapInfo1;
-        this -> trapInfo3 = trapInfo1;
+        this -> trapCode = trapCode;
+        this -> instrAdr = instrAdr;
+        this -> arg0     = arg0;
+        this -> arg1     = arg1;
     }
     
 private:
     
-    int trapCode;
-    int trapInfo1;
-    int trapInfo2;
-    int trapInfo3;
+    T64TrapCode trapCode;
+    T64Word     instrAdr;
+    uint32_t    arg0;
+    T64Word     arg1;
 };
 
 //----------------------------------------------------------------------------------------
-//
+// Control registers.
 //
 //----------------------------------------------------------------------------------------
 enum ControlRegId : int {

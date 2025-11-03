@@ -144,7 +144,7 @@ bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 // Since we do not have a cache, the request handling is very simple.
 //
 //----------------------------------------------------------------------------------------
-bool T64Memory::busReadUncached( int     srcModNum,
+bool T64Memory::busEvtReadUncached( int     srcModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 
                                  int len ) {
@@ -152,7 +152,7 @@ bool T64Memory::busReadUncached( int     srcModNum,
     return( read( pAdr, data, len ));
 }
 
-bool T64Memory::busWriteUncached( int     srcModNum,
+bool T64Memory::busEvtWriteUncached( int     srcModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int     len ) {
@@ -160,7 +160,7 @@ bool T64Memory::busWriteUncached( int     srcModNum,
     return( write( pAdr, data, len ));
 }
 
-bool T64Memory::busReadSharedBlock( int     srcModNum,
+bool T64Memory::busEvtReadSharedBlock( int     srcModNum,
                                     T64Word pAdr,
                                     uint8_t *data, 
                                     int     len ) {
@@ -168,7 +168,7 @@ bool T64Memory::busReadSharedBlock( int     srcModNum,
     return( read( pAdr, data, len ));
 }
 
-bool T64Memory::busReadPrivateBlock( int     srcModNum, 
+bool T64Memory::busEvtReadPrivateBlock( int     srcModNum, 
                                      T64Word pAdr, 
                                      uint8_t *data, 
                                      int     len ) {
@@ -176,7 +176,7 @@ bool T64Memory::busReadPrivateBlock( int     srcModNum,
     return( read( pAdr, data, len ));
 }
 
-bool T64Memory::busWriteBlock( int     srcModNum,
+bool T64Memory::busEvtWriteBlock( int     srcModNum,
                                T64Word pAdr, 
                                uint8_t *data, 
                                int     len ) {

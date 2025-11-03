@@ -199,7 +199,7 @@ void T64System::step( int steps ) {
 // request.
 //
 //----------------------------------------------------------------------------------------
-bool T64System::busReadUncached( int     reqModNum,
+bool T64System::busOpReadUncached( int     reqModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 
                                  int     len ) {
@@ -207,10 +207,10 @@ bool T64System::busReadUncached( int     reqModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busReadUncached( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busEvtReadUncached( reqModNum, pAdr, data, len ));
 }
 
-bool T64System::busWriteUncached( int     reqModNum,
+bool T64System::busOpWriteUncached( int     reqModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int     len ) {
@@ -218,7 +218,7 @@ bool T64System::busWriteUncached( int     reqModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busWriteUncached( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busEvtWriteUncached( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ bool T64System::busWriteUncached( int     reqModNum,
 // target module. 
 //
 //----------------------------------------------------------------------------------------
-bool T64System::busReadSharedBlock( int     reqModNum,
+bool T64System::busOpReadSharedBlock( int     reqModNum,
                                     T64Word pAdr, 
                                     uint8_t *data, 
                                     int     len ) {
@@ -242,14 +242,14 @@ bool T64System::busReadSharedBlock( int     reqModNum,
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busReadSharedBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busEvtReadSharedBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busReadSharedBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busEvtReadSharedBlock( reqModNum, pAdr, data, len ));
 }
 
-bool T64System::busReadPrivateBlock( int     reqModNum,
+bool T64System::busOpReadPrivateBlock( int     reqModNum,
                                      T64Word pAdr, 
                                      uint8_t *data, 
                                      int     len ) {
@@ -262,14 +262,14 @@ bool T64System::busReadPrivateBlock( int     reqModNum,
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busReadPrivateBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busEvtReadPrivateBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busReadPrivateBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busEvtReadPrivateBlock( reqModNum, pAdr, data, len ));
 }
 
-bool T64System::busWriteBlock( int     reqModNum,
+bool T64System::busOpWriteBlock( int     reqModNum,
                                T64Word pAdr, 
                                uint8_t *data, 
                                int     len ) {
@@ -282,11 +282,11 @@ bool T64System::busWriteBlock( int     reqModNum,
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busWriteBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busEvtWriteBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busWriteBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busEvtWriteBlock( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -301,7 +301,7 @@ bool T64System::readMem( T64Word pAdr, uint8_t *data, int len ) {
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busReadUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busEvtReadUncached( -1, pAdr, data, len ));
 }
 
 bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
@@ -309,7 +309,7 @@ bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busWriteUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busEvtWriteUncached( -1, pAdr, data, len ));
 }
 
 //****************************************************************************************

@@ -879,8 +879,8 @@ struct SimWin {
     int             winToggleLimit      = 0;
     int             winToggleVal        = 0;
 
-    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ]  = { 0 };
-    SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ]     = { 0 };
+    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ];
+    SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ];
 
     #if 0
     int             winRows             = 0;
@@ -1260,7 +1260,7 @@ public:
     void            windowNewAbsCode( int modNum, T64Word adr );
     void            windowNewCpuState( int modNum );
     void            windowNewTlb( int modNum, T64TlbKind tTyp );
-    void            windowNewCache( int modNum, T64CacheKind cTyp );
+    void            windowNewCache( int modNum, T64CacheType cTyp );
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd = 0  );

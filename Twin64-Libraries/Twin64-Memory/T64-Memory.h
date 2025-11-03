@@ -49,27 +49,27 @@ public:
     void        reset( );
     void        step( );
 
-    bool        busReadUncached( int srcModNum,
+    bool        busEvtReadUncached( int srcModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 
                                  int len );
 
-    bool        busWriteUncached( int srcModNum,
+    bool        busEvtWriteUncached( int srcModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int len );
 
-    bool        busReadSharedBlock( int srcModNum,
+    bool        busEvtReadSharedBlock( int srcModNum,
                                     T64Word pAdr,
                                     uint8_t *data, 
                                     int len );
 
-    bool        busReadPrivateBlock( int srcModNum, 
+    bool        busEvtReadPrivateBlock( int srcModNum, 
                                      T64Word pAdr, 
                                      uint8_t *data, 
                                      int len );
 
-    bool        busWriteBlock(  int srcModNum,
+    bool        busEvtWriteBlock(  int srcModNum,
                                 T64Word pAdr, 
                                 uint8_t *data, 
                                 int len );

@@ -68,7 +68,7 @@ enum T64TlbType : int {
 };
 
 //----------------------------------------------------------------------------------------
-// Caches. Caches are sub modules to the processor. We support a cache kind, set 
+// Caches. Caches are sub modules to the processor. We support a cache type, set 
 // associative caches, 2, 4, and 8-way. There is a cache line info with flags and 
 // the tag and an array of bytes which holds the cache data. Cache kind specifies 
 // the kind of cache, i.e. instruction, data or unified cache. Cache type encoded
@@ -77,7 +77,7 @@ enum T64TlbType : int {
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
 //----------------------------------------------------------------------------------------
-enum T64CacheKind : int {
+enum T64CacheType : int {
 
     T64_CK_NIL              = 0,
     T64_CK_INSTR_CACHE      = 1,
@@ -86,7 +86,7 @@ enum T64CacheKind : int {
 };
 
 
-enum T64CacheType : int {
+enum T64CacheStructure : int {
 
     T64_CT_NIL              = 0,
     T64_CT_2W_128S_4L       = 1,
@@ -130,7 +130,9 @@ struct T64Cache {
 
     public:
 
-    T64Cache( T64Processor *proc, T64CacheKind cacheKind, T64CacheType cacheType );
+    T64Cache( T64Processor      *proc, 
+              T64CacheType      cacheType, 
+              T64CacheStructure cacheStructure );
 
     void                reset( );
     void                step( );
@@ -187,12 +189,13 @@ struct T64Cache {
 
     private: 
 
-    T64CacheKind        cacheKind       = T64_CK_NIL;
-    T64CacheType        cacheType       = T64_CT_NIL;
+    T64CacheType        cacheType       = T64_CK_NIL;
+    T64CacheStructure   cacheStructure  = T64_CT_NIL;
 
     T64CacheLineInfo    *cacheInfo      = nullptr;
     uint8_t             *cacheData      = nullptr;
     T64Processor        *proc           = nullptr;
+    T64System           *sys            = nullptr;
 
     int                 ways            = 0;
     int                 sets            = 0;
@@ -358,54 +361,53 @@ struct T64Cpu {
 struct T64Processor : T64Module {
     
     public:
-    
-    T64Processor( T64System     *sys,
-                  int           modNum,
-                  T64Options    options,  
-                  T64CpuType    cpuType,
-                  T64TlbType    iTlbType,
-                  T64TlbType    dTlbType,
-                  T64CacheType  iCacheType,
-                  T64CacheType  dCacheType,
-                  T64Word       hpaAdr, 
-                  int           hpaLen,
-                  T64Word       spaAdr,
-                  int           spaLen
-                );
+
+    T64Processor( T64System           *sys,
+                  int                 modNum,
+                  T64Options          options,  
+                  T64CpuType          cpuType,
+                  T64TlbType          iTlbType,
+                  T64TlbType          dTlbType,
+                  T64CacheStructure   iCacheStructure,
+                  T64CacheStructure   dCacheStructure,
+                  T64Word             hpaAdr, 
+                  int                 hpaLen,
+                  T64Word             spaAdr,
+                  int                 spaLen );
     
     void            reset( );
     void            step( );
 
-    bool            readSharedBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            readPrivateBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            writeBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            readUncached( T64Word adr, uint8_t *val, int len );
-    bool            writeUncached( T64Word adr, uint8_t *val, int len );
+    bool            busOpReadSharedBlock( T64Word pAdr, uint8_t *data, int len );
+    bool            busOpReadPrivateBlock( T64Word pAdr, uint8_t *data, int len );
+    bool            busOpWriteBlock( T64Word pAdr, uint8_t *data, int len );
+    bool            busOpReadUncached( T64Word adr, uint8_t *val, int len );
+    bool            busOpWriteUncached( T64Word adr, uint8_t *val, int len );
 
-    bool            busReadSharedBlock( int     reqModNum, 
-                                        T64Word pAdr, 
-                                        uint8_t *data, 
+    bool            busEvtReadSharedBlock( int     reqModNum, 
+                                           T64Word pAdr, 
+                                           uint8_t *data, 
+                                           int     len );
+
+    bool            busEvtReadPrivateBlock( int     reqModNum, 
+                                            T64Word pAdr, 
+                                            uint8_t *data, 
+                                            int     len );
+
+    bool            busEvtWriteBlock( int     reqModNum, 
+                                      T64Word pAdr, 
+                                      uint8_t *data, 
+                                      int     len );
+
+    bool            busEvtReadUncached( int     reqModNum, 
+                                        T64Word adr, 
+                                        uint8_t *val, 
                                         int     len );
 
-    bool            busReadPrivateBlock( int     reqModNum, 
-                                         T64Word pAdr, 
-                                         uint8_t *data, 
+    bool            busEvtWriteUncached( int     reqModNum, 
+                                         T64Word adr, 
+                                         uint8_t *val, 
                                          int     len );
-
-    bool            busWriteBlock( int     reqModNum, 
-                                   T64Word pAdr, 
-                                   uint8_t *data, 
-                                   int     len );
-
-    bool            busReadUncached( int     reqModNum, 
-                                     T64Word adr, 
-                                     uint8_t *val, 
-                                     int     len );
-
-    bool            busWriteUncached( int     reqModNum, 
-                                      T64Word adr, 
-                                      uint8_t *val, 
-                                      int     len );
 
     T64Cpu          *getCpuPtr( );
     T64Tlb          *getITlbPtr( );

@@ -42,18 +42,18 @@ namespace {
 // these components. Typically, they keep local copies of the references they need.
 // 
 //----------------------------------------------------------------------------------------
-T64Processor::T64Processor( T64System       *sys,
-                            int             modNum,
-                            T64Options      options,  
-                            T64CpuType      cpuType,
-                            T64TlbType      iTlbType,
-                            T64TlbType      dTlbType,
-                            T64CacheType    iCacheType,
-                            T64CacheType    dCacheType,
-                            T64Word         hpaAdr, 
-                            int             hpaLen,
-                            T64Word         spaAdr,
-                            int             spaLen ) : 
+T64Processor::T64Processor( T64System           *sys,
+                            int                 modNum,
+                            T64Options          options,  
+                            T64CpuType          cpuType,
+                            T64TlbType          iTlbType,
+                            T64TlbType          dTlbType,
+                            T64CacheStructure   iCacheStructure,
+                            T64CacheStructure   dCacheStructure,
+                            T64Word             hpaAdr, 
+                            int                 hpaLen,
+                            T64Word             spaAdr,
+                            int                 spaLen ) : 
 
                             T64Module(      MT_PROC, 
                                             modNum,
@@ -70,8 +70,8 @@ T64Processor::T64Processor( T64System       *sys,
     iTlb    = new T64Tlb( this, T64_TK_INSTR_TLB, iTlbType );
     dTlb    = new T64Tlb( this, T64_TK_DATA_TLB, dTlbType );
 
-    iCache  = new T64Cache( this, T64_CK_INSTR_CACHE, iCacheType );
-    dCache  = new T64Cache( this, T64_CK_DATA_CACHE, dCacheType );
+    iCache  = new T64Cache( this, T64_CK_INSTR_CACHE, iCacheStructure );
+    dCache  = new T64Cache( this, T64_CK_DATA_CACHE, dCacheStructure );
 
     this -> reset( );
 }
@@ -122,27 +122,27 @@ T64Cache *T64Processor::getDCachePtr( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Cache interface routines for requesting system bus operations. Straightforward. 
-// The processor offers this facade to the cache subsystems. We augment the request
-// with our module number and pass on to the system bus.
+// Interface routines for requesting system bus operations. Straightforward. The 
+// processor offers this facade to the cache subsystems. We augment the request with 
+// our module number and pass on to the system bus.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::readSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpReadSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    return ( sys -> busReadSharedBlock( moduleNum, pAdr, data, len ));
+    return ( sys -> busOpReadSharedBlock( moduleNum, pAdr, data, len ));
 }
 
-bool T64Processor::readPrivateBlock( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpReadPrivateBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    return ( sys -> busReadPrivateBlock( moduleNum, pAdr, data, len ));
+    return ( sys -> busOpReadPrivateBlock( moduleNum, pAdr, data, len ));
 }
 
-bool T64Processor::writeBlock( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpWriteBlock( T64Word pAdr, uint8_t *data, int len ) {
 
-    return ( sys -> busWriteBlock( moduleNum, pAdr, data, len ));
+    return ( sys -> busOpWriteBlock( moduleNum, pAdr, data, len ));
 }
 
-bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpReadUncached( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
 
@@ -151,10 +151,10 @@ bool T64Processor::readUncached( T64Word pAdr, uint8_t *data, int len ) {
         *data = 0;
         return( true );
     }
-    else return ( sys -> busReadUncached( moduleNum, pAdr, data, len ));
+    else return ( sys -> busOpReadUncached( moduleNum, pAdr, data, len ));
 }
 
-bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpWriteUncached( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
 
@@ -162,7 +162,7 @@ bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
         
         return( true );
     }
-    else return ( sys -> busWriteUncached( moduleNum, pAdr, data, len ));
+    else return ( sys -> busOpWriteUncached( moduleNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ bool T64Processor::writeUncached( T64Word pAdr, uint8_t *data, int len ) {
 // uncached.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busReadSharedBlock( int      reqModNum, 
+bool T64Processor::busEvtReadSharedBlock( int      reqModNum, 
                                        T64Word  pAdr, 
                                        uint8_t  *data, 
                                        int      len ) {
@@ -216,7 +216,7 @@ bool T64Processor::busReadSharedBlock( int      reqModNum,
     }
 }
 
-bool T64Processor::busReadPrivateBlock( int     reqModNum, 
+bool T64Processor::busEvtReadPrivateBlock( int     reqModNum, 
                                         T64Word pAdr, 
                                         uint8_t *data, 
                                         int     len ) {
@@ -232,7 +232,7 @@ bool T64Processor::busReadPrivateBlock( int     reqModNum,
     }
 }
 
-bool T64Processor::busWriteBlock( int     reqModNum, 
+bool T64Processor::busEvtWriteBlock( int     reqModNum, 
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int     len ) {
@@ -259,7 +259,7 @@ bool T64Processor::busWriteBlock( int     reqModNum,
 // ??? need a function to call for processor HPA data
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busReadUncached( int     reqModNum, 
+bool T64Processor::busEvtReadUncached( int     reqModNum, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
                                     int     len ) {
@@ -276,7 +276,7 @@ bool T64Processor::busReadUncached( int     reqModNum,
     else return( false );
 }
 
-bool T64Processor::busWriteUncached( int     reqModNum,
+bool T64Processor::busEvtWriteUncached( int     reqModNum,
                                      T64Word pAdr, 
                                      uint8_t *val, 
                                      int     len ) {
