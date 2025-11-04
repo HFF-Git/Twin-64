@@ -727,7 +727,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             } break;
                 
-            case ( OPC_GRP_ALU * 16 + OPC_CMP ): {
+            case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):
+            case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
                 
                 T64Word val1 = getRegB( instr );
                 T64Word val2 = 0;
@@ -749,7 +750,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             } break;
                 
-            case ( OPC_GRP_MEM * 16 + OPC_CMP ): {
+            case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
+            case ( OPC_GRP_MEM * 16 + OPC_CMP_B ): {
                 
                 T64Word val1 = getRegB( instr );
                 T64Word val2 = 0;

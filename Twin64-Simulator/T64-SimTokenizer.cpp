@@ -38,9 +38,8 @@ namespace {
 //
 //
 //----------------------------------------------------------------------------------------
-const int   TOK_INPUT_LINE_SIZE = 256;
-const int   TOK_NAME_SIZE       = 32;
-const char  EOS_CHAR            = 0;
+const int   TOK_NAME_SIZE   = 32;
+const char  EOS_CHAR        = 0;
 
 //----------------------------------------------------------------------------------------
 // The lookup function. We just do a linear search for now.

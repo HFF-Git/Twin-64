@@ -177,11 +177,13 @@ enum OpCodeFam : uint32_t {
     OPC_AND         = 3U,
     OPC_OR          = 4U,
     OPC_XOR         = 5U,
-    OPC_CMP         = 6U,
-    OPC_BITOP       = 7U,
-    OPC_SHAOP       = 8U,
-    OPC_IMMOP       = 9U,
-    OPC_LDO         = 10U,
+    OPC_CMP_A       = 6U,
+    OPC_CMP_B       = 7U,
+
+    OPC_BITOP       = 8U,
+    OPC_SHAOP       = 9U,
+    OPC_IMMOP       = 10U,
+    OPC_LDO         = 11U,
     
     OPC_LD          = 8U,
     OPC_ST          = 9U,

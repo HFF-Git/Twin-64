@@ -261,7 +261,7 @@ enum InstrTemplate : uint32_t {
     OPF_AND      = ( OPC_AND    << 26 ),
     OPF_OR       = ( OPC_OR     << 26 ),
     OPF_XOR      = ( OPC_XOR    << 26 ),
-    OPF_CMP      = ( OPC_CMP    << 26 ),
+    OPF_CMP      = ( OPC_CMP_A  << 26 ),
     OPF_BITOP    = ( OPC_BITOP  << 26 ),
     OPF_SHAOP    = ( OPC_SHAOP  << 26 ),
     OPF_IMMOP    = ( OPC_IMMOP  << 26 ),
@@ -1267,19 +1267,18 @@ inline void replaceInstrGroupField( T64Instr *instr, uint32_t instrMask ) {
     *instr |= instrMask & 0xC0000000;
 }
 
-//----------------------------------------------------------------------------------------
-// Set the condition field for compare type instructions based on the instruction flags.
-//
-//----------------------------------------------------------------------------------------
-void setInstrCmpCondField( uint32_t *instr, uint32_t instrFlags ) {
-   
-    if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 20, 2, 0 );
-    else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 20, 2, 1 );
-    else if ( instrFlags & IF_NE )  depositInstrFieldU( instr, 20, 2, 2 );
-    else if ( instrFlags & IF_GE )  depositInstrFieldU( instr, 20, 2, 3 );
+inline void replaceInstrOpCodeField( T64Instr *instr, uint32_t instrMask ) {
+    
+    *instr &= 0xC3FFFFFF;
+    *instr |= instrMask & 0x3c000000;
 }
 
-void setInstrXbrCondField( uint32_t *instr, uint32_t instrFlags ) {
+//----------------------------------------------------------------------------------------
+// Set the condition field for compare type instructions based on the instruction
+// flags.
+//
+//----------------------------------------------------------------------------------------
+void setInstrCompareCondField( uint32_t *instr, uint32_t instrFlags ) {
 
     if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 20, 2, 0 );
     else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 20, 2, 1 );
@@ -1307,24 +1306,24 @@ void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrOptions" will analyze the opCode option string. An opCode option string
-// is a sequence of characters after the ".". We will look at each char in the "name"
-// and set the options for the particular instruction. There are also options where the
-// option is a multi-character sequence. They cannot be in the same group with a sequence
-// of individual individual characters. Currently only the CMP, CBR and MBR instructions
-// are such cases.
+// "parseInstrOptions" will analyze the opCode option string. An opCode option 
+// string is a sequence of characters after the ".". We will look at each char in 
+// the "name" and set the options for the particular instruction. There are also 
+// options where the option is a multi-character sequence. They cannot be in the 
+// same group with a sequence of individual individual characters. Currently only
+// the CMP, CBR and MBR instructions are such cases.
 //
-// The assembler can handle multiple ".xxx" sequences. One could for example put each
-// individual character in a separate ".x" location. Once we have all options seen, we
-// check that there are no conflicting options where only one option out of an option
-// group can be set.
+// The assembler can handle multiple ".xxx" sequences. One could for example put 
+// each individual character in a separate ".x" location. Once we have all options 
+// seen, we check that there are no conflicting options where only one option out 
+// of an option group can be set.
 //
 // There are some instruction options that are exclusive to each other. There will 
 // be a check for this case after all options have been analyzed.
 //
 // One final quirk. The branch instruction "B" conflicts with the ".B" option. We
-// need to check the context. The tokenizer recognizes an opCOde, we patch the token
-// to be an identifier.
+// need to check the context. The tokenizer recognizes an opCOde, we patch the 
+// token to be an identifier.
 //
 //----------------------------------------------------------------------------------------
 void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
@@ -1509,6 +1508,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     if ( rExpr.typ == TYP_NUM ) {
       
         replaceInstrGroupField( instr, OPG_MEM );
+        replaceInstrOpCodeField( instr, OPC_CMP_A );
         setInstrDwField( instr, instrFlags );
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
         
@@ -1528,6 +1528,9 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             nextToken( );
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_NUM ) {
+
+                replaceInstrGroupField( instr, OPG_ALU );
+                replaceInstrOpCodeField( instr, OPC_CMP_A );
                 
                 depositInstrBit( instr, 19, true );
                 depositInstrRegB( instr, tmpRegId );
@@ -1535,6 +1538,8 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             }
             else if ( rExpr.typ == TYP_GREG ) {
                 
+                replaceInstrGroupField( instr, OPG_ALU );
+                replaceInstrOpCodeField( instr, OPC_CMP_B );
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrRegA( instr, (uint32_t) rExpr.val );
             }
@@ -1545,6 +1550,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         else if ( isToken( TOK_LPAREN )) {
 
             replaceInstrGroupField( instr, OPG_MEM );
+            replaceInstrOpCodeField( instr, OPC_CMP_B );
             setInstrDwField( instr, instrFlags );
             depositInstrBit( instr, 19, true );
             depositInstrRegA( instr, (uint32_t) rExpr.val );
@@ -1567,8 +1573,10 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         if ( instrFlags & IF_N ) depositInstrBit( instr, 21, true );
     }
     else if ( instrOpToken == TOK_OP_CMP ) {
+
+        // ??? we have two separate opcodes.... 
         
-        setInstrCmpCondField( instr, instrFlags );
+        setInstrCompareCondField( instr, instrFlags );
     }
 }
 
@@ -2151,7 +2159,7 @@ void parseInstrXBR( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else throw ( ERR_EXPECTED_BR_OFS );
     
-    setInstrXbrCondField( instr, instrFlags );
+    setInstrCompareCondField( instr, instrFlags );
     acceptEOS( );
 }
 

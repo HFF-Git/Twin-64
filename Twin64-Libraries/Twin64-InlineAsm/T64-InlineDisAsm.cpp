@@ -183,14 +183,16 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             return ( cursor );
         }
             
-        case ( OPC_GRP_ALU * 16 + OPC_CMP ): {
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_A ): 
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
             
             int cursor = snprintf( buf, LEN_16, "CMP" );
             printCondField( buf + cursor, extractInstrField( instr, 20, 2 ));
             return ( cursor );
         }
             
-        case ( OPC_GRP_MEM * 16 + OPC_CMP ): {
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_B ): {
             
             int cursor = snprintf( buf, LEN_16, "CMP" );
             cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
@@ -488,12 +490,13 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
     
     switch ( opCode ) {
             
-        case ( OPC_GRP_ALU * 16 + OPC_ADD ):
-        case ( OPC_GRP_ALU * 16 + OPC_SUB ):
-        case ( OPC_GRP_ALU * 16 + OPC_AND ):
-        case ( OPC_GRP_ALU * 16 + OPC_OR  ):
-        case ( OPC_GRP_ALU * 16 + OPC_XOR ):
-        case ( OPC_GRP_ALU * 16 + OPC_CMP ): {
+        case ( OPC_GRP_ALU * 16 + OPC_ADD   ):
+        case ( OPC_GRP_ALU * 16 + OPC_SUB   ):
+        case ( OPC_GRP_ALU * 16 + OPC_AND   ):
+        case ( OPC_GRP_ALU * 16 + OPC_OR    ):
+        case ( OPC_GRP_ALU * 16 + OPC_XOR   ):
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
             
             if ( extractInstrBit( instr, 19 )) {
                 
@@ -622,16 +625,17 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                               extractInstrImm20( instr )));
         }
             
-        case ( OPC_GRP_MEM * 16 + OPC_ADD ):
-        case ( OPC_GRP_MEM * 16 + OPC_SUB ):
-        case ( OPC_GRP_MEM * 16 + OPC_AND ):
-        case ( OPC_GRP_MEM * 16 + OPC_OR  ):
-        case ( OPC_GRP_MEM * 16 + OPC_XOR ):
-        case ( OPC_GRP_MEM * 16 + OPC_CMP ):
-        case ( OPC_GRP_MEM * 16 + OPC_LD  ):
-        case ( OPC_GRP_MEM * 16 + OPC_ST  ):
-        case ( OPC_GRP_MEM * 16 + OPC_LDR ):
-        case ( OPC_GRP_MEM * 16 + OPC_STC ): {
+        case ( OPC_GRP_MEM * 16 + OPC_ADD   ):
+        case ( OPC_GRP_MEM * 16 + OPC_SUB   ):
+        case ( OPC_GRP_MEM * 16 + OPC_AND   ):
+        case ( OPC_GRP_MEM * 16 + OPC_OR    ):
+        case ( OPC_GRP_MEM * 16 + OPC_XOR   ):
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_B ):
+        case ( OPC_GRP_MEM * 16 + OPC_LD    ):
+        case ( OPC_GRP_MEM * 16 + OPC_ST    ):
+        case ( OPC_GRP_MEM * 16 + OPC_LDR   ):
+        case ( OPC_GRP_MEM * 16 + OPC_STC   ): {
             
             if ( extractInstrBit( instr, 19 ) == 0 ) {
                 
