@@ -195,19 +195,33 @@ void T64System::step( int steps ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Uncached bus operations. We locate the responsible module and let it handle the 
-// request.
+// Bus operations. All defined bus operations follow the same basic logic. We 
+// first determine the responsible module for the requested data. Before asking 
+// the responsible module to execute the request, we will inform all others about
+// the upcoming request so that perhaps a cache coherency operation at other 
+// processors can take place before we issue the request to the target module. 
+// Note that cache coherency also applies to an uncached request, since a module 
+// may have cached and modified the data.
 //
 //----------------------------------------------------------------------------------------
 bool T64System::busOpReadUncached( int     reqModNum,
-                                 T64Word pAdr, 
-                                 uint8_t *data, 
-                                 int     len ) {
+                                 T64Word    pAdr, 
+                                 uint8_t    *data, 
+                                 int        len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return ( false );
+    if ( mPtr != nullptr ) return ( false );
+ 
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
 
-    return ( mPtr -> busEvtReadUncached( reqModNum, pAdr, data, len ));
+        if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
+            ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
+
+             moduleMap[ i ] -> busOpReadUncached( reqModNum, pAdr, data, len );
+        }
+    }
+    
+    return ( mPtr -> busOpReadUncached( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busOpWriteUncached( int     reqModNum,
@@ -218,41 +232,42 @@ bool T64System::busOpWriteUncached( int     reqModNum,
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busEvtWriteUncached( reqModNum, pAdr, data, len ));
-}
-
-//----------------------------------------------------------------------------------------
-// Cached coherent bus operations. We first determine the responsible module for the
-// requested data. Before asking the responsible module to execute the request, we
-// will inform all others about the upcoming request so that perhaps a cache coherency 
-// operation at other processors can take place before we issue the request to the
-// target module. 
-//
-//----------------------------------------------------------------------------------------
-bool T64System::busOpReadSharedBlock( int     reqModNum,
-                                    T64Word pAdr, 
-                                    uint8_t *data, 
-                                    int     len ) {
-
-    T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return ( false );
-
     for ( int i = 0; i < moduleMapHwm; i++ ) {
 
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busEvtReadSharedBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busOpWriteUncached( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busEvtReadSharedBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busOpWriteUncached( reqModNum, pAdr, data, len ));
+}
+
+bool T64System::busOpReadSharedBlock( int     reqModNum,
+                                      T64Word pAdr, 
+                                      uint8_t *data, 
+                                      int     len ) {
+
+    T64Module *mPtr = lookupByAdr( pAdr );
+    if ( mPtr == nullptr ) return( false ); 
+        
+    for ( int i = 0; i < moduleMapHwm; i++ ) {
+
+        if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
+            ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
+
+             moduleMap[ i ] -> busOpReadSharedBlock( reqModNum, pAdr, data, len );
+        }
+    }
+
+    return ( mPtr -> busOpReadSharedBlock( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busOpReadPrivateBlock( int     reqModNum,
-                                     T64Word pAdr, 
-                                     uint8_t *data, 
-                                     int     len ) {
+                                       T64Word pAdr, 
+                                       uint8_t *data, 
+                                       int     len ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
@@ -262,11 +277,11 @@ bool T64System::busOpReadPrivateBlock( int     reqModNum,
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busEvtReadPrivateBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busOpReadPrivateBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busEvtReadPrivateBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busOpReadPrivateBlock( reqModNum, pAdr, data, len ));
 }
 
 bool T64System::busOpWriteBlock( int     reqModNum,
@@ -282,11 +297,11 @@ bool T64System::busOpWriteBlock( int     reqModNum,
         if (( moduleMap[ i ] -> getModuleNum( ) != reqModNum ) && 
             ( moduleMap[ i ] -> getModuleNum( ) != mPtr -> getModuleNum( ))) {
 
-             moduleMap[ i ] -> busEvtWriteBlock( reqModNum, pAdr, data, len );
+             moduleMap[ i ] -> busOpWriteBlock( reqModNum, pAdr, data, len );
         }
     }
 
-    return ( mPtr -> busEvtWriteBlock( reqModNum, pAdr, data, len ));
+    return ( mPtr -> busOpWriteBlock( reqModNum, pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -301,7 +316,7 @@ bool T64System::readMem( T64Word pAdr, uint8_t *data, int len ) {
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busEvtReadUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busOpReadUncached( -1, pAdr, data, len ));
 }
 
 bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
@@ -309,7 +324,7 @@ bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    return ( mPtr -> busEvtWriteUncached( -1, pAdr, data, len ));
+    return ( mPtr -> busOpWriteUncached( -1, pAdr, data, len ));
 }
 
 //****************************************************************************************

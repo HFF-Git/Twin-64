@@ -10,15 +10,15 @@
 // Twin64 - A 64-bit CPU Simulator - Simulator Tables
 // Copyright (C) 2024 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #ifndef SimTables_h
@@ -39,176 +39,176 @@ const SimToken cmdTokTab[ ] = {
     // General tokens.
     //
     //------------------------------------------------------------------------------------
-    { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u.val = 0  },
-    { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                },
-    { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                },
-    { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                },
-    { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB               },
-    { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB               },
-    { .name = "ICACHE",     .typ = TYP_SYM,     .tid = TOK_ICACHE             },
-    { .name = "DCACHE",     .typ = TYP_SYM,     .tid = TOK_DCACHE             },
-    { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                },
-    { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT               },
+    { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u = { .val = 0  }},
+    { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                      },
+    { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                      },
+    { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                      },
+    { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB                     },
+    { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB                     },
+    { .name = "ICACHE",     .typ = TYP_SYM,     .tid = TOK_ICACHE                   },
+    { .name = "DCACHE",     .typ = TYP_SYM,     .tid = TOK_DCACHE                   },
+    { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                      },
+    { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT                     },
 
-    { .name = "DEC",        .typ = TYP_SYM,     .tid = TOK_DEC,   .u.val = 10 },
-    { .name = "HEX",        .typ = TYP_SYM,     .tid = TOK_HEX,   .u.val = 16 },
-    { .name = "CODE",       .typ = TYP_SYM,     .tid = TOK_CODE               },
+    { .name = "DEC",        .typ = TYP_SYM,     .tid = TOK_DEC,   .u = { .val = 10 }},
+    { .name = "HEX",        .typ = TYP_SYM,     .tid = TOK_HEX,   .u = { .val = 16 }},
+    { .name = "CODE",       .typ = TYP_SYM,     .tid = TOK_CODE                     },
     
-    { .name = "COMMANDS",   .typ = TYP_CMD,     .tid = CMD_SET                },
-    { .name = "WCOMMANDS",  .typ = TYP_WCMD,    .tid = WCMD_SET               },
-    { .name = "PREDEFINED", .typ = TYP_P_FUNC,  .tid = PF_SET                 },
+    { .name = "COMMANDS",   .typ = TYP_CMD,     .tid = CMD_SET                      },
+    { .name = "WCOMMANDS",  .typ = TYP_WCMD,    .tid = WCMD_SET                     },
+    { .name = "PREDEFINED", .typ = TYP_P_FUNC,  .tid = PF_SET                       },
     
     //------------------------------------------------------------------------------------
     // Command Line tokens.
     //
     //------------------------------------------------------------------------------------
-    { .name = "HELP",       .typ = TYP_CMD,     .tid = CMD_HELP               },
-    { .name = "?",          .typ = TYP_CMD,     .tid = CMD_HELP               },
+    { .name = "HELP",       .typ = TYP_CMD,     .tid = CMD_HELP                     },
+    { .name = "?",          .typ = TYP_CMD,     .tid = CMD_HELP                     },
     
-    { .name = "EXIT",       .typ = TYP_CMD,     .tid = CMD_EXIT               },
-    { .name = "E",          .typ = TYP_CMD,     .tid = CMD_EXIT               },
+    { .name = "EXIT",       .typ = TYP_CMD,     .tid = CMD_EXIT                     },
+    { .name = "E",          .typ = TYP_CMD,     .tid = CMD_EXIT                     },
     
-    { .name = "HIST",       .typ = TYP_CMD,     .tid = CMD_HIST               },
-    { .name = "DO",         .typ = TYP_CMD,     .tid = CMD_DO                 },
-    { .name = "REDO",       .typ = TYP_CMD,     .tid = CMD_REDO               },
-    { .name = "ENV",        .typ = TYP_CMD,     .tid = CMD_ENV                },
-    { .name = "XF",         .typ = TYP_CMD,     .tid = CMD_XF                 },
-    { .name = "LF",         .typ = TYP_CMD,     .tid = CMD_LF                 },
-    { .name = "W",          .typ = TYP_CMD,     .tid = CMD_WRITE_LINE         },
+    { .name = "HIST",       .typ = TYP_CMD,     .tid = CMD_HIST                     },
+    { .name = "DO",         .typ = TYP_CMD,     .tid = CMD_DO                       },
+    { .name = "REDO",       .typ = TYP_CMD,     .tid = CMD_REDO                     },
+    { .name = "ENV",        .typ = TYP_CMD,     .tid = CMD_ENV                      },
+    { .name = "XF",         .typ = TYP_CMD,     .tid = CMD_XF                       },
+    { .name = "LF",         .typ = TYP_CMD,     .tid = CMD_LF                       },
+    { .name = "W",          .typ = TYP_CMD,     .tid = CMD_WRITE_LINE               },
     
-    { .name = "DM",         .typ = TYP_CMD,     .tid = CMD_DM                 },
-    { .name = "RESET",      .typ = TYP_CMD,     .tid = CMD_RESET              },
-    { .name = "RUN",        .typ = TYP_CMD,     .tid = CMD_RUN                },
-    { .name = "STEP",       .typ = TYP_CMD,     .tid = CMD_STEP               },
-    { .name = "S",          .typ = TYP_CMD,     .tid = CMD_STEP               },
+    { .name = "DM",         .typ = TYP_CMD,     .tid = CMD_DM                       },
+    { .name = "RESET",      .typ = TYP_CMD,     .tid = CMD_RESET                    },
+    { .name = "RUN",        .typ = TYP_CMD,     .tid = CMD_RUN                      },
+    { .name = "STEP",       .typ = TYP_CMD,     .tid = CMD_STEP                     },
+    { .name = "S",          .typ = TYP_CMD,     .tid = CMD_STEP                     },
     
-    { .name = "MR",         .typ = TYP_CMD,     .tid = CMD_MR                 },
-    { .name = "DA",         .typ = TYP_CMD,     .tid = CMD_DA                 },
-    { .name = "MA",         .typ = TYP_CMD,     .tid = CMD_MA                 },
+    { .name = "MR",         .typ = TYP_CMD,     .tid = CMD_MR                       },
+    { .name = "DA",         .typ = TYP_CMD,     .tid = CMD_DA                       },
+    { .name = "MA",         .typ = TYP_CMD,     .tid = CMD_MA                       },
     
-    { .name = "IITLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_I             },
-    { .name = "IDTLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_D             },
-    { .name = "PITLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_I             },
-    { .name = "PDTLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_D             },
+    { .name = "IITLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_I                   },
+    { .name = "IDTLB",      .typ = TYP_CMD,     .tid = CMD_ITLB_D                   },
+    { .name = "PITLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_I                   },
+    { .name = "PDTLB",      .typ = TYP_CMD,     .tid = CMD_PTLB_D                   },
     
-    { .name = "PICA",       .typ = TYP_CMD,     .tid = CMD_PCA_I              },
-    { .name = "PDCA",       .typ = TYP_CMD,     .tid = CMD_PCA_D              },
-    { .name = "FDCA",       .typ = TYP_CMD,     .tid = CMD_FCA_D              },
+    { .name = "PICA",       .typ = TYP_CMD,     .tid = CMD_PCA_I                    },
+    { .name = "PDCA",       .typ = TYP_CMD,     .tid = CMD_PCA_D                    },
+    { .name = "FDCA",       .typ = TYP_CMD,     .tid = CMD_FCA_D                    },
     
     //------------------------------------------------------------------------------------
     // Window command tokens.
     //
     //------------------------------------------------------------------------------------
-    { .name = "WON",        .typ = TYP_WCMD,    .tid = CMD_WON                },
-    { .name = "WOFF",       .typ = TYP_WCMD,    .tid = CMD_WOFF               },
-    { .name = "WDEF",       .typ = TYP_WCMD,    .tid = CMD_WDEF               },
-    { .name = "WSE",        .typ = TYP_WCMD,    .tid = CMD_WSE                },
-    { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                },
+    { .name = "WON",        .typ = TYP_WCMD,    .tid = CMD_WON                      },
+    { .name = "WOFF",       .typ = TYP_WCMD,    .tid = CMD_WOFF                     },
+    { .name = "WDEF",       .typ = TYP_WCMD,    .tid = CMD_WDEF                     },
+    { .name = "WSE",        .typ = TYP_WCMD,    .tid = CMD_WSE                      },
+    { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                      },
     
-    { .name = "CWL",        .typ = TYP_WCMD,    .tid = CMD_CWL                },
+    { .name = "CWL",        .typ = TYP_WCMD,    .tid = CMD_CWL                      },
     
-    { .name = "WE",         .typ = TYP_WCMD,    .tid = CMD_WE                 },
-    { .name = "WD",         .typ = TYP_WCMD,    .tid = CMD_WD                 },
-    { .name = "WR",         .typ = TYP_WCMD,    .tid = CMD_WR                 },
-    { .name = "WF",         .typ = TYP_WCMD,    .tid = CMD_WF                 },
-    { .name = "WB",         .typ = TYP_WCMD,    .tid = CMD_WB                 },
-    { .name = "WH",         .typ = TYP_WCMD,    .tid = CMD_WH                 },
-    { .name = "WJ",         .typ = TYP_WCMD,    .tid = CMD_WJ                 },
-    { .name = "WL",         .typ = TYP_WCMD,    .tid = CMD_WL                 },
-    { .name = "WN",         .typ = TYP_WCMD,    .tid = CMD_WN                 },
-    { .name = "WK",         .typ = TYP_WCMD,    .tid = CMD_WK                 },
-    { .name = "WC",         .typ = TYP_WCMD,    .tid = CMD_WC                 },
-    { .name = "WS",         .typ = TYP_WCMD,    .tid = CMD_WS                 },
-    { .name = "WT",         .typ = TYP_WCMD,    .tid = CMD_WT                 },
-    { .name = "WX",         .typ = TYP_WCMD,    .tid = CMD_WX                 },
+    { .name = "WE",         .typ = TYP_WCMD,    .tid = CMD_WE                       },
+    { .name = "WD",         .typ = TYP_WCMD,    .tid = CMD_WD                       },
+    { .name = "WR",         .typ = TYP_WCMD,    .tid = CMD_WR                       },
+    { .name = "WF",         .typ = TYP_WCMD,    .tid = CMD_WF                       },
+    { .name = "WB",         .typ = TYP_WCMD,    .tid = CMD_WB                       },
+    { .name = "WH",         .typ = TYP_WCMD,    .tid = CMD_WH                       },
+    { .name = "WJ",         .typ = TYP_WCMD,    .tid = CMD_WJ                       },
+    { .name = "WL",         .typ = TYP_WCMD,    .tid = CMD_WL                       },
+    { .name = "WN",         .typ = TYP_WCMD,    .tid = CMD_WN                       },
+    { .name = "WK",         .typ = TYP_WCMD,    .tid = CMD_WK                       },
+    { .name = "WC",         .typ = TYP_WCMD,    .tid = CMD_WC                       },
+    { .name = "WS",         .typ = TYP_WCMD,    .tid = CMD_WS                       },
+    { .name = "WT",         .typ = TYP_WCMD,    .tid = CMD_WT                       },
+    { .name = "WX",         .typ = TYP_WCMD,    .tid = CMD_WX                       },
     
     //------------------------------------------------------------------------------------
     // General registers.
     //
     //------------------------------------------------------------------------------------
-    { .name = "R0",         .typ = TYP_GREG,    .tid = GR_0,     .u.val =  0  },
-    { .name = "R1",         .typ = TYP_GREG,    .tid = GR_1,     .u.val =  1  },
-    { .name = "R2",         .typ = TYP_GREG,    .tid = GR_2,     .u.val =  2  },
-    { .name = "R3",         .typ = TYP_GREG,    .tid = GR_3,     .u.val =  3  },
-    { .name = "R4",         .typ = TYP_GREG,    .tid = GR_4,     .u.val =  4  },
-    { .name = "R5",         .typ = TYP_GREG,    .tid = GR_5,     .u.val =  5  },
-    { .name = "R6",         .typ = TYP_GREG,    .tid = GR_6,     .u.val =  6  },
-    { .name = "R7",         .typ = TYP_GREG,    .tid = GR_7,     .u.val =  7  },
-    { .name = "R8",         .typ = TYP_GREG,    .tid = GR_8,     .u.val =  8  },
-    { .name = "R9",         .typ = TYP_GREG,    .tid = GR_9,     .u.val =  9  },
-    { .name = "R10",        .typ = TYP_GREG,    .tid = GR_10,    .u.val =  10 },
-    { .name = "R11",        .typ = TYP_GREG,    .tid = GR_11,    .u.val =  11 },
-    { .name = "R12",        .typ = TYP_GREG,    .tid = GR_12,    .u.val =  12 },
-    { .name = "R13",        .typ = TYP_GREG,    .tid = GR_13,    .u.val =  13 },
-    { .name = "R14",        .typ = TYP_GREG,    .tid = GR_14,    .u.val =  14 },
-    { .name = "R15",        .typ = TYP_GREG,    .tid = GR_15,    .u.val =  15 },
-    { .name = "GR",         .typ = TYP_GREG,    .tid = GR_SET,   .u.val =  0  },
+    { .name = "R0",         .typ = TYP_GREG,    .tid = GR_0,     .u = { .val =  0  }},
+    { .name = "R1",         .typ = TYP_GREG,    .tid = GR_1,     .u = { .val =  1  }},
+    { .name = "R2",         .typ = TYP_GREG,    .tid = GR_2,     .u = { .val =  2  }},
+    { .name = "R3",         .typ = TYP_GREG,    .tid = GR_3,     .u = { .val =  3  }},
+    { .name = "R4",         .typ = TYP_GREG,    .tid = GR_4,     .u = { .val =  4  }},
+    { .name = "R5",         .typ = TYP_GREG,    .tid = GR_5,     .u = { .val =  5  }},
+    { .name = "R6",         .typ = TYP_GREG,    .tid = GR_6,     .u = { .val =  6  }},
+    { .name = "R7",         .typ = TYP_GREG,    .tid = GR_7,     .u = { .val =  7  }},
+    { .name = "R8",         .typ = TYP_GREG,    .tid = GR_8,     .u = { .val =  8  }},
+    { .name = "R9",         .typ = TYP_GREG,    .tid = GR_9,     .u = { .val =  9  }},
+    { .name = "R10",        .typ = TYP_GREG,    .tid = GR_10,    .u = { .val =  10 }},
+    { .name = "R11",        .typ = TYP_GREG,    .tid = GR_11,    .u = { .val =  11 }},
+    { .name = "R12",        .typ = TYP_GREG,    .tid = GR_12,    .u = { .val =  12 }},
+    { .name = "R13",        .typ = TYP_GREG,    .tid = GR_13,    .u = { .val =  13 }},
+    { .name = "R14",        .typ = TYP_GREG,    .tid = GR_14,    .u = { .val =  14 }},
+    { .name = "R15",        .typ = TYP_GREG,    .tid = GR_15,    .u = { .val =  15 }},
+    { .name = "GR",         .typ = TYP_GREG,    .tid = GR_SET,   .u = { .val =  0  }},
 
     //------------------------------------------------------------------------------------
     // Runtime architecture register names for general registers.
     //
     //------------------------------------------------------------------------------------
-    { .name = "T0",         .typ = TYP_GREG,    .tid = GR_1,     .u.val =  1  },
-    { .name = "T1",         .typ = TYP_GREG,    .tid = GR_2,     .u.val =  2  },
-    { .name = "T2",         .typ = TYP_GREG,    .tid = GR_3,     .u.val =  3  },
-    { .name = "T3",         .typ = TYP_GREG,    .tid = GR_4,     .u.val =  4  },
-    { .name = "T4",         .typ = TYP_GREG,    .tid = GR_5,     .u.val =  5  },
-    { .name = "T5",         .typ = TYP_GREG,    .tid = GR_6,     .u.val =  6  },
-    { .name = "T6",         .typ = TYP_GREG,    .tid = GR_7,     .u.val =  7  },
+    { .name = "T0",         .typ = TYP_GREG,    .tid = GR_1,     .u = { .val =  1  }},
+    { .name = "T1",         .typ = TYP_GREG,    .tid = GR_2,     .u = { .val =  2  }},
+    { .name = "T2",         .typ = TYP_GREG,    .tid = GR_3,     .u = { .val =  3  }},
+    { .name = "T3",         .typ = TYP_GREG,    .tid = GR_4,     .u = { .val =  4  }},
+    { .name = "T4",         .typ = TYP_GREG,    .tid = GR_5,     .u = { .val =  5  }},
+    { .name = "T5",         .typ = TYP_GREG,    .tid = GR_6,     .u = { .val =  6  }},
+    { .name = "T6",         .typ = TYP_GREG,    .tid = GR_7,     .u = { .val =  7  }},
 
-    { .name = "ARG3",       .typ = TYP_GREG,    .tid = GR_8,     .u.val =  8  },
-    { .name = "ARG2",       .typ = TYP_GREG,    .tid = GR_9,     .u.val =  9  },
-    { .name = "ARG1",       .typ = TYP_GREG,    .tid = GR_10,    .u.val =  10 },
-    { .name = "ARG0",       .typ = TYP_GREG,    .tid = GR_11,    .u.val =  11 },
+    { .name = "ARG3",       .typ = TYP_GREG,    .tid = GR_8,     .u = { .val =  8  }},
+    { .name = "ARG2",       .typ = TYP_GREG,    .tid = GR_9,     .u = { .val =  9  }},
+    { .name = "ARG1",       .typ = TYP_GREG,    .tid = GR_10,    .u = { .val =  10 }},
+    { .name = "ARG0",       .typ = TYP_GREG,    .tid = GR_11,    .u = { .val =  11 }},
 
-    { .name = "RET3",       .typ = TYP_GREG,    .tid = GR_8,     .u.val =  8  },
-    { .name = "RET2",       .typ = TYP_GREG,    .tid = GR_9,     .u.val =  9  },
-    { .name = "RET1",       .typ = TYP_GREG,    .tid = GR_10,    .u.val =  10 },
-    { .name = "RET0",       .typ = TYP_GREG,    .tid = GR_11,    .u.val =  11 },
+    { .name = "RET3",       .typ = TYP_GREG,    .tid = GR_8,     .u = { .val =  8  }},
+    { .name = "RET2",       .typ = TYP_GREG,    .tid = GR_9,     .u = { .val =  9  }},
+    { .name = "RET1",       .typ = TYP_GREG,    .tid = GR_10,    .u = { .val =  10 }},
+    { .name = "RET0",       .typ = TYP_GREG,    .tid = GR_11,    .u = { .val =  11 }},
     
-    { .name = "DP",         .typ = TYP_GREG,    .tid = GR_13,    .u.val =  13 },
-    { .name = "RL",         .typ = TYP_GREG,    .tid = GR_14,    .u.val =  14 },
-    { .name = "SP",         .typ = TYP_GREG,    .tid = GR_15,    .u.val =  15 },
+    { .name = "DP",         .typ = TYP_GREG,    .tid = GR_13,    .u = { .val =  13 }},
+    { .name = "RL",         .typ = TYP_GREG,    .tid = GR_14,    .u = { .val =  14 }},
+    { .name = "SP",         .typ = TYP_GREG,    .tid = GR_15,    .u = { .val =  15 }},
     
     //------------------------------------------------------------------------------------
     // Control registers.
     //
     //------------------------------------------------------------------------------------
-    { .name = "C0",         .typ = TYP_CREG,    .tid = CR_0,     .u.val =  0  },
-    { .name = "C1",         .typ = TYP_CREG,    .tid = CR_1,     .u.val =  1  },
-    { .name = "C2",         .typ = TYP_CREG,    .tid = CR_2,     .u.val =  2  },
-    { .name = "C3",         .typ = TYP_CREG,    .tid = CR_3,     .u.val =  3  },
-    { .name = "C4",         .typ = TYP_CREG,    .tid = CR_4,     .u.val =  4  },
-    { .name = "C5",         .typ = TYP_CREG,    .tid = CR_5,     .u.val =  5  },
-    { .name = "C6",         .typ = TYP_CREG,    .tid = CR_6,     .u.val =  6  },
-    { .name = "C7",         .typ = TYP_CREG,    .tid = CR_7,     .u.val =  7  },
-    { .name = "C8",         .typ = TYP_CREG,    .tid = CR_8,     .u.val =  8  },
-    { .name = "C9",         .typ = TYP_CREG,    .tid = CR_9,     .u.val =  9  },
-    { .name = "C10",        .typ = TYP_CREG,    .tid = CR_10,    .u.val =  10 },
-    { .name = "C11",        .typ = TYP_CREG,    .tid = CR_11,    .u.val =  11 },
-    { .name = "C12",        .typ = TYP_CREG,    .tid = CR_12,    .u.val =  12 },
-    { .name = "C13",        .typ = TYP_CREG,    .tid = CR_13,    .u.val =  13 },
-    { .name = "C14",        .typ = TYP_CREG,    .tid = CR_14,    .u.val =  14 },
-    { .name = "C15",        .typ = TYP_CREG,    .tid = CR_15,    .u.val =  15 },
+    { .name = "C0",         .typ = TYP_CREG,    .tid = CR_0,     .u = { .val =  0  }},
+    { .name = "C1",         .typ = TYP_CREG,    .tid = CR_1,     .u = { .val =  1  }},
+    { .name = "C2",         .typ = TYP_CREG,    .tid = CR_2,     .u = { .val =  2  }},
+    { .name = "C3",         .typ = TYP_CREG,    .tid = CR_3,     .u = { .val =  3  }},
+    { .name = "C4",         .typ = TYP_CREG,    .tid = CR_4,     .u = { .val =  4  }},
+    { .name = "C5",         .typ = TYP_CREG,    .tid = CR_5,     .u = { .val =  5  }},
+    { .name = "C6",         .typ = TYP_CREG,    .tid = CR_6,     .u = { .val =  6  }},
+    { .name = "C7",         .typ = TYP_CREG,    .tid = CR_7,     .u = { .val =  7  }},
+    { .name = "C8",         .typ = TYP_CREG,    .tid = CR_8,     .u = { .val =  8  }},
+    { .name = "C9",         .typ = TYP_CREG,    .tid = CR_9,     .u = { .val =  9  }},
+    { .name = "C10",        .typ = TYP_CREG,    .tid = CR_10,    .u = { .val =  10 }},
+    { .name = "C11",        .typ = TYP_CREG,    .tid = CR_11,    .u = { .val =  11 }},
+    { .name = "C12",        .typ = TYP_CREG,    .tid = CR_12,    .u = { .val =  12 }},
+    { .name = "C13",        .typ = TYP_CREG,    .tid = CR_13,    .u = { .val =  13 }},
+    { .name = "C14",        .typ = TYP_CREG,    .tid = CR_14,    .u = { .val =  14 }},
+    { .name = "C15",        .typ = TYP_CREG,    .tid = CR_15,    .u = { .val =  15 }},
 
     //------------------------------------------------------------------------------------
     // Program State Register
     //
     //------------------------------------------------------------------------------------
-    { .name = "IA",         .typ = TYP_PREG,    .tid = PR_IA,    .u.val =  1  },
-    { .name = "ST",         .typ = TYP_PREG,    .tid = PR_ST,    .u.val =  2  },
+    { .name = "IA",         .typ = TYP_PREG,    .tid = PR_IA,    .u = { .val =  1  }},
+    { .name = "ST",         .typ = TYP_PREG,    .tid = PR_ST,    .u = { .val =  2  }},
     
     //------------------------------------------------------------------------------------
     // Predefined functions.
     //
     //------------------------------------------------------------------------------------
-    { .name = "ASM",        .typ = TYP_P_FUNC, .tid = PF_ASSEMBLE, .u.val = 0 },
-    { .name = "DISASM",     .typ = TYP_P_FUNC, .tid = PF_DIS_ASM,  .u.val = 0 },
-    { .name = "HASH",       .typ = TYP_P_FUNC, .tid = PF_HASH,     .u.val = 0 },
+    { .name = "ASM",        .typ = TYP_P_FUNC, .tid = PF_ASSEMBLE, .u = { .val = 0 }},
+    { .name = "DISASM",     .typ = TYP_P_FUNC, .tid = PF_DIS_ASM,  .u = { .val = 0 }},
+    { .name = "HASH",       .typ = TYP_P_FUNC, .tid = PF_HASH,     .u = { .val = 0 }},
 
     // ??? tons of more predefines....
 
-    { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,      .u.val = 0 },
+    { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,      .u = { .val = 0 }},
     
 };
 

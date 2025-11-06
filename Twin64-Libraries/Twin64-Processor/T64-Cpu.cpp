@@ -46,11 +46,7 @@ T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 
     this -> proc    = proc;
     this -> cpuType = cpuType;
-    this -> iTlb    = proc -> iTlb;
-    this -> dTlb    = proc -> dTlb;
-    this -> iCache  = proc -> iCache;
-    this -> dCache  = proc -> dCache;
-
+    
     switch ( cpuType ) {
 
         default: ;
@@ -223,18 +219,21 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
     if ( isPhysicalAdrRange( vAdr )) { 
 
         privModeCheck( );
-        iCache -> read( vAdr, (uint8_t *) &instr, 4, false );     
+        proc -> iCache -> read( vAdr, (uint8_t *) &instr, 4, false );     
     }
     else {
 
-        T64TlbEntry *tlbPtr = iTlb -> lookup( vAdr );
+        T64TlbEntry *tlbPtr = proc -> iTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-        iCache -> read( tlbPtr -> pAdr, (uint8_t *) &instr, 4, tlbPtr -> uncached );
+        proc -> iCache -> read( tlbPtr -> pAdr, 
+                                (uint8_t *) &instr, 
+                                4, 
+                                tlbPtr -> uncached );
     }
 
     return( instr );
@@ -259,21 +258,21 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
     if ( isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        dCache -> read( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );
+        proc -> dCache -> read( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );
     }
     else {
 
-        T64TlbEntry *tlbPtr = dTlb -> lookup( vAdr );
+        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
-        iCache -> read( tlbPtr -> pAdr, 
-                        ((uint8_t *) &data ) + wordOfs, 
-                        len, 
-                        tlbPtr -> uncached );
+        proc -> iCache -> read( tlbPtr -> pAdr, 
+                                ((uint8_t *) &data ) + wordOfs, 
+                                len, 
+                                tlbPtr -> uncached );
     }
 
     // ??? sign extend
@@ -298,20 +297,21 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
     if ( isPhysicalAdrRange( vAdr )) { 
         
         privModeCheck( );
-        dCache -> write( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );           
+        proc -> dCache -> write( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );           
     }
     else {
 
-        T64TlbEntry *tlbPtr = dTlb -> lookup( vAdr );
+        T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
         protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
-        dCache -> write( tlbPtr -> pAdr, 
-                         ((uint8_t *) &data ) + wordOfs, 
-                         len, tlbPtr -> uncached );
+        proc -> dCache -> write( tlbPtr -> pAdr, 
+                                 ((uint8_t *) &data ) + wordOfs, 
+                                 len, 
+                                 tlbPtr -> uncached );
     }
 }
 
@@ -1137,7 +1137,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 privModeCheck( );
 
                 T64Word res = 0;
-                T64TlbEntry *e = dTlb -> lookup( getRegB( instr ));
+                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 )   {
                     
@@ -1164,7 +1164,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else                                   
                     privLevel = extractBit64( getRegA( instr ), 0 );
                 
-                T64TlbEntry *e = dTlb -> lookup( getRegB( instr ));
+                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
                 if ( e != nullptr ) {
 
                     if ( extractInstrField( instr, 19, 3 ) == 0 )   {
@@ -1191,12 +1191,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    dTlb -> insert( getRegB( instr ), getRegA( instr ));
+                    proc -> dTlb -> insert( getRegB( instr ), getRegA( instr ));
                     setRegR( instr, 1 );
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    dTlb -> purge( getRegB( instr ));
+                    proc -> dTlb -> purge( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
@@ -1210,11 +1210,11 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 if ( extractInstrField( instr, 19, 3 ) == 0 ) {
 
-                    dCache -> purge( getRegB( instr ));
+                    proc -> dCache -> purge( getRegB( instr ));
                 }
                 else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
                     
-                    dCache -> flush( getRegB( instr ));
+                    proc -> dCache -> flush( getRegB( instr ));
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
@@ -1283,7 +1283,7 @@ void T64Cpu::step( ) {
     
     try {
         
-            instrReg = instrRead( extractField64( pswReg, 63, 52 ));
+            instrReg = instrRead( extractField64( pswReg, 0, 52 ));
             instrExecute( instrReg );
     }
     

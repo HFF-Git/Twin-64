@@ -139,52 +139,56 @@ bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
 }
 
 //----------------------------------------------------------------------------------------
+// A memory address range can be set road only, This is used when we model a ROM.
+//
+//----------------------------------------------------------------------------------------
+void  T64Memory::setSpaReadOnly( bool arg ) {
+
+    spaReadOnly = arg;
+}
+
+//----------------------------------------------------------------------------------------
 // Bus operations. We listen to all of them and if the physical addresses matches 
 // our address range and we are not the source module, the request is handled. 
 // Since we do not have a cache, the request handling is very simple.
 //
 //----------------------------------------------------------------------------------------
-bool T64Memory::busEvtReadUncached( int     srcModNum,
-                                 T64Word pAdr, 
-                                 uint8_t *data, 
-                                 int len ) {
-
-    return( read( pAdr, data, len ));
-}
-
-bool T64Memory::busEvtWriteUncached( int     srcModNum,
-                                  T64Word pAdr, 
-                                  uint8_t *data, 
-                                  int     len ) {
-
-    return( write( pAdr, data, len ));
-}
-
-bool T64Memory::busEvtReadSharedBlock( int     srcModNum,
-                                    T64Word pAdr,
+bool T64Memory::busOpReadUncached(  int     srcModNum,
+                                    T64Word pAdr, 
                                     uint8_t *data, 
                                     int     len ) {
 
     return( read( pAdr, data, len ));
 }
 
-bool T64Memory::busEvtReadPrivateBlock( int     srcModNum, 
-                                     T64Word pAdr, 
-                                     uint8_t *data, 
-                                     int     len ) {
-
-    return( read( pAdr, data, len ));
-}
-
-bool T64Memory::busEvtWriteBlock( int     srcModNum,
-                               T64Word pAdr, 
-                               uint8_t *data, 
-                               int     len ) {
+bool T64Memory::busOpWriteUncached( int     srcModNum,
+                                    T64Word pAdr, 
+                                    uint8_t *data, 
+                                    int     len ) {
 
     return( write( pAdr, data, len ));
 }
 
-void  T64Memory::setSpaReadOnly( bool arg ) {
+bool T64Memory::busOpReadSharedBlock( int     srcModNum,
+                                      T64Word pAdr,
+                                      uint8_t *data, 
+                                      int     len ) {
 
-    spaReadOnly = arg;
+    return( read( pAdr, data, len ));
+}
+
+bool T64Memory::busOpReadPrivateBlock( int     srcModNum, 
+                                       T64Word pAdr, 
+                                       uint8_t *data, 
+                                       int     len ) {
+
+    return( read( pAdr, data, len ));
+}
+
+bool T64Memory::busOpWriteBlock( int     srcModNum,
+                                 T64Word pAdr, 
+                                 uint8_t *data, 
+                                 int     len ) {
+
+    return( write( pAdr, data, len ));
 }

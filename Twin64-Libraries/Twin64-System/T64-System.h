@@ -86,6 +86,11 @@ enum T64ModuleType {
 // for all concrete modules and reacts to bus operations. Each module has a HPA
 // address range and an optional SPA address range in I/O memory.
 //
+
+// ??? need to rework this. A module "sees" both OP and EVT. As OP target, it reacts.
+// ??? as EVT it optionally reacts if it needs to.
+// ??? EVT routines should be virtual, and we have a dummy in the module object.
+
 //----------------------------------------------------------------------------------------
 struct T64Module {
     
@@ -98,51 +103,51 @@ struct T64Module {
                T64Word          spaAdr,
                int              spaLen  );
 
-    virtual void        reset( ) = 0;
-    virtual void        step( ) = 0;
+    virtual void    reset( ) = 0;
+    virtual void    step( ) = 0;
 
-    virtual bool        busEvtReadUncached( int srcModNum,
-                                         T64Word pAdr, 
-                                         uint8_t *data, 
-                                         int len ) = 0;
-
-    virtual bool        busEvtWriteUncached( int srcModNum,
-                                          T64Word pAdr, 
-                                          uint8_t *data, 
-                                          int len ) = 0;
-
-    virtual bool        busEvtReadSharedBlock( int srcModNum,
-                                            T64Word pAdr,
-                                            uint8_t *data, 
-                                            int len ) = 0;
-
-    virtual bool        busEvtReadPrivateBlock( int srcModNum,
-                                             T64Word pAdr, 
-                                             uint8_t *data, 
-                                             int len ) = 0;
-
-    virtual bool        busEvtWriteBlock( int srcModNum,
+    virtual bool    busOpReadUncached( int     srcModNum,
                                        T64Word pAdr, 
                                        uint8_t *data, 
-                                       int len ) = 0;
+                                       int     len ) = 0;
 
-    T64ModuleType       getModuleType( );
-    int                 getModuleNum( );
-    const char          *getModuleTypeName( );
-    T64Word             getHpaAdr( );
-    int                 getHpaLen( );
-    T64Word             getSpaAdr( );
-    int                 getSpaLen( );
+    virtual bool    busOpWriteUncached( int srcModNum,
+                                  T64Word pAdr, 
+                                  uint8_t *data, 
+                                  int len ) = 0;
+
+    virtual bool    busOpReadSharedBlock( int srcModNum,
+                                    T64Word pAdr,
+                                    uint8_t *data, 
+                                    int len ) = 0;
+
+    virtual bool    busOpReadPrivateBlock( int srcModNum, 
+                                     T64Word pAdr, 
+                                     uint8_t *data, 
+                                     int len ) = 0;
+
+    virtual bool    busOpWriteBlock(  int srcModNum,
+                                T64Word pAdr, 
+                                uint8_t *data, 
+                                int len ) = 0;
+
+    T64ModuleType   getModuleType( );
+    int             getModuleNum( );
+    const char      *getModuleTypeName( );
+    T64Word         getHpaAdr( );
+    int             getHpaLen( );
+    T64Word         getSpaAdr( );
+    int             getSpaLen( );
 
     protected: 
 
-    T64ModuleType       moduleTyp   = MT_NIL;
-    int                 moduleNum   = 0;
-    T64Word             hpaAdr      = 0;
-    int                 hpaLen      = 0;
-    T64Word             spaAdr      = 0;
-    int                 spaLen      = 0;
-    T64Word             spaLimit    = 0;
+    T64ModuleType   moduleTyp   = MT_NIL;
+    int             moduleNum   = 0;
+    T64Word         hpaAdr      = 0;
+    int             hpaLen      = 0;
+    T64Word         spaAdr      = 0;
+    int             spaLen      = 0;
+    T64Word         spaLimit    = 0;
 };
 
 //----------------------------------------------------------------------------------------

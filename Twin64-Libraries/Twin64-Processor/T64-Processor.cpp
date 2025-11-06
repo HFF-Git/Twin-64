@@ -122,52 +122,8 @@ T64Cache *T64Processor::getDCachePtr( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Interface routines for requesting system bus operations. Straightforward. The 
-// processor offers this facade to the cache subsystems. We augment the request with 
-// our module number and pass on to the system bus.
-//
-//----------------------------------------------------------------------------------------
-bool T64Processor::busOpReadSharedBlock( T64Word pAdr, uint8_t *data, int len ) {
-
-    return ( sys -> busOpReadSharedBlock( moduleNum, pAdr, data, len ));
-}
-
-bool T64Processor::busOpReadPrivateBlock( T64Word pAdr, uint8_t *data, int len ) {
-
-    return ( sys -> busOpReadPrivateBlock( moduleNum, pAdr, data, len ));
-}
-
-bool T64Processor::busOpWriteBlock( T64Word pAdr, uint8_t *data, int len ) {
-
-    return ( sys -> busOpWriteBlock( moduleNum, pAdr, data, len ));
-}
-
-bool T64Processor::busOpReadUncached( T64Word pAdr, uint8_t *data, int len ) {
-
-    if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
-
-        // ??? this is our own HPA...
-
-        *data = 0;
-        return( true );
-    }
-    else return ( sys -> busOpReadUncached( moduleNum, pAdr, data, len ));
-}
-
-bool T64Processor::busOpWriteUncached( T64Word pAdr, uint8_t *data, int len ) {
-
-    if ( isInRange( pAdr, hpaAdr, hpaAdr + hpaLen )) {
-
-        // ??? this is our own HPA...
-        
-        return( true );
-    }
-    else return ( sys -> busOpWriteUncached( moduleNum, pAdr, data, len ));
-}
-
-//----------------------------------------------------------------------------------------
-// System Bus operations cache interface routines. When a module issues a request,
-// any other module will be informed. We can now check whether the bus transactions 
+// System Bus operations interface routines. When a module issues a request, any 
+// other module will be informed. We can now check whether the bus transactions 
 // would concern us.
 //
 //      busReadSharedBlock:
@@ -200,45 +156,62 @@ bool T64Processor::busOpWriteUncached( T64Word pAdr, uint8_t *data, int len ) {
 // uncached.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busEvtReadSharedBlock( int      reqModNum, 
-                                       T64Word  pAdr, 
-                                       uint8_t  *data, 
-                                       int      len ) {
+bool T64Processor::busOpReadSharedBlock(  int      reqModNum, 
+                                          T64Word  pAdr, 
+                                          uint8_t  *data, 
+                                          int      len ) {
 
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc == nullptr ) {
+    if ( proc == this ) {
 
-        getICachePtr( ) -> flush( pAdr );
-        getDCachePtr( ) -> flush( pAdr );
-        return (true );
+        // ??? we are responsible...
     }
+    else {
+
+        // ??? we are not responsible, but may have to say something ...
+
+        iCache -> flush( pAdr );
+        dCache -> flush( pAdr );
+    }
+
+    return (true );
 }
 
-bool T64Processor::busEvtReadPrivateBlock( int     reqModNum, 
-                                        T64Word pAdr, 
-                                        uint8_t *data, 
-                                        int     len ) {
+bool T64Processor::busOpReadPrivateBlock( int     reqModNum, 
+                                          T64Word pAdr, 
+                                          uint8_t *data, 
+                                          int     len ) {
 
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc == nullptr ) {
+    if ( proc == this ) {
 
-        getDCachePtr( ) -> purge( pAdr );
-        getICachePtr( ) -> purge( pAdr );
-        return (true );
+        // ??? we are responsible...
     }
+    else {
+
+        // ??? we are not responsible, but may have to say something ...
+
+        iCache -> purge( pAdr );
+        dCache -> purge( pAdr );
+    }
+
+    return (true );
 }
 
-bool T64Processor::busEvtWriteBlock( int     reqModNum, 
-                                  T64Word pAdr, 
-                                  uint8_t *data, 
-                                  int     len ) {
+bool T64Processor::busOpWriteBlock( int     reqModNum, 
+                                    T64Word pAdr, 
+                                    uint8_t *data, 
+                                    int     len ) {
+               
+    if ( reqModNum == moduleNum ) return( false );
 
-    // do nothing,
-    return( false );
+    // by definition, if someone is issuing a write block, the cache line 
+    // is exclusive with the module. we ignore... ???
+    return (true );
 }
 
 //----------------------------------------------------------------------------------------
@@ -259,38 +232,58 @@ bool T64Processor::busEvtWriteBlock( int     reqModNum,
 // ??? need a function to call for processor HPA data
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busEvtReadUncached( int     reqModNum, 
-                                    T64Word pAdr, 
-                                    uint8_t *data, 
-                                    int     len ) {
+bool T64Processor::busOpReadUncached( int     reqModNum, 
+                                      T64Word pAdr, 
+                                      uint8_t *data, 
+                                      int     len ) {
     
     if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc != nullptr ) {
+    if ( proc == this ) {
 
-        // ??? we are the target.
+        // ??? we are the target, deliver the data
         *data = 0;
         return (true );
     }
-    else return( false );
+    else {
+
+         // ??? we could have that data in our caches... remove.
+
+        iCache -> flush( pAdr );
+        dCache -> flush( pAdr );
+        iCache -> purge( pAdr );
+        dCache -> purge( pAdr );
+    }
+
+    return( true );
 }
 
-bool T64Processor::busEvtWriteUncached( int     reqModNum,
-                                     T64Word pAdr, 
-                                     uint8_t *val, 
-                                     int     len ) {
+bool T64Processor::busOpWriteUncached( int     reqModNum,
+                                       T64Word pAdr, 
+                                       uint8_t *data, 
+                                       int     len ) {
 
    if ( reqModNum == moduleNum ) return( false );
 
     T64Processor *proc = (T64Processor *) sys -> lookupByAdr( pAdr );
-    if ( proc != nullptr ) {
+    if ( proc == this ) {
 
-        // ??? we are the target.
-
+        // ??? we are the target, deliver the data
+        *data = 0;
         return (true );
     }
-    else return( false );
+    else {
+
+        // ??? if we have a copy of that data, flush it first. delete the line.
+
+        iCache -> flush( pAdr );
+        dCache -> flush( pAdr );
+        iCache -> purge( pAdr );
+        dCache -> purge( pAdr );
+    }
+        
+    return( false );
 }
 
 //----------------------------------------------------------------------------------------

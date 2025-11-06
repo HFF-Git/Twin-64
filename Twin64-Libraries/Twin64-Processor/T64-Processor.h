@@ -328,16 +328,11 @@ struct T64Cpu {
 
     T64CpuType      cpuType = T64_CPU_T_NIL;
     T64Processor    *proc   = nullptr;
-    T64Tlb          *iTlb   = nullptr;
-    T64Tlb          *dTlb   = nullptr;
-    T64Cache        *iCache = nullptr;
-    T64Cache        *dCache = nullptr;
-
    
     // ??? rework ....
     bool            isPhysicalAdrRange( T64Word vAdr );
     T64Word         lowerPhysMemAdr     = 0;
-    T64Word         upperPhysMemAdr     = 0;
+    T64Word         upperPhysMemAdr     = T64_MAX_PHYS_MEM_LIMIT;
 };
 
 //----------------------------------------------------------------------------------------
@@ -378,36 +373,30 @@ struct T64Processor : T64Module {
     void            reset( );
     void            step( );
 
-    bool            busOpReadSharedBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            busOpReadPrivateBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            busOpWriteBlock( T64Word pAdr, uint8_t *data, int len );
-    bool            busOpReadUncached( T64Word adr, uint8_t *val, int len );
-    bool            busOpWriteUncached( T64Word adr, uint8_t *val, int len );
+    bool            busOpReadSharedBlock( int reqModNum, 
+                                          T64Word pAdr, 
+                                          uint8_t *data, 
+                                          int len );
 
-    bool            busEvtReadSharedBlock( int     reqModNum, 
+    bool            busOpReadPrivateBlock( int reqModNum, 
                                            T64Word pAdr, 
                                            uint8_t *data, 
-                                           int     len );
+                                           int len );
 
-    bool            busEvtReadPrivateBlock( int     reqModNum, 
-                                            T64Word pAdr, 
-                                            uint8_t *data, 
-                                            int     len );
+    bool            busOpWriteBlock( int reqModNum, 
+                                     T64Word pAdr, 
+                                     uint8_t *data, 
+                                     int len );
 
-    bool            busEvtWriteBlock( int     reqModNum, 
-                                      T64Word pAdr, 
-                                      uint8_t *data, 
-                                      int     len );
+    bool            busOpReadUncached( int reqModNum, 
+                                       T64Word adr, 
+                                       uint8_t *data, 
+                                       int len );
 
-    bool            busEvtReadUncached( int     reqModNum, 
+    bool            busOpWriteUncached( int reqModNum, 
                                         T64Word adr, 
-                                        uint8_t *val, 
-                                        int     len );
-
-    bool            busEvtWriteUncached( int     reqModNum, 
-                                         T64Word adr, 
-                                         uint8_t *val, 
-                                         int     len );
+                                        uint8_t *data, 
+                                        int len );
 
     T64Cpu          *getCpuPtr( );
     T64Tlb          *getITlbPtr( );

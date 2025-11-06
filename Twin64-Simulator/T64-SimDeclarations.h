@@ -474,9 +474,9 @@ struct SimHelpMsgEntry {
 //----------------------------------------------------------------------------------------
 struct SimToken {
 
-    char         name[ MAX_TOK_NAME_SIZE ] = { };
-    SimTokTypeId typ                         = TYP_NIL;
-    SimTokId     tid                         = TOK_NIL;
+    char         name[ MAX_TOK_NAME_SIZE ];
+    SimTokTypeId typ;
+    SimTokId     tid;
     
     union {
         

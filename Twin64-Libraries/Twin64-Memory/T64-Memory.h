@@ -48,33 +48,32 @@ public:
     
     void        reset( );
     void        step( );
+    void        setSpaReadOnly( bool arg );
 
-    bool        busEvtReadUncached( int srcModNum,
+    bool        busOpReadUncached( int srcModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 
                                  int len );
 
-    bool        busEvtWriteUncached( int srcModNum,
+    bool        busOpWriteUncached( int srcModNum,
                                   T64Word pAdr, 
                                   uint8_t *data, 
                                   int len );
 
-    bool        busEvtReadSharedBlock( int srcModNum,
+    bool        busOpReadSharedBlock( int srcModNum,
                                     T64Word pAdr,
                                     uint8_t *data, 
                                     int len );
 
-    bool        busEvtReadPrivateBlock( int srcModNum, 
+    bool        busOpReadPrivateBlock( int srcModNum, 
                                      T64Word pAdr, 
                                      uint8_t *data, 
                                      int len );
 
-    bool        busEvtWriteBlock(  int srcModNum,
+    bool        busOpWriteBlock(  int srcModNum,
                                 T64Word pAdr, 
                                 uint8_t *data, 
                                 int len );
-
-    void        setSpaReadOnly( bool arg );
 
     // ??? routines to load/save memory ?
 
