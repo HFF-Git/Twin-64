@@ -213,6 +213,7 @@ struct SimConsoleIO : SimFormatter {
     void    setBlockingMode( bool enabled );
     bool    isConsole( );
     int     readChar( );
+    void    delayOutput( int ms );
 
     int     writeChars( const char *format, ... );
     

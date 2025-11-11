@@ -430,8 +430,6 @@ void SimWinDisplay::reDraw( ) {
     
     cmdWin -> reDraw( );
     glb -> console -> setAbsCursor( maxRowsNeeded, 1 );
-
-    usleep( 1000 );
     winReFormatPending = false;
 }
 

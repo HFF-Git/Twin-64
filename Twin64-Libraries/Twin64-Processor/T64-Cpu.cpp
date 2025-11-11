@@ -741,8 +741,10 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                     case 0: res = ( val1 == val2 ) ? 1 : 0; break;
                     case 1: res = ( val1 <  val2 ) ? 1 : 0; break;
-                    case 2: res = ( val1 != val2 ) ? 1 : 0; break;
-                    case 3: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 2: res = ( val1 >  val2 ) ? 1 : 0; break;
+                    case 4: res = ( val1 != val2 ) ? 1 : 0; break;
+                    case 5: res = ( val1 >= val2 ) ? 1 : 0; break;
+                    case 6: res = ( val1 <= val2 ) ? 1 : 0; break;
                 }
                 
                 setRegR( instr, res );
@@ -1052,22 +1054,26 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
+                T64Word sum     = 0;
                 int     cond    = (int) extractInstrField( instr, 19, 3 );
                 bool    res     = false;
 
                 if ( willAddOverflow( val1, val2 )) 
                     throw ( T64Trap( OVERFLOW_TRAP ));
-                else 
-                    setRegR( instr, val1 + val2 );
+                
+                sum = val1 + val2;
+                setRegR( instr, sum );
 
-                switch ( cond ) {
+                 switch ( cond ) {
                         
-                    case 0: res = ( val1 == val2 ); break;
-                    case 1: res = ( val1 <  val2 ); break;
-                    case 2: res = ( val1 != val2 ); break;
-                    case 3: res = ( val1 <= val2 ); break;
-
-                    // ??? fix
+                    case 0: res = ( sum == 0    ); break;
+                    case 1: res = ( sum <  0    ); break;
+                    case 2: res = ( sum >  0    ); break;
+                    case 3: res = (( sum & 0x1 ) == 0 ); break;
+                    case 4: res = ( sum != 0    ); break;
+                    case 5: res = ( sum >= 0    ); break;
+                    case 6: res = ( sum <= 0    ); break;
+                    case 7: res = (( sum & 0x1 ) != 0 ); break;
                 }
                 
                 if ( res )  pswReg = newIA;
@@ -1085,10 +1091,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 switch ( cond ) {
                         
-                    case 0: res = ( val1 == val2 ); break;
-                    case 1: res = ( val1 <  val2 ); break;
-                    case 2: res = ( val1 != val2 ); break;
-                    case 3: res = ( val1 <= val2 ); break;
+                    case 0: res = ( val1 == val2 ) ? 1 : 0; break;
+                    case 1: res = ( val1 <  val2 ) ? 1 : 0; break;
+                    case 2: res = ( val1 >  val2 ) ? 1 : 0; break;
+                    case 4: res = ( val1 != val2 ) ? 1 : 0; break;
+                    case 5: res = ( val1 >= val2 ) ? 1 : 0; break;
+                    case 6: res = ( val1 <= val2 ) ? 1 : 0; break;
                 }
                 
                 if ( res )  pswReg = newIA;
@@ -1099,23 +1107,26 @@ void T64Cpu::instrExecute( uint32_t instr ) {
             case ( OPC_GRP_BR * 16 + OPC_MBR ): {
                 
                 T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
-                T64Word val1    = getRegR(instr );
-                T64Word val2    = getRegB(instr );
+                T64Word val     = getRegB(instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
                 bool    res     = false;
+
+                setRegR( instr, val );
                 
                 switch ( cond ) {
                         
-                    case 0: res = ( val1 == val2 ); break;
-                    case 1: res = ( val1 <  val2 ); break;
-                    case 2: res = ( val1 != val2 ); break;
-                    case 3: res = ( val1 <= val2 ); break;
+                    case 0: res = ( val == 0    ); break;
+                    case 1: res = ( val <  0    ); break;
+                    case 2: res = ( val >  0    ); break;
+                    case 3: res = (( val & 0x1 ) == 0 ); break;
+                    case 4: res = ( val != 0    ); break;
+                    case 5: res = ( val >= 0    ); break;
+                    case 6: res = ( val <= 0    ); break;
+                    case 7: res = (( val & 0x1 ) != 0 ); break;
                 }
                 
                 if ( res )  pswReg = newIA;
                 else        pswReg = addAdrOfs( pswReg, 4 );
-                
-                setRegR( instr, val2 );
                 
             } break;
                 

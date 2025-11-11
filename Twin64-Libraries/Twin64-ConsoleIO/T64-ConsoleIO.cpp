@@ -47,69 +47,24 @@ namespace {
 struct termios saveTermSetting;
 #endif
 
+//----------------------------------------------------------------------------------------
+//
+//
+//
+//----------------------------------------------------------------------------------------
 char outputBuffer[ 1024 ];
 
-#if 0
-// ??? we move these routines to the simulator if needed ...
 //----------------------------------------------------------------------------------------
-// "removeChar" will remove a character from the input buffer at the cursor 
-// position and adjust the string size accordingly. If the cursor is at the end
-// of the string, both string size and cursor position are decremented by one, 
-// otherwise the cursor stays where it is and just the string size is 
-// decremented.
+// Sometimes we need to delay a little, and sure enough WIN and Mac have different 
+// routines to do so.
 //
 //----------------------------------------------------------------------------------------
-void removeChar( char *buf, int *strSize, int *pos ) {
-    
-    if (( *strSize > 0 ) && ( *strSize == *pos )) {
-        
-        *strSize    = *strSize - 1;
-        *pos        = *pos - 1;
-    }
-    else if (( *strSize > 0 ) && ( *pos >= 0 )) {
-   
-        for ( int i = *pos; i < *strSize; i++ ) buf[ i ] = buf[ i + 1 ];
-        *strSize    = *strSize - 1;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-// "insertChar" will insert a character in the input buffer at the cursor 
-// position and adjust cursor and overall string size accordingly. There are 
-// two basic cases. The first is simply appending to the buffer when both the 
-// current string size and cursor position are equal. The second is when the 
-// cursor is somewhere in the input buffer. In this case we need to shift the 
-// characters to the right to make room first.
-//
-//----------------------------------------------------------------------------------------
-void insertChar( char *buf, int ch, int *strSize, int *pos ) {
-    
-    if ( *pos == *strSize ) {
-        
-        buf[ *strSize ] = ch;
-        *strSize        = *strSize + 1;
-        *pos            = *pos + 1;
-    }
-    else if ( *pos < *strSize ) {
-        
-        for ( int i = *strSize; i > *pos; i-- ) buf[ i ] = buf[ i -1 ];
-        
-        buf[ *pos ] = ch;
-        *strSize    = *strSize + 1;
-        *pos        = *pos + 1;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-// "appendChar" will add a character to the end of the buffer and adjust the 
-// overall size.
-//
-//----------------------------------------------------------------------------------------
-void appendChar( char *buf, int ch, int *strSize ) {
-    
-    buf[ *strSize ] = ch;
-    *strSize        = *strSize + 1;
-}
+#ifdef _WIN32
+#include <windows.h>
+#define sleepMilliSeconds (ms ) Sleep( ms )
+#else
+#include <unistd.h>
+#define sleepMilliSeconds( ms ) usleep(( ms ) * 1000 )
 #endif
 
 }; // namespace
@@ -211,18 +166,18 @@ void SimConsoleIO::setBlockingMode( bool enabled ) {
 
 //----------------------------------------------------------------------------------------
 // "readConsoleChar" is the single entry point to get a character from the terminal
-// input. On Mac/Linux, this is the "read" system call. Whether the mode is blocking or
-// non-blocking is set in the terminal settings. The read function is the same. If 
-// there is no character available, a zero is returned, otherwise the character.
+// input. On Mac/Linux, this is the "read" system call. Whether the mode is blocking
+// or non-blocking is set in the terminal settings. The read function is the same. 
+// If there is no character available, a zero is returned, otherwise the character.
 //
-// On Windows there is a similar call, which does just return one character at a time. 
-// However, there seems to be no real waiting function. Instead, the "_kbhit" tests for
-// a keyboard input. In blocking mode, we will loop for a keyboard input and then get
-// the character. In non-blocking mode, we test the keyboard and return either the 
-// character typed or a zero.
+// On Windows there is a similar call, which does just return one character at a 
+// time. However, there seems to be no real waiting function. Instead, the "_kbhit" 
+// tests for a keyboard input. In blocking mode, we will loop for a keyboard input
+// and then get the character. In non-blocking mode, we test the keyboard and return
+// either the character typed or a zero.
 //
-// ??? this also means on Windows a "busy" loop..... :-(
-// ??? perhaps a "sleep" eases the busy loop a little...
+// On Windows, we delay a little to avoid a busy loop.
+// 
 //----------------------------------------------------------------------------------------
 int SimConsoleIO::readChar( ) {
     
@@ -250,23 +205,17 @@ int SimConsoleIO::readChar( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// I still get from time time garbled screens, which disappear on a redraw. Perhaps
-// the single character write logic is too much for the terminal driver. So, let's
-// accumulate larger sequences and only use "writeChars" for printing.
-//
-//----------------------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------------------
 // "writeChars" is the single entry point to write to the terminal. On Mac/Linux, 
 // we still try to send out the data in batches to the terminal emulator for better
 // stability. In Windows this does not seems to be an issue, we send a single char
 // at a time.
 //
+// I still get from time time garbled screens, which disappear on a redraw. Perhaps
+// the single character write logic is too much for the terminal driver. So, let's
+// accumulate larger sequences and only use "writeChars" for printing.
+//
 //----------------------------------------------------------------------------------------
-
-#if 0
-
-// ??? old version 
+#if 0 // ??? old version 
 
 int SimConsoleIO::writeChars( const char *format, ... ) {
     
@@ -322,14 +271,14 @@ int SimConsoleIO::writeChars( const char *format, ... ) {
     }
 
     tcdrain( STDOUT_FILENO );
-
+   
     #else
 
     for (int i = 0; i < len; i++) {
 
         _putch((unsigned char)outputBuffer[i]);
     }
-    
+
     #endif
 
     return len;
