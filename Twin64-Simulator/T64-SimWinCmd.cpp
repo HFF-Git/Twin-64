@@ -1482,7 +1482,7 @@ void SimCommandsWin::insertTLBCmd( ) {
     T64Word flags = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
     tok -> checkEOS( );
 
-    // ??? find a way to make to constants for the bits, which my change ...
+    // ??? find a way to make to constants for the bits, which may change ...
     // ??? e.g. "buildTlbInfoWord" ...
     
     T64Word info = 0;    
@@ -1500,6 +1500,7 @@ void SimCommandsWin::insertTLBCmd( ) {
     if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+
 
     if      ( currentCmd == CMD_ITLB_I ) proc -> getITlbPtr( ) -> insert( vAdr, info );
     else if ( currentCmd == CMD_ITLB_D ) proc -> getDTlbPtr( ) -> insert( vAdr, info );

@@ -48,7 +48,7 @@ const int DEF_WIN_ROW_CODE_MEM  = 8;
 const int DEF_WIN_COL_CPU_STATE = 96;
 const int DEF_WIN_ROW_CPU_STATE = 5;
 
-const int DEF_WIN_COL_TLB       = 70;
+const int DEF_WIN_COL_TLB       = 88;
 const int DEF_WIN_ROW_TLB       = 4;
 
 const int DEF_WIN_COL_CACHE     = 112;
@@ -728,7 +728,8 @@ void SimWinTlb::drawLine( T64Word index ) {
     printTextField(( ePtr -> modified ) ? (char *) "M" : (char *) "m" );
     printTextField(( ePtr -> locked ) ? (char *) "L" : (char *) "l" );
     printTextField(( ePtr -> uncached ) ? (char *) "U" : (char *) "u" );
-    printTextField(( ePtr -> trapOnBranch ) ? (char *) "T" : (char *) "t" );
+    // printTextField(( ePtr -> protectionEnabled ) ? (char *) "P" : (char *) "p" );
+    printTextField(( ePtr -> trapOnBranch ) ? (char *) "B" : (char *) "b" );
     printTextField((char *) "] [", fmtDesc );
     printTextField((char *) pageTypeStr( ePtr -> pageType ));
     printTextField((char *) ":", fmtDesc );
@@ -740,6 +741,9 @@ void SimWinTlb::drawLine( T64Word index ) {
     printNumericField( ePtr -> vAdr, fmtDesc | FMT_HEX_2_4_4_4 );
     printTextField((char *) "  pAdr: ", fmtDesc );
     printNumericField( ePtr -> pAdr, fmtDesc | FMT_HEX_2_4_4 );
+    printTextField((char *) "  len: ", fmtDesc );
+    printNumericField( ePtr -> pSize, fmtDesc | FMT_HEX_8 );
+
 }
 
 //****************************************************************************************

@@ -114,46 +114,49 @@ T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
 // zero. Note that this is a rather unlikely case, OS software has to ensure that we
 // do not lock all entries.
 //
-// ??? map info fields to the tlb fields...
 //----------------------------------------------------------------------------------------
 void T64Tlb::insert( T64Word vAdr, T64Word info ) {
 
     timeCounter++;
 
+    int size = T64_PAGE_SIZE_BYTES << extractField64( info, 36, 4 );
+
     if ( isInIoAdrRange( vAdr )) return;
 
-    #if 0
-    for (int i = 0; i < T64_MAX_TLB_SIZE; i++) {
+    for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
     
-        T64TlbEntry *ptr = &map[i];
-        if ( !ptr->valid ) continue;
+        T64TlbEntry *ptr = &map[ i] ;
+        if ( ! ptr -> valid ) continue;
 
-        T64Word vStart1 = ptr->vAdr;
-        T64Word vEnd1   = ptr->vAdr + ptr->pSize - 1;
+        T64Word vStart1 = ptr -> vAdr;
+        T64Word vEnd1   = ptr -> vAdr + ptr -> pSize - 1;
         T64Word vStart2 = vAdr;
-        T64Word vEnd2   = vAdr + 00000 - 1; // fix.... needs to be size...
+        T64Word vEnd2   = vAdr + size - 1;
 
-        if ((vStart1 <= vEnd2) && (vEnd1 >= vStart2)) {
+        if (( vStart1 <= vEnd2 ) && ( vEnd1 >= vStart2 )) {
             // overlap detected — replace the old entry
-            ptr->valid = false;
+            ptr -> valid = false;
         }
     }
-    #endif
 
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
 
         T64TlbEntry *ptr = &map[ i ];
-        if ( !ptr->valid ) {
+        if ( !ptr -> valid ) {
 
-            ptr->valid        = true;
-            ptr->uncached     = extractBit64( info, 62 );
-            ptr->locked       = extractBit64( info, 61 );
-            ptr->modified     = extractBit64( info, 60 );
-            ptr->trapOnBranch = extractBit64( info, 59 );
-            ptr->vAdr         = vAdr;
-            ptr->pAdr         = extractField64( info, 12, 24 );
-            ptr->pSize        = 0;
-            ptr->lastUsed     = timeCounter;
+            ptr -> valid        = true;
+            ptr -> modified     = extractBit64( info, 62 );
+            ptr -> locked       = extractBit64( info, 61 );
+            ptr -> uncached     = extractBit64( info, 62 );
+            // ptr -> portionEnabled = extractBit64( info, 60 ); // ??? not used ???
+            ptr -> trapOnBranch = extractBit64( info, 59 );
+            ptr -> vAdr         = vAdr;
+            ptr -> pAdr         = extractField64( info, 12, 24 );
+            ptr -> pSize        = size;
+            ptr -> pLev1        = extractBit64( info, 40 );
+            ptr -> pLev2        = extractBit64( info, 41 );
+            ptr -> pageType     = (uint8_t) extractField64( info, 42, 2 );
+            ptr -> lastUsed     = timeCounter;
             return;
         }
     }
