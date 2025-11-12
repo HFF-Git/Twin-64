@@ -1482,11 +1482,8 @@ void SimCommandsWin::insertTLBCmd( ) {
     T64Word flags = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
     tok -> checkEOS( );
 
-    // ??? find a way to make to constants for the bits, which may change ...
-    // ??? e.g. "buildTlbInfoWord" ...
-    
     T64Word info = 0;    
-    info = depositField( info, 56, 8, flags );
+    info = depositField( info, 58, 4, flags );
     info = depositField( info, 40, 4, acc );
     info = depositField( info, 36, 4, size );
     info = depositField( info, 12, 24, pAdr );

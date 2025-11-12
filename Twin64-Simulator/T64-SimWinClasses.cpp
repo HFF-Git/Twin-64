@@ -707,9 +707,9 @@ void SimWinTlb::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a banner and a body. The body lines are displayed after the 
-// banner line. The number of lines can vary. A line represents an entry in the respective
-// TLB.
+// Each window consist of a banner and a body. The body lines are displayed after
+// the banner line. The number of lines can vary. A line represents an entry in 
+// the respective TLB.
 //
 // Format:
 //
@@ -743,7 +743,6 @@ void SimWinTlb::drawLine( T64Word index ) {
     printNumericField( ePtr -> pAdr, fmtDesc | FMT_HEX_2_4_4 );
     printTextField((char *) "  len: ", fmtDesc );
     printNumericField( ePtr -> pSize, fmtDesc | FMT_HEX_8 );
-
 }
 
 //****************************************************************************************
