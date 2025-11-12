@@ -10,6 +10,7 @@ add_executable( ${PROJECT_NAME}
     T64-SimVersion.h
     T64-SimDeclarations.h 
     T64-SimTables.h
+    T64-SimConfig.cpp
     T64-SimTokenizer.cpp
     T64-SimExprEvaluator.cpp
     T64-SimEXprFunctions.cpp

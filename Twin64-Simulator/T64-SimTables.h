@@ -27,6 +27,20 @@
 #include "T64-SimDeclarations.h"
 
 //----------------------------------------------------------------------------------------
+// The simulator offers a set of command line options. Each option has a name, an 
+// argument type and a value returned when the option is found.
+//
+// ??? under construction...
+//----------------------------------------------------------------------------------------
+static struct SimCmdLineOptions optionTable[ ] = {
+        { "help",       OPT_NO_ARGUMENT,       'h' },
+        { "verbose",    OPT_NO_ARGUMENT,       'v' },
+        { "configfile", OPT_REQUIRED_ARGUMENT, 'f' },
+        { "logfile",    OPT_REQUIRED_ARGUMENT, 'l' },
+        {0, OPT_NO_ARGUMENT, 0}
+    };
+
+//----------------------------------------------------------------------------------------
 // The global command interpreter token table. All reserved words are allocated
 // in this table. Each entry has the token name, the token id, the token type 
 // id, i.e. its type, and a value associated with the token. The value allows 

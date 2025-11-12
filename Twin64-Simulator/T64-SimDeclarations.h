@@ -442,6 +442,25 @@ const char ENV_CURRENT_PROC[ ]          = "CURRENT_PROC";
 struct SimGlobals;
 
 //----------------------------------------------------------------------------------------
+// Command line option argument types and structure. This is the argc, argv parser
+// used to parse long options (e.g. --option=value).
+//
+//----------------------------------------------------------------------------------------
+enum SimCmdLineArgOptions : int {
+
+    OPT_NO_ARGUMENT         = 0,
+    OPT_REQUIRED_ARGUMENT   = 1, 
+    OPT_OPTIONAL_ARGUMENT   = 2    
+};
+
+struct SimCmdLineOptions {
+
+    const char              *name;
+    SimCmdLineArgOptions    argOpt;   
+    int                     val;
+};
+
+//----------------------------------------------------------------------------------------
 // An error is described in the error message table.
 //
 //----------------------------------------------------------------------------------------
