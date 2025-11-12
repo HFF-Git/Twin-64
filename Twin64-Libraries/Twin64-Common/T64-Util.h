@@ -436,8 +436,5 @@ inline bool isInIoAdrRange( T64Word adr ) {
 //
 //----------------------------------------------------------------------------------------
 void upshiftStr( char *str );
-void addChar( char *buf, int size, char ch );
-const char *pageTypeStr( uint8_t acc ); 
-
 
 #endif // T64_Common_Util_h

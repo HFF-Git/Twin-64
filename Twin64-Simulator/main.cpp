@@ -58,7 +58,7 @@ int main( int argc, const char * argv[] ) {
                             T64_TT_FA_64S,
                             T64_TT_FA_64S,
                             T64_CT_2W_128S_4L,
-                            T64_CT_4W_64S_8L,
+                            T64_CT_8W_128S_4L,
                             T64_IO_HPA_MEM_START + ( 3 * T64_PAGE_SIZE_BYTES ),
                             T64_PAGE_SIZE_BYTES,
                             0,

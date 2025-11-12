@@ -354,16 +354,21 @@ void SimCommandsWin::setDefaults( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The banner line for command window. For now, we just label the banner line and show
-// a little indicate whether we are in WIN mode or not.
+// The banner line for command window. For now, we just label the banner line and 
+// show the system state plus a little indicate whether we are in WIN mode or not.
 //
+// ??? where do e get the system state from ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBanner( ) {
     
     uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
     
     setWinCursor( 1, 1 );
-    printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ));
+    printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ), 32 );
+
+    printTextField((char *) "System State: ", fmtDesc );
+    printNumericField( 0, fmtDesc | FMT_HEX_4 );
+
     padLine( fmtDesc ); 
 
     if ( glb -> winDisplay -> isWindowsOn( )) {

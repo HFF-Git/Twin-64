@@ -164,8 +164,9 @@ void SimWin::setWinStack( int wStack ) {
 // toggle view defined. 
 //----------------------------------------------------------------------------------------
 void SimWin::setWinToggleLimit( int limit ) { 
-    
-    winToggleLimit = limit % MAX_WIN_TOGGLES; 
+
+    if ( isInRange( limit, 1, MAX_WIN_TOGGLES )) winToggleLimit = limit; 
+    else winToggleLimit = 1;
 }
 
 int SimWin::getWinToggleLimit( ) { 

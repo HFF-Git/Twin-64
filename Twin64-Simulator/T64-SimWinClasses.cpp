@@ -60,6 +60,22 @@ const int DEF_WIN_COL_CONSOLE   = 112;
 const int DEF_WIN_ROW_CONSOLE   = 24;
 
 //----------------------------------------------------------------------------------------
+// Routine for creating the page type string.
+//
+//----------------------------------------------------------------------------------------
+const char *pageTypeStr( uint8_t pTyp ) {
+
+    switch ( pTyp ) {
+
+        case 0: return( "R" );
+        case 1: return( "W" );
+        case 2: return( "X" );
+        case 3: return( "G" );
+        default: return( "*" );
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // Routine for creating the access rights string. It consists of the page access and 
 // the two privilege levels.
 //
@@ -758,9 +774,11 @@ void SimWinCache::setDefaults( ) {
     setWinType( WT_CACHE_WIN );
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
-    setWinToggleLimit( cache -> getWays( ) );
+    setWinToggleLimit( cache -> getWays( ));
+
     for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
         setWinToggleDefSize( i, DEF_WIN_ROW_CACHE, DEF_WIN_COL_CACHE );
+    
     initWinToggleSizes( );
 
     setCurrentItemAdr( 0 );

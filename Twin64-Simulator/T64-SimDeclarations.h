@@ -1308,7 +1308,7 @@ public:
    
     int             currentWinNum               = -1;
     bool            winStacksOn                 = false;
-    bool            winModeOn                   = false;
+    bool            winModeOn                   = true;
     bool            winReFormatPending          = false;
 
     SimGlobals      *glb                        = nullptr;
