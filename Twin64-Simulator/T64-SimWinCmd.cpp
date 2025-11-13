@@ -386,8 +386,8 @@ void SimCommandsWin::drawBanner( ) {
 // length of the command window may have changed.
 //
 // Rows to show is the number of lines between the header line and the last line,
-// which is out command input line. We fill from the lowest line upward to the header
-// line. Finally, we set the cursor to the last line in the command window.
+// which is out command input line. We fill from the lowest line upward to the 
+// header line. Finally, we set the cursor to the last line in the command window.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBody( ) {

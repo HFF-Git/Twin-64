@@ -24,12 +24,6 @@
 #ifndef T64_Common_Util_h
 #define T64_Common_Util_h
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <ctype.h>
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------

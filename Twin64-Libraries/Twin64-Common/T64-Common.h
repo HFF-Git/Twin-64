@@ -24,12 +24,46 @@
 #ifndef T64_Common_h
 #define T64_Common_h
 
-#include <stdlib.h>
+//----------------------------------------------------------------------------------------
+// Mac and Windows know different include files and procedure names for some POSIX 
+// routines. Learned the hard way that these files better come really early in the
+// project. All libraries and modules depend on these basic type definitions and 
+// include the "T64-Common.h" file early on.
+//
+//----------------------------------------------------------------------------------------
+#if __APPLE__
+#include <unistd.h>
+#include <termios.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <iostream>
+#include <fcntl.h>
+#else
+//#include <unistd.h>
+#define NOMINMAX
+#include <windows.h>
+#include <conio.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <string.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <iostream>
+#include <io.h>
+#define isatty _isatty
+#define fileno _fileno
+#define write  _write
+#endif
 
 //----------------------------------------------------------------------------------------
 //

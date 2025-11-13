@@ -31,6 +31,7 @@
 #ifndef T64_ConsoleIO_h
 #define T64_ConsoleIO_h
 
+#if 0
 //----------------------------------------------------------------------------------------
 // Mac and Windows know different include files and procedure names for some POSIX 
 // routines.
@@ -65,6 +66,7 @@
 #define isatty _isatty
 #define fileno _fileno
 #define write  _write
+#endif
 #endif
 
 #include "T64-Common.h"
