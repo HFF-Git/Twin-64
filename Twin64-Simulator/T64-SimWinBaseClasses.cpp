@@ -664,7 +664,10 @@ void SimWinScrollable::winBackward( T64Word amt ) {
 // content, the data is taken from the windows output buffer.
 //
 //----------------------------------------------------------------------------------------
-SimWinOutBuffer::SimWinOutBuffer( ) { }
+SimWinOutBuffer::SimWinOutBuffer( ) { 
+
+    initBuffer( );
+}
 
 void SimWinOutBuffer::initBuffer( ) {
     
@@ -673,7 +676,7 @@ void SimWinOutBuffer::initBuffer( ) {
     topIndex     = 0;
     cursorIndex  = 0;
     charPos      = 0;
-    screenLines   = 0;
+    screenLines  = 0;
 }
 
 //----------------------------------------------------------------------------------------
