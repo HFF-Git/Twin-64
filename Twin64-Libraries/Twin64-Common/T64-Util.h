@@ -93,12 +93,17 @@ inline T64Word rounddown( T64Word arg, int round ) {
 
 inline bool isAligned( T64Word adr, int align ) {
 
-    if (( align == 1 ) || ( align = 2 ) || 
-        ( align == 4 ) || ( align = 8 )) 
+    if (( align == 1 ) || ( align == 2 ) || 
+        ( align == 4 ) || ( align == 8 )) 
         
         return (( adr & ( align - 1 )) == 0 );
     
     else return( false );
+}
+
+inline bool isAlignedPage( T64Word adr, int align ) {
+
+    return (( adr & ( align - 1 )) == 0 );
 }
 
 //----------------------------------------------------------------------------------------

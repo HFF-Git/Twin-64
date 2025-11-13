@@ -250,8 +250,8 @@ struct T64Tlb {
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
     
-    void            insert( T64Word vAdr, T64Word info );
-    void            purge( T64Word vAdr );
+    bool            insert( T64Word vAdr, T64Word info );
+    bool            purge( T64Word vAdr );
 
     bool            insertTlbByIndex( uint32_t index, T64Word vAdr, T64Word info );
     bool            purgeTlbByIndex( uint32_t index );

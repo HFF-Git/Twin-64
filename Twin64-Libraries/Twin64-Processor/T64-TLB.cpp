@@ -28,13 +28,25 @@
 #include "T64-Processor.h"
 
 //----------------------------------------------------------------------------------------
-//
+// Local name space.
 //
 //----------------------------------------------------------------------------------------
 namespace {
 
-    const   int     T64_MAX_TLB_SIZE            = 64;
+//----------------------------------------------------------------------------------------
+// Maximum TLB size.
+//
+//----------------------------------------------------------------------------------------
+const int T64_MAX_TLB_SIZE = 64;
 
+//----------------------------------------------------------------------------------------
+// Calculate the page size from the size field in the TLB entry.
+// 
+//----------------------------------------------------------------------------------------
+int tlbPageSize( int size ) {
+
+    return( T64_PAGE_SIZE_BYTES * ( 1U << ( size * 2 )));
+}
 
 } // namespace
 
@@ -82,8 +94,6 @@ void T64Tlb::reset( ) {
 // The lookup method checks all valid entries if they cover the virtual address. If
 // found we update the last used field and return the entry.
 //
-// ??? rather do the address check here ??? then we do not need to distinguish 
-// in calls to address translation...
 //----------------------------------------------------------------------------------------
 T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
 
@@ -110,19 +120,25 @@ T64TlbEntry *T64Tlb::lookup( T64Word vAdr ) {
 // check whether the new entry would overlap an existing virtual address range. If
 // there is an overlap, the entry found is invalidated. If none found, find a free 
 // entry to use. If none found, we replace the least recently used entry. If all 
-// entries are locked, we cannot find a free entry. In this case, we just unlock entry
-// zero. Note that this is a rather unlikely case, OS software has to ensure that we
-// do not lock all entries.
+// entries are locked, we cannot find a free entry. In this case, we just unlock 
+// entry zero. Note that this is a rather unlikely case, OS software has to ensure 
+// that we do not lock all entries. Furthermore, we check the alignment of both 
+// virtual and physical address according to the page size. If not aligned, the 
+// insert operation fails.       
 //
 //----------------------------------------------------------------------------------------
-void T64Tlb::insert( T64Word vAdr, T64Word info ) {
+bool T64Tlb::insert( T64Word vAdr, T64Word info ) {
 
     timeCounter++;
 
-    int         size  = T64_PAGE_SIZE_BYTES << extractField64( info, 36, 4 );
+    int         pSize  = tlbPageSize( extractField64( info, 36, 4 ) );
+    T64Word     pAdr   = extractField64( info, 12, 24 ) << T64_PAGE_OFS_BITS;
     T64TlbEntry *entry = nullptr;
 
-    if ( isInIoAdrRange( vAdr )) return;
+    if ( isInIoAdrRange( vAdr )) return ( true );
+
+    if ( ! isAlignedPage( vAdr, pSize )) return ( false );
+    if ( ! isAlignedPage( pAdr, pSize )) return ( false );
 
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
     
@@ -130,9 +146,9 @@ void T64Tlb::insert( T64Word vAdr, T64Word info ) {
         if ( ! ptr -> valid ) continue;
 
         T64Word vStart1 = ptr -> vAdr;
-        T64Word vEnd1   = ptr -> vAdr + ( T64_PAGE_SIZE_BYTES << ptr -> pSize ) - 1;
+        T64Word vEnd1   = ptr -> vAdr + ptr -> pSize - 1;
         T64Word vStart2 = vAdr;
-        T64Word vEnd2   = vEnd2 = vAdr + size - 1;
+        T64Word vEnd2   = vEnd2 = vAdr + pSize - 1;
 
         if (( vStart1 <= vEnd2 ) && ( vEnd1 >= vStart2 )) {
 
@@ -174,19 +190,21 @@ void T64Tlb::insert( T64Word vAdr, T64Word info ) {
     // entry -> portionEnabled = extractBit64( info, 59 ); // ??? not used ???
     entry -> trapOnBranch = extractBit64( info, 58 );
     entry -> vAdr         = vAdr;
-    entry -> pAdr         = extractField64( info, 12, 24 );
-    entry -> pSize        = size;
+    entry -> pAdr         = pAdr;
+    entry -> pSize        = pSize;
     entry -> pLev1        = extractBit64( info, 40 );
     entry -> pLev2        = extractBit64( info, 41 );
     entry -> pageType     = (uint8_t) extractField64( info, 42, 2 );
     entry -> lastUsed     = timeCounter;
+
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------
 // Remove the TLB entry that contains the virtual address.
 // 
 //----------------------------------------------------------------------------------------
-void T64Tlb::purge( T64Word vAdr ) {
+bool T64Tlb::purge( T64Word vAdr ) {
     
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
         
@@ -198,6 +216,8 @@ void T64Tlb::purge( T64Word vAdr ) {
             ptr -> valid = false;
         }
     }
+
+    return( true );
 }
 
 //----------------------------------------------------------------------------------------

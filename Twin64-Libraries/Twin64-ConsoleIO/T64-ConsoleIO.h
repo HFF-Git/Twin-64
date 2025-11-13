@@ -31,44 +31,6 @@
 #ifndef T64_ConsoleIO_h
 #define T64_ConsoleIO_h
 
-#if 0
-//----------------------------------------------------------------------------------------
-// Mac and Windows know different include files and procedure names for some POSIX 
-// routines.
-//
-//----------------------------------------------------------------------------------------
-#if __APPLE__
-#include <unistd.h>
-#include <termios.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <iostream>
-#include <fcntl.h>
-#else
-//#include <unistd.h>
-#define NOMINMAX
-#include <windows.h>
-#include <conio.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <iostream>
-#include <io.h>
-#define isatty _isatty
-#define fileno _fileno
-#define write  _write
-#endif
-#endif
-
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------

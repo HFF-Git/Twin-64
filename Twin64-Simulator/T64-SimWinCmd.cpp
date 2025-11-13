@@ -1430,7 +1430,7 @@ void SimCommandsWin::purgeCacheCmd( ) {
     
     if      ( currentCmd == CMD_PCA_I ) proc -> getICachePtr( ) -> purge( vAdr );
     else if ( currentCmd == CMD_PCA_D ) proc -> getDCachePtr( ) -> purge( vAdr );
-    else throw( 9996 ); // ??? fix ...
+    else throw( ERR_CACHE_PURGE_OP );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1463,8 +1463,8 @@ void SimCommandsWin::flushCacheCmd( ) {
 // Insert into TLB command. We have two modes. We must be in windows mode and the 
 // current window must be a TLB window. 
 //
-//  IITLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
-//  IDTLB <vAdr> "," <pAdr> "," <size> "," <acc> "," <flags>
+//  IITLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
+//  IDTLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
 //
 // We could get the flags as an identifier string and parse the individual characters.
 //----------------------------------------------------------------------------------------
@@ -1486,7 +1486,7 @@ void SimCommandsWin::insertTLBCmd( ) {
     info = depositField( info, 58, 4, flags );
     info = depositField( info, 40, 4, acc );
     info = depositField( info, 36, 4, size );
-    info = depositField( info, 12, 24, pAdr );
+    info = depositField( info, 12, 24, pAdr >> T64_PAGE_OFS_BITS );
 
     if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
         throw( ERR_INVALID_WIN_TYPE );
@@ -1498,10 +1498,15 @@ void SimCommandsWin::insertTLBCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-
-    if      ( currentCmd == CMD_ITLB_I ) proc -> getITlbPtr( ) -> insert( vAdr, info );
-    else if ( currentCmd == CMD_ITLB_D ) proc -> getDTlbPtr( ) -> insert( vAdr, info );
-    else throw( 9940 ); // ??? mark as internal error...
+    if ( currentCmd == CMD_ITLB_I ) {
+        
+        if ( ! proc -> getITlbPtr( ) -> insert( vAdr, info )) throw( ERR_TLB_INSERT_OP );
+    }
+    else if ( currentCmd == CMD_ITLB_D ) { 
+        
+        if ( ! proc -> getDTlbPtr( ) -> insert( vAdr, info )) throw( ERR_TLB_INSERT_OP );
+    } 
+    else throw( ERR_TLB_INSERT_OP ); 
 }
 
 //----------------------------------------------------------------------------------------
