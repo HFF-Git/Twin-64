@@ -45,7 +45,7 @@ namespace {
 int parseCmdLineOptions( int argc, 
                          char *argv[ ],
                          const struct SimCmdLineOptions *optionTable,
-                         char **optarg ) {
+                         char **optArg ) {
 
     if ( optIndex >= argc ) return ( -1 );
 
@@ -66,11 +66,11 @@ int parseCmdLineOptions( int argc,
                 
                 if ( eq ) {
 
-                    *optarg = (char *)( eq + 1 );
+                    *optArg = (char *)( eq + 1 );
                 }
-                else if ( optind + 1 < argc ) {
+                else if ( optIndex + 1 < argc ) {
 
-                    *optarg = argv[++optind];
+                    *optArg = argv[++optIndex];
                 }
                 else {
                     
@@ -81,9 +81,9 @@ int parseCmdLineOptions( int argc,
             } 
             else if ( optionTable[ i ].argOpt == OPT_OPTIONAL_ARGUMENT ) {
                 
-                *optarg = (( eq ) ? ((char *)( eq + 1 )) : ( NULL ));
+                *optArg = (( eq ) ? ((char *)( eq + 1 )) : ( NULL ));
             
-            } else *optarg = NULL;
+            } else *optArg = NULL;
     
             optIndex++;
             return optionTable[ i ].val;
@@ -129,7 +129,7 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
 
             case 'f': {
 
-                if ( optarg ) {
+                if ( optArg ) {
 
 
                 }
@@ -138,7 +138,7 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
 
             case 'l': {
 
-                if ( optarg ) {
+                if ( optArg ) {
 
 
                 }

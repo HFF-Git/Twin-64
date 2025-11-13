@@ -1,11 +1,10 @@
 #!/bin/sh
-#
+# -----------------------------------------------------------------------------------
 # Automatically increment PATCH_LEVEL in T64-SimVersion.h when committing.
 #
 # You need to copy this script to the git hooks directory and set it to executable.
 #
-#
-
+# -----------------------------------------------------------------------------------
 
 # Resolve the Git repository root manually
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

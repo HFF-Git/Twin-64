@@ -50,6 +50,7 @@
 #include <fcntl.h>
 #else
 //#include <unistd.h>
+#define NOMINMAX
 #include <windows.h>
 #include <conio.h>
 #include <stdio.h>
