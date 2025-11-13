@@ -28,9 +28,9 @@
 #ifndef TWIN64_SimVersion_h
 #define TWIN64_SimVersion_h
 
-const char SIM_VERSION[ ]   = "A.00.01";
-const char SIM_GIT_BRANCH[ ]= "main";
-const int  SIM_PATCH_LEVEL  = 1;
+const char SIM_VERSION[ ] = "A.00.01";
+const char SIM_GIT_BRANCH[ ] = "main";
+const int  SIM_PATCH_LEVEL = 1;
 
 #if __APPLE__
 const bool SIM_IS_APPLE = true;

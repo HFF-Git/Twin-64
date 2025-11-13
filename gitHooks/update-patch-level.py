@@ -32,7 +32,7 @@ def increment_patch_level(line):
 def update_git_branch(line, branch_name):
     match = re.search(r'const\s+char\s+SIM_GIT_BRANCH\s*\[\s*]\s*=\s*".*?";', line)
     if match:
-        updated_line = f'const char SIM_GIT_BRANCH[] = "{branch_name}";\n'
+        updated_line = f'const char SIM_GIT_BRANCH[ ] = "{branch_name}";\n'
         return updated_line
     return line
 
