@@ -29,7 +29,7 @@
 #define TWIN64_SimVersion_h
 
 const char SIM_VERSION[ ]   = "A.00.01";
-const char SIM_GIT_BRANCH[] = "main";
+const char SIM_GIT_BRANCH[ ]= "main";
 const int  SIM_PATCH_LEVEL  = 1;
 
 #if __APPLE__
