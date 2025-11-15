@@ -40,12 +40,13 @@ namespace {
 const int T64_MAX_TLB_SIZE = 64;
 
 //----------------------------------------------------------------------------------------
-// Calculate the page size from the size field in the TLB entry.
+// Calculate the page size from the size field in the TLB entry. Currently, there
+// are four sizes defined. They are 4 Kb, 64 Kb, 1 Mb and 16 Mb.
 // 
 //----------------------------------------------------------------------------------------
 int tlbPageSize( int size ) {
 
-    return( T64_PAGE_SIZE_BYTES * ( 1U << ( size * 2 )));
+    return( T64_PAGE_SIZE_BYTES * ( 1U << ( size * 4 )));
 }
 
 } // namespace
