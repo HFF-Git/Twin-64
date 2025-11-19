@@ -215,7 +215,8 @@ enum TokId : int {
     TOK_OP_IITLB    = 361,  TOK_OP_IDTLB    = 362,
     TOK_OP_PITLB    = 363,  TOK_OP_PDTLB    = 364,
     
-    TOK_OP_PICA     = 365,  TOK_OP_PDCA     = 366,  TOK_OP_FDCA     = 367,
+    TOK_OP_PICA     = 365,  TOK_OP_PDCA     = 366,  
+    TOK_OP_FICA     = 367,  TOK_OP_FDCA     = 368,
     
     TOK_OP_RFI      = 371,  TOK_OP_DIAG     = 372,  TOK_OP_TRAP     = 373,
     
@@ -322,6 +323,7 @@ enum InstrFlags : uint32_t {
     IF_L        = ( 1U << 8  ),
     IF_M        = ( 1U << 9  ),
     IF_N        = ( 1U << 11 ),
+    IF_R        = ( 1U << 12 ),
     IF_S        = ( 1U << 13 ),
     IF_T        = ( 1U << 14 ),
     IF_U        = ( 1U << 15 ),
@@ -348,17 +350,15 @@ enum InstrFlags : uint32_t {
     IM_DEP_OP   = ( IF_Z | IF_I ),
     IM_SHLxA_OP = ( IF_I ),
     IM_SHRxA_OP = ( IF_I ),
-    IM_LDI_OP   = ( IF_L | IF_S | IF_U ),
+    IM_LDI_OP   = ( IF_L | IF_R | IF_U ),
     IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
-    IM_BE_OP    = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
     IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE ),
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
     IM_ABR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
-    IM_LPA_OP   = ( IF_M ),
     IM_ITLB_OP  = ( IF_I | IF_D ),
     IM_PTLB_OP  = ( IF_I | IF_D ),
     IM_PCA_OP   = ( IF_I | IF_D )
@@ -575,8 +575,11 @@ const Token AsmTokTab[ ] = {
     {   .name   = "PDCA",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_PDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_1 ) },
 
+    {   .name   = "FICA",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_FICA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_2 ) },
+
     {   .name   = "FDCA",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_FDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_2 ) },
+        .tid    = TOK_OP_FDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_3 ) },
     
     {   .name   = "RSM",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
@@ -2218,12 +2221,8 @@ void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
-    uint32_t    instrFlags  = IF_NIL;
-    
+
     nextToken( );
-    parseInstrOptions( &instrFlags, instrOpToken );
-    if ( instrFlags & ~IM_LPA_OP ) throw ( ERR_INVALID_INSTR_OPT );
-   
     acceptRegR( instr );
     acceptComma( );
    
