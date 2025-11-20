@@ -1465,15 +1465,6 @@ void acceptRegB( uint32_t *instr ) {
     else throw ( ERR_EXPECTED_GENERAL_REG );
 }
 
-void acceptCregB( uint32_t *instr ) {
-
-    Expr rExpr = INIT_EXPR;
-
-    parseExpr( &rExpr );
-    if (  rExpr.typ == TYP_CREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
-    else throw ( ERR_EXPECTED_CONTROL_REG );
-}
-
 //----------------------------------------------------------------------------------------
 // The "NOP" instruction. Easy case.
 //
@@ -2182,18 +2173,50 @@ void parseInstrXBR( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrMxCR" copies a control register to a general register and vice versa.
+// "parseInstrMFCR" copies a control register to a general register.
 //
-//      MFCR <RegR> "," <RegB>
-//      MTCR <RegR> "," <RegB>
+//      MFCR <RegB> "," <CReg>
 //
 //----------------------------------------------------------------------------------------
-void parseInstrMxCR( uint32_t *instr, uint32_t instrOpToken ) {
+void parseInstrMFCR( uint32_t *instr, uint32_t instrOpToken ) {
+   
+    Expr rExpr = INIT_EXPR;
+
+    nextToken( );
+    acceptRegB( instr );
+    acceptComma( );
+
+    parseExpr( &rExpr );
+    if (  rExpr.typ == TYP_CREG ) depositInstrField( instr, 0, 6, (uint32_t) rExpr.val );
+    else throw ( ERR_EXPECTED_CONTROL_REG );
+    acceptEOS( );
+}
+
+//----------------------------------------------------------------------------------------
+// "parseInstrMTCR" copies a general register to control register and saves the old
+// in a general register.
+//
+//      MTCR <RegB> "," <CReg> [ "," <RegR> ]
+//
+//----------------------------------------------------------------------------------------
+void parseInstrMTCR( uint32_t *instr, uint32_t instrOpToken ) {
+
+     Expr rExpr = INIT_EXPR;
    
     nextToken( );
-    acceptRegR( instr );
+    acceptRegB( instr );
     acceptComma( );
-    acceptCregB( instr );
+
+    parseExpr( &rExpr );
+    if (  rExpr.typ == TYP_CREG ) depositInstrField( instr, 0, 6, (uint32_t) rExpr.val );
+    else throw ( ERR_EXPECTED_CONTROL_REG );
+
+    if ( isToken ( TOK_COMMA )) {
+
+        nextToken( );
+        acceptRegR( instr );
+    }
+
     acceptEOS( );
 }
 
@@ -2517,9 +2540,8 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_MBR:
             case TOK_OP_CBR:    parseInstrXBR( instr, instrOpToken );       break;
                 
-                
-            case TOK_OP_MFCR:
-            case TOK_OP_MTCR:   parseInstrMxCR( instr, instrOpToken );      break;
+            case TOK_OP_MFCR:   parseInstrMFCR( instr, instrOpToken );      break;
+            case TOK_OP_MTCR:   parseInstrMTCR( instr, instrOpToken );      break;
 
             case TOK_OP_MFIA:   parseInstrMFIA( instr, instrOpToken );      break;
                 

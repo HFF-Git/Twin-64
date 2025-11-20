@@ -752,12 +752,18 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             
         case ( OPC_GRP_SYS * 16 + OPC_MR ): {
 
-            if (( extractInstrField( instr, 19, 3 ) == 0 ) ||
-                ( extractInstrField( instr, 19, 3 ) == 1 )) {
+            if ( extractInstrField( instr, 19, 3 ) == 0 ) {
             
                 return ( snprintf( buf, LEN_32, "R%d, C%d",
                                     extractInstrRegR( instr ),
                                     extractInstrRegB( instr )));
+            }
+            else if (extractInstrField( instr, 19, 3 ) == 1 ) {
+            
+                return ( snprintf( buf, LEN_32, "R%d, C%d, R%d",
+                                    extractInstrRegR( instr ),
+                                    extractInstrRegB( instr ),
+                                    extractInstrField( instr, 0, 6 )));
             }
             else if ( extractInstrField( instr, 19, 3 ) == 2 ) {
 
