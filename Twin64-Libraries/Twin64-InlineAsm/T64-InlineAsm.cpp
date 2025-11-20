@@ -352,7 +352,7 @@ enum InstrFlags : uint32_t {
     IM_SHRxA_OP = ( IF_I ),
     IM_LDI_OP   = ( IF_L | IF_R | IF_U ),
     IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
-    IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D ),
+    IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_U),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
@@ -362,8 +362,6 @@ enum InstrFlags : uint32_t {
     IM_ITLB_OP  = ( IF_I | IF_D ),
     IM_PTLB_OP  = ( IF_I | IF_D ),
     IM_PCA_OP   = ( IF_I | IF_D )
-
-    // ??? synthetic instructions also need a mask constant.
 };
 
 //----------------------------------------------------------------------------------------
@@ -507,7 +505,7 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
     
     {   .name   = "LD",         .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
+        .tid    = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_2 ) },
 
     {   .name   = "LDR",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
@@ -1904,11 +1902,11 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 // can have an option for specifying the data width. The LDR and STC instruction do 
 // not have an option. However we set the dataWidth field for them to "D".
 //
-//       LD  [.B/H/W/D/M ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
-//       LD  [.B/H/W/D/M ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D/U ] <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       LD  [.B/H/W/D/U ] <targetReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       ST  [.B/H/W/D/M ] <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
-//       ST  [.B/H/W/D/M ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D ] <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
+//       ST  [.B/H/W/D ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
 //       LDR               <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
 //       STC               <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
@@ -1935,7 +1933,7 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     }
     
     setInstrDwField( instr, instrFlags );
-    if ( instrFlags & IF_M ) depositInstrBit( instr, 20, true );
+    if ( instrFlags & IF_U ) depositInstrBit( instr, 20, true );
 
     acceptRegR( instr );
     acceptComma( );
@@ -2016,16 +2014,8 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrBE( uint32_t *instr, uint32_t instrOpToken ) {
 
-    Expr        rExpr       = INIT_EXPR;
-    uint32_t    instrFlags  = IF_NIL;
-
-    nextToken( );
-    parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) {
-
-        throw ( ERR_INVALID_INSTR_OPT );
-    } 
-
+    Expr rExpr = INIT_EXPR;
+   
     acceptRegB( instr );
     acceptComma( );
 

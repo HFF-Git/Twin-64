@@ -273,7 +273,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             int cursor = snprintf( buf, LEN_16, "LD" );
             
             if ( extractInstrBit( instr, 20 )) 
-                cursor += snprintf( buf + cursor, 4, ".M" );
+                cursor += snprintf( buf + cursor, 4, ".U" );
             if ( extractInstrBit( instr, 21 )) 
                 cursor += snprintf( buf + cursor, 4, ".**" );
             cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
