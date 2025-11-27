@@ -117,8 +117,8 @@ void SimExprEvaluator::pFuncU32( SimExpr *rExpr ) {
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
     
     SimExpr     lExpr;
-    uint32_t    instr   = 0;
-   int          ret     = 0;
+    T64Instr    instr   = 0;
+    int         ret     = 0;
     
     tok -> nextToken( );
     if ( tok -> isToken( TOK_LPAREN )) tok -> nextToken( );

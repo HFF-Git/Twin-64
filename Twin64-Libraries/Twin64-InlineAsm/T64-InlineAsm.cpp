@@ -352,7 +352,7 @@ enum InstrFlags : uint32_t {
     IM_SHRxA_OP = ( IF_I ),
     IM_LDI_OP   = ( IF_L | IF_R | IF_U ),
     IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
-    IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_U),
+    IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_U ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_B_OP     = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
@@ -505,7 +505,7 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_LDO,   .val = ( OPG_ALU | OPF_LDO    | OPM_FLD_0 ) },
     
     {   .name   = "LD",         .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_2 ) },
+        .tid    = TOK_OP_LD,    .val = ( OPG_MEM | OPF_LD     | OPM_FLD_0 ) },
 
     {   .name   = "LDR",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_LDR,   .val = ( OPG_MEM | OPF_LDR    | OPM_FLD_0 ) },
@@ -1845,7 +1845,7 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_LDI    ) && ( instrFlags & ~IM_LDI_OP  )) {
+    if (( instrOpToken == TOK_OP_LDI ) && ( instrFlags & ~IM_LDI_OP  )) {
 
         throw ( ERR_INVALID_INSTR_OPT );
     } 
@@ -1912,7 +1912,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 //       STC               <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
-void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
+void parseMemOp( T64Instr *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
@@ -1941,12 +1941,8 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-        setInstrDwField( instr, instrFlags );
+        depositInstrBit( instr, 19, false );
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
-        
-        acceptLparen( );
-        acceptRegB( instr );
-        acceptRparen( );
     }
     else if ( rExpr.typ == TYP_GREG) {
         
@@ -1956,15 +1952,13 @@ void parseMemOp( uint32_t *instr, uint32_t instrOpToken ) {
         }
         
         depositInstrBit( instr, 19, true );
-        setInstrDwField( instr, instrFlags );
         depositInstrRegA( instr, (uint32_t) rExpr.val );
-        
-        acceptLparen( );
-        acceptRegB( instr );
-        acceptRparen( );
     }
     else throw ( ERR_EXPECTED_NUMERIC );
-  
+
+    acceptLparen( );
+    acceptRegB( instr );
+    acceptRparen( );
     acceptEOS( );
 }
 

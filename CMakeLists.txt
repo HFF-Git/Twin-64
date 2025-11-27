@@ -26,8 +26,12 @@ else()
         -Wnested-anon-types)
 endif()
 
+add_library(ELFIO INTERFACE)
+target_include_directories(ELFIO INTERFACE ${CMAKE_SOURCE_DIR}/../ELFIO)
+
 add_subdirectory( Twin64-Asmtest )
 add_subdirectory( Twin64-Simulator )
+add_subdirectory( Twin64-SPL )
 
 add_subdirectory( Twin64-Libraries/Twin64-Common )
 add_subdirectory( Twin64-Libraries/Twin64-System )

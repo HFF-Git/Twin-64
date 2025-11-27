@@ -90,10 +90,10 @@ int printDwField( char *buf, uint32_t dw ) {
 // group and the opcode family. We construct the final opcode for the case statement.
 //
 //----------------------------------------------------------------------------------------
-int buildOpCodeStr( char *buf, uint32_t instr ) {
+int buildOpCodeStr( char *buf, T64Instr instr ) {
     
     uint32_t opCode = extractInstrOpGroup( instr ) * 16 + extractInstrOpCode( instr );
-    
+
     switch( opCode ) {
             
         case ( OPC_GRP_ALU * 16 + OPC_ADD ): {
@@ -274,8 +274,6 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
             
             if ( extractInstrBit( instr, 20 )) 
                 cursor += snprintf( buf + cursor, 4, ".U" );
-            if ( extractInstrBit( instr, 21 )) 
-                cursor += snprintf( buf + cursor, 4, ".**" );
             cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
             return ( cursor );
         }
@@ -283,10 +281,6 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_ST ): {
             
             int cursor = snprintf( buf, LEN_16, "ST" );
-            if ( extractInstrBit( instr, 20 )) 
-                cursor += snprintf( buf + cursor, 4, ".M" );
-            if ( extractInstrBit( instr, 21 )) 
-                cursor += snprintf( buf + cursor, 4, ".**" );
             cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
             return ( cursor );
         }
@@ -316,7 +310,7 @@ int buildOpCodeStr( char *buf, uint32_t instr ) {
         case ( OPC_GRP_BR * 16 + OPC_B ): {
             
             int cursor = snprintf( buf, LEN_16, "B" );
-            if ( extractInstrField( instr, 20, 2) != 0 ) 
+            if ( extractInstrField( instr, 20, 2 ) != 0 ) 
                 cursor += snprintf( buf + cursor, 4, ".**" );
             if ( extractInstrBit( instr, 19 ))           
                 cursor += snprintf( buf + cursor, 4, ".G" );

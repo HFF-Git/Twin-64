@@ -183,14 +183,14 @@ inline bool isInRangeForInstrBitFieldU( uint32_t val, int bitLen ) {
 inline int extractInstrBit( T64Instr arg, int bitpos ) {
     
     if ( bitpos > 31 ) return ( 0 );
-    return ( arg >> bitpos ) & 1;
+    return (( arg >> bitpos ) & 0x1 );
 }
 
 inline int extractInstrField( T64Instr arg, int bitpos, int len ) {
     
     if ( bitpos > 31 ) return ( 0 );
-    if ( bitpos + len > 31 ) return ( 0 );
-    return ( arg >> bitpos ) & (( 1L << len ) - 1 );
+    if ( bitpos + len > 32 ) return ( 0 );
+    return (( arg >> bitpos ) & (( 1L << len ) - 1 ));
 }
 
 inline int extractInstrSignedField( T64Instr arg, int bitpos, int len ) {
