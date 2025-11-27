@@ -25,13 +25,23 @@
 #include "T64-SplDeclarations.h"
 
 
-
+extern void processCmdLineOptions( int argc, char *argv[ ] );
 
 //----------------------------------------------------------------------------------------
 // Here we go.
 //
 //----------------------------------------------------------------------------------------
 int main( int argc, const char * argv[] ) {
+
+    try {
+
+        processCmdLineOptions( argc, (char **) argv );
+    }
+    catch ( int err ) {
+
+        fprintf( stderr, "Fatal error: %d\n", err );
+        return ( err );
+    }   
     
    return( 0 );
 }

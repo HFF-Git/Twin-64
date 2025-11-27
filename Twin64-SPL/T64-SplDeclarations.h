@@ -26,6 +26,12 @@
 
 #include "T64-Common.h"
 #include "T64-SplVersion.h"
+#include "T64-SplDeclarations.h"
+
+#include <cstdio>
+#include <cstring>
+#include <stdexcept>
+
 
 //----------------------------------------------------------------------------------------
 //
@@ -46,6 +52,10 @@ enum SplCmdLineArgOptions : int {
     OPT_OPTIONAL_ARGUMENT   = 2    
 };
 
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
 struct SplCmdLineOptions {
 
     const char              *name;
@@ -54,18 +64,94 @@ struct SplCmdLineOptions {
 };
 
 //----------------------------------------------------------------------------------------
-// The simulator offers a set of command line options. Each option has a name, an 
-// argument type and a value returned when the option is found.
 //
-// ??? under construction...
+//
 //----------------------------------------------------------------------------------------
-static struct SplCmdLineOptions optionTable[ ] = {
-        { "help",       OPT_NO_ARGUMENT,       'h' },
-        { "verbose",    OPT_NO_ARGUMENT,       'v' },
-        { "configfile", OPT_REQUIRED_ARGUMENT, 'f' },
-        { "logfile",    OPT_REQUIRED_ARGUMENT, 'l' },
-        {0, OPT_NO_ARGUMENT, 0}
-    };
+struct SplSourceFile {
+
+    public: 
+
+    SplSourceFile( const char *fPath );
+    ~SplSourceFile( );
+    
+    char getChar( );
+
+    private:
+
+    const char  *fileName;
+    const char  *filePath;
+    FILE        *pFile;
+    int         lineNo;
+    int         colNo;
+};
+
+
+
+
+
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+struct SplFileLoc {
+    
+    const char  *fileName;
+    int         lineNo;
+    int         colNo;
+};
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+enum SplTokenId : int {
+    
+    TOK_NIL         = 0,    TOK_EOL         = 1,    TOK_EOF         = 2,        
+  
+    TOK_COMMA       = 3,    TOK_PERIOD      = 4,    TOK_LPAREN      = 5,
+    TOK_RPAREN      = 6,    TOK_STRING      = 7,    TOK_NUM         = 8,
+    TOK_IDENT       = 9,    TOK_OP_CODE     = 10,   TOK_GENERAL_REG = 11,
+    TOK_CONTROL_REG = 12
+};
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+enum SplTokenTypeId : int {
+    
+    TYP_NIL         = 0,
+    TYP_STR         = 1,
+    TYP_NUM         = 2,
+    TYP_IDENT       = 3,
+    TYP_OP_CODE     = 4,
+    TYP_GREG        = 5,
+    TYP_CREG        = 6
+};
+
+
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+struct SplToken {
+    
+    const char          *name;          
+    SplTokenId          tid;            
+    SplTokenTypeId      typ;           
+    SplFileLoc          loc;            
+
+    union {
+
+        T64Word             val;        
+        const char          *tokStrVal; 
+    } val;
+};
+
+
+
 
 
 

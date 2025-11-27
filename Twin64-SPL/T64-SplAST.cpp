@@ -1,13 +1,13 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin-64 - System Programming Language Compiler
+//  Twin-64 -System Programming Language Compiler - AST
 //
 //----------------------------------------------------------------------------------------
 // 
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator Version ID
+// Twin-64 -System Programming Language Compiler - Code Generator
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
@@ -21,33 +21,20 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef TWIN64_SplDeclarations_h
-#define TWIN64_SplDeclarations_h
 
 #include "T64-SplDeclarations.h"
 
-//----------------------------------------------------------------------------------------
-//
-//
-//
-//----------------------------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------------------------
-// The compiler offers a set of command line options. Each option has a name, an 
-// argument type and a value returned when the option is found.
-//
-// ??? under construction...
+// Local data for Code Generator operation.
+///----------------------------------------------------------------------------------------
+namespace {         
+
+
+}
+
+
 //----------------------------------------------------------------------------------------
-static struct SplCmdLineOptions optionTable[ ] = {
-
-    { "help",       OPT_NO_ARGUMENT,       'h' },
-    { "verbose",    OPT_NO_ARGUMENT,       'v' },
-    { "configfile", OPT_REQUIRED_ARGUMENT, 'f' },
-    { "logfile",    OPT_REQUIRED_ARGUMENT, 'l' },
-    { 0, OPT_NO_ARGUMENT, 0}
-};
-
-
-
-#endif // TWIN64_SplDeclarations_h
+// Code Generator functions.
+//
+//----------------------------------------------------------------------------------------

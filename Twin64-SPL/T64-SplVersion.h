@@ -33,9 +33,9 @@ const char SPL_GIT_BRANCH[ ] = "main";
 const int  SPL_PATCH_LEVEL = 1;
 
 #if __APPLE__
-const bool SPL_IS_APPLE = true;
+const bool SPL_ON_APPLE = true;
 #else
-const bool SPL_IS_APPLE = false;
+const bool SPL_ON_APPLE = false;
 #endif
 
 #endif // TWIN64_SplVersion_h

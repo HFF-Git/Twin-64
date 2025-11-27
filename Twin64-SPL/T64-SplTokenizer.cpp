@@ -28,11 +28,77 @@
 //----------------------------------------------------------------------------------------
 // Local data for tokenizer operation.
 ///----------------------------------------------------------------------------------------
-namespace {         
+namespace {       
+    
+    
 
 
 }
 
+
+//----------------------------------------------------------------------------------------
+// SplSourceFile. Objects of this class represent a source file
+//
+//----------------------------------------------------------------------------------------
+SplSourceFile::SplSourceFile( const char *fPath ) {
+
+    this -> filePath = fPath;
+    this -> fileName = nullptr;
+    this -> pFile    = nullptr;
+    this -> lineNo   = 1;
+    this -> colNo    = 0;
+
+    if ( fPath == nullptr ) {
+
+        // throw std::runtime_error("Null file path");
+    }
+        
+    pFile = fopen( fPath, "r" );
+    if ( pFile == nullptr ) {
+
+        // throw std::runtime_error("Failed to open file");
+    }
+        
+    #ifdef SPL_ON_APPLE
+        const char *lastBackslash = strrchr(fPath, '\\');
+        if (( lastSlash ==  nullptr ) || 
+            (lastBackslash  && lastBackslash > lastSlash ))
+            lastSlash = lastBackslash;
+    #else
+        const char *lastSlash = strrchr(fPath, '/');
+        fileName  = (( lastSlash ) ? ( lastSlash + 1 ) : ( fPath ));
+    #endif
+}
+
+SplSourceFile::~SplSourceFile() {
+
+    if ( pFile != nullptr ) fclose( pFile );
+}
+
+//----------------------------------------------------------------------------------------
+// getChar. Get next character from source file. We also return EOL on line endings.
+//
+//----------------------------------------------------------------------------------------
+char SplSourceFile::getChar() {
+
+    int c = fgetc( pFile );
+
+    if ( c == EOF ) return (char)EOF;
+
+    if ( c == '\n' ) {
+        
+        lineNo++;
+        colNo = 0;
+
+        // return( EOL );
+         return ( c );
+    }
+    else { 
+        
+        colNo++;
+        return ( c );       
+    }
+}
 
 //----------------------------------------------------------------------------------------
 // Tokenizer functions.

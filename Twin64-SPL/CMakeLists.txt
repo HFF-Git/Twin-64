@@ -9,11 +9,11 @@ add_executable( ${PROJECT_NAME}
     main.cpp
     T64-SplVersion.h
     T64-SplDeclarations.h 
-    T64-SplTables.h
     T64-SplConfig.cpp
     T64-SplTokenizer.cpp
     T64-SplSymtab.cpp
     T64-SplParser.cpp
+    T64-SplAST.cpp
     T64-SplCodeGen.cpp
 )
 
