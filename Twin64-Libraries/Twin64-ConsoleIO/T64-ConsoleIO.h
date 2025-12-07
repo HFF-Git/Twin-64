@@ -111,16 +111,18 @@ enum FmtDescOptions : uint32_t {
     FMT_BOLD            = 0x00010000,
     FMT_BLINK           = 0x00020000,
     FMT_INVERSE         = 0x00040000,
-    FMT_ALIGN_LFT       = 0x00080000,
-    FMT_TRUNC_LFT       = 0x00100000,
-    FMT_LAST_FIELD      = 0x00200000,
-    FMT_PREFIX_0X       = 0x00400000,
-    FMT_INVALID_NUM     = 0x00800000,
-    
+    FMT_UNDER_LINE      = 0x00080000,
+
+    FMT_ALIGN_LFT       = 0x00100000,
+    FMT_TRUNC_LFT       = 0x00200000,
+    FMT_LAST_FIELD      = 0x00400000,
+
     FMT_ASCII_4         = 0x01000000,
     FMT_ASCII_8         = 0x02000000,
+    FMT_PREFIX_0X       = 0x04000000,
+    FMT_INVALID_NUM     = 0x08000000,
    
-    FMT_DEF_ATTR        = 0x10000000
+    FMT_DEF_ATTR        = 0x80000000
 };
 
 //----------------------------------------------------------------------------------------

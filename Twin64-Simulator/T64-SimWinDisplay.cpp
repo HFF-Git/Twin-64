@@ -320,6 +320,15 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // Sometimes the gap between the stacks has stale characters. This could be an issue
 // with the terminal program if you send to many escape sequences at once. We will 
 // pause a little after redraw so that the terminal window can catch up.
+//
+//
+// ??? clean the compute logic a little... better integration of command window.
+// The logic should compute first all max column and row needs, then set the origin.
+//
+// ??? we also should have a concept of window default size. When we expand a window
+// because another one is bigger and that bigger one gets removed, we do not go back
+// to the original size needs...
+//
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
     
@@ -359,6 +368,17 @@ void SimWinDisplay::reDraw( ) {
 
         if (( winStacksOn ) && ( maxColumnsNeeded > 0 )) 
             maxColumnsNeeded -= stackColumnGap;
+
+        if ( maxColumnsNeeded == 0 ) {
+
+            maxColumnsNeeded = cmdWin -> getColumns( );
+            if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
+        }
+        else {
+
+            if ( maxColumnsNeeded < cmdWin -> getColumns( ))
+                maxColumnsNeeded = cmdWin -> getColumns( );
+        }
         
         int curColumn = 1;
         int curRows   = 1;
@@ -383,16 +403,10 @@ void SimWinDisplay::reDraw( ) {
         if (( maxRowsNeeded + cmdWin -> getRows( )) < minRowSize ) {
             
             cmdWin -> setRows( minRowSize - maxRowsNeeded );
-            maxRowsNeeded += cmdWin -> getRows();
+            maxRowsNeeded += cmdWin -> getRows( );
         }
         else maxRowsNeeded += cmdWin -> getRows( );
         
-        if ( maxColumnsNeeded == 0 ) {
-
-            maxColumnsNeeded = cmdWin -> getColumns( );
-            if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
-        }
-       
         cmdWin -> setColumns( maxColumnsNeeded ); 
         cmdWin -> setWinOrigin( maxRowsNeeded - cmdWin -> getRows( ) + 1, 1 );
     }

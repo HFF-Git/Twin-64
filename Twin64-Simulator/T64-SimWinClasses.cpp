@@ -253,8 +253,8 @@ void SimWinCpuState::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a banner and a body. The body lines are displayed after the
-// banner line. The program state window body lists the general registers.
+// Each window consist of a banner and a body. The body lines are displayed after 
+// the banner line. The program state window body lists the general registers.
 //
 // Format Ideas:
 //

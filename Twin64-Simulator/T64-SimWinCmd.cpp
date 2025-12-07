@@ -361,7 +361,7 @@ void SimCommandsWin::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBanner( ) {
     
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE | FMT_UNDER_LINE;
     
     setWinCursor( 1, 1 );
     printTextField((char *) "Commands", ( fmtDesc | FMT_ALIGN_LFT ), 32 );

@@ -386,9 +386,10 @@ void SimFormatter::setFmtAttributes( uint32_t fmtDesc ) {
     if ( fmtDesc != 0 ) {
         
         writeChars((char *) "\x1b[0m" );
-        if ( fmtDesc & FMT_INVERSE ) writeChars((char *) "\x1b[7m" );
-        if ( fmtDesc & FMT_BLINK )   writeChars((char *) "\x1b[5m" );
-        if ( fmtDesc & FMT_BOLD )    writeChars((char *) "\x1b[1m" );
+        if ( fmtDesc & FMT_UNDER_LINE ) writeChars((char *) "\x1b[4m" );
+        if ( fmtDesc & FMT_INVERSE )    writeChars((char *) "\x1b[7m" );
+        if ( fmtDesc & FMT_BLINK )      writeChars((char *) "\x1b[5m" );
+        if ( fmtDesc & FMT_BOLD )       writeChars((char *) "\x1b[1m" );
         
         switch ( fmtDesc & 0xF ) { // BG Color
                 
