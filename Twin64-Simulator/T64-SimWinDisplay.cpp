@@ -294,31 +294,31 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // Window screen drawing. This routine is perhaps the heart of the window system. 
 // Each time we read in a command input, the terminal screen must be updated. A 
 // terminal screen consist of a list of stacks and in each stack a list of windows. 
-// There is always the main stack, stack Id 0. Only if we have user defined windows
-// assigned to another stack and window stacks are enabled, will this stack show up
-// in the terminal screen. If window stacks are disabled, all windows, regardless
-// what their stack ID says, will show up in the main stack and shown in their stack
+// There is always the main stack, stack Id 0. Only if we have windows assigned to
+// another stack and window stacks are enabled, will this stack show up in the 
+// terminal screen. If window stacks are disabled, all windows, regardless what 
+// their stack ID says, will show up in the main stack and shown in their stack
 // set when stack displaying is enabled again.
 //
-// We first compute the number of rows and columns needed for all windows to show in 
-// their assigned stack. Only enabled screens will participate in the overall screen
-// size computation. The number of columns required is the sum of the columns a stack
-// needs plus a margin between the stacks. Within a stack, the window with the largest
-// columns needed determines the stack column size. Rows are determined by adding the 
-// required rows of all windows in a given stack. The final number is the rows needed 
-// by the largest stack plus the rows needed for the command window. The data is used 
-// then to set the window columns of a window in the respective stack to the computed 
-// columns size and to set the absolute origin coordinates of each window.
+// We first compute the number of rows and columns needed for all windows to show 
+// in their assigned stack. Only enabled screens will participate in the overall
+// screen size computation. The number of columns required is the sum of the columns
+// a stack needs plus a margin between the stacks. Within a stack, the window with 
+// the largest columns needed determines the stack column size. If the maximum 
+// columns needed is less than the minimum columns for a command window, we correct
+// the column sizes of all windows.
+//
+// Rows are determined by adding the required rows of all windows in a given stack.
+// The final number is the rows needed by the largest stack plus the rows needed
+// for the command window. The data is used to set the absolute origin coordinates
+// of each window.
 //
 // The overall screen size is at least the numbers computed. If the number of rows 
-// needed for the windows and command window is less than the defined minimum number
-// of rows, the command window is enlarged to have a screen of minimum row size. 
-// When the screen size changed, we just redraw the screen with the command screen 
-// going last. The command screen will have a columns size across all visible stacks.
-//
-// Sometimes the gap between the stacks has stale characters. This could be an issue
-// with the terminal program if you send to many escape sequences at once. We will 
-// pause a little after redraw so that the terminal window can catch up.
+// needed for the windows and command window is less than the overall defined 
+// minimum number of rows, the command window is enlarged to have a screen of 
+// minimum row size.  When the screen size changed, we just redraw the screen with 
+// the command screen going last. The command screen will have a columns size 
+// across all visible stacks.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
@@ -360,10 +360,13 @@ void SimWinDisplay::reDraw( ) {
         if (( winStacksOn ) && ( maxColumnsNeeded > 0 )) 
             maxColumnsNeeded -= stackColumnGap;
 
-        if ( maxColumnsNeeded < cmdWin -> getDefColumns( ))
+        if ( maxColumnsNeeded < cmdWin -> getDefColumns( )) {
+
             maxColumnsNeeded = cmdWin -> getDefColumns( );
 
-        if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
+            for ( int i = 0; i < MAX_WIN_STACKS; i++ )
+                setWindowColumns( i, maxColumnsNeeded );
+        }
         
         int curColumn = 1;
         int curRows   = 1;
