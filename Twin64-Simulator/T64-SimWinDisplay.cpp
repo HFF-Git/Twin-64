@@ -12,15 +12,15 @@
 // Twin64 - A 64-bit CPU - Simulator window subsystem
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
@@ -198,11 +198,10 @@ bool SimWinDisplay::isWinStackOn( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Before drawing the screen content after the execution of a command line, we need 
-// to check whether the number of columns needed for a stack of windows has changed. 
-// This function just runs through the window list for a given stack and determines 
-// the widest column needed for that stack. When no window is enabled the column size
-// will be set to the command window default size.
+// Before drawing the screen content after the execution of a command line, we 
+// compute the number of columns needed for a stack of windows. This function just 
+// runs through the window list for a given stack and determines the widest default
+// column of a window.
 //
 //----------------------------------------------------------------------------------------
 int SimWinDisplay::computeColumnsNeeded( int winStack ) {
@@ -215,7 +214,7 @@ int SimWinDisplay::computeColumnsNeeded( int winStack ) {
             ( windowList[ i ] -> isEnabled( )) &&
             ( windowList[ i ] -> getWinStack( ) == winStack )) {
             
-            int columns = windowList[ i ] -> getColumns( );
+            int columns = windowList[ i ] -> getDefColumns( );
             if ( columns > columnSize ) columnSize = columns;
         }
     }
@@ -267,10 +266,10 @@ int SimWinDisplay::computeRowsNeeded( int winStack ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Content for each window is addressed in a window relative way. For this scheme to
-// work, each window needs to know the absolute position within in the overall screen. 
-// This routine will compute for each window of the passed stack the absolute row and 
-// column position for the window in the terminal screen.
+// Content for each window is addressed in a window relative way. For this scheme 
+// to work, each window needs to know the absolute position within in the overall
+// screen. This routine will compute for each window of the passed stack the 
+// absolute row and column position for the window in the terminal screen.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset ) {
@@ -292,14 +291,14 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 }
 
 //----------------------------------------------------------------------------------------
-// Window screen drawing. This routine is perhaps the heart of the window system. Each
-// time we read in a command input, the terminal screen must be updated. A terminal 
-// screen consist of a list of stacks and in each stack a list of windows. There is 
-// always the main stack, stack Id 0. Only if we have user defined windows assigned to
-// another stack and window stacks are enabled, will this stack show up in the terminal
-// screen. If window stacks are disabled, all windows, regardless what their stack ID 
-// says, will show up in the main stack and shown in their stack set when stack 
-// displaying is enabled again.
+// Window screen drawing. This routine is perhaps the heart of the window system. 
+// Each time we read in a command input, the terminal screen must be updated. A 
+// terminal screen consist of a list of stacks and in each stack a list of windows. 
+// There is always the main stack, stack Id 0. Only if we have user defined windows
+// assigned to another stack and window stacks are enabled, will this stack show up
+// in the terminal screen. If window stacks are disabled, all windows, regardless
+// what their stack ID says, will show up in the main stack and shown in their stack
+// set when stack displaying is enabled again.
 //
 // We first compute the number of rows and columns needed for all windows to show in 
 // their assigned stack. Only enabled screens will participate in the overall screen
@@ -312,22 +311,14 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // columns size and to set the absolute origin coordinates of each window.
 //
 // The overall screen size is at least the numbers computed. If the number of rows 
-// needed for the windows and command window is less than the defined minimum number of
-// rows, the command window is enlarged to have a screen of minimum row size. When the
-// screen size changed, we just redraw the screen with the command screen going last. 
-// The command screen will have a columns size across all visible stacks.
+// needed for the windows and command window is less than the defined minimum number
+// of rows, the command window is enlarged to have a screen of minimum row size. 
+// When the screen size changed, we just redraw the screen with the command screen 
+// going last. The command screen will have a columns size across all visible stacks.
 //
 // Sometimes the gap between the stacks has stale characters. This could be an issue
 // with the terminal program if you send to many escape sequences at once. We will 
 // pause a little after redraw so that the terminal window can catch up.
-//
-//
-// ??? clean the compute logic a little... better integration of command window.
-// The logic should compute first all max column and row needs, then set the origin.
-//
-// ??? we also should have a concept of window default size. When we expand a window
-// because another one is bigger and that bigger one gets removed, we do not go back
-// to the original size needs...
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
@@ -369,16 +360,10 @@ void SimWinDisplay::reDraw( ) {
         if (( winStacksOn ) && ( maxColumnsNeeded > 0 )) 
             maxColumnsNeeded -= stackColumnGap;
 
-        if ( maxColumnsNeeded == 0 ) {
+        if ( maxColumnsNeeded < cmdWin -> getDefColumns( ))
+            maxColumnsNeeded = cmdWin -> getDefColumns( );
 
-            maxColumnsNeeded = cmdWin -> getColumns( );
-            if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
-        }
-        else {
-
-            if ( maxColumnsNeeded < cmdWin -> getColumns( ))
-                maxColumnsNeeded = cmdWin -> getColumns( );
-        }
+        if ( winStacksOn ) maxColumnsNeeded += stackColumnGap;
         
         int curColumn = 1;
         int curRows   = 1;
@@ -412,8 +397,8 @@ void SimWinDisplay::reDraw( ) {
     }
     else {
         
-        maxRowsNeeded       = cmdWin -> getRows( );
-        maxColumnsNeeded    = cmdWin -> getColumns( );
+        maxRowsNeeded       = cmdWin -> getDefRows( );
+        maxColumnsNeeded    = cmdWin -> getDefColumns( );
         
         cmdWin -> setWinOrigin( 1, 1 );
     }
@@ -448,12 +433,12 @@ void SimWinDisplay::reDraw( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The entry point to showing windows is to draw the screen on the "windows on" command
-// and to clean up when we switch back to line mode. The window defaults method will set
-// the windows to a preconfigured default value. This is quite useful when we messed up
-// our screens. Also, if the screen is displayed garbled after some windows mouse based
-// screen window changes, just do WON again to set it straight. There is also a function
-// to enable or disable the window stacks feature.
+// The entry point to showing windows is to draw the screen on the "windows on" 
+// command and to clean up when we switch back to line mode. The window defaults
+// method will set the windows to a preconfigured default value. This is quite useful
+// when we messed up our screens. Also, if the screen is displayed garbled after
+// some windows mouse based screen window changes, just do WON again to set it 
+// straight. There is also a function to enable or disable the window stacks feature.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowsOn( ) {
@@ -491,10 +476,10 @@ void SimWinDisplay::winStacksEnable( bool arg ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A user defined window can be set to be the current user window. Commands that allow
-// to specify a window number will use the window set by default then. Note that each
-// user defined command that specifies the window number in its command will also set
-// the current value. The user window becomes the actual window.
+// A user defined window can be set to be the current user window. Commands that 
+// allow to specify a window number will use the window set by default then. Note
+// that each user defined command that specifies the window number in its command
+// will also set the current value. The user window becomes the actual window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowCurrent( int winNum ) {
@@ -504,11 +489,11 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The routine sets the stack attribute for a user window. The setting is not allowed
-// for the predefined window. They are always in the main window stack, which has the
-// stack Id of one. Theoretically we could have many stacks, numbered 1 to MAX_STACKS. 
-// Realistically, 3 to 4 stacks will fit on a screen. The last window moved is made the
-// current window.
+// The routine sets the stack attribute for a user window. The setting is not 
+// allowed for the predefined window. They are always in the main window stack, 
+// which has the stack Id of one. Theoretically we could have many stacks, numbered
+// 1 to MAX_STACKS. Realistically, 2 to 3 stacks will fit on a screen. The last 
+// window moved is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
@@ -536,10 +521,10 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
 }
 
 //----------------------------------------------------------------------------------------
-// A window can be added to or removed from the window list shown. We are passed an
-// optional windows number, which is used when there are user defined windows for
-// locating the window object. In case of a user window, the window is made the current
-// window.
+// A window can be added to or removed from the window list shown. We are passed 
+// an optional windows number, which is used when there are user defined windows
+// for locating the window object. In case of a user window, the window is made 
+// the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowEnable( int winNum, bool show ) {
@@ -556,10 +541,10 @@ void SimWinDisplay::windowEnable( int winNum, bool show ) {
 
 //----------------------------------------------------------------------------------------
 // For the numeric values in a window, we can set the radix. The token ID for the 
-// format option is mapped to the actual radix value.We are passed an optional windows
-// number, which is used when there are user defined windows for locating the window
-// object. Changing the radix potentially means that the window layout needs to change.
-// In case of a user window, the window is made the current window.
+// format option is mapped to the actual radix value.We are passed an optional 
+// windows number, which is used when there are user defined windows for locating 
+// the window object. Changing the radix potentially means that the window layout
+// needs to change. In case of a user window, the window is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowRadix( int rdx, int winNum ) {
@@ -575,10 +560,10 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "setRows" is the method to set the number if lines in a window. The number includes
-// the banner. We are passed an optional windows number, which is used when there are
-// user defined windows for locating the window object. The window is made the current
-// window.
+// "setRows" is the method to set the number if lines in a window. The number 
+// includes the banner. We are passed an optional windows number, which is used 
+// when there are user defined windows for locating the window object. The window
+// is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetRows( int rows, int winNum ) {
@@ -606,12 +591,12 @@ void SimWinDisplay::windowSetCmdWinRows( int rows ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "winHome" will set the current position to the home index, i.e. the position with 
-// which the window was cleared. If the position passed is non-zero, it will become the
-// new home position. The position meaning is window dependent and the actual window
-// will sort it out. We are passed an optional windows number, which is used when there
-// are user defined windows for locating the window object. The window is made the
-// current window.
+// "winHome" will set the current position to the home index, i.e. the position 
+// with which the window was cleared. If the position passed is non-zero, it will
+// become the new home position. The position meaning is window dependent and the
+// actual window will sort it out. We are passed an optional windows number, which
+// is used when there are user defined windows for locating the window object. 
+// The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowHome( int pos, int winNum ) {
@@ -625,10 +610,10 @@ void SimWinDisplay::windowHome( int pos, int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A window is scrolled forward with the "windowForward" method. The meaning of the 
-// amount is window dependent and the actual window will sort it out. We are passed an
-// optional windows number, which is used when there are user defined windows for 
-// locating the window object. The window is made the current window.
+// A window is scrolled forward with the "windowForward" method. The meaning of 
+// the amount is window dependent and the actual window will sort it out. We are
+// passed an optional windows number, which is used when there are user defined 
+// windows for locating the window object. The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowForward( int amt, int winNum ) {
@@ -644,10 +629,11 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A window is scrolled backward with the "windowBackward" methods. The meaning of the
-// amount is window dependent and the actual window will sort it out. We are passed an
-// optional windows number, which is used when there are user defined windows for 
-// locating the window object. The window is made the current window.
+// A window is scrolled backward with the "windowBackward" methods. The meaning 
+// of the amount is window dependent and the actual window will sort it out. We
+// are passed an optional windows number, which is used when there are user 
+// defined windows for locating the window object. The window is made the current
+// window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowBackward( int amt, int winNum ) {
@@ -663,9 +649,9 @@ void SimWinDisplay::windowBackward( int amt, int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The current index can also directly be set to another location. The position meaning
-// is window dependent and the actual window will sort it out. The window is made the 
-// current window.
+// The current index can also directly be set to another location. The position
+// meaning is window dependent and the actual window will sort it out. The window
+// is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowJump( int pos, int winNum ) {
@@ -681,9 +667,9 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The current window index can also directly be set to another location. The position
-// meaning is window dependent and the actual window will sort it out. The window is made
-// the current window.
+// The current window index can also directly be set to another location. The 
+// position meaning is window dependent and the actual window will sort it out. 
+// The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowToggle( int winNum ) {
@@ -697,10 +683,11 @@ void SimWinDisplay::windowToggle( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The display order of the windows is determined by the window index. It would however
-// be convenient to modify the display order. The window exchange command will exchange
-// the current window with the window specified by the index of another window. If
-// the windows are from different window stacks, we also exchange the winStack.
+// The display order of the windows is determined by the window index. It would 
+// however be convenient to modify the display order. The window exchange command
+// will exchange the current window with the window specified by the index of
+// another window. If the windows are from different window stacks, we also 
+// exchange the winStack.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowExchangeOrder( int winNum ) {
@@ -724,9 +711,9 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "Window New" family of routines create a new window for certain window type. The 
-// newly created window also becomes the current user window. The window number is 
-// stored from 1 to MAX, the initial stack number is zero.
+// "Window New" family of routines create a new window for certain window type. 
+// The newly created window also becomes the current user window. The window 
+// number is stored from 1 to MAX, the initial stack number is zero.
 //
 //----------------------------------------------------------------------------------------
 int SimWinDisplay::getFreeWindowSlot( ) {
@@ -858,10 +845,10 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
 
 //----------------------------------------------------------------------------------------
 // "Window Kill" is the counter part to user windows creation. The method supports 
-// removing a range of user windows. When the start is greater than the end, the end 
-// is also set to the start window Id. When we kill a window that was the current 
-// window, we need to set a new one. We just pick the first used entry in the user 
-// range.
+// removing a range of user windows. When the start is greater than the end, the 
+// end is also set to the start window Id. When we kill a window that was the 
+// current window, we need to set a new one. We just pick the first used entry 
+// in the user range.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {

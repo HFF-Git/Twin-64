@@ -3,25 +3,25 @@
 // Twin64 - A 64-bit CPU - Simulator Windows Base Classes
 //
 //----------------------------------------------------------------------------------------
-// The simulator use a set of windows to show the system state. No, don't think of
-// modern windows. We have a terminal screen and use escape sequences to build windows.
-// See the declaration include file for more details. This file contains the window
-// base classes.
+// The simulator use a set of windows to show the system state. No, don't think 
+// of modern windows. We have a terminal screen and use escape sequences to build
+// windows. See the declaration include file for more details. This file contains
+// the window base classes.
 //
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU - Simulator Windows Base Classes
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
@@ -109,26 +109,34 @@ void SimWin::setEnable( bool arg ) {
     winEnabled = arg; 
 }
 
+int SimWin::getDefRows( ) { 
+
+    return ( winToggleDefSizes[ winToggleVal ].row ); 
+}
+
 int SimWin::getRows( ) { 
 
-    return ( winToggleSizes[ winToggleVal ].row ); 
+   return( winRows );
 }
 
 void SimWin::setRows( int arg ) { 
 
-    winToggleSizes[ winToggleVal ].row  = 
-        (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
+    winRows = (( arg > MAX_WIN_ROW_SIZE ) ? MAX_WIN_ROW_SIZE : arg ); 
+}
+
+int SimWin::getDefColumns( ) { 
+    
+    return ( winToggleDefSizes[ winToggleVal ].col );
 }
 
 int SimWin::getColumns( ) { 
-    
-    return ( winToggleSizes[ winToggleVal ].col );
+
+    return( winColumns ); 
 }
 
 void SimWin::setColumns( int arg ) { 
-    
-    winToggleSizes[ winToggleVal ].col = 
-        (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg ); 
+
+    winColumns = (( arg > MAX_WIN_COL_SIZE ) ? MAX_WIN_COL_SIZE : arg );
 }
 
 void SimWin::setRadix( int rdx ) { 
@@ -153,25 +161,25 @@ void SimWin::setWinStack( int wStack ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Each window allows the toggling through different content. The implementation of
-// what the particular toggle value means is entirely up to the specific window. 
+// Each window allows the toggling through different content. The implementation 
+// of what the particular toggle value means is entirely up to the specific window. 
 // When a window is created, the default values for the number of defied views is 
 // set. Routines that get and set window rows and column sizes are always referring 
 // to the actual toggled view. The "WT" command advances through the defined toggle
 // view.
 //
-// Win toggle limit is the number of defined toggles. There needs to be at least one
-// toggle view defined. 
+// Win toggle limit is the number of defined toggles. There needs to be at least
+// one toggle view defined. 
 //----------------------------------------------------------------------------------------
+int SimWin::getWinToggleLimit( ) { 
+    
+    return ( winToggleLimit ); 
+}
+
 void SimWin::setWinToggleLimit( int limit ) { 
 
     if ( isInRange( limit, 1, MAX_WIN_TOGGLES )) winToggleLimit = limit; 
     else winToggleLimit = 1;
-}
-
-int SimWin::getWinToggleLimit( ) { 
-    
-    return ( winToggleLimit ); 
 }
 
 void SimWin::setWinToggleDefSize( int toggleVal, int row, int col ) {
@@ -187,12 +195,14 @@ SimWinSize SimWin::getWinToggleDefSize( int toggleVal ) {
     return( winToggleDefSizes[ toggleVal % MAX_WIN_TOGGLES ]);
 }
 
-void SimWin::initWinToggleSizes( ) {
+int  SimWin::getWinToggleVal( ) { 
+    
+    return ( winToggleVal ); 
+}
 
-    for ( int i = 0; i < MAX_WIN_TOGGLES; i++ ) 
-    winToggleSizes[ i ] = winToggleDefSizes[ i ];
-
-    winToggleVal = 0;
+void SimWin::setWinToggleVal( int val ) { 
+    
+    winToggleVal = ( val >= winToggleLimit ) ? winToggleLimit - 1 : val; 
 }
 
 void SimWin::toggleWin( ) { 
@@ -201,25 +211,6 @@ void SimWin::toggleWin( ) {
 
     if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
 }
-
-
-// ??? needed ???
-
-void SimWin::setWinToggleVal( int val ) { 
-    
-    winToggleVal = ( val >= winToggleLimit ) ? winToggleLimit - 1 : val; 
-}
-
-int  SimWin::getWinToggleVal( ) { 
-    
-    return ( winToggleVal ); 
-}
-
-
-
-
-
-
 
 //----------------------------------------------------------------------------------------
 // "setWinOrigin" sets the absolute cursor position for the terminal screen. We 
@@ -240,32 +231,39 @@ void SimWin::setWinOrigin( int row, int col ) {
 // "setWinCursor" sets the cursor to a windows relative position if row and column
 // are non-zero. If they are zero, the last relative cursor position is used. The 
 // final absolute position is computed from the windows absolute row and column on 
-// the terminal screen plus the window relative row and column. Rows and numbers are
-// values starting with 1.
+// the terminal screen plus the window relative row and column. Rows and numbers 
+// are values starting with 1.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::setWinCursor( int row, int col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
-    
-    if ( row > winToggleSizes[ winToggleVal ].row ) 
-        row = winToggleSizes[ winToggleVal ].row;
+   
+    if ( row > winToggleDefSizes[ winToggleVal ].row ) 
+        row = winToggleDefSizes[ winToggleVal ].row;
     if ( col > MAX_WIN_COL_SIZE )   col = MAX_WIN_COL_SIZE;
-    
+
     glb -> console -> setAbsCursor( winAbsCursorRow + row - 1, winAbsCursorCol + col );
     
     lastRowPos = row;
     lastColPos = col;
 }
 
-int SimWin::getWinCursorRow( ) { return ( lastRowPos ); }
-int SimWin::getWinCursorCol( ) { return ( lastColPos ); }
+int SimWin::getWinCursorRow( ) { 
+    
+    return ( lastRowPos ); 
+}
+
+int SimWin::getWinCursorCol( ) { 
+    
+    return ( lastColPos ); 
+}
 
 //----------------------------------------------------------------------------------------
-// Fields that have a larger size than the actual argument length in the field need
-// to be padded left or right. This routine is just a simple loop emitting blanks in 
-// the current format set.
+// Fields that have a larger size than the actual argument length in the field 
+// need to be padded left or right. This routine is just a simple loop emitting 
+// blanks in the current format set.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::padField( int dLen, int fLen ) {
@@ -280,8 +278,8 @@ void SimWin::padField( int dLen, int fLen ) {
 //----------------------------------------------------------------------------------------
 // Print out a numeric field. Each call will set the format options passed via the 
 // format descriptor. If the field length is larger than the positions needed to 
-// print the data in the field, the data will be printed left or right justified in
-// the field.
+// print the data in the field, the data will be printed left or right justified 
+// in the field.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printNumericField( T64Word     val, 
@@ -293,7 +291,8 @@ void SimWin::printNumericField( T64Word     val,
     if ( row == 0 )                     row     = lastRowPos;
     if ( col == 0 )                     col     = lastColPos;
     if ( fmtDesc & FMT_LAST_FIELD )     
-        col = winToggleSizes[ winToggleVal ].col - fLen;
+       // col = winToggleDefSizes[ winToggleVal ].col - fLen;
+       col = getColumns( );
 
     int maxLen = glb -> console -> numberFmtLen( fmtDesc, val );
    
@@ -322,10 +321,10 @@ void SimWin::printNumericField( T64Word     val,
 }
 
 //----------------------------------------------------------------------------------------
-// Print out a text field. Each call will set the format options passed via the format
-// descriptor. If the field length is larger than the positions needed to print the 
-// data in the field, the data will be printed left or right justified in the field.
-// If the data is larger than the field, it will be truncated.
+// Print out a text field. Each call will set the format options passed via the 
+// format descriptor. If the field length is larger than the positions needed to
+// print the data in the field, the data will be printed left or right justified
+// in the field. If the data is larger than the field, it will be truncated.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printTextField( char       *text, 
@@ -346,8 +345,10 @@ void SimWin::printTextField( char       *text,
         fLen = dLen;
     }
     
-    if ( fmtDesc & FMT_LAST_FIELD ) col = winToggleSizes[ winToggleVal ].col - fLen;
-    
+    if ( fmtDesc & FMT_LAST_FIELD ) 
+        //col = winToggleSizes[ winToggleVal ].col - fLen;
+    col = getColumns( ) - fLen;
+
     setWinCursor( row, col );
     glb -> console -> setFmtAttributes( fmtDesc );
     
@@ -384,8 +385,8 @@ void SimWin::printTextField( char       *text,
 }
 
 //----------------------------------------------------------------------------------------
-// Print out a bit character. When the bit in the word is set, it is upper case, else
-// lower case.
+// Print out a bit character. When the bit in the word is set, it is upper case, 
+// else lower case.
 //
 //
 //----------------------------------------------------------------------------------------
@@ -412,21 +413,21 @@ void SimWin::printBitField( T64Word val,
 
 //----------------------------------------------------------------------------------------
 // It is a good idea to put the current radix into the banner line to show in what 
-// format the data in the body is presented. This field is when used always printed as
-// the last field in the banner line.
+// format the data in the body is presented. This field is when used always printed
+// as the last field in the banner line.
 //
 //----------------------------------------------------------------------------------------
 void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
     
-    if ( fmtDesc & FMT_LAST_FIELD ) col = winToggleSizes[ winToggleVal ].col - fLen;
-    
+    if ( fmtDesc & FMT_LAST_FIELD ) col = getColumns( ) - fLen;
+
     switch ( winRadix ) {
             
-        case 10: printTextField((char *) "dec", fmtDesc, 3, row, col); break;
-        case 16: printTextField((char *) "hex", fmtDesc, 3, row, col); break;
-        default: printTextField((char *) "***", fmtDesc, 3, row, col);
+        case 10: printTextField((char *) "dec", fmtDesc, 3, row, col ); break;
+        case 16: printTextField((char *) "hex", fmtDesc, 3, row, col ); break;
+        default: printTextField((char *) "***", fmtDesc, 3, row, col );
     }
 }
 
@@ -470,7 +471,7 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
 void SimWin::padLine( uint32_t fmtDesc ) {
     
     glb -> console -> setFmtAttributes( fmtDesc );
-    padField( lastColPos, winToggleSizes[ winToggleVal ].col );
+    padField( lastColPos, getColumns( ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -481,9 +482,13 @@ void SimWin::clearField( int len, uint32_t fmtDesc ) {
     
     int pos = lastColPos;
     
+    #if 0
     if ( pos + len > winToggleSizes[ winToggleVal ].col ) 
         len = winToggleSizes[ winToggleVal ].col - pos;
-    
+    #else
+        if ( pos + len > getColumns( )) len = getColumns( ) - pos;     
+    #endif
+
     glb -> console -> setFmtAttributes( fmtDesc );
     padField( lastColPos, lastColPos + len );
     
@@ -560,14 +565,14 @@ void SimWinScrollable::setLineIncrementItemAdr( int arg ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The scrollable window inherits from the general window. While the banner part of
-// a window is expected to be implemented by the inheriting class, the body is done
-// by this class, which will call the "drawLine" method implemented by the inheriting
-// class. The "drawLine" method is passed the current item address which is the current
-// line start of the item of whatever the window is displaying. The item address value
-// is incremented by the itemsPerLine value each time the drawLine routine is called.
-// The cursor position for "drawLine" method call is incremented by the linesPerItem 
-// amount. Note that the window system thinks in lines. 
+// The scrollable window inherits from the general window. While the banner part 
+// of a window is expected to be implemented by the inheriting class, the body is
+// done by this class, which will call the "drawLine" method implemented by the 
+// inheriting class. The "drawLine" method is passed the current item address which
+// is the current line start of the item of whatever the window is displaying. The
+// item address value is incremented by the itemsPerLine value each time the drawLine
+// routine is called. The cursor position for "drawLine" method call is incremented
+// by the linesPerItem amount. Note that the window system thinks in lines. 
 //
 // Some items fill more than one row. In this case the number of itemLines we can 
 // draw is the number of rows in the window divided by rows per item line. In most 
@@ -586,10 +591,11 @@ void SimWinScrollable::drawBody( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The "winHome" method set the starting item address of a window within the defined
-// boundaries. An argument of zero will set the window back to the original home address.
-// If the address is larger than the limit address of the window, the position will be
-// the limit address minus the number of lines times the number of items on the line.
+// The "winHome" method set the starting item address of a window within the 
+// defined boundaries. An argument of zero will set the window back to the original
+// home address. If the address is larger than the limit address of the window, 
+// the position will be the limit address minus the number of lines times the 
+// number of items on the line.
 //
 //----------------------------------------------------------------------------------------
 void SimWinScrollable::winHome( T64Word pos ) {
@@ -622,10 +628,10 @@ void SimWinScrollable::winJump( T64Word pos ) {
 //----------------------------------------------------------------------------------------
 // Window move implements the forward / backward moves of a window. The amount is 
 // added to the current window body position, also making sure that we stay inside 
-// the boundaries of the address range for the window. If the new position would point
-// beyond the limit address, we set the new item address to limit minus the window 
-// lines times the line increment. Likewise of the new item address would be less than
-// zero, we just set it to zero.
+// the boundaries of the address range for the window. If the new position would 
+// point beyond the limit address, we set the new item address to limit minus the
+// window lines times the line increment. Likewise of the new item address would 
+// be less than zero, we just set it to zero.
 //
 //----------------------------------------------------------------------------------------
 void SimWinScrollable::winForward( T64Word amt ) {
@@ -680,10 +686,11 @@ void SimWinOutBuffer::initBuffer( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Add new data to the output buffer. Note that we do not add entire lines, but rather 
-// add what ever is in the input buffer. When we encounter a "\n", the current line
-// string is terminated with the zero character and a new line is started. When we are
-// adding to the buffer, we always set the cursor to the line below topIndex.
+// Add new data to the output buffer. Note that we do not add entire lines, but 
+// rather add what ever is in the input buffer. When we encounter a "\n", the 
+// current line string is terminated with the zero character and a new line is 
+// started. When we are adding to the buffer, we always set the cursor to the 
+// line below topIndex.
 //
 //----------------------------------------------------------------------------------------
 void SimWinOutBuffer::addToBuffer( const char *buf ) {
@@ -712,9 +719,9 @@ void SimWinOutBuffer::addToBuffer( const char *buf ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "printChar and "printChars" will add data to the window output buffer. The resulting
-// print string is just added to the window output buffer. The actual printing to screen
-// is performed in the "drawBody" routine of the command window.
+// "printChar and "printChars" will add data to the window output buffer. The 
+// resulting print string is just added to the window output buffer. The actual 
+// printing to screen is performed in the "drawBody" routine of the command window.
 //
 //----------------------------------------------------------------------------------------
 int SimWinOutBuffer::writeChar( const char ch ) {
@@ -751,16 +758,17 @@ int SimWinOutBuffer::writeChars( const char *format, ... ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Cursor up / down movements refer to the output line buffer. There is the top index, 
-// which will always point the next output line to use in our circular buffer. The 
-// cursor index is normally one below this index, i.e. pointing to the last active 
-// line. This is the line from which we start for example printing downward to fill 
-// the command window. The scroll up function will move the cursor away from the top
-// up to the oldest entry in the output line buffer. The scroll down function will move
-// the cursor toward the top index. Both directions stop when either oldest or last 
-// entry is reached. We cannot move logically above the current top index, and we cannot
-// move below the last valid line plus the current line display screen. This is due to
-// the logic that we print the screen content from top line by line away from the top.
+// Cursor up / down movements refer to the output line buffer. There is the top 
+// index, which will always point the next output line to use in our circular 
+// buffer. The cursor index is normally one below this index, i.e. pointing to the
+// last active line. This is the line from which we start for example printing 
+// downward to fill the command window. The scroll up function will move the cursor
+// away from the top up to the oldest entry in the output line buffer. The scroll
+// down function will move the cursor toward the top index. Both directions stop
+// when either oldest or last entry is reached. We cannot move logically above the
+// current top index, and we cannot move below the last valid line plus the current
+// line display screen. This is due to the logic that we print the screen content
+// from top line by line away from the top.
 //
 //----------------------------------------------------------------------------------------
 void SimWinOutBuffer::scrollUp( int lines ) {
@@ -787,10 +795,10 @@ void SimWinOutBuffer::scrollDown( int lines ) {
 }
 
 //----------------------------------------------------------------------------------------
-// For printing the output buffer lines, we will get a line pointer relative to the 
-// actual cursor. In the typical case the cursor is identical with the top if the 
-// output buffer. If it was moved, the we just get the lines from that actual position.
-// The line argument is referring to the nth line below the cursor.
+// For printing the output buffer lines, we will get a line pointer relative to 
+// the actual cursor. In the typical case the cursor is identical with the top if
+// the output buffer. If it was moved, the we just get the lines from that actual
+// position. The line argument is referring to the nth line below the cursor.
 //
 //----------------------------------------------------------------------------------------
 char *SimWinOutBuffer::getLineRelative( int lineBelowTop ) {

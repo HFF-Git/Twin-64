@@ -814,12 +814,14 @@ struct SimWin {
     void            setRadix( int radix );
     int             getRadix( );
     
-    void            setRows( int arg );
+    int             getDefRows( );
     int             getRows( );
-
-    void            setColumns( int arg );
-    int             getColumns( );
+    void            setRows( int arg );
     
+    int             getDefColumns( );
+    int             getColumns( );
+    void            setColumns( int arg );
+
     void            setWinOrigin( int row, int col );
     void            setWinCursor( int row, int col );
     
@@ -890,6 +892,7 @@ struct SimWin {
     int             winIndex            = 0;
     char            winName[ MAX_WIN_NAME];
     int             winModNum           = -1;
+    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ];
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -897,17 +900,12 @@ struct SimWin {
     
     int             winToggleLimit      = 0;
     int             winToggleVal        = 0;
-
-    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ];
-    SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ];
-
-    #if 0
-    int             winRows             = 0;
-    int             winColumns          = 0;
-    int             winDefRows          = 0;
-    int             winDefColumns       = 0;
-   #endif
     
+    int             winColumns          = 0;
+    int             winRows             = 0;       
+
+    // SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ];  // ??? needed ?
+
     int             winAbsCursorRow     = 0;
     int             winAbsCursorCol     = 0;
     int             lastRowPos          = 0;

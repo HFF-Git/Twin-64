@@ -3,30 +3,30 @@
 // Twin64 - A 64-bit CPU - Simulator command window
 //
 //----------------------------------------------------------------------------------------
-// The command window is the last screen area below all enabled windows displayed. It
-// is actually not a window like the others in that it represents lines written to the
-// window as well as the command input line. It still has a window header and a line
-// drawing area. To enable scrolling of this window, an output buffer needs to be 
-// implemented that stores all output in a circular buffer to use for text output. 
-// Just like a "real" terminal. The cursor up and down keys will perform the scrolling.
-// The command line is also a bit special. It is actually the one line locked scroll
-// area. Input can be edited on this line, a carriage return will append the line to
-// the output buffer area.
+// The command window is the last screen area below all enabled windows displayed.
+// It is actually not a window like the others in that it represents lines written
+// to the window as well as the command input line. It still has a window header
+// and a line drawing area. To enable scrolling of this window, an output buffer
+// needs to be implemented that stores all output in a circular buffer to use for
+// text output. Just like a "real" terminal. The cursor up and down keys will 
+// perform the scrolling. The command line is also a bit special. It is actually
+// the one line locked scroll area. Input can be edited on this line, a carriage
+// return will append the line to the output buffer area.
 //
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU -Simulator command window
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
@@ -71,9 +71,9 @@ bool isLeftBracketChar( int ch ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A little helper function to remove the comment part of a command line. We do the
-// changes on the buffer passed in by just setting the end of string at the position
-// of the "#" comment indicator. A "#" inside a string is ignored.
+// A little helper function to remove the comment part of a command line. We do 
+// the changes on the buffer passed in by just setting the end of string at the
+// position of the "#" comment indicator. A "#" inside a string is ignored.
 //
 //----------------------------------------------------------------------------------------
 int removeComment( char *cmdBuf ) {
@@ -104,9 +104,10 @@ int removeComment( char *cmdBuf ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "removeChar" will removes the character from the input buffer left of the cursor 
-// position and adjust the input buffer string size accordingly. If the cursor is at
-// the end of the string, both string size and cursor position are decremented by one.
+// "removeChar" will removes the character from the input buffer left of the 
+// cursor position and adjust the input buffer string size accordingly. If the 
+// cursor is at the end of the string, both string size and cursor position are
+// decremented by one.
 //
 //----------------------------------------------------------------------------------------
 void removeChar( char *buf, int *strSize, int *pos ) {
@@ -128,11 +129,12 @@ void removeChar( char *buf, int *strSize, int *pos ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "insertChar" will insert a character into the input buffer at the cursor position
-// and adjust cursor and overall string size accordingly. There are two basic cases. 
-// The first is simply appending to the buffer when both current string size and cursor
-// position are equal. The second is when the cursor is somewhere in the input buffer. 
-// In this case we need to shift the characters to the right to make room first.
+// "insertChar" will insert a character into the input buffer at the cursor 
+// position and adjust cursor and overall string size accordingly. There are two
+// basic cases. The first is simply appending to the buffer when both current 
+// string size and cursor position are equal. The second is when the cursor is
+// somewhere in the input buffer. In this case we need to shift the characters 
+// to the right to make room first.
 //
 //----------------------------------------------------------------------------------------
 void insertChar( char *buf, int ch, int *strSize, int *pos ) {
@@ -154,13 +156,13 @@ void insertChar( char *buf, int ch, int *strSize, int *pos ) {
 
 //----------------------------------------------------------------------------------------
 // Line sanitizing. We cannot just print out whatever is in the line buffer, since 
-// it may contains dangerous escape sequences, which would garble our terminal screen
-// layout. In the command window we just allow "safe" escape sequences, such as 
-// changing the font color and so on. When we encounter an escape character followed 
-// by a "[" character we scan the escape sequence until the final character, which 
-// lies between 0x40 and 0x7E. Based on the last character, we distinguish between 
-// "safe" and "unsafe" escape sequences. In the other cases, we just copy input to
-// output.
+// it may contains dangerous escape sequences, which would garble our terminal 
+// screen layout. In the command window we just allow "safe" escape sequences, 
+// such as changing the font color and so on. When we encounter an escape character
+// followed by a "[" character we scan the escape sequence until the final character,
+// which lies between 0x40 and 0x7E. Based on the last character, we distinguish 
+// between "safe" and "unsafe" escape sequences. In the other cases, we just copy
+// input to output.
 //
 //----------------------------------------------------------------------------------------
 bool isSafeFinalByte( char finalByte ) {
@@ -223,11 +225,12 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 // Object methods - SimCmdHistory
 //
 //----------------------------------------------------------------------------------------
-// The simulator command interpreter features a simple command history. It is a circular
-// buffer that holds the last commands. There are functions to show the command history,
-// re-execute a previous command and to retrieve a previous command for editing. The
-// command stack can be accessed with relative command numbers, i.e. "current - 3" or
-// by absolute command number, when still present in the history stack.
+// The simulator command interpreter features a simple command history. It is a 
+// circular buffer that holds the last commands. There are functions to show the 
+// command history, re-execute a previous command and to retrieve a previous 
+// command for editing. The command stack can be accessed with relative command 
+// numbers, i.e. "current - 3" or by absolute command number, when still present
+// in the history stack.
 //
 //----------------------------------------------------------------------------------------
 SimCmdHistory::SimCmdHistory( ) {
@@ -238,8 +241,8 @@ SimCmdHistory::SimCmdHistory( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Add a command line. If the history buffer is full, the oldest entry is re-used. Th
-// head index points to the next entry for allocation.
+// Add a command line. If the history buffer is full, the oldest entry is re-used. 
+// The head index points to the next entry for allocation.
 //
 //----------------------------------------------------------------------------------------
 void SimCmdHistory::addCmdLine( char *cmdStr ) {
@@ -257,10 +260,11 @@ void SimCmdHistory::addCmdLine( char *cmdStr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Get a command line from the command history. If the command reference is negative, 
-// the entry relative to the top is used. "head - 1" refers to the last entry entered.
-// If the command ID is positive, we search for the entry with the matching command id,
-// if still in the history buffer. Optionally, we return the absolute command Id.
+// Get a command line from the command history. If the command reference is 
+// negative, the entry relative to the top is used. "head - 1" refers to the last
+// entry entered. If the command ID is positive, we search for the entry with the 
+// matching command id, if still in the history buffer. Optionally, we return the
+// absolute command Id.
 //
 //----------------------------------------------------------------------------------------
 char *SimCmdHistory::getCmdLine( int cmdRef, int *cmdId ) {
@@ -348,8 +352,9 @@ void SimCommandsWin::setDefaults( ) {
 
     setWinToggleLimit( 1 );
     setWinToggleDefSize( 0, 24, 100 );
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
@@ -357,7 +362,7 @@ void SimCommandsWin::setDefaults( ) {
 // The banner line for command window. For now, we just label the banner line and 
 // show the system state plus a little indicate whether we are in WIN mode or not.
 //
-// ??? where do e get the system state from ?
+// ??? where do we get the system state from ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::drawBanner( ) {
     
@@ -417,28 +422,30 @@ void SimCommandsWin::drawBody( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "readCmdLine" is used by the command line interpreter to get the command. Since we
-// run in raw mode, the basic handling of backspace, carriage return, relevant escape
-// sequences, etc. needs to be processed in this routine directly. Characters other 
-// than the special characters are piled up in a local buffer until we read in a 
-// carriage return. The core is a state machine that examines a character read to 
-// analyze whether this is a special character or sequence. Any "normal" character is
-// just added to the line buffer. The states are as follows:
+// "readCmdLine" is used by the command line interpreter to get the command. Since 
+// we run in raw mode, the basic handling of backspace, carriage return, relevant
+// escape sequences, etc. needs to be processed in this routine directly. 
+// Characters other than the special characters are piled up in a local buffer 
+// until we read in a carriage return. The core is a state machine that examines 
+// a character read to analyze whether this is a special character or sequence. 
+// Any "normal" character is just added to the line buffer. The states are as 
+// follows:
 //
 //      CT_NORMAL: got a character, analyze it.
 //      CT_ESCAPE: check the characters got. If a "[" we handle an escape sequence.
 //      CT_ESCAPE_BRACKET: analyze the argument after "esc[" input got so far.
 //      CT_WIN_SPECIAL: analyze a MS windows special character.
 //
-// A carriage return character will append a zero to the command line input got so 
-// far. We are done reading the input line. Next, we emit a carriage return to the 
-// console. The prompt and the command string along with a carriage return are appended 
-// to the command output buffer. Before returning to the caller, the last thing to do
-// is to remove any comment from the line.
+// A carriage return character will append a zero to the command line input got 
+// so far. We are done reading the input line. Next, we emit a carriage return to
+// the console. The prompt and the command string along with a carriage return 
+// are appended to the command output buffer. Before returning to the caller, the 
+// last thing to do is to remove any comment from the line.
 //
 // The left and right arrows move the cursor in the command line. Backspacing and
-// inserting will then take place at the current cursor position shifting any content
-// to the right of the cursor when inserting and shifting to the left when deleting.
+// inserting will then take place at the current cursor position shifting any 
+// content to the right of the cursor when inserting and shifting to the left 
+// when deleting.
 //
 // On MS windows a special character indicates the start of a special button pressed. 
 // We currently recognize only the cursor keys.
@@ -449,9 +456,9 @@ void SimCommandsWin::drawBody( ) {
 //
 // Finally, there is the cursor up and down key. These keys are used to scroll the 
 // command line window. This is the case where we need to get lines from the output 
-// buffer to fill from top or bottom of the command window display. We also need to 
-// ensure that when a new command line is read in, we are with our cursor at the input
-//  line, right after the prompt string.
+// buffer to fill from top or bottom of the command window display. We also need 
+// to ensure that when a new command line is read in, we are with our cursor at 
+// the input line, right after the prompt string.
 //
 //----------------------------------------------------------------------------------------
 int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promptBuf ) {

@@ -12,15 +12,15 @@
 // Twin64 - A 64-bit CPU - Simulator window classes
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Common.h"
@@ -36,7 +36,7 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
-//
+// Default row and column values for the window types.
 // 
 //----------------------------------------------------------------------------------------
 const int DEF_WIN_COL_ABS_MEM   = 112;
@@ -109,13 +109,13 @@ int buildAccessRightsStr( char *bufStr, int type, int p1, int p2 ) {
 
 //----------------------------------------------------------------------------------------
 // Line sanitizing. We cannot just print out whatever is in the line buffer, since 
-// it may contains dangerous escape sequences, which would garble our terminal screen 
-// layout. In the command window we just allow "safe" escape sequences, such as 
-// changing the font color and so on. When we encounter an escape character followed
-// by a "[" character we scan the escape sequence until the final character, which 
-// lies between 0x40 and 0x7E. Based on the last character, we distinguish between
-// "safe" and "unsafe" escape sequences. In the other cases, we just copy input to 
-// output.
+// it may contains dangerous escape sequences, which would garble our terminal 
+// screen layout. In the command window we just allow "safe" escape sequences, 
+// such as changing the font color and so on. When we encounter an escape character 
+// followed by a "[" character we scan the escape sequence until the final character,
+// which lies between 0x40 and 0x7E. Based on the last character, we distinguish 
+// between "safe" and "unsafe" escape sequences. In the other cases, we just copy
+// input to output.
 //
 //----------------------------------------------------------------------------------------
 bool isSafeFinalByte( char finalByte ) {
@@ -175,7 +175,7 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 //****************************************************************************************
 //****************************************************************************************
 //
-// Methods for the Program State Window class. This is the main window for a processor.
+// Methods for the Program State Window class. This is the main window for a CPU.
 //
 //----------------------------------------------------------------------------------------
 // Object creator.
@@ -209,15 +209,16 @@ void SimWinCpuState::setDefaults( ) {
     setWinToggleDefSize( 0, DEF_WIN_ROW_CPU_STATE ,DEF_WIN_COL_CPU_STATE );
     setWinToggleDefSize( 1, DEF_WIN_ROW_CPU_STATE + 1, DEF_WIN_COL_CPU_STATE );
     setWinToggleDefSize( 2, DEF_WIN_ROW_CPU_STATE, DEF_WIN_COL_CPU_STATE );
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a headline and a body. The banner line is always shown in 
-// inverse and contains summary or head data for the window. The program state banner
-// lists the instruction address and the status word.
+// Each window consist of a headline and a body. The banner line is always shown 
+// in inverse and contains summary or head data for the window. The program state
+// banner lists the instruction address and the status word.
 //
 // Format:
 //
@@ -400,9 +401,10 @@ SimWinAbsMem::SimWinAbsMem( SimGlobals *glb, int modNum, T64Word adr ) :
  }
 
 //----------------------------------------------------------------------------------------
-// The default values are the initial settings when windows is brought up the first time,
-// or for the WDEF command. The memory window is a window where the number of lines to 
-// display can be set. However, the minimum is the default number of lines.
+// The default values are the initial settings when windows is brought up the 
+// first time, or for the WDEF command. The memory window is a window where the 
+// number of lines to display can be set. However, the minimum is the default 
+// number of lines.
 //
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::setDefaults( ) {
@@ -411,14 +413,17 @@ void SimWinAbsMem::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 4 );
-    for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
-        setWinToggleDefSize( i, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
-    initWinToggleSizes( );
-    
+    setWinToggleDefSize( 0, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinToggleDefSize( 1, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinToggleDefSize( 2, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinToggleDefSize( 3, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrementItemAdr( 8 * 4 );
     setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
+    setWinToggleVal( 0 );
     setEnable( false );
 }
 
@@ -445,11 +450,11 @@ void SimWinAbsMem::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A scrollable window needs to implement a routine for displaying a row. We are passed
-// the item address and need to map this to the actual meaning of the particular window.
-// The "itemAdr" value is the byte offset into physical memory, the line increment is
-// 8 * 4 = 32 bytes. We show eight 32-bit words or 4 64-bit words. The toggle value
-// will decide on the format:
+// A scrollable window needs to implement a routine for displaying a row. We are 
+// passed the item address and need to map this to the actual meaning of the 
+// particular window. The "itemAdr" value is the byte offset into physical memory,
+// the line increment is 8 * 4 = 32 bytes. We show eight 32-bit words or 4 64-bit 
+// words. The toggle value will decide on the format:
 //
 // Toggle 0: (0x00_0000_0000) 0x0000_0000             ... 8 times HEX.
 // Toggle 1: (0x00_0000_0000) 0x0000_0000_0000_0000   ... 4 times HEX.
@@ -540,9 +545,10 @@ SimWinCode::  ~  SimWinCode( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The default values are the initial settings when windows is brought up the first 
-// time, or for the WDEF command. The code memory window is a window where the number
-// of lines to display can be set. However, the minimum is the default number of lines.
+// The default values are the initial settings when windows is brought up the 
+// first time, or for the WDEF command. The code memory window is a window where
+// the number of lines to display can be set. However, the minimum is the default 
+// number of lines.
 //
 //----------------------------------------------------------------------------------------
 void SimWinCode::setDefaults( ) {
@@ -552,8 +558,8 @@ void SimWinCode::setDefaults( ) {
 
     setWinToggleLimit( 1 );
     setWinToggleDefSize( 0, DEF_WIN_ROW_CODE_MEM, DEF_WIN_COL_CODE_MEM );
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
     setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 4 );
@@ -564,9 +570,9 @@ void SimWinCode::setDefaults( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The banner for the code window shows the code address. We automatically scroll the
-// window for the single step command. We detect this by examining the current command
-// and adjust the current item address to scroll to the next lines to show.
+// The banner for the code window shows the code address. We automatically scroll 
+// the window for the single step command. We detect this by examining the current
+// command and adjust the current item address to scroll to the next lines to show.
 //
 //----------------------------------------------------------------------------------------
 void SimWinCode::drawBanner( ) {
@@ -601,11 +607,11 @@ void SimWinCode::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A scrollable window needs to implement a routine for displaying a row. We are passed
-// the item address and need to map this to the actual meaning of the particular window.
-// The disassembled format is printed in two parts, the first is the instruction and
-// options, the second is the target and operand field. We make sure that both parts
-// are nicely aligned.
+// A scrollable window needs to implement a routine for displaying a row. We are 
+// passed the item address and need to map this to the actual meaning of the 
+// particular window. The disassembled format is printed in two parts, the first
+// is the instruction and options, the second is the target and operand field. 
+// We make sure that both parts are nicely aligned.
 //
 //----------------------------------------------------------------------------------------
 void SimWinCode::drawLine( T64Word itemAdr ) {
@@ -671,11 +677,12 @@ void SimWinTlb::setDefaults( ) {
 
     setWinToggleLimit( 1 );
     setWinToggleDefSize( 0, DEF_WIN_ROW_TLB, DEF_WIN_COL_TLB );
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
     setLimitItemAdr( tlb -> getTlbSize( ));
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
@@ -698,10 +705,8 @@ void SimWinTlb::drawBanner( ) {
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
-
     printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
-
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }
@@ -728,7 +733,6 @@ void SimWinTlb::drawLine( T64Word index ) {
     printTextField(( ePtr -> modified ) ? (char *) "M" : (char *) "m" );
     printTextField(( ePtr -> locked ) ? (char *) "L" : (char *) "l" );
     printTextField(( ePtr -> uncached ) ? (char *) "U" : (char *) "u" );
-    // printTextField(( ePtr -> protectionEnabled ) ? (char *) "P" : (char *) "p" );
     printTextField(( ePtr -> trapOnBranch ) ? (char *) "B" : (char *) "b" );
     printTextField((char *) "] [", fmtDesc );
     printTextField((char *) pageTypeStr( ePtr -> pageType ));
@@ -767,9 +771,9 @@ SimWinCache::SimWinCache( SimGlobals    *glb,
 
 //----------------------------------------------------------------------------------------
 // We have a function to set reasonable default values for the window. The default 
-// values are the initial settings when windows is brought up the first time, or for
-// the WDEF command. The TLB window is a window  where the number of lines to display 
-// can be set. However, the minimum is the default number of lines.
+// values are the initial settings when windows is brought up the first time, or 
+// for the WDEF command. The TLB window is a window  where the number of lines to
+// display can be set. However, the minimum is the default number of lines.
 //
 //----------------------------------------------------------------------------------------
 void SimWinCache::setDefaults( ) {
@@ -782,8 +786,8 @@ void SimWinCache::setDefaults( ) {
     for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
         setWinToggleDefSize( i, DEF_WIN_ROW_CACHE, DEF_WIN_COL_CACHE );
     
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
 
@@ -791,14 +795,15 @@ void SimWinCache::setDefaults( ) {
         setLimitItemAdr( cache -> getSetSize( ));
     else setLimitItemAdr( cache -> getSetSize( ) * 2 );
     
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
-// Each window consist of a headline and a body. The banner line is always shown in 
-// inverse and contains summary or head data for the window. We also need to set the 
-// item address limit. As this can change with some commands outside the windows system,
-// better set it every time.
+// Each window consist of a headline and a body. The banner line is always shown 
+// in inverse and contains summary or head data for the window. We also need to 
+// set the item address limit. As this can change with some commands outside the 
+// windows system, better set it every time.
 //
 // Format:
 //
@@ -811,16 +816,12 @@ void SimWinCache::drawBanner( ) {
 
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
-
     printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
-
     printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
-
     printTextField((char *) "  Current: " );
     printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
-
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }
@@ -908,9 +909,9 @@ void SimWinCache::drawLine( T64Word index ) {
 // Methods for the text window class.
 //
 //----------------------------------------------------------------------------------------
-// Object constructor. We are passed the globals and the file path. All we do right now
-// is to remember the file name. The text window has a destructor method as well. We 
-// need to close a potentially opened file.
+// Object constructor. We are passed the globals and the file path. All we do right
+// now is to remember the file name. The text window has a destructor method as 
+// well. We need to close a potentially opened file.
 //
 //----------------------------------------------------------------------------------------
 SimWinText::SimWinText( SimGlobals *glb, char *fName ) : SimWinScrollable( glb ) {
@@ -940,22 +941,24 @@ void SimWinText::setDefaults( ) {
     
     setWinToggleLimit( 1 );
     setWinToggleDefSize( 0, DEF_WIN_ROW_TEXT, txWidth );
-    initWinToggleSizes( );
-
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
     setRadix( 10 );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
     setLimitItemAdr( 1 );
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
-// The banner line for the text window. It contains the open file name and the current
-// line and home line number. The file path may be a bit long for listing it completely,
-// so we will truncate it on the left side. The routine will print the the filename, 
-// and the position into the file. The banner method also sets the preliminary line 
-// size of the window. This value is used until we know the actual number of lines in
-// the file. Lines shown on the display start with one, internally we start at zero.
+// The banner line for the text window. It contains the open file name and the 
+// current line and home line number. The file path may be a bit long for listing
+// it completely, so we will truncate it on the left side. The routine will print
+// the filename, and the position into the file. The banner method also sets the 
+// preliminary line size of the window. This value is used until we know the actual
+// number of lines in the file. Lines shown on the display start with one, 
+// internally we start at zero.
 //
 //----------------------------------------------------------------------------------------
 void SimWinText::drawBanner( ) {
@@ -974,12 +977,12 @@ void SimWinText::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The draw line method for the text file window. We print the file content line by
-// line. A line consists of the line number followed by the text. This routine will
-// first check whether the file is already open. If we cannot open the file, we would
-// now print an error message into the screen. This is also the time  where we actually
-// figure out how many lines are on the file so that we can set the limitItemAdr field
-// of the window object.
+// The draw line method for the text file window. We print the file content line 
+// by line. A line consists of the line number followed by the text. This routine
+// will first check whether the file is already open. If we cannot open the file, 
+// we would now print an error message into the screen. This is also the time where
+// we actually figure out how many lines are on the file so that we can set the 
+// limitItemAdr field of the window object.
 //
 //----------------------------------------------------------------------------------------
 void SimWinText::drawLine( T64Word index ) {
@@ -1099,14 +1102,15 @@ void SimWinConsole::setDefaults( ) {
 
     setWinToggleLimit( 1 );
     setWinToggleDefSize( 0, DEF_WIN_ROW_CONSOLE, DEF_WIN_COL_CONSOLE );
-    initWinToggleSizes( );
-    
+    setRows( getWinToggleDefSize( 0 ).row );
+    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinToggleVal( 0 );
     setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------
-// The console offers two basic routines to read a character and to write a character.
-// The write function will just add the character to the output buffer.
+// The console offers two basic routines to read a character and to write a 
+// character. The write function will just add the character to the output buffer.
 //
 //----------------------------------------------------------------------------------------
 void SimWinConsole::putChar( char ch ) {
@@ -1135,9 +1139,9 @@ void SimWinConsole::drawBanner( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The body lines of the console window are displayed after the banner line. Each line
-// is "sanitized" before we print it out. This way, dangerous escape sequences are 
-// simply filtered out.
+// The body lines of the console window are displayed after the banner line. Each
+// line is "sanitized" before we print it out. This way, dangerous escape sequences
+// are simply filtered out.
 //
 //----------------------------------------------------------------------------------------
 void SimWinConsole::drawBody( ) {
