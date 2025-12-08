@@ -111,7 +111,7 @@ void SimWin::setEnable( bool arg ) {
 
 int SimWin::getDefRows( ) { 
 
-    return ( winToggleDefSizes[ winToggleVal ].row ); 
+    return ( winDefSizes[ winToggleVal ].row ); 
 }
 
 int SimWin::getRows( ) { 
@@ -126,7 +126,7 @@ void SimWin::setRows( int arg ) {
 
 int SimWin::getDefColumns( ) { 
     
-    return ( winToggleDefSizes[ winToggleVal ].col );
+    return ( winDefSizes[ winToggleVal ].col );
 }
 
 int SimWin::getColumns( ) { 
@@ -157,7 +157,7 @@ int SimWin::getWinStack( ) {
 
 void SimWin::setWinStack( int wStack ) { 
     
-    winStack = wStack; 
+    winStack = (( wStack > MAX_WIN_STACKS ) ? 0 : wStack ); 
 }
 
 //----------------------------------------------------------------------------------------
@@ -182,17 +182,17 @@ void SimWin::setWinToggleLimit( int limit ) {
     else winToggleLimit = 1;
 }
 
-void SimWin::setWinToggleDefSize( int toggleVal, int row, int col ) {
+void SimWin::setWinDefSize( int toggleVal, int row, int col ) {
 
     toggleVal = toggleVal % MAX_WIN_TOGGLES;
 
-    winToggleDefSizes[ toggleVal ].row = row;
-    winToggleDefSizes[ toggleVal ].col = col;
+    winDefSizes[ toggleVal ].row = row;
+    winDefSizes[ toggleVal ].col = col;
 }
 
-SimWinSize SimWin::getWinToggleDefSize( int toggleVal ) {
+SimWinSize SimWin::getWinDefSize( int toggleVal ) {
 
-    return( winToggleDefSizes[ toggleVal % MAX_WIN_TOGGLES ]);
+    return( winDefSizes[ toggleVal % MAX_WIN_TOGGLES ]);
 }
 
 int  SimWin::getWinToggleVal( ) { 
@@ -205,11 +205,18 @@ void SimWin::setWinToggleVal( int val ) {
     winToggleVal = ( val >= winToggleLimit ) ? winToggleLimit - 1 : val; 
 }
 
-void SimWin::toggleWin( ) { 
+void SimWin::toggleWin( int toggleVal ) { 
 
-    winToggleVal++;
+    if ( toggleVal == 0 ) {
 
-    if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
+        winToggleVal++;
+        if ( winToggleVal >= winToggleLimit ) winToggleVal = 0;
+    }
+    else {
+
+        if      ( toggleVal < 0 )               winToggleVal = 0;
+        else if ( toggleVal < winToggleLimit )  winToggleVal = toggleVal;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -240,8 +247,8 @@ void SimWin::setWinCursor( int row, int col ) {
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
    
-    if ( row > winToggleDefSizes[ winToggleVal ].row ) 
-        row = winToggleDefSizes[ winToggleVal ].row;
+    if ( row > winDefSizes[ winToggleVal ].row ) 
+        row = winDefSizes[ winToggleVal ].row;
     if ( col > MAX_WIN_COL_SIZE )   col = MAX_WIN_COL_SIZE;
 
     glb -> console -> setAbsCursor( winAbsCursorRow + row - 1, winAbsCursorCol + col );
@@ -288,11 +295,9 @@ void SimWin::printNumericField( T64Word     val,
                                 int         row, 
                                 int         col ) {
     
-    if ( row == 0 )                     row     = lastRowPos;
-    if ( col == 0 )                     col     = lastColPos;
-    if ( fmtDesc & FMT_LAST_FIELD )     
-       // col = winToggleDefSizes[ winToggleVal ].col - fLen;
-       col = getColumns( );
+    if ( row == 0 )                 row = lastRowPos;
+    if ( col == 0 )                 col = lastColPos;
+    if ( fmtDesc & FMT_LAST_FIELD ) col = getColumns( );
 
     int maxLen = glb -> console -> numberFmtLen( fmtDesc, val );
    
@@ -345,9 +350,7 @@ void SimWin::printTextField( char       *text,
         fLen = dLen;
     }
     
-    if ( fmtDesc & FMT_LAST_FIELD ) 
-        //col = winToggleSizes[ winToggleVal ].col - fLen;
-    col = getColumns( ) - fLen;
+    if ( fmtDesc & FMT_LAST_FIELD ) col = getColumns( ) - fLen;
 
     setWinCursor( row, col );
     glb -> console -> setFmtAttributes( fmtDesc );
@@ -370,7 +373,7 @@ void SimWin::printTextField( char       *text,
         if ( fmtDesc & FMT_TRUNC_LFT ) {
             
             glb -> console -> printText(( char *) "...", 3 );
-            glb -> console -> printText((char *) text + ( dLen - fLen ) + 3, fLen - 3 );
+            glb -> console -> printText( text + ( dLen - fLen ) + 3, fLen - 3 );
         }
         else {
             
@@ -436,6 +439,7 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 // is the current window. We show wether it is the current window, the window stack
 // and the window number.
 //
+// ??? new indexing 
 //----------------------------------------------------------------------------------------
 void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     
@@ -452,7 +456,8 @@ void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
         if ( isCurrent ) len += glb -> console -> writeChars((char *) "*(" ); 
         else             len += glb -> console -> writeChars((char *) " (" );
 
-        len += glb -> console -> writeChars((char *) "%1d:%02d)", winStack, winIndex ); 
+        len += glb -> console -> writeChars((char *) "%1d:%02d)", 
+                                            winStack + 1, winIndex + 1); 
     }    
     else len = glb -> console -> writeChars((char *) "(-***-)" );
 

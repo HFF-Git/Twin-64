@@ -206,11 +206,11 @@ void SimWinCpuState::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 3 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_CPU_STATE ,DEF_WIN_COL_CPU_STATE );
-    setWinToggleDefSize( 1, DEF_WIN_ROW_CPU_STATE + 1, DEF_WIN_COL_CPU_STATE );
-    setWinToggleDefSize( 2, DEF_WIN_ROW_CPU_STATE, DEF_WIN_COL_CPU_STATE );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_CPU_STATE ,DEF_WIN_COL_CPU_STATE );
+    setWinDefSize( 1, DEF_WIN_ROW_CPU_STATE + 1, DEF_WIN_COL_CPU_STATE );
+    setWinDefSize( 2, DEF_WIN_ROW_CPU_STATE, DEF_WIN_COL_CPU_STATE );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -413,12 +413,12 @@ void SimWinAbsMem::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 4 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
-    setWinToggleDefSize( 1, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
-    setWinToggleDefSize( 2, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
-    setWinToggleDefSize( 3, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinDefSize( 1, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinDefSize( 2, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setWinDefSize( 3, DEF_WIN_ROW_ABS_MEM, DEF_WIN_COL_ABS_MEM );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setHomeItemAdr( adr );
     setCurrentItemAdr( adr );
     setLineIncrementItemAdr( 8 * 4 );
@@ -557,9 +557,9 @@ void SimWinCode::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_CODE_MEM, DEF_WIN_COL_CODE_MEM );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_CODE_MEM, DEF_WIN_COL_CODE_MEM );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setHomeItemAdr( adr );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 4 );
@@ -676,9 +676,9 @@ void SimWinTlb::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_TLB, DEF_WIN_COL_TLB );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_TLB, DEF_WIN_COL_TLB );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
     setLimitItemAdr( tlb -> getTlbSize( ));
@@ -784,10 +784,10 @@ void SimWinCache::setDefaults( ) {
     setWinToggleLimit( cache -> getWays( ));
 
     for ( int i = 0; i < getWinToggleLimit( ); i++ ) 
-        setWinToggleDefSize( i, DEF_WIN_ROW_CACHE, DEF_WIN_COL_CACHE );
+        setWinDefSize( i, DEF_WIN_ROW_CACHE, DEF_WIN_COL_CACHE );
     
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
 
@@ -940,9 +940,9 @@ void SimWinText::setDefaults( ) {
     setWinType( WT_TEXT_WIN );
     
     setWinToggleLimit( 1 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_TEXT, txWidth );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_TEXT, txWidth );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setRadix( 10 );
     setCurrentItemAdr( 0 );
     setLineIncrementItemAdr( 1 );
@@ -1101,9 +1101,9 @@ void SimWinConsole::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
-    setWinToggleDefSize( 0, DEF_WIN_ROW_CONSOLE, DEF_WIN_COL_CONSOLE );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, DEF_WIN_ROW_CONSOLE, DEF_WIN_COL_CONSOLE );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setWinToggleVal( 0 );
     setEnable( true );
 }

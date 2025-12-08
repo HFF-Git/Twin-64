@@ -42,6 +42,18 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
+// We think outside in window numbers starting at one. Internally, there is an array
+// of windows starting at zero. When parsing a command, we map right there. A valid
+// window number from 1 to MAX is mapped, all other numbers are mapped to -1.
+// 
+//----------------------------------------------------------------------------------------
+int internalWinNum( int num ) {
+
+    if (( num > 0 ) && ( num <= MAX_WINDOWS )) return( num - 1 );
+    else return ( -1 );
+}
+
+//----------------------------------------------------------------------------------------
 // Little helper functions.
 //
 //----------------------------------------------------------------------------------------
@@ -351,9 +363,9 @@ void SimCommandsWin::setDefaults( ) {
     setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
-    setWinToggleDefSize( 0, 24, 100 );
-    setRows( getWinToggleDefSize( 0 ).row );
-    setColumns( getWinToggleDefSize( 0 ).col );
+    setWinDefSize( 0, 24, 100 );
+    setRows( getWinDefSize( 0 ).row );
+    setColumns( getWinDefSize( 0 ).col );
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -378,10 +390,7 @@ void SimCommandsWin::drawBanner( ) {
 
     if ( glb -> winDisplay -> isWindowsOn( )) {
 
-        if ( glb -> winDisplay -> isWinStackOn( )) 
-            printTextField((char *) "WS", ( fmtDesc | FMT_LAST_FIELD ));
-        else 
-            printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
+        printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
     }
 }
 
@@ -819,9 +828,9 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "execCmdsFromFile" will open a text file and interpret each line as a command. This
-// routine is used by the "XF" command and also as the handler for the program argument
-// option to execute a file before entering the command loop.
+// "execCmdsFromFile" will open a text file and interpret each line as a command. 
+// This routine is used by the "XF" command and also as the handler for the program
+// argument option to execute a file before entering the command loop.
 //
 // XF "<file-path>"
 //----------------------------------------------------------------------------------------
@@ -952,12 +961,14 @@ void SimCommandsWin::exitCmd( ) {
 // ENV command. The test driver has a few global environment variables for data 
 // format, command count and so on. The ENV command list them all, one in particular
 // and also modifies one if a value is specified. If the ENV variable dos not exist, 
-// it will be allocated with the type of the value. A value of the token NIL will 
-// remove a user defined variable.
+// it will be allocated with the type of the value. 
 //
 //  ENV [ <var> [ <val> ]]
 //
-// ??? how do we remove a user environment variable ?
+// Removing an environment variable:
+//
+//  ENV <var> "-" 
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::envCmd( ) {
     
@@ -1085,7 +1096,6 @@ void SimCommandsWin::displayModuleCmd( ) {
 //  RESET [ ( 'SYS' | 'STATS' ) ]
 //
 // ??? rethink what we want ... reset the SYSTEM ? all CPUs ?
-// ??? do we want to reset a module ? Then we would not need MEM and CPU...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::resetCmd( ) {
     
@@ -1116,15 +1126,15 @@ void SimCommandsWin::runCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Step command. The command will advance all processors by one instruction. Default is
-// step number is one instruction.
+// Step command. The command will advance all processors by one instruction. Default
+// is step number is one instruction.
 //
 //  S [ <steps> ]
 //
-// ??? we need to handle the console window. It should be enabled before we pass control
-// to the CPU. Make it the current window, saving the previous current window. Put the
-// console mode into non-blocking and hand over to the CPU. On return from the CPU 
-// steps, enable blocking mode again and restore the current window.
+// ??? we need to handle the console window. It should be enabled before we pass 
+// control to the CPU. Make it the current window, saving the previous current window.
+// Put the console mode into non-blocking and hand over to the CPU. On return from 
+// the CPU steps, enable blocking mode again and restore the current window.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::stepCmd( ) {
     
@@ -1198,8 +1208,8 @@ void SimCommandsWin::writeLineCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The HIST command displays the command history. Optional, we can only report to a 
-// certain depth from the top.
+// The HIST command displays the command history. Optional, we can only report to
+// a certain depth from the top.
 //
 //  HIST [ depth ]
 //
@@ -1228,12 +1238,12 @@ void SimCommandsWin::histCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Execute a previous command again. The command Id can be an absolute command Id or
-// a top of the command history buffer relative command Id. The selected command is
-// copied to the top of the history buffer and then passed to the command interpreter
-// for execution.
+// Execute a previous command again. The command Id can be an absolute command 
+// Id or a top of the command history buffer relative command Id. The selected 
+// command is copied to the top of the history buffer and then passed to the
+// command interpreter for execution.
 //
-// DO <cmdNum>
+//  DO <cmdNum>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::doCmd( ) {
 
@@ -1257,7 +1267,7 @@ void SimCommandsWin::doCmd( ) {
 // itself is not added to the command history stack. If the cmdNum is omitted, REDO 
 // will take the last command entered.
 //
-// REDO <cmdNum>
+//  REDO <cmdNum>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::redoCmd( ) {
     
@@ -1282,12 +1292,12 @@ void SimCommandsWin::redoCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Display absolute memory command. The offset address is a byte address, the length
-// is measured in bytes, rounded up to the a word size. We accept any address and 
-// length and only check that the offset plus length does not exceed the physical 
-// address space. The format specifier will allow for HEX, DECIMAL and CODE. In the
-// case of the code option, the default number format option is used for showing the
-// offset value.
+// Display absolute memory command. The offset address is a byte address, the 
+// length is measured in bytes, rounded up to the a word size. We accept any 
+// address and length and only check that the offset plus length does not exceed
+// the physical address space. The format specifier will allow for HEX, DECIMAL
+// and CODE. In the case of the code option, the default number format option is
+// used for showing the offset value.
 //
 //  DA <ofs> [ "," <len> [ "," <fmt> ]]
 //----------------------------------------------------------------------------------------
@@ -1507,11 +1517,13 @@ void SimCommandsWin::insertTLBCmd( ) {
 
     if ( currentCmd == CMD_ITLB_I ) {
         
-        if ( ! proc -> getITlbPtr( ) -> insert( vAdr, info )) throw( ERR_TLB_INSERT_OP );
+        if ( ! proc -> getITlbPtr( ) -> insert( vAdr, info )) 
+            throw( ERR_TLB_INSERT_OP );
     }
     else if ( currentCmd == CMD_ITLB_D ) { 
         
-        if ( ! proc -> getDTlbPtr( ) -> insert( vAdr, info )) throw( ERR_TLB_INSERT_OP );
+        if ( ! proc -> getDTlbPtr( ) -> insert( vAdr, info )) 
+            throw( ERR_TLB_INSERT_OP );
     } 
     else throw( ERR_TLB_INSERT_OP ); 
 }
@@ -1545,9 +1557,7 @@ void SimCommandsWin::purgeTLBCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Global windows commands. There are handlers for turning windows on, off and set 
-// them back to their default values. We also support two stacks of windows next to
-// each other.
+// Global windows commands. 
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winOnCmd( ) {
@@ -1560,34 +1570,82 @@ void SimCommandsWin::winOffCmd( ) {
     glb -> winDisplay -> windowsOff( );
 }
 
-void SimCommandsWin::winDefCmd( ) {
-
-    glb -> winDisplay -> windowDefaults( );
-    glb -> winDisplay -> setWinReFormat( );
-}
-
+//----------------------------------------------------------------------------------------
+// Enable window stack. If there is no parameter, all stacks are enabled, otherwise
+// a single stack is enabled.
+//
+//  WSE [ <stackNum ]
+//----------------------------------------------------------------------------------------
 void SimCommandsWin::winStacksEnable( ) {
-    
-    glb -> winDisplay -> winStacksEnable( true );
-    glb -> winDisplay -> setWinReFormat( );
-}
 
-void SimCommandsWin::winStacksDisable( ) {
-   
-    glb -> winDisplay -> winStacksEnable( false );
+    int stackNum = -1;
+    
+    if ( tok -> tokId( ) != TOK_EOS ) {
+
+        stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
+        stackNum -= 1;
+    }
+
+    tok -> checkEOS( );
+    
+    glb -> winDisplay -> winStacksEnable( stackNum, true );
     glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
-// Windows enable and disable. When enabled, a window does show up on the screen. The
-// window number is optional, used for user definable windows.
+// Disable window stack. If there is no parameter, all stacks are disabled, otherwise
+// a single stack is disabled. The main stack cannot be disabled.
+//
+//  WSD [ <stackNum ]
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::winStacksDisable( ) {
+
+    int stackNum = -1;
+    
+    if ( tok -> tokId( ) != TOK_EOS ) {
+
+        stackNum = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
+        stackNum -= 1;
+    }
+
+    tok -> checkEOS( );
+   
+    glb -> winDisplay -> winStacksEnable( stackNum, false );
+    glb -> winDisplay -> setWinReFormat( );
+}
+
+//----------------------------------------------------------------------------------------
+// Window default command.
+//
+//  WDEF [ <winNum> ]
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::winDefCmd( ) {
+
+    int winNum = -1;
+    
+    if ( tok -> tokId( ) != TOK_EOS ) {
+
+        winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 0, MAX_WINDOWS );
+    }
+
+    tok -> checkEOS( );
+
+    glb -> winDisplay -> windowDefaults( internalWinNum( winNum ));
+    glb -> winDisplay -> setWinReFormat( );
+}
+
+//----------------------------------------------------------------------------------------
+// Windows enable and disable. When enabled, a window does show up on the screen. 
+// The window number is optional, used for user definable windows.
 //
 //  <win>E [ <winNum> ]
 //  <win>D [ <winNum> ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winEnableCmd( ) {
     
-    int winNum = 0;
+    int winNum = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
 
@@ -1595,13 +1653,13 @@ void SimCommandsWin::winEnableCmd( ) {
     }
 
     tok -> checkEOS( );
-    glb -> winDisplay -> windowEnable( winNum, true );
+    glb -> winDisplay -> windowEnable( internalWinNum( winNum ), true );
     glb -> winDisplay -> setWinReFormat( );
 }
 
 void SimCommandsWin::winDisableCmd( ) {
     
-    int winNum = 0;
+    int winNum = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
 
@@ -1609,25 +1667,26 @@ void SimCommandsWin::winDisableCmd( ) {
     }
 
     tok -> checkEOS( );
-    glb -> winDisplay -> windowEnable( winNum, false );
+    glb -> winDisplay -> windowEnable( internalWinNum( winNum ), false );
     glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
-// Windows radix. This command sets the radix for a given window. We parse the command
-// and the format option and pass the tokens to the screen handler. The window number
-// is optional, used for user definable windows.
+// Windows radix. This command sets the radix for a given window. We parse the 
+// command and the format option and pass the tokens to the screen handler. The 
+// window number is optional, used for user definable windows.
 //
 //  <win>R [ <radix> [ "," <winNum>]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetRadixCmd( ) {
     
-    int     winNum  = 0;
-    int     rdx     =  glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int     winNum  = -1;
+    int     rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        glb -> winDisplay -> windowRadix( rdx, winNum );
+        glb -> winDisplay -> windowRadix( rdx, internalWinNum( winNum ));
         return;
     }
     
@@ -1650,7 +1709,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
     }
 
     tok -> checkEOS( );
-    glb -> winDisplay -> windowRadix( rdx, winNum );
+    glb -> winDisplay -> windowRadix( rdx, internalWinNum( winNum ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -1663,11 +1722,12 @@ void SimCommandsWin::winSetRadixCmd( ) {
 //
 //  <win>F [ <amt> [ , <winNum> ]]
 //  <win>B [ <amt> [ , <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winForwardCmd( ) {
   
     T64Word winItems    = 0;
-    int     winNum      = 0;
+    int     winNum      = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
       
@@ -1682,7 +1742,7 @@ void SimCommandsWin::winForwardCmd( ) {
         tok -> checkEOS( );
     }
 
-    glb -> winDisplay -> windowForward( winItems, winNum );
+    glb -> winDisplay -> windowForward( winItems, internalWinNum( winNum ));
 }
 
 void SimCommandsWin::winBackwardCmd( ) {
@@ -1692,7 +1752,7 @@ void SimCommandsWin::winBackwardCmd( ) {
     
     if ( tok -> tokId( ) != TOK_EOS ) {
       
-        winItems = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+        winItems = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
       
         if ( tok -> isToken( TOK_COMMA )) {
             
@@ -1703,7 +1763,7 @@ void SimCommandsWin::winBackwardCmd( ) {
         tok -> checkEOS( );
     }
     
-    glb -> winDisplay -> windowBackward( winItems, winNum  );
+    glb -> winDisplay -> windowBackward( winItems, internalWinNum( winNum  ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -1713,11 +1773,12 @@ void SimCommandsWin::winBackwardCmd( ) {
 // dependent. The window number is optional, used for user definable windows.
 //
 //  <win>H [ <pos> [ "," <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winHomeCmd( ) {
    
     T64Word winPos  = 0;
-    int     winNum  = 0;
+    int     winNum  = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
       
@@ -1732,7 +1793,7 @@ void SimCommandsWin::winHomeCmd( ) {
         tok -> checkEOS( );
     }
 
-    glb -> winDisplay -> windowHome( winPos, winNum  );
+    glb -> winDisplay -> windowHome( winPos, internalWinNum( winNum  ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -1741,11 +1802,12 @@ void SimCommandsWin::winHomeCmd( ) {
 // used for user definable windows.
 //
 //  <win>J [ <pos> [ "," <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winJumpCmd( ) {
    
     T64Word winPos  = 0;
-    int     winNum  = 0;
+    int     winNum  = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
       
@@ -1756,8 +1818,8 @@ void SimCommandsWin::winJumpCmd( ) {
             tok -> nextToken( );
             winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
 
-            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
+            if ( ! glb -> winDisplay -> validWindowNum( internalWinNum( winNum ))) 
+                throw ( ERR_INVALID_WIN_ID );
         }
       
         tok -> checkEOS( );
@@ -1773,6 +1835,7 @@ void SimCommandsWin::winJumpCmd( ) {
 // windows.
 //
 //  WL [ <lines> [ "," <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetRowsCmd( ) {
    
@@ -1783,15 +1846,15 @@ void SimCommandsWin::winSetRowsCmd( ) {
     else {
 
         int winLines = eval -> acceptNumExpr( ERR_INVALID_NUM );
-        int winNum   = 0;
+        int winNum   = -1;
     
         if ( tok -> isToken( TOK_COMMA )) {
         
             tok -> nextToken( );
             winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
 
-            if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
+            if ( ! glb -> winDisplay -> validWindowNum( internalWinNum( winNum ))) 
+                throw ( ERR_INVALID_WIN_ID );
         }
 
         tok -> checkEOS( );
@@ -1806,6 +1869,8 @@ void SimCommandsWin::winSetRowsCmd( ) {
 // the window default value will be used. 
 //
 //  CWL <lines>
+//
+// ??? perhaps additional commands: CWC -> clear command window
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
@@ -1820,6 +1885,7 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 // user window can explicitly be set as the current command.
 //
 //  WC <winNum>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winCurrentCmd( ) {
     
@@ -1828,29 +1894,41 @@ void SimCommandsWin::winCurrentCmd( ) {
     int winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
     
     tok -> checkEOS( );
-    glb -> winDisplay -> windowCurrent( winNum );
+    glb -> winDisplay -> windowCurrent( internalWinNum( winNum ));
 }
 
 //----------------------------------------------------------------------------------------
 // This command toggles through alternate window content, if supported by the window.
 // An example is the cache sets in a two-way associative cache. The toggle command 
-// will just flip through the sets.
+// will just flip through the sets or set a specific set.
 //
-//  WT [ <winNum> ]
+//  WT [ <winNum> [ "," <toggleVal> ]]
+//
 //----------------------------------------------------------------------------------------
 void  SimCommandsWin::winToggleCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        glb -> winDisplay -> windowToggle( glb -> winDisplay -> getCurrentWindow( ));
+        glb -> winDisplay -> 
+            windowToggle( glb -> winDisplay -> getCurrentWindow( ), 0 );
     }
     else {
 
-        int winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
-        if ( ! glb -> winDisplay -> validWindowNum( winNum )) 
-            throw ( ERR_INVALID_WIN_ID );
+        int toggleVal = 0;
+        int winNum    = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
     
-        glb -> winDisplay -> windowToggle( tok -> tokVal( ));
+        if ( ! glb -> winDisplay -> validWindowNum( internalWinNum( winNum ))) 
+            throw ( ERR_INVALID_WIN_ID );
+
+        if ( tok -> isToken( TOK_COMMA )) {
+
+            tok -> nextToken( );
+
+            toggleVal = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WIN_TOGGLES );
+            tok -> checkEOS( );
+        }
+    
+        glb -> winDisplay -> windowToggle( internalWinNum( winNum ), toggleVal );
     }
 
     glb -> winDisplay -> setWinReFormat( );
@@ -1860,7 +1938,8 @@ void  SimCommandsWin::winToggleCmd( ) {
 // This command exchanges the current user window with the user window specified. It 
 // allows to change the order of the user windows in a stacks.
 //
-// WX <winNum>
+//  WX <winNum>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winExchangeCmd( ) {
     
@@ -1872,8 +1951,9 @@ void SimCommandsWin::winExchangeCmd( ) {
     
     tok -> checkEOS( );
     
-    if ( ! glb -> winDisplay -> validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    glb -> winDisplay -> windowExchangeOrder( winNum );
+    if ( ! glb -> winDisplay -> validWindowNum( internalWinNum( winNum ))) 
+        throw ( ERR_INVALID_WIN_ID );
+    glb -> winDisplay -> windowExchangeOrder( internalWinNum( winNum ));
     glb -> winDisplay -> setWinReFormat( );
 }
 
@@ -2013,12 +2093,13 @@ void SimCommandsWin::winNewWinCmd( ) {
 // This command removes  a user defined window or window range from the list of windows.
 // A number of -1 will kill all user defined windows.
 //
-//  WK [[ <winNumStart> [ "," <winNumEnd]] || "-1" ]
+//  WK [[ <winNumStart> [ "," <winNumEnd]] || "ALL" ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winKillWinCmd( ) {
     
-    int         winNumStart     = 0;
-    int         winNumEnd       = 0;
+    int winNumStart = -1;
+    int winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
     
@@ -2027,28 +2108,26 @@ void SimCommandsWin::winKillWinCmd( ) {
         winNumStart = glb -> winDisplay -> getCurrentWindow( );
         winNumEnd   = winNumStart;
     }
+    else if ( tok -> isToken( TOK_ALL )) {
+
+        winNumStart = 0;
+        winNumEnd   = MAX_WINDOWS;
+    }
     else {
 
-        winNumStart = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, MAX_WINDOWS );
+        winNumStart = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );
     
-        if ( winNumStart == -1 ) {
+        if ( tok -> isToken( TOK_COMMA )) {
             
-            winNumStart = 0;
-            winNumEnd   = MAX_WINDOWS;
-        }
-        else {
-
-            if ( tok -> isToken( TOK_COMMA )) {
-            
-                tok -> nextToken( );
-                winNumEnd = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 0, MAX_WINDOWS );     
-            }
+            tok -> nextToken( );
+            winNumEnd = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );     
         }
 
         if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
     }
     
-    glb -> winDisplay -> windowKill( winNumStart, winNumEnd );
+    glb -> winDisplay -> windowKill( internalWinNum( winNumStart ), 
+                                     internalWinNum( winNumEnd ));
     glb -> winDisplay -> setWinReFormat( );
 }
 
@@ -2058,12 +2137,13 @@ void SimCommandsWin::winKillWinCmd( ) {
 // predefined and command window can be found. Stacks are numbered from 1 to MAX.
 //
 //  WS <stackNum> [ , <winNumStart> [ , <winNumEnd ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetStackCmd( ) {
     
-    int     winStack    = 0;
-    int     winNumStart = 0;
-    int     winNumEnd   = 0;
+    int     winStack    = -1;
+    int     winNumStart = -1;
+    int     winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
 
@@ -2085,10 +2165,14 @@ void SimCommandsWin::winSetStackCmd( ) {
             winNumEnd = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
         }
         else winNumEnd = winNumStart;
+
+        tok -> checkEOS( );
     }
     else throw ( ERR_EXPECTED_COMMA );
    
-    glb -> winDisplay -> windowSetStack( winStack, winNumStart, winNumEnd );
+    glb -> winDisplay -> windowSetStack( winStack - 1,
+                                         internalWinNum( winNumStart ), 
+                                         internalWinNum( winNumEnd ));
     glb -> winDisplay -> setWinReFormat( );
 }
 

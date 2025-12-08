@@ -42,10 +42,10 @@ namespace {
 // to the argument string if an argument is expected.   
 //
 //----------------------------------------------------------------------------------------
-int parseCmdLineOptions( int argc, 
-                         char *argv[ ],
-                         const struct SimCmdLineOptions *optionTable,
-                         char **optArg ) {
+int parseCmdLineOptions( int    argc, 
+                         char   *argv[ ],
+                         struct SimCmdLineOptions *optionTable,
+                         char   **optArg ) {
 
     if ( optIndex >= argc ) return ( -1 );
 
@@ -70,7 +70,7 @@ int parseCmdLineOptions( int argc,
                 }
                 else if ( optIndex + 1 < argc ) {
 
-                    *optArg = argv[++optIndex];
+                    *optArg = argv[ ++optIndex ];
                 }
                 else {
                     
@@ -106,7 +106,10 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
     char *optArg = NULL;
     int   optVal = 0;
 
-    while (( optVal = parseCmdLineOptions( argc, argv, optionTable, &optArg )) != -1 ) {
+    while (( optVal = parseCmdLineOptions( argc, 
+                                           argv, 
+                                           optionTable, 
+                                           &optArg )) != -1 ) {
 
         switch ( optVal ) {
 

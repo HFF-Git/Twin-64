@@ -837,8 +837,8 @@ struct SimWin {
     int             getWinToggleVal( );
     void            setWinToggleVal( int val );
 
-    SimWinSize      getWinToggleDefSize( int toggleVal );
-    void            setWinToggleDefSize( int toggleVal, int row, int col );
+    SimWinSize      getWinDefSize( int toggleVal );
+    void            setWinDefSize( int toggleVal, int row, int col );
 
     void            initWinToggleSizes( );
     
@@ -877,7 +877,7 @@ struct SimWin {
     
     void            reDraw( );
     
-    virtual void    toggleWin( );
+    virtual void    toggleWin( int toggleVal = 0 );
     virtual void    setDefaults( )  = 0;
     virtual void    drawBanner( )   = 0;
     virtual void    drawBody( )     = 0;
@@ -892,7 +892,7 @@ struct SimWin {
     int             winIndex            = 0;
     char            winName[ MAX_WIN_NAME];
     int             winModNum           = -1;
-    SimWinSize      winToggleDefSizes[ MAX_WIN_TOGGLES ];
+    SimWinSize      winDefSizes[ MAX_WIN_TOGGLES ];
     
     bool            winEnabled          = false;
     int             winRadix            = 16;
@@ -904,12 +904,10 @@ struct SimWin {
     int             winColumns          = 0;
     int             winRows             = 0;       
 
-    // SimWinSize      winToggleSizes[ MAX_WIN_TOGGLES ];  // ??? needed ?
-
     int             winAbsCursorRow     = 0;
     int             winAbsCursorCol     = 0;
     int             lastRowPos          = 0;
-    int             lastColPos          = 0;
+    int             lastColPos          = 0;    
 };
 
 //----------------------------------------------------------------------------------------
@@ -1064,8 +1062,6 @@ struct SimWinCache : SimWinScrollable {
     void drawBanner( );
     void drawLine( T64Word index );
 
-    // ??? override drawBody ? 
-
     private:
 
     T64Cache    *cache  = nullptr;
@@ -1129,9 +1125,9 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-// Command Line Window. The command window is a special class, which comes always last
-// in the windows list and cannot be disabled. It is intended to be a scrollable window,
-// where only the banner line is fixed.
+// Command Line Window. The command window is a special class, which comes always
+// last in the windows list and cannot be disabled. It is intended to be a scrollable
+// window, where only the banner line is fixed.
 //
 //----------------------------------------------------------------------------------------
 struct SimCommandsWin : SimWin {
@@ -1245,7 +1241,7 @@ public:
     
     SimWinDisplay( SimGlobals *glb );
     
-    void            setupWinDisplay( int argc, const char *argv[ ] );
+    void            setupWinDisplay( );
     void            startWinDisplay( );
     SimTokId        getCurrentCmd( );
 
@@ -1258,19 +1254,19 @@ public:
     
     void            windowsOn( );
     void            windowsOff( );
-    void            windowDefaults( );
-    void            windowCurrent( int winNum = 0 );
-    void            windowEnable( int winNum = 0, bool show = true );
-    void            winStacksEnable( bool arg );
-    void            windowRadix( int rdx, int winNum = 0 );
-    void            windowSetRows( int rows, int winNum = 0 );
+    void            windowDefaults( int winNum );
+    void            windowCurrent( int winNum );
+    void            windowEnable( int winNum, bool enable );
+    void            winStacksEnable( int stackNum, bool enable );
+    void            windowRadix( int rdx, int winNum );
+    void            windowSetRows( int rows, int winNum );
     void            windowSetCmdWinRows( int rows );
     
-    void            windowHome( int amt, int winNum = 0 );
-    void            windowForward( int amt, int winNum = 0 );
-    void            windowBackward( int amt, int winNum = 0 );
-    void            windowJump( int amt, int winNum = 0 );
-    void            windowToggle( int winNum = 0 );
+    void            windowHome( int amt, int winNum );
+    void            windowForward( int amt, int winNum );
+    void            windowBackward( int amt, int winNum );
+    void            windowJump( int amt, int winNum );
+    void            windowToggle( int winNum, int toggleVal );
     void            windowExchangeOrder( int winNum );
     
     void            windowNewAbsMem( int modNum, T64Word adr );
@@ -1280,8 +1276,8 @@ public:
     void            windowNewCache( int modNum, T64CacheType cTyp );
     void            windowNewText( char *pathStr );
 
-    void            windowKill( int winNumStart, int winNumEnd = 0  );
-    void            windowSetStack( int winStack, int winNumStart, int winNumEnd = 0 );
+    void            windowKill( int winNumStart, int winNumEnd );
+    void            windowSetStack( int winStack, int winNumStart, int winNumEnd );
     
     int             getCurrentWindow( );
     void            setCurrentWindow( int winNum );
@@ -1290,7 +1286,6 @@ public:
     int             getCurrentWinModNum( );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
-    bool            isWinStackOn( );
 
     bool            validWindowType( SimTokId winType );
     bool            validWindowNum( int winNum );
@@ -1304,19 +1299,24 @@ public:
     void            setWindowColumns( int winStack, int columns );
     void            setWindowOrigins( int winStack, int rowOfs = 1, int colOfs = 1 );
    
-    int             currentWinNum               = -1;
-    bool            winStacksOn                 = false;
-    bool            winModeOn                   = true;
-    bool            winReFormatPending          = false;
+    int             currentWinNum                   = -1;
+    bool            winModeOn                       = true;
+    bool            winReFormatPending              = false;
 
-    SimGlobals      *glb                        = nullptr;
-    SimWin          *windowList[ MAX_WINDOWS ]  = { nullptr };
+    SimGlobals      *glb                            = nullptr;
+    SimWin          *windowList[ MAX_WINDOWS ]      = { nullptr };
 
     public: 
-     
-    SimCommandsWin  *cmdWin                     = nullptr;
+
+    SimCommandsWin  *cmdWin                         = nullptr;
     
 };
+
+//----------------------------------------------------------------------------------------
+// Our entry into parsing program command line options.
+//
+//----------------------------------------------------------------------------------------
+void processCmdLineOptions( int argc, char *argv[ ] );
 
 //----------------------------------------------------------------------------------------
 // The globals, accessible to all objects. To ease the passing around there is the

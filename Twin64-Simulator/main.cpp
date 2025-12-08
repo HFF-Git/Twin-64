@@ -37,7 +37,9 @@
 // Here we go.
 //
 //----------------------------------------------------------------------------------------
-int main( int argc, const char * argv[] ) {
+int main( int argc, char * argv[] ) {
+
+    processCmdLineOptions( argc, argv );
    
     SimGlobals *glb     = new SimGlobals( );
 
@@ -48,7 +50,7 @@ int main( int argc, const char * argv[] ) {
     
     glb -> console      -> initConsoleIO( );
     glb -> env          -> setupPredefined( );
-    glb -> winDisplay   -> setupWinDisplay( argc, argv );
+    glb -> winDisplay   -> setupWinDisplay( );
 
     T64Processor *proc = 
         new T64Processor(   glb -> system,

@@ -3,9 +3,9 @@
 // Twin64 - A 64-bit CPU - Simulator window subsystem
 //
 //----------------------------------------------------------------------------------------
-// This module contains the window display routines. The window subsystem uses a ton
-// of escape sequences to create a terminal window screen and displays sub windows on
-// the screen.
+// This module contains the window display routines. The window subsystem uses a 
+// ton of escape sequences to create a terminal window screen and displays sub 
+// windows on the screen.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -45,8 +45,7 @@ namespace {
 }; // namespace
 
 //----------------------------------------------------------------------------------------
-// Object constructor. We initialize the windows list and create all the predefined
-// windows. The remainder of the window list is used by the user defined windows.
+// Object constructor. We initialize the windows and create the command window. 
 //
 //----------------------------------------------------------------------------------------
 SimWinDisplay::SimWinDisplay( SimGlobals *glb ) {
@@ -58,22 +57,12 @@ SimWinDisplay::SimWinDisplay( SimGlobals *glb ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Get the window display system and command interpreter ready. One day we will handle
-// command line arguments.... 
+// Get the window display system and command interpreter ready. 
 //
-//  -v           verbose
-//  -i <path>    init file
-//
-// ??? to do ...
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::setupWinDisplay( int argc, const char *argv[ ] ) {
+void SimWinDisplay::setupWinDisplay( ) {
     
-    while ( argc > 0 ) {
-        
-        argc --;
-    }
-    
-    glb -> winDisplay  -> windowDefaults( );
+    glb -> winDisplay  -> windowDefaults( -1 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -86,8 +75,6 @@ void SimWinDisplay::startWinDisplay( ) {
     cmdWin -> cmdInterpreterLoop( );
 }
 
-// ??? a bit ugly.... a better way to get to this data ?
-// how about an ENV with the current command Id ?
 SimTokId SimWinDisplay::getCurrentCmd( ) {
     
     return( cmdWin -> getCurrentCmd( ));
@@ -134,14 +121,14 @@ void SimWinDisplay::setCurrentWindow( int winNum ) {
 SimWinType SimWinDisplay::getCurrentWinType( ) {
 
     if ( validWindowNum( currentWinNum )) 
-        return( windowList[ currentWinNum - 1 ] -> getWinType( ));
+        return( windowList[ currentWinNum ] -> getWinType( ));
     else throw( ERR_INVALID_WIN_ID );
 }
 
 int SimWinDisplay::getCurrentWinModNum( ) {
 
      if ( validWindowNum( currentWinNum )) 
-        return( windowList[ currentWinNum - 1 ] -> getWinModNum( ));
+        return( windowList[ currentWinNum ] -> getWinModNum( ));
      else throw( ERR_INVALID_WIN_ID );
 }
 
@@ -153,14 +140,13 @@ int SimWinDisplay::getCurrentWinModNum( ) {
 //----------------------------------------------------------------------------------------
 bool SimWinDisplay::validWindowNum( int winNum ) {
     
-    return( ( winNum >= 1 ) && 
-            ( winNum <= MAX_WINDOWS ) && 
-            ( windowList[ winNum - 1 ] != nullptr ));
+    return( ( winNum >= 0 ) && ( winNum < MAX_WINDOWS ) && 
+            ( windowList[ winNum ] != nullptr ));
 }
 
 bool SimWinDisplay::validWindowStackNum( int stackNum ) {
     
-    return(( stackNum >= 1 ) && ( stackNum < MAX_WIN_STACKS ));
+    return(( stackNum >= 0 ) && ( stackNum < MAX_WIN_STACKS ));
 }
 
 bool SimWinDisplay::validWindowType( SimTokId winType ) {
@@ -190,11 +176,6 @@ bool SimWinDisplay::isWinEnabled( int winNum ) {
 bool SimWinDisplay::isWindowsOn( ) {
 
     return( winModeOn );
-}
-
-bool SimWinDisplay::isWinStackOn( ) {
-
-    return( winStacksOn );
 }
 
 //----------------------------------------------------------------------------------------
@@ -294,98 +275,88 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // Window screen drawing. This routine is perhaps the heart of the window system. 
 // Each time we read in a command input, the terminal screen must be updated. A 
 // terminal screen consist of a list of stacks and in each stack a list of windows. 
-// There is always the main stack, stack Id 0. Only if we have windows assigned to
-// another stack and window stacks are enabled, will this stack show up in the 
-// terminal screen. If window stacks are disabled, all windows, regardless what 
-// their stack ID says, will show up in the main stack and shown in their stack
-// set when stack displaying is enabled again.
+// 
+// Only if we have windows assigned to another stack and at least one of the windows
+// in that stack is enabled, will this stack show up in the terminal screen. 
 //
 // We first compute the number of rows and columns needed for all windows to show 
 // in their assigned stack. Only enabled screens will participate in the overall
-// screen size computation. The number of columns required is the sum of the columns
-// a stack needs plus a margin between the stacks. Within a stack, the window with 
-// the largest columns needed determines the stack column size. If the maximum 
-// columns needed is less than the minimum columns for a command window, we correct
-// the column sizes of all windows.
+// screen size computation. Within a stack, the window with the largest columns
+// needed determines the stack column size. The total number of columns required
+// is the sum of the columns computed per stack plus a margin between the stacks.  
+// If the columns needed is less than the minimum columns for the command window, 
+// we correct the column sizes of all windows to match the command window default.
 //
 // Rows are determined by adding the required rows of all windows in a given stack.
 // The final number is the rows needed by the largest stack plus the rows needed
 // for the command window. The data is used to set the absolute origin coordinates
 // of each window.
 //
-// The overall screen size is at least the numbers computed. If the number of rows 
-// needed for the windows and command window is less than the overall defined 
-// minimum number of rows, the command window is enlarged to have a screen of 
-// minimum row size.  When the screen size changed, we just redraw the screen with 
-// the command screen going last. The command screen will have a columns size 
-// across all visible stacks.
+// The overall screen size is at least the column and row numbers computed. If the
+// number of rows required for the windows and command window is less than the 
+// defined minimum number of rows, the command window is enlarged accordingly.  
+// When the screen size changed, we just redraw the screen with the command screen
+// going last. The command screen will have a columns size across all visible stacks.
+//
+// One final issues: if we have only one stack, we may need to adjust that stack
+// if the command default column size is larger. 
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
     
     int winStackColumns[ MAX_WIN_STACKS ]   = { 0 };
     int winStackRows[ MAX_WIN_STACKS ]      = { 0 };
+    int stackCount                          = 0;
     int maxRowsNeeded                       = 0;
     int maxColumnsNeeded                    = 0;
     int stackColumnGap                      = 2;
-     int minRowSize = glb -> env -> getEnvVarInt((char *) ENV_WIN_MIN_ROWS );
+    int minRowSize = glb -> env -> getEnvVarInt((char *) ENV_WIN_MIN_ROWS );
     
     if ( winModeOn ) {
        
         for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
             
-            winStackColumns[ i ] = computeColumnsNeeded( i + 1 );
-            winStackRows[ i ]    = computeRowsNeeded( i + 1 );
-            
-            if ( winStacksOn ) {
-                
-                if ( winStackColumns[ i ] > 0 ) {
+            winStackColumns[ i ] = computeColumnsNeeded( i );
+            winStackRows[ i ]    = computeRowsNeeded( i );
+
+            if ( winStackColumns[ i ] > 0 ) {
 
                     maxColumnsNeeded += winStackColumns[ i ];
                     maxColumnsNeeded += stackColumnGap;
+                    stackCount ++;
                 }
                 
                 if ( winStackRows[ i ] > maxRowsNeeded ) 
                     maxRowsNeeded = winStackRows[ i ];
-            }
-            else {
-                
-                if ( winStackColumns[ i ] > maxColumnsNeeded ) 
-                    maxColumnsNeeded = winStackColumns[ i ];
-
-                maxRowsNeeded += winStackRows[ i ];
-            }
         }
 
-        if (( winStacksOn ) && ( maxColumnsNeeded > 0 )) 
-            maxColumnsNeeded -= stackColumnGap;
+        if ( maxColumnsNeeded > 0 ) maxColumnsNeeded -= stackColumnGap;
 
         if ( maxColumnsNeeded < cmdWin -> getDefColumns( )) {
 
             maxColumnsNeeded = cmdWin -> getDefColumns( );
-
-            for ( int i = 0; i < MAX_WIN_STACKS; i++ )
-                setWindowColumns( i, maxColumnsNeeded );
         }
-        
+
+        if ( stackCount == 1 ) {
+
+            for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
+
+                if (( winStackColumns[ i ] > 0 ) && 
+                    ( winStackColumns[ i ] < maxColumnsNeeded ))
+                    winStackColumns[ i ] = maxColumnsNeeded;
+            }
+        }  
+
         int curColumn = 1;
         int curRows   = 1;
         
         for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
-            
-            setWindowColumns( i + 1, winStackColumns[ i ] );
-            setWindowOrigins( i + 1, curRows, curColumn );
-            
-            if ( winStacksOn ) {
-                
-                curColumn += winStackColumns[ i ];
-                curColumn += stackColumnGap;
-            }
-            else {
-                
-                setWindowColumns( i, maxColumnsNeeded );
-                curRows += winStackRows[ i ];
-            }
+
+            setWindowColumns( i, winStackColumns[ i ] );
+            setWindowOrigins( i, curRows, curColumn );
+
+            curColumn += winStackColumns[ i ];
+            if ( curColumn > 1 ) curColumn += stackColumnGap;
         }
         
         if (( maxRowsNeeded + cmdWin -> getRows( )) < minRowSize ) {
@@ -423,10 +394,8 @@ void SimWinDisplay::reDraw( ) {
 
         for ( int i = 0; i < MAX_WINDOWS; i++ ) {
             
-            if (( windowList[ i ] != nullptr ) && ( windowList[ i ] -> isEnabled( ))) {
-                
-                windowList[ i ] -> reDraw( );
-            }
+            if (( windowList[ i ] != nullptr ) && 
+                ( windowList[ i ] -> isEnabled( ))) windowList[ i ] -> reDraw( );
         }
     }
     
@@ -462,7 +431,7 @@ void SimWinDisplay::windowsOff( ) {
     setWinReFormat( );
 }
 
-void SimWinDisplay::windowDefaults( ) {
+void SimWinDisplay::windowDefaults( int winNum ) {
 
     for ( int i = 0; i < MAX_WINDOWS; i++ ) {
         
@@ -470,12 +439,6 @@ void SimWinDisplay::windowDefaults( ) {
     }
     
     cmdWin -> setDefaults( );
-}
-
-void SimWinDisplay::winStacksEnable( bool arg ) {
-
-    if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
-    winStacksOn = arg;
 }
 
 //----------------------------------------------------------------------------------------
@@ -492,31 +455,60 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "winStacksEnable" enables or disabled all widows in a stack. This allows to 
+// move windows to a stack and then show all of them by referring to their stack
+// number.
+//
+//----------------------------------------------------------------------------------------
+void SimWinDisplay::winStacksEnable( int stackNum, bool enable ) {
+
+    if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
+
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+
+        SimWin *wPtr = windowList[ i ];
+
+        if ( wPtr != nullptr ) {
+
+            if ( stackNum == -1 ) {
+                
+                wPtr -> setEnable( enable );
+            }
+            else {
+
+                if ( wPtr -> getWinStack( ) == stackNum ) 
+                    wPtr -> setEnable( enable );
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // The routine sets the stack attribute for a user window. The setting is not 
 // allowed for the predefined window. They are always in the main window stack, 
-// which has the stack Id of one. Theoretically we could have many stacks, numbered
-// 1 to MAX_STACKS. Realistically, 2 to 3 stacks will fit on a screen. The last 
-// window moved is made the current window.
+// which has the stack Id of one externally. Theoretically we could have many 
+// stacks, numbered 1 to MAX_STACKS. Realistically, 2 to 3 stacks will fit on a 
+// screen. The last window moved to a stack is made the current window.
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
 
     if ( ! validWindowStackNum( winStack )) throw ( ERR_INVALID_WIN_STACK_ID );
-    if ( ! (( validWindowNum( winNumStart )) && ( validWindowNum( winNumEnd )))) 
-        throw ( ERR_INVALID_WIN_ID );
-   
+    if ( ! validWindowNum( winNumStart )) throw ( ERR_INVALID_WIN_ID );
+    if ( ! validWindowNum( winNumEnd )) throw ( ERR_INVALID_WIN_ID );
+    
     if ( winNumStart > winNumEnd ) {
         
-        int tmp = winNumStart;
+        int tmp     = winNumStart;
         winNumStart = winNumEnd;
-        winNumEnd = tmp;
+        winNumEnd   = tmp;
     }
 
     for ( int i = winNumStart; i <= winNumEnd; i++ ) {
         
-        if ( windowList[ i - 1 ] != nullptr ) {
-            
-            windowList[ i - 1 ] -> setWinStack( winStack );
+        if ( windowList[ i ] != nullptr ) {
+
+            windowList[ i ] -> setWinStack( winStack );
         }
     }
 
@@ -530,13 +522,13 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
 // the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowEnable( int winNum, bool show ) {
+void SimWinDisplay::windowEnable( int winNum, bool enable ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = currentWinNum;
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
     
-    windowList[ winNum - 1 ] -> setEnable( show );
+    windowList[ winNum ] -> setEnable( enable );
     currentWinNum = winNum;
 
     setWinReFormat( );
@@ -556,7 +548,7 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
     if ( winNum == 0 ) winNum = currentWinNum;
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
          
-    windowList[ winNum - 1 ] -> setRadix( rdx );
+    windowList[ winNum ] -> setRadix( rdx );
     currentWinNum = winNum;
     
     setWinReFormat( );
@@ -575,9 +567,9 @@ void SimWinDisplay::windowSetRows( int rows, int winNum ) {
     if ( winNum == 0 ) winNum = currentWinNum;
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
       
-    if ( rows == 0 ) rows = windowList[ winNum - 1 ] -> getRows( );
+    if ( rows == 0 ) rows = windowList[ winNum ] -> getRows( );
                 
-    windowList[ winNum - 1 ] -> setRows( rows );
+    windowList[ winNum ] -> setRows( rows );
     currentWinNum = winNum;
 
     setWinReFormat( );
@@ -608,7 +600,7 @@ void SimWinDisplay::windowHome( int pos, int winNum ) {
     if ( winNum == 0 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
 
-    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winHome( pos );
+    ((SimWinScrollable *) windowList[ winNum ] ) -> winHome( pos );
         setCurrentWindow( winNum );
 }
 
@@ -624,10 +616,10 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
         throw (ERR_INVALID_WIN_ID );
     
-    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winForward( amt );
+    ((SimWinScrollable *) windowList[ winNum ] ) -> winForward( amt );
     setCurrentWindow( winNum );
 }
 
@@ -644,10 +636,10 @@ void SimWinDisplay::windowBackward( int amt, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
         throw (ERR_INVALID_WIN_ID );
     
-    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winBackward( amt );
+    ((SimWinScrollable *) windowList[ winNum ] ) -> winBackward( amt );
     setCurrentWindow( winNum );
 }
 
@@ -662,10 +654,10 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum - 1 ] -> getWinType( ))) 
+    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
         throw (ERR_INVALID_WIN_ID );
     
-    ((SimWinScrollable *) windowList[ winNum - 1 ] ) -> winJump( pos );
+    ((SimWinScrollable *) windowList[ winNum ] ) -> winJump( pos );
     setCurrentWindow( winNum );
 }
 
@@ -675,13 +667,13 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
 // The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowToggle( int winNum ) {
+void SimWinDisplay::windowToggle( int winNum, int toggleVal ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == 0 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
    
-    windowList[ winNum - 1 ] -> toggleWin( );
+    windowList[ winNum ] -> toggleWin( toggleVal );
     setCurrentWindow( winNum );
 }
 
@@ -701,16 +693,16 @@ void SimWinDisplay::windowExchangeOrder( int winNum ) {
     int currentWindow = getCurrentWindow( );
     if ( winNum == currentWindow ) return;
 
-    int winStackA = windowList[ winNum - 1 ] -> getWinStack( );
-    int winStackB = windowList[ currentWindow - 1 ] -> getWinStack( );
+    int winStackA = windowList[ winNum ] -> getWinStack( );
+    int winStackB = windowList[ currentWindow ] -> getWinStack( );
 
     if ( winStackA != winStackB ) {
 
-        windowList[ winNum - 1 ] -> setWinStack( winStackB );
-        windowList[ currentWindow - 1 ] -> setWinStack( winStackA );
+        windowList[ winNum ] -> setWinStack( winStackB );
+        windowList[ currentWindow ] -> setWinStack( winStackA );
     }
    
-    std::swap( windowList[ winNum - 1 ], windowList[ currentWindow - 1 ]);
+    std::swap( windowList[ winNum ], windowList[ currentWindow ]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -736,8 +728,8 @@ void SimWinDisplay::windowNewAbsMem( int modNum, T64Word adr ) {
     windowList[ slot ] = (SimWin *) new SimWinAbsMem( glb, modNum, adr );
     windowList[ slot ] -> setWinName(( char *) "MEM" );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -749,8 +741,8 @@ void SimWinDisplay::windowNewAbsCode( int modNum, T64Word adr ){
     windowList[ slot ] = (SimWin *) new SimWinCode( glb, modNum, adr ); 
     windowList[ slot ] -> setWinName(( char *) "CODE" );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -763,8 +755,8 @@ void SimWinDisplay::windowNewCpuState( int modNum ) {
     windowList[ slot ] -> setWinName(( char *) "CPU" );
     windowList[ slot ] -> setWinModNum( modNum );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -794,8 +786,8 @@ void SimWinDisplay::windowNewTlb( int modNum, T64TlbKind tKind ) {
     else ;
 
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -827,8 +819,8 @@ void SimWinDisplay::windowNewCache( int modNum, T64CacheType cType ) {
     else ;
 
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -840,8 +832,8 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
     windowList[ slot ] = (SimWin *) new SimWinText( glb, pathStr );
     windowList[ slot ] -> setWinName(( char *) "TEXT" );
     windowList[ slot ] -> setDefaults( );
-    windowList[ slot ] -> setWinIndex( slot + 1 );
-    windowList[ slot ] -> setWinStack( 1 );
+    windowList[ slot ] -> setWinIndex( slot );
+    windowList[ slot ] -> setWinStack( 0 );
     windowList[ slot ] -> setEnable( true );
     currentWinNum = slot + 1;
 }
@@ -856,18 +848,18 @@ void SimWinDisplay::windowNewText( char *pathStr ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
     
-    if (( winNumStart < 1 ) || ( winNumEnd > MAX_WINDOWS ))  return;
+    if (( winNumStart < 0 ) || ( winNumEnd >= MAX_WINDOWS ))  return;
     if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
 
     if (( ! validWindowNum( winNumStart )) && ( ! validWindowNum( winNumEnd ))) 
         throw ( ERR_INVALID_WIN_ID );
     
-    for ( int i = winNumStart - 1; i <= winNumEnd - 1; i++ ) {
-         
+    for ( int i = winNumStart; i <= winNumEnd; i++ ) {
+
         delete ( SimWin * ) windowList[ i ];
         windowList[ i ] = nullptr;
                 
-        if ( currentWinNum == i + 1 ) {
+        if ( currentWinNum == i ) {
                  
             for ( int i = 1; i < MAX_WINDOWS; i++ ) {
                         
