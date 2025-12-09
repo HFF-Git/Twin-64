@@ -1060,7 +1060,7 @@ void SimCommandsWin::envCmd( ) {
 //----------------------------------------------------------------------------------------
 // Execute commands from a file command. 
 //
-// XF "<filename>"
+// XF "<filepath>"
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execFileCmd( ) {
     
@@ -1071,7 +1071,7 @@ void SimCommandsWin::execFileCmd( ) {
 //----------------------------------------------------------------------------------------
 // Load an ELF file command. 
 //
-// LF "<filename>"
+// LF "<filepath>"
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::loadElfFileCmd( ) {
     

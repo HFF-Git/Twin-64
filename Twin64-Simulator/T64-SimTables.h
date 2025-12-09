@@ -512,6 +512,13 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
 
     {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_LF,
+        .cmdNameStr     = (char *) "lf",
+        .cmdSyntaxStr   = (char *) "lf \"<filePath>\"",
+        .helpStr        = (char *) "loads an ELF file"
+    },
+
+    {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RESET,
         .cmdNameStr     = (char *) "reset",
         .cmdSyntaxStr   = (char *) "reset ( 'SYS' | 'STATS' )",
