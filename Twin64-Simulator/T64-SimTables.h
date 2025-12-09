@@ -635,7 +635,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     //
     //------------------------------------------------------------------------------------
     {
-        .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WON,
+        .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WOFF,
         .cmdNameStr     = (char *) "woff",
         .cmdSyntaxStr   = (char *) "woff",
         .helpStr        = (char *) "disables windows mode"
@@ -663,14 +663,14 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
 
     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WE,
         .cmdNameStr     = (char *)  "we",
         .cmdSyntaxStr   = (char *)  "we <wNum>",
         .helpStr        = (char *)  "enable window"
     },
 
     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WD,
         .cmdNameStr     = (char *)  "wd",
         .cmdSyntaxStr   = (char *)  "wd <wNum>",
         .helpStr        = (char *)  "disable window"
