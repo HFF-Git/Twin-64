@@ -1295,6 +1295,7 @@ public:
     bool            validWindowType( SimTokId winType );
     bool            validWindowNum( int winNum );
     bool            validWindowStackNum( int winNum );
+    int             getWinStackNum( int winNum );
 
     private:
     

@@ -140,8 +140,8 @@ int SimWinDisplay::getCurrentWinModNum( ) {
 //----------------------------------------------------------------------------------------
 bool SimWinDisplay::validWindowNum( int winNum ) {
     
-    return( ( winNum >= 0 ) && ( winNum < MAX_WINDOWS ) && 
-            ( windowList[ winNum ] != nullptr ));
+    return(( winNum >= 0 ) && ( winNum < MAX_WINDOWS ) && 
+           ( windowList[ winNum ] != nullptr ));
 }
 
 bool SimWinDisplay::validWindowStackNum( int stackNum ) {
@@ -160,6 +160,11 @@ bool SimWinDisplay::validWindowType( SimTokId winType ) {
             ( winType == TOK_CODE   ) || 
             ( winType == TOK_TEXT   ));
 }
+
+ int SimWinDisplay::getWinStackNum( int winNum ) {
+
+    return(( validWindowNum( winNum )) ? windowList[ winNum ] -> getWinStack( ) : -1 );
+ }
 
 bool SimWinDisplay::isCurrentWin( int winNum ) {
     
@@ -455,9 +460,9 @@ void SimWinDisplay::windowCurrent( int winNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "winStacksEnable" enables or disabled all widows in a stack. This allows to 
-// move windows to a stack and then show all of them by referring to their stack
-// number.
+// "winStacksEnable" enables or disabled a stack. This allows to move windows to a
+// stack and then show all of them by referring to their stack number. A stack number
+// of -1 means all stacks. 
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::winStacksEnable( int stackNum, bool enable ) {

@@ -49,7 +49,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 int internalWinNum( int num ) {
 
-    if (( num > 1 ) && ( num <= MAX_WINDOWS )) return( num - 1 );
+    if (( num > 0 ) && ( num <= MAX_WINDOWS )) return( num - 1 );
     else return ( -1 );
 }
 
@@ -385,6 +385,27 @@ void SimCommandsWin::drawBanner( ) {
 
     printTextField((char *) "System State: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_4 );
+   
+    int stacks[ MAX_WIN_STACKS ] = { 0 };
+
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+
+        int stackNum = glb -> winDisplay -> getWinStackNum( i );
+        if ( stackNum >= 0 ) {
+            
+            stacks[ stackNum ] ++;
+        }
+    }
+
+    printTextField((char *) "Stacks: ", fmtDesc, 16 );
+    for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
+        
+        if ( stacks[ i ] > 0 ) {
+            
+            printNumericField( i + 1, fmtDesc | FMT_DEC );
+            printTextField((char *) " ", fmtDesc );
+        }
+    }
 
     padLine( fmtDesc ); 
 
@@ -1962,8 +1983,8 @@ void  SimCommandsWin::winToggleCmd( ) {
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winExchangeCmd( ) {
-    
-    if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
+
+    ensureWinModeOn( );
     
     if ( tok -> isToken( TOK_EOS )) throw ( ERR_EXPECTED_WIN_ID );
 
@@ -1973,6 +1994,7 @@ void SimCommandsWin::winExchangeCmd( ) {
     
     if ( ! glb -> winDisplay -> validWindowNum( internalWinNum( winNum ))) 
         throw ( ERR_INVALID_WIN_ID );
+
     glb -> winDisplay -> windowExchangeOrder( internalWinNum( winNum ));
     glb -> winDisplay -> setWinReFormat( );
 }
