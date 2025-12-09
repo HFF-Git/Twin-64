@@ -586,6 +586,19 @@ void SimWinDisplay::windowSetCmdWinRows( int rows ) {
 }
 
 //----------------------------------------------------------------------------------------
+// The command window can be cleared with the "windowClearCmdWin" method. This
+// will reset the content of the command window to empty.
+//
+//----------------------------------------------------------------------------------------
+void SimWinDisplay::windowClearCmdWin( ) {      
+
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
+
+   cmdWin -> clearCmdWin( );
+    setWinReFormat( );
+}
+
+//----------------------------------------------------------------------------------------
 // "winHome" will set the current position to the home index, i.e. the position 
 // with which the window was cleared. If the position passed is non-zero, it will
 // become the new home position. The position meaning is window dependent and the

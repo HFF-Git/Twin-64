@@ -246,10 +246,9 @@ void SimWin::setWinCursor( int row, int col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;
-   
-    if ( row > winDefSizes[ winToggleVal ].row ) 
-        row = winDefSizes[ winToggleVal ].row;
-    if ( col > MAX_WIN_COL_SIZE )   col = MAX_WIN_COL_SIZE;
+  
+    if ( row > MAX_WIN_ROW_SIZE ) row = MAX_WIN_ROW_SIZE;
+    if ( col > MAX_WIN_COL_SIZE ) col = MAX_WIN_COL_SIZE;
 
     glb -> console -> setAbsCursor( winAbsCursorRow + row - 1, winAbsCursorCol + col );
     

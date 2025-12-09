@@ -49,7 +49,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 int internalWinNum( int num ) {
 
-    if (( num > 0 ) && ( num <= MAX_WINDOWS )) return( num - 1 );
+    if (( num > 1 ) && ( num <= MAX_WINDOWS )) return( num - 1 );
     else return ( -1 );
 }
 
@@ -428,6 +428,15 @@ void SimCommandsWin::drawBody( ) {
     }
     
     setWinCursor( getRows( ), 1 );
+}
+
+//----------------------------------------------------------------------------------------
+// Clear the command window output buffer.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::clearCmdWin( ) {
+    
+    winOut -> initBuffer( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -907,19 +916,19 @@ void SimCommandsWin::helpCmd( ) {
              ( tok -> isTokenTyp( TYP_P_FUNC ))) {
 
         if (( tok -> isToken( CMD_SET )) ||
-             ( tok -> isToken( WCMD_SET )) ||
-             ( tok -> isToken( REG_SET )) ||
-             ( tok -> isToken( WTYPE_SET )) ||
-             ( tok -> isToken( PF_SET ))) {
+            ( tok -> isToken( WCMD_SET )) ||
+            ( tok -> isToken( REG_SET )) ||
+            ( tok -> isToken( WTYPE_SET )) ||
+            ( tok -> isToken( PF_SET ))) {
 
             for ( int i = 0; i < MAX_CMD_HELP_TAB; i++ ) {
                 
-                    if ( cmdHelpTab[ i ].helpTypeId == tok -> tokTyp( )) {
+                if ( cmdHelpTab[ i ].helpTypeId == tok -> tokTyp( )) {
 
-                        winOut -> writeChars( FMT_STR_SUMMARY, 
-                                              cmdHelpTab[ i ].cmdNameStr, 
-                                              cmdHelpTab[ i ].helpStr );
-                    }
+                    winOut -> writeChars( FMT_STR_SUMMARY, 
+                                          cmdHelpTab[ i ].cmdNameStr, 
+                                          cmdHelpTab[ i ].helpStr );
+                }
             }
         }
         else {
@@ -1870,7 +1879,6 @@ void SimCommandsWin::winSetRowsCmd( ) {
 //
 //  CWL <lines>
 //
-// ??? perhaps additional commands: CWC -> clear command window
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetCmdWinRowsCmd( ) {
 
@@ -1878,6 +1886,18 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
     tok -> checkEOS( );
     glb -> winDisplay -> windowSetCmdWinRows( winLines );
 }
+
+//----------------------------------------------------------------------------------------
+// Clear command window.
+//  
+//  CWC
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::winClearCmdWinCmd( ) {
+
+    tok -> checkEOS( );
+    glb -> winDisplay -> windowClearCmdWin( );
+}   
 
 //----------------------------------------------------------------------------------------
 // Window current command. User definable windows are controlled by their window 
@@ -2264,6 +2284,7 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_WD:            winDisableCmd( );               break;
                     case CMD_WR:            winSetRadixCmd( );              break;    
                     case CMD_CWL:           winSetCmdWinRowsCmd( );         break;
+                    case CMD_CWC:           winClearCmdWinCmd( );           break;
                     case CMD_WL:            winSetRowsCmd( );               break;
                         
                     default:                throw ( ERR_INVALID_CMD );
@@ -2274,7 +2295,6 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                 hist -> addCmdLine( cmdBuf );
                 glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
                                         (T64Word) hist -> getCmdNum( ));
-                glb -> env -> setEnvVar((char *) ENV_EXIT_CODE, (T64Word) -1 );
                 throw ( ERR_INVALID_CMD );
             }
         }

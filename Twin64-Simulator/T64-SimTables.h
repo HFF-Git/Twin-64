@@ -117,9 +117,9 @@ const SimToken cmdTokTab[ ] = {
     { .name = "WOFF",       .typ = TYP_WCMD,    .tid = CMD_WOFF                     },
     { .name = "WDEF",       .typ = TYP_WCMD,    .tid = CMD_WDEF                     },
     { .name = "WSE",        .typ = TYP_WCMD,    .tid = CMD_WSE                      },
-    { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                      },
-    
+    { .name = "WSD",        .typ = TYP_WCMD,    .tid = CMD_WSD                      },  
     { .name = "CWL",        .typ = TYP_WCMD,    .tid = CMD_CWL                      },
+    { .name = "CWC",        .typ = TYP_WCMD,    .tid = CMD_CWC                      },
     
     { .name = "WE",         .typ = TYP_WCMD,    .tid = CMD_WE                       },
     { .name = "WD",         .typ = TYP_WCMD,    .tid = CMD_WD                       },
@@ -465,8 +465,8 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_HELP,
         .cmdNameStr     = (char *) "help",
         .cmdSyntaxStr   = (char *) "help ( cmdId | ‘commands‘ | "
-                                   "'wcommands‘ | ‘wtypes‘ | ‘predefined‘ )",
-        .helpStr        = (char *) "list help info ( type \"help help\" for details )"
+                                   "'wcommands‘ | ‘predefined‘ )",
+        .helpStr        = (char *) "list help info"
     },
   
     {
@@ -644,14 +644,14 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSE,
         .cmdNameStr     = (char *) "wse",
-        .cmdSyntaxStr   = (char *) "wse",
+        .cmdSyntaxStr   = (char *) "wse [ <stackNum> ]",
         .helpStr        = (char *) "enable window stacks"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSD,
         .cmdNameStr     = (char *) "wsd",
-        .cmdSyntaxStr   = (char *) "wsd",
+        .cmdSyntaxStr   = (char *) "wsd [ <stackNum> ]",
         .helpStr        = (char *) "disable window stacks"
     },
 
@@ -707,7 +707,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WT,
         .cmdNameStr     = (char *)  "wt",
-        .cmdSyntaxStr   = (char *)  "wt [ <wNum> ]",
+        .cmdSyntaxStr   = (char *)  "wt [ <wNum>, [ <toggleVal ]]",
         .helpStr        = (char *)  "toggle through alternate window content"
     },
     
@@ -758,7 +758,14 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWL,
         .cmdNameStr     = (char *)  "cwl",
         .cmdSyntaxStr   = (char *)  "cwl <lines>",
-        .helpStr        = (char *)  "set command window lines including banner line"
+        .helpStr        = (char *)  "set command window lines"
+    },
+
+     {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWC,
+        .cmdNameStr     = (char *)  "cwc",
+        .cmdSyntaxStr   = (char *)  "cwc",
+        .helpStr        = (char *)  "clears the command window"
     },
 
     //------------------------------------------------------------------------------------

@@ -247,8 +247,10 @@ enum SimTokId : uint16_t {
     //------------------------------------------------------------------------------------
     WCMD_SET                = 2000,     WTYPE_SET               = 2001,
     CMD_WON                 = 2002,     CMD_WOFF                = 2003,     
-    CMD_WDEF                = 2004,     CMD_CWL                 = 2005,     
-    CMD_WSE                 = 2006,     CMD_WSD                 = 2007,
+    CMD_WDEF                = 2004,     CMD_CWL                 = 2005,  
+    CMD_CWC                 = 2006,     CMD_WSE                 = 2007,     
+    CMD_WSD                 = 2008,
+
     CMD_WE                  = 2050,     CMD_WD                  = 2051,     
     CMD_WR                  = 2052,     CMD_WF                  = 2053,     
     CMD_WB                  = 2054,     CMD_WH                  = 2055,
@@ -1139,6 +1141,7 @@ public:
     void            setDefaults( );
     void            drawBanner( );
     void            drawBody( );
+    void            clearCmdWin( );
     SimTokId        getCurrentCmd( );
     void            cmdInterpreterLoop( );
     
@@ -1205,6 +1208,7 @@ private:
     void            winJumpCmd( );
     void            winSetRowsCmd( );
     void            winSetCmdWinRowsCmd( );
+    void            winClearCmdWinCmd( ); 
     void            winNewWinCmd( );
     void            winKillWinCmd( );
     void            winSetStackCmd( );
@@ -1261,6 +1265,7 @@ public:
     void            windowRadix( int rdx, int winNum );
     void            windowSetRows( int rows, int winNum );
     void            windowSetCmdWinRows( int rows );
+    void            windowClearCmdWin( );
     
     void            windowHome( int amt, int winNum );
     void            windowForward( int amt, int winNum );
