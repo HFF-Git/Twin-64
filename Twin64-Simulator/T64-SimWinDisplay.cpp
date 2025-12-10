@@ -33,6 +33,8 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
+    // ??? rather make a flag on the window object ?
+
     bool isWinScrollable ( SimWinType typ ) {
 
         return (( typ == WT_MEM_WIN     ) ||
@@ -425,14 +427,15 @@ void SimWinDisplay::windowsOn( ) {
 
 void SimWinDisplay::windowsOff( ) {
 
-    if ( ! winModeOn ) throw ( ERR_NOT_IN_WIN_MODE );
+    if ( winModeOn ) {
+
+        winModeOn = false;
+        glb -> console -> clearScrollArea( );
+        glb -> console -> clearScreen( );
     
-    winModeOn = false;
-    glb -> console -> clearScrollArea( );
-    glb -> console -> clearScreen( );
-    
-    cmdWin -> setDefaults( );
-    setWinReFormat( );
+        cmdWin -> setDefaults( );
+        setWinReFormat( );
+    }
 }
 
 void SimWinDisplay::windowDefaults( int winNum ) {
@@ -441,7 +444,8 @@ void SimWinDisplay::windowDefaults( int winNum ) {
 
         for ( int i = 0; i < MAX_WINDOWS; i++ ) {
         
-            if ( windowList[ i ] != nullptr ) windowList[ i ] -> setDefaults( );
+            if ( windowList[ i ] != nullptr ) 
+                windowList[ i ] -> setDefaults( );
         }
     }
     else if ( winNum < MAX_WINDOWS ) {

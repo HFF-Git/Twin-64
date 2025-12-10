@@ -1156,6 +1156,9 @@ private:
     int             promptYesNoCancel( char *promptStr );
 
     void            ensureWinModeOn( );
+    void            printStackInfoField( uint32_t fmtDesc = 0,
+                                         int row = 0,
+                                         int col = 0 );
   
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len );

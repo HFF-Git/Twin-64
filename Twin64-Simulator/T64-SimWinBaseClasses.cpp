@@ -438,7 +438,6 @@ void SimWin::printRadixField( uint32_t fmtDesc, int fLen, int row, int col ) {
 // is the current window. We show wether it is the current window, the window stack
 // and the window number.
 //
-// ??? new indexing 
 //----------------------------------------------------------------------------------------
 void SimWin::printWindowIdField( uint32_t fmtDesc, int row, int col ) {
     

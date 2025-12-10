@@ -372,7 +372,7 @@ void SimCommandsWin::setDefaults( ) {
 
 //----------------------------------------------------------------------------------------
 // The banner line for command window. For now, we just label the banner line and 
-// show the system state plus a little indicate whether we are in WIN mode or not.
+// show the system state plus the WIN mode stack info.
 //
 // ??? where do we get the system state from ?
 //----------------------------------------------------------------------------------------
@@ -385,34 +385,9 @@ void SimCommandsWin::drawBanner( ) {
 
     printTextField((char *) "System State: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_4 );
-   
-    int stacks[ MAX_WIN_STACKS ] = { 0 };
-
-    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
-
-        int stackNum = glb -> winDisplay -> getWinStackNum( i );
-        if ( stackNum >= 0 ) {
-            
-            stacks[ stackNum ] ++;
-        }
-    }
-
-    printTextField((char *) "Stacks: ", fmtDesc, 16 );
-    for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
-        
-        if ( stacks[ i ] > 0 ) {
-            
-            printNumericField( i + 1, fmtDesc | FMT_DEC );
-            printTextField((char *) " ", fmtDesc );
-        }
-    }
 
     padLine( fmtDesc ); 
-
-    if ( glb -> winDisplay -> isWindowsOn( )) {
-
-        printTextField((char *) "W", ( fmtDesc | FMT_LAST_FIELD ));
-    }
+    printStackInfoField( fmtDesc | FMT_LAST_FIELD );
 }
 
 //----------------------------------------------------------------------------------------
@@ -743,6 +718,47 @@ SimTokId SimCommandsWin::getCurrentCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Print the stack info data. In the command window line, we will have a field to
+// the very right, which is on when we are in windows mode. It will show which 
+// stacks are current used, regardless whether they a visible or not.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::printStackInfoField( uint32_t fmtDesc, int row, int col ) {
+
+    int stacks[ MAX_WIN_STACKS ] = { 0 };
+    char stackStr[ 16 ]          = { 0 };
+    int  stackStrLen             = 0;
+
+    if ( ! glb -> winDisplay -> isWindowsOn( )) return;
+
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+
+        int stackNum = glb -> winDisplay -> getWinStackNum( i );
+        if ( stackNum >= 0 ) stacks[ stackNum ] ++;
+    }
+
+    for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
+
+        if ( stacks[ i ] > 0 ) { 
+
+            stackStrLen = snprintf( stackStr, 4, "S:" );
+            break;
+        }
+    }
+
+    for ( int i = 0; i < MAX_WIN_STACKS; i++ ) {
+        
+        if ( stacks[ i ] > 0 ) {
+
+            stackStrLen += snprintf( stackStr + stackStrLen, 4, "%d", i + 1 );
+        }
+    }
+
+    glb -> console -> setFmtAttributes( fmtDesc );
+    printTextField( stackStr, fmtDesc, stackStrLen, row, col );
+}
+
+//----------------------------------------------------------------------------------------
 // Our friendly welcome message with the actual program version. We also set some of the
 // environment variables to an initial value. Especially string variables need to be set 
 // as they are not initialized from the environment variable table.
@@ -807,7 +823,13 @@ void  SimCommandsWin::displayAbsMemContent( T64Word ofs, T64Word len, int rdx ) 
                                                (uint8_t *) &val, 
                                                sizeof( val ))) {
 
-                    winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
+                    if ( rdx == 16 )
+                        winOut -> printNumber( val, FMT_HEX_4_4_4_4 );
+                    else if ( rdx == 10 )
+                        winOut -> printNumber( val, FMT_DEC_32 );
+                    else 
+                        winOut -> printNumber( val, FMT_INVALID_NUM | FMT_HEX_4_4_4_4 );
+
                     winOut -> writeChars( " " );   
                 }
                 else {
@@ -1445,8 +1467,7 @@ void SimCommandsWin::modifyRegCmd( ) {
             proc -> getCpuPtr( ) -> setPswReg( tmp );     
             
         } break;
-
-            
+ 
         default: throw( ERR_EXPECTED_REG_SET );
     }
 }
