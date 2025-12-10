@@ -424,7 +424,7 @@ void SimWinAbsMem::setDefaults( ) {
     setLineIncrementItemAdr( 8 * 4 );
     setLimitItemAdr( T64_MAX_PHYS_MEM_LIMIT );
     setWinToggleVal( 0 );
-    setEnable( false );
+    setEnable( true );
 }
 
 //----------------------------------------------------------------------------------------

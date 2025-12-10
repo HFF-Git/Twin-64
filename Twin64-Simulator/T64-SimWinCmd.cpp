@@ -1617,6 +1617,8 @@ void SimCommandsWin::winStacksEnable( ) {
     }
 
     tok -> checkEOS( );
+
+    if ( stackNum > MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
     
     glb -> winDisplay -> winStacksEnable( stackNum, true );
     glb -> winDisplay -> setWinReFormat( );
@@ -1640,6 +1642,8 @@ void SimCommandsWin::winStacksDisable( ) {
 
     tok -> checkEOS( );
    
+    if ( stackNum > MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
+
     glb -> winDisplay -> winStacksEnable( stackNum, false );
     glb -> winDisplay -> setWinReFormat( );
 }
@@ -1745,10 +1749,10 @@ void SimCommandsWin::winSetRadixCmd( ) {
 //----------------------------------------------------------------------------------------
 // Window scrolling. This command advances the item address of a scrollable window 
 // by the number of lines multiplied by the number of items on a line forward or 
-// backward. The meaning of the item address and line items is window dependent. If 
-// the amount is zero, the default value of the window will be used. The window number
-// is optional, used for user definable windows. If omitted, we mean the current 
-// window.
+// backward. The meaning of the item address and line items is window dependent. 
+// If the amount is zero, the default value of the window will be used. The window
+// number is optional, used for user definable windows. If omitted, we mean the 
+// current window.
 //
 //  <win>F [ <amt> [ , <winNum> ]]
 //  <win>B [ <amt> [ , <winNum> ]]
@@ -1831,7 +1835,7 @@ void SimCommandsWin::winHomeCmd( ) {
 // The meaning of the item address is window dependent. The window number is optional,
 // used for user definable windows.
 //
-//  <win>J [ <pos> [ "," <winNum> ]]
+//  WJ [ <pos> [ "," <winNum> ]]
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winJumpCmd( ) {
@@ -1888,7 +1892,7 @@ void SimCommandsWin::winSetRowsCmd( ) {
         }
 
         tok -> checkEOS( );
-        glb -> winDisplay -> windowSetRows( winLines, winNum );
+        glb -> winDisplay -> windowSetRows( winLines, internalWinNum( winNum ));
         glb -> winDisplay -> setWinReFormat( );
     }    
 }
@@ -2211,6 +2215,8 @@ void SimCommandsWin::winSetStackCmd( ) {
         tok -> checkEOS( );
     }
     else throw ( ERR_EXPECTED_COMMA );
+
+     if ( winStack >= MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
    
     glb -> winDisplay -> windowSetStack( winStack - 1,
                                          internalWinNum( winNumStart ), 
