@@ -66,6 +66,8 @@
 //  FMT_BOLD            -> Set BOLD character mode.
 //  FMT_BLINK           -> Set BLINK character mode.
 //  FMT_INVERSE         -> Set INVERSE character mode.
+//  FMT_UNDER_LINE      -> Set UNDER-LINE character mode.
+//  FMT_HALF_BRIGHT     -> Set HALF-BRIGHT character mode.      
 //
 //  FMT_ALIGN_LFT       -> Align data left in field.
 //  FMT_TRUNC_LFT       -> Align data left and optionally truncate.
@@ -112,10 +114,11 @@ enum FmtDescOptions : uint32_t {
     FMT_BLINK           = 0x00020000,
     FMT_INVERSE         = 0x00040000,
     FMT_UNDER_LINE      = 0x00080000,
+    FMT_HALF_BRIGHT     = 0x00100000,
 
-    FMT_ALIGN_LFT       = 0x00100000,
-    FMT_TRUNC_LFT       = 0x00200000,
-    FMT_LAST_FIELD      = 0x00400000,
+    FMT_ALIGN_LFT       = 0x00200000,
+    FMT_TRUNC_LFT       = 0x00400000,
+    FMT_LAST_FIELD      = 0x00800000,
 
     FMT_ASCII_4         = 0x01000000,
     FMT_ASCII_8         = 0x02000000,

@@ -725,9 +725,9 @@ SimTokId SimCommandsWin::getCurrentCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::printStackInfoField( uint32_t fmtDesc, int row, int col ) {
 
-    int stacks[ MAX_WIN_STACKS ] = { 0 };
-    char stackStr[ 16 ]          = { 0 };
-    int  stackStrLen             = 0;
+    int  stacks[ MAX_WIN_STACKS ] = { 0 };
+    char stackStr[ 16 ]           = { 0 };
+    int  stackStrLen              = 0;
 
     if ( ! glb -> winDisplay -> isWindowsOn( )) return;
 

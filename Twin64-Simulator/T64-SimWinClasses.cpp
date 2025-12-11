@@ -211,6 +211,7 @@ void SimWinCpuState::setDefaults( ) {
     setWinDefSize( 2, DEF_WIN_ROW_CPU_STATE, DEF_WIN_COL_CPU_STATE );
     setRows( getWinDefSize( 0 ).row );
     setColumns( getWinDefSize( 0 ).col );
+    setWinToggleLimit( 3 );
     setWinToggleVal( 0 );
     setEnable( true );
 }
@@ -251,6 +252,8 @@ void SimWinCpuState::drawBanner( ) {
 
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
+
+    setRows( getWinDefSize( getWinToggleVal( )).row );
 }
 
 //----------------------------------------------------------------------------------------
@@ -272,10 +275,11 @@ void SimWinCpuState::drawBanner( ) {
 //----------------------------------------------------------------------------------------
 void SimWinCpuState::drawBody( ) {
     
-    uint32_t fmtDesc = FMT_DEF_ATTR | FMT_ALIGN_LFT;
-    T64Cpu   *cpu    = proc -> getCpuPtr( );
-    
-    if (( getWinToggleVal( ) == 0 ) || (( getWinToggleVal( ) == 1 ))) {
+    uint32_t fmtDesc   = FMT_DEF_ATTR | FMT_ALIGN_LFT;
+    T64Cpu   *cpu      = proc -> getCpuPtr( );
+    int      toggleVal = getWinToggleVal( );
+
+    if (( toggleVal == 0 ) || ( toggleVal == 1 )) {
 
         int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
         int      labelFlen      = 8;
@@ -320,7 +324,7 @@ void SimWinCpuState::drawBody( ) {
         padLine( fmtDesc );
     } 
 
-    if ( getWinToggleVal( ) == 1 ) {
+    if ( toggleVal == 1 ) {
 
         int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
         int      labelFlen      = 8;
@@ -335,9 +339,11 @@ void SimWinCpuState::drawBody( ) {
 
             printNumericField( cpu -> getControlReg( i ), numFmtField, numFlen );
         }
+
+        padLine( fmtDesc );
     }
     
-    if ( getWinToggleVal( ) == 2 ) {
+    if ( toggleVal == 2 ) {
 
         int      numFlen        = glb -> console -> numberFmtLen( FMT_HEX_4_4_4_4 ) + 3;
         int      labelFlen      = 8;

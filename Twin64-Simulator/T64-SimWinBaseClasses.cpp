@@ -163,13 +163,12 @@ void SimWin::setWinStack( int wStack ) {
 //----------------------------------------------------------------------------------------
 // Each window allows the toggling through different content. The implementation 
 // of what the particular toggle value means is entirely up to the specific window. 
-// When a window is created, the default values for the number of defied views is 
-// set. Routines that get and set window rows and column sizes are always referring 
-// to the actual toggled view. The "WT" command advances through the defined toggle
-// view.
+// When a window is created, the default values for the number of defined views is 
+// set. The defined views are the limit where we wrap around. Routines that get and
+// set window rows and column sizes are always referring to the actual toggled view.
+// The "WT" command advances through the defined toggle view. When the toggle value
+// changes, the default rows and columns change too.
 //
-// Win toggle limit is the number of defined toggles. There needs to be at least
-// one toggle view defined. 
 //----------------------------------------------------------------------------------------
 int SimWin::getWinToggleLimit( ) { 
     
@@ -217,6 +216,9 @@ void SimWin::toggleWin( int toggleVal ) {
         if      ( toggleVal < 0 )               winToggleVal = 0;
         else if ( toggleVal < winToggleLimit )  winToggleVal = toggleVal;
     }
+
+    winRows    = winDefSizes[ winToggleVal ].row; 
+    winColumns = winDefSizes[ winToggleVal ].col; 
 }
 
 //----------------------------------------------------------------------------------------
