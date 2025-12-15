@@ -62,7 +62,7 @@
 #include <io.h>
 #define isatty _isatty
 #define fileno _fileno
-#define write  _write
+// #define write  _write  // take out, we do not use it, ( i think ), confuses c++
 #endif
 
 //----------------------------------------------------------------------------------------
