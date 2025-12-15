@@ -977,8 +977,6 @@ void SimWinText::drawBanner( ) {
     printTextField((char *) fileName, ( fmtDesc | FMT_ALIGN_LFT | FMT_TRUNC_LFT ), 48 );
     printTextField((char *) "  Line: " );
     printNumericField( getCurrentItemAdr( ) + 1, ( fmtDesc | FMT_DEC ));
-    printTextField((char *) "  Home: " );
-    printNumericField(  getHomeItemAdr( ) + 1, ( fmtDesc | FMT_DEC ));
     padLine( fmtDesc );
 }
 
@@ -998,16 +996,17 @@ void SimWinText::drawLine( T64Word index ) {
     int         lineSize = 0;
   
     if ( openTextFile( )) {
+
+        printNumericField( index + 1, ( fmtDesc | FMT_DEC ));
+        printTextField((char *) ": " );
   
         lineSize = readTextFileLine( index + 1, lineBuf, sizeof( lineBuf ));
         if ( lineSize > 0 ) {
             
-            printNumericField( index + 1, ( fmtDesc | FMT_DEC ));
-            printTextField((char *) ": " );
             printTextField( lineBuf, fmtDesc, lineSize );
-            padLine( );
+            padLine( fmtDesc );
         }
-        else padLine( );
+        else padLine( fmtDesc );
     }
     else printTextField((char *) "Error opening the text file", fmtDesc );
 }
