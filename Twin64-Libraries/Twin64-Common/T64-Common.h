@@ -45,7 +45,6 @@
 #include <iostream>
 #include <fcntl.h>
 #else
-//#include <unistd.h>
 #define NOMINMAX
 #include <windows.h>
 #include <conio.h>
@@ -60,9 +59,8 @@
 #include <stdarg.h>
 #include <iostream>
 #include <io.h>
-#define isatty _isatty
-#define fileno _fileno
-// #define write  _write  // take out, we do not use it, ( i think ), confuses c++
+#define isatty _isatty  // phase out after test
+#define fileno _fileno  // phase out after test
 #endif
 
 //----------------------------------------------------------------------------------------

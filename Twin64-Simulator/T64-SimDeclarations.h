@@ -137,7 +137,7 @@ const int MAX_TEXT_LINE_SIZE    = 256;
 const int MAX_WIN_ROW_SIZE      = 64;
 const int MAX_WIN_COL_SIZE      = 256;
 const int MAX_WINDOWS           = 32;
-const int MAX_WIN_STACKS        = 4;
+const int MAX_WIN_STACKS        = 8;
 
 const int MAX_FILE_PATH_SIZE    = 256;
 
@@ -232,14 +232,18 @@ enum SimTokId : uint16_t {
     CMD_HIST                = 1005,     CMD_ENV                 = 1006,
          
     CMD_XF                  = 1007,     CMD_LF                  = 1008,
-    CMD_WRITE_LINE          = 1009,     CMD_DM                  = 1010,
-    CMD_RESET               = 1011,     CMD_RUN                 = 1012,     
-    CMD_STEP                = 1013,     CMD_MR                  = 1014,
-    CMD_DA                  = 1015,     CMD_MA                  = 1016,
-    CMD_ITLB_I              = 1017,     CMD_ITLB_D              = 1018, 
-    CMD_PTLB_I              = 1019,     CMD_PTLB_D              = 1020,
-    CMD_PCA_I               = 1021,     CMD_PCA_D               = 1022,
-    CMD_FCA_D               = 1023,
+    CMD_WRITE_LINE          = 1009,     
+    
+    CMD_DM                  = 1010,     CMD_DS                  = 1011,
+    CMD_DW                  = 1012,    
+    
+    CMD_RESET               = 1013,     CMD_RUN                 = 1014,     
+    CMD_STEP                = 1015,     CMD_MR                  = 1016,
+    CMD_DA                  = 1017,     CMD_MA                  = 1018,
+    CMD_ITLB_I              = 1019,     CMD_ITLB_D              = 1020, 
+    CMD_PTLB_I              = 1021,     CMD_PTLB_D              = 1022,
+    CMD_PCA_I               = 1023,     CMD_PCA_D               = 1024,
+    CMD_FCA_D               = 1025,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -1177,6 +1181,9 @@ private:
     void            redoCmd( );
     
     void            displayModuleCmd( );
+    void            displayStackCmd( );
+    void            displayWindowCmd( );
+
     void            resetCmd( );
     void            runCmd( );
     void            stepCmd( );
@@ -1292,13 +1299,18 @@ public:
     bool            isCurrentWin( int winNum );
     SimWinType      getCurrentWinType( );
     int             getCurrentWinModNum( );
+    bool            isWinScrollable ( int winNum );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
 
     bool            validWindowType( SimTokId winType );
     bool            validWindowNum( int winNum );
     bool            validWindowStackNum( int winNum );
+
+    char            *getWinName( int winNum );
     int             getWinStackNum( int winNum );
+    char            *getWinTypeName( int winNum );  
+    int             getWinModNum( int winNum );
 
     private:
     

@@ -163,14 +163,61 @@ bool SimWinDisplay::validWindowType( SimTokId winType ) {
             ( winType == TOK_TEXT   ));
 }
 
- int SimWinDisplay::getWinStackNum( int winNum ) {
+char *SimWinDisplay::getWinName( int winNum ) {
+
+    if ( validWindowNum( winNum )) 
+        return( windowList[ winNum ] -> getWinName( ));
+    else throw( ERR_INVALID_WIN_ID );
+}   
+
+char *SimWinDisplay::getWinTypeName( int winNum ) {  
+
+    if ( validWindowNum( winNum )) {
+
+        switch ( windowList[ winNum ]->getWinType( )) {
+        
+            case WT_CMD_WIN:       return((char *) "Command" );
+            case WT_CONSOLE_WIN:   return((char *) "Console" );
+            case WT_TEXT_WIN:      return((char *) "Text" );
+            case WT_CPU_WIN:       return((char *) "CPU" );
+            case WT_TLB_WIN:       return((char *) "TLB" );
+            case WT_CACHE_WIN:     return((char *) "Cache" );
+            case WT_MEM_WIN:       return((char *) "Memory" );
+            case WT_CODE_WIN:      return((char *) "Code" );
+            
+            default:               return((char *) "N/A" );
+        }
+    }
+}
+
+int SimWinDisplay::getWinStackNum( int winNum ) {
 
     return(( validWindowNum( winNum )) ? windowList[ winNum ] -> getWinStack( ) : -1 );
- }
+}
+
+int SimWinDisplay::getWinModNum( int winNum ) {
+
+    return(( validWindowNum( winNum )) ? windowList[ winNum ] -> getWinModNum( ) : -1 );
+}
 
 bool SimWinDisplay::isCurrentWin( int winNum ) {
     
     return(( validWindowNum( winNum ) && ( currentWinNum == winNum )));
+}
+
+bool SimWinDisplay::isWinScrollable ( int winNum ) {
+
+    if ( validWindowNum( winNum )) {
+
+        SimWinType typ = windowList[ winNum ] -> getWinType( );
+        return (( typ == WT_MEM_WIN     ) ||
+                ( typ == WT_CODE_WIN    ) ||
+                ( typ == WT_TLB_WIN     ) ||        
+                ( typ == WT_CACHE_WIN   ) ||
+                ( typ == WT_TEXT_WIN    ));
+    }
+
+    return( false );
 }
 
 bool SimWinDisplay::isWinEnabled( int winNum ) {
@@ -304,9 +351,6 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // When the screen size changed, we just redraw the screen with the command screen
 // going last. The command screen will have a columns size across all visible stacks.
 //
-// One final issues: if we have only one stack, we may need to adjust that stack
-// if the command default column size is larger. 
-//
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
     
@@ -362,7 +406,8 @@ void SimWinDisplay::reDraw( ) {
             setWindowOrigins( i, curRows, curColumn );
 
             curColumn += winStackColumns[ i ];
-            if ( curColumn > 1 ) curColumn += stackColumnGap;
+            if (( curColumn > 1 ) && ( winStackColumns[ i ] > 0 ))
+               curColumn += stackColumnGap;
         }
         
         if (( maxRowsNeeded + cmdWin -> getRows( )) < minRowSize ) {
@@ -644,7 +689,7 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
+    if ( ! isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
         throw (ERR_INVALID_WIN_ID );
     
     ((SimWinScrollable *) windowList[ winNum ] ) -> winForward( amt );

@@ -91,6 +91,8 @@ const SimToken cmdTokTab[ ] = {
     { .name = "W",          .typ = TYP_CMD,     .tid = CMD_WRITE_LINE               },
     
     { .name = "DM",         .typ = TYP_CMD,     .tid = CMD_DM                       },
+    { .name = "DS",         .typ = TYP_CMD,     .tid = CMD_DS                       },
+    { .name = "DW",         .typ = TYP_CMD,     .tid = CMD_DW                       },
     { .name = "RESET",      .typ = TYP_CMD,     .tid = CMD_RESET                    },
     { .name = "RUN",        .typ = TYP_CMD,     .tid = CMD_RUN                      },
     { .name = "STEP",       .typ = TYP_CMD,     .tid = CMD_STEP                     },
@@ -549,8 +551,22 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DM,
         .cmdNameStr     = (char *) "dm",
-        .cmdSyntaxStr   = (char *) "dm",
-        .helpStr        = (char *) "display registered modules for the system"
+        .cmdSyntaxStr   = (char *) "dm [ <mNum>]",
+        .helpStr        = (char *) "display modules info"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DS,
+        .cmdNameStr     = (char *) "ds",
+        .cmdSyntaxStr   = (char *) "ds [ <sNum> ]",
+        .helpStr        = (char *) "display window stack info"
+    },
+
+    {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DW,
+        .cmdNameStr     = (char *) "dw",
+        .cmdSyntaxStr   = (char *) "dw [ <wNum>]",
+        .helpStr        = (char *) "display window info"
     },
     
     {

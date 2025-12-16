@@ -863,7 +863,7 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
 
     while ( index < limit ) {
 
-        winOut -> printNumber( index << 2, FMT_HEX_2_4_4 );
+        winOut -> printNumber( index, FMT_HEX_2_4_4 );
         winOut -> writeChars( ": " );
 
         if ( glb -> system -> readMem( index, (uint8_t *) &instr, 4 )) {
@@ -1105,7 +1105,9 @@ void SimCommandsWin::loadElfFileCmd( ) {
 // Display Module Table command. The simulator features a system bus to which the 
 // modules are plugged in. This command shows all known modules.
 //
-//  DM
+//  DM [ <mNum> ]
+//
+// ??? convert to also show a single module ...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModuleCmd( ) {
 
@@ -1140,6 +1142,94 @@ void SimCommandsWin::displayModuleCmd( ) {
     }
 
     tok -> checkEOS( );
+}
+
+//----------------------------------------------------------------------------------------
+// Display Window Stack Table command. 
+//
+//  DS [ <sNum> ]
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::displayStackCmd( ) {
+
+    throw( ERR_NOT_SUPPORTED );
+}
+
+//----------------------------------------------------------------------------------------
+// Display Window Stack Table command. 
+//
+//  DW [ <sNum> ]
+//
+// ??? a quick hack, i am not too thrilled with the design here ...
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::displayWindowCmd( ) {
+
+    winOut -> writeChars( "%-10s%-10s%-10s%-10s%-10s%-10s\n", 
+                            "Name", "Stack", "Id", "WType", "Mod", "MType" );
+    
+    if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+        int wNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 0, MAX_WINDOWS - 1 );
+        tok -> checkEOS( );
+
+        if ( glb -> winDisplay -> validWindowNum( wNum )) {
+
+            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinName( wNum ));
+            winOut -> writeChars( "%-10d", glb -> winDisplay -> getWinStackNum( wNum ) + 1);
+            winOut -> writeChars( "%-10d", wNum + 1);
+
+            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinTypeName( wNum ));
+
+            int modNum = glb -> winDisplay -> getWinModNum( wNum );
+            
+            T64Module *mPtr = glb -> system -> lookupByModNum( modNum);
+            if ( mPtr != nullptr ) {
+
+                winOut -> writeChars( "%-10d", modNum );
+                winOut -> writeChars( "%-10s", mPtr -> getModuleTypeName( ));
+            }
+            else {
+
+                winOut -> writeChars( "%-10s", "N/A" );
+                winOut -> writeChars( "%-10s", "N/A" );
+            }
+            
+            winOut -> writeChars( "\n" );
+            return;
+        }
+        else throw ( ERR_INVALID_WIN_ID );
+    }
+    else if ( ! tok -> isToken( TOK_EOS )) {
+        
+        throw ( ERR_INVALID_ARG );
+    }
+    
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+
+        if ( glb -> winDisplay -> validWindowNum( i )) {
+
+            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinName( i ));
+            winOut -> writeChars( "%-10d", glb -> winDisplay -> getWinStackNum( i ) + 1);
+            winOut -> writeChars( "%-10d", i + 1);
+
+            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinTypeName( i ));
+
+            int modNum = glb -> winDisplay -> getWinModNum( i );
+            
+            T64Module *mPtr = glb -> system -> lookupByModNum( modNum);
+            if ( mPtr != nullptr ) {
+
+                winOut -> writeChars( "%-10d", modNum );
+                winOut -> writeChars( "%-10s", mPtr -> getModuleTypeName( ));
+            }
+            else {
+
+                winOut -> writeChars( "%-10s", "N/A" );
+                winOut -> writeChars( "%-10s", "N/A" );
+            }
+            
+            winOut -> writeChars( "\n" );
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1304,6 +1394,7 @@ void SimCommandsWin::doCmd( ) {
     if ( tok -> tokId( ) != TOK_EOS ) {
 
         cmdId = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_HIST );
+        tok -> checkEOS( );
     }
     
     char *cmdStr = hist -> getCmdLine( cmdId );
@@ -2295,8 +2386,10 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_RUN:           runCmd( );                      break;
                     case CMD_STEP:          stepCmd( );                     break;
 
-                    case CMD_DM:            displayModuleCmd( );               break;
-                        
+                    case CMD_DM:            displayModuleCmd( );            break;
+                    case CMD_DS:            displayStackCmd( );             break;                    
+                    case CMD_DW:            displayWindowCmd( );            break;  
+
                     case CMD_MR:            modifyRegCmd( );                break;
                         
                     case CMD_DA:            displayAbsMemCmd( );            break;

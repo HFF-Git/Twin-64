@@ -130,7 +130,11 @@ void SimConsoleIO::initConsoleIO( ) {
 //----------------------------------------------------------------------------------------
 bool  SimConsoleIO::isConsole( ) {
     
+    #if __APPLE__
     return( isatty( fileno( stdin )));
+    #else
+    return( _isatty( _fileno( stdin )));
+    #endif
 }
 
 //----------------------------------------------------------------------------------------
