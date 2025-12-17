@@ -232,10 +232,8 @@ enum SimTokId : uint16_t {
     CMD_HIST                = 1005,     CMD_ENV                 = 1006,
          
     CMD_XF                  = 1007,     CMD_LF                  = 1008,
-    CMD_WRITE_LINE          = 1009,     
-    
-    CMD_DM                  = 1010,     CMD_DS                  = 1011,
-    CMD_DW                  = 1012,    
+    CMD_WRITE_LINE          = 1009,     CMD_DM                  = 1010,     
+    CMD_DW                  = 1011,    
     
     CMD_RESET               = 1013,     CMD_RUN                 = 1014,     
     CMD_STEP                = 1015,     CMD_MR                  = 1016,

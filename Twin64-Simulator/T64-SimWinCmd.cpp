@@ -1147,89 +1147,62 @@ void SimCommandsWin::displayModuleCmd( ) {
 //----------------------------------------------------------------------------------------
 // Display Window Stack Table command. 
 //
-//  DS [ <sNum> ]
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::displayStackCmd( ) {
-
-    throw( ERR_NOT_SUPPORTED );
-}
-
-//----------------------------------------------------------------------------------------
-// Display Window Stack Table command. 
-//
 //  DW [ <sNum> ]
-//
-// ??? a quick hack, i am not too thrilled with the design here ...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayWindowCmd( ) {
 
-    winOut -> writeChars( "%-10s%-10s%-10s%-10s%-10s%-10s\n", 
-                            "Name", "Stack", "Id", "WType", "Mod", "MType" );
+    int sNum = -1;
     
     if ( tok -> tokTyp( ) == TYP_NUM ) {
 
-        int wNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 0, MAX_WINDOWS - 1 );
+        sNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WIN_STACKS );
+        sNum --;
+
         tok -> checkEOS( );
-
-        if ( glb -> winDisplay -> validWindowNum( wNum )) {
-
-            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinName( wNum ));
-            winOut -> writeChars( "%-10d", glb -> winDisplay -> getWinStackNum( wNum ) + 1);
-            winOut -> writeChars( "%-10d", wNum + 1);
-
-            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinTypeName( wNum ));
-
-            int modNum = glb -> winDisplay -> getWinModNum( wNum );
-            
-            T64Module *mPtr = glb -> system -> lookupByModNum( modNum);
-            if ( mPtr != nullptr ) {
-
-                winOut -> writeChars( "%-10d", modNum );
-                winOut -> writeChars( "%-10s", mPtr -> getModuleTypeName( ));
-            }
-            else {
-
-                winOut -> writeChars( "%-10s", "N/A" );
-                winOut -> writeChars( "%-10s", "N/A" );
-            }
-            
-            winOut -> writeChars( "\n" );
-            return;
-        }
-        else throw ( ERR_INVALID_WIN_ID );
     }
     else if ( ! tok -> isToken( TOK_EOS )) {
         
         throw ( ERR_INVALID_ARG );
     }
-    
+
+    winOut -> writeChars( "%-10s%-10s%-10s%-10s%-10s%-10s\n", 
+                            "Name", "Stack", "Id", "WType", "Mod", "MType" );
+
     for ( int i = 0; i < MAX_WINDOWS; i++ ) {
 
-        if ( glb -> winDisplay -> validWindowNum( i )) {
+            if ( glb -> winDisplay -> validWindowNum( i )) {
 
-            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinName( i ));
-            winOut -> writeChars( "%-10d", glb -> winDisplay -> getWinStackNum( i ) + 1);
-            winOut -> writeChars( "%-10d", i + 1);
+                if (( sNum == -1 ) || 
+                    ( glb -> winDisplay -> getWinStackNum( i ) == sNum )) {
 
-            winOut -> writeChars( "%-10s", glb -> winDisplay -> getWinTypeName( i ));
+                    winOut -> writeChars( "%-10s", 
+                                          glb -> winDisplay -> getWinName( i ));
+                    winOut -> writeChars( "%-10d", 
+                                          glb -> winDisplay -> getWinStackNum( i ) + 1 );
+                    
+                    winOut -> writeChars( "%-10d", i + 1);
 
-            int modNum = glb -> winDisplay -> getWinModNum( i );
-            
-            T64Module *mPtr = glb -> system -> lookupByModNum( modNum);
-            if ( mPtr != nullptr ) {
+                    winOut -> writeChars( "%-10s", 
+                                          glb -> winDisplay -> getWinTypeName( i ));
 
-                winOut -> writeChars( "%-10d", modNum );
-                winOut -> writeChars( "%-10s", mPtr -> getModuleTypeName( ));
+                    int modNum = glb -> winDisplay -> getWinModNum( i );
+                    
+                    T64Module *mPtr = glb -> system -> lookupByModNum( modNum);
+                    if ( mPtr != nullptr ) {
+
+                        winOut -> writeChars( "%-10d", modNum );
+                        winOut -> writeChars( "%-10s", mPtr -> getModuleTypeName( ));
+                    }
+                    else {
+
+                        winOut -> writeChars( "%-10s", "N/A" );
+                        winOut -> writeChars( "%-10s", "N/A" );
+                    }
+                
+                    winOut -> writeChars( "\n" );
+                }
             }
-            else {
-
-                winOut -> writeChars( "%-10s", "N/A" );
-                winOut -> writeChars( "%-10s", "N/A" );
-            }
-            
-            winOut -> writeChars( "\n" );
-        }
-    }
+        } 
 }
 
 //----------------------------------------------------------------------------------------
@@ -2386,8 +2359,7 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_RUN:           runCmd( );                      break;
                     case CMD_STEP:          stepCmd( );                     break;
 
-                    case CMD_DM:            displayModuleCmd( );            break;
-                    case CMD_DS:            displayStackCmd( );             break;                    
+                    case CMD_DM:            displayModuleCmd( );            break;                    
                     case CMD_DW:            displayWindowCmd( );            break;  
 
                     case CMD_MR:            modifyRegCmd( );                break;
