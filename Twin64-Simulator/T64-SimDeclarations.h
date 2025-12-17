@@ -242,7 +242,7 @@ enum SimTokId : uint16_t {
     CMD_ITLB_I              = 1019,     CMD_ITLB_D              = 1020, 
     CMD_PTLB_I              = 1021,     CMD_PTLB_D              = 1022,
     CMD_PCA_I               = 1023,     CMD_PCA_D               = 1024,
-    CMD_FCA_D               = 1025,
+    CMD_FCA_I               = 1025,     CMD_FCA_D               = 1026,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -406,10 +406,11 @@ enum SimErrMsgId : int {
     ERR_TLB_SIZE_EXCEEDED           = 506,
     
     ERR_CACHE_TYPE                  = 600,
-    ERR_CACHE_PURGE_OP              = 601,
-    ERR_CACHE_SET_NUM               = 602,
-    ERR_CACHE_NOT_CONFIGURED        = 603,
-    ERR_CACHE_SIZE_EXCEEDED         = 604,
+    ERR_CACHE_FLUSH_OP              = 601,
+    ERR_CACHE_PURGE_OP              = 602,
+    ERR_CACHE_SET_NUM               = 603,
+    ERR_CACHE_NOT_CONFIGURED        = 604,
+    ERR_CACHE_SIZE_EXCEEDED         = 605,
 };
 
 //----------------------------------------------------------------------------------------

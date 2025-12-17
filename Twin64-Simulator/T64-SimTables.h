@@ -109,6 +109,7 @@ const SimToken cmdTokTab[ ] = {
     
     { .name = "PICA",       .typ = TYP_CMD,     .tid = CMD_PCA_I                    },
     { .name = "PDCA",       .typ = TYP_CMD,     .tid = CMD_PCA_D                    },
+    { .name = "FICA",       .typ = TYP_CMD,     .tid = CMD_FCA_I                    },
     { .name = "FDCA",       .typ = TYP_CMD,     .tid = CMD_FCA_D                    },
     
     //------------------------------------------------------------------------------------
@@ -435,6 +436,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
         
     { .errNum = ERR_CACHE_TYPE,                 
       .errStr = (char *) "Expected a cache type" },
+
+    { .errNum = ERR_CACHE_FLUSH_OP,             
+      .errStr = (char *) "Flush from cache operation error" },
 
     { .errNum = ERR_CACHE_PURGE_OP,             
       .errStr = (char *) "Purge from cache operation error" },

@@ -1573,6 +1573,7 @@ void SimCommandsWin::purgeCacheCmd( ) {
 // current window must be a Cache window. 
 //
 //  FDCA <vAdr> 
+//  FICA <vAdr>
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
 
@@ -1591,7 +1592,16 @@ void SimCommandsWin::flushCacheCmd( ) {
 
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
 
-    proc -> getDCachePtr( ) -> flush( vAdr );
+    if ( currentCmd == CMD_FCA_I ) {
+
+         proc -> getICachePtr( ) -> flush( vAdr );
+    }
+    else if ( currentCmd == CMD_FCA_D ) {
+
+        proc -> getDCachePtr( ) -> flush( vAdr );
+       
+    }
+    else throw( ERR_CACHE_FLUSH_OP );
 }
 
 //----------------------------------------------------------------------------------------
