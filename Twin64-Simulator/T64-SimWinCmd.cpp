@@ -385,9 +385,12 @@ void SimCommandsWin::drawBanner( ) {
 
     printTextField((char *) "System State: ", fmtDesc );
     printNumericField( 0, fmtDesc | FMT_HEX_4 );
-
     padLine( fmtDesc ); 
-    printStackInfoField( fmtDesc | FMT_LAST_FIELD );
+
+    if ( glb -> winDisplay -> isWindowsOn( )) {
+           
+        printTextField((char *) "W", fmtDesc | FMT_LAST_FIELD );
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -2089,19 +2092,21 @@ void SimCommandsWin::winExchangeCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// This command creates a new window. The window is assigned a free index from the
-// windows list. This index is used in all the calls to this window. The window type
-// is determined by the keyword plus additional info such as module and submodule 
-// number. Note that we do not create simulator module objects, we merely attach
-// a window to them. So they must exist. The general form of the command is:
+// This command creates a new window. The window is assigned a free index from 
+// the windows list. This index is used in all the calls to this window. The window 
+// type is determined by the keyword plus additional info such as module and 
+// submodule number. Note that we do not create simulator module objects, we 
+// merely attach a window to them. So they must exist. The general form of the
+// command is:
 //
 //  WN <winType> [ "," <arg1> [ "," <arg2> ]]
 //
-//  WN  CPU     "," <proc>
-//  WN  ICACHE  "," <proc>
-//  WN  DCACHE  "," <proc>
-//  WN  ITLB    "," <proc>
-//  WN  DTLB    "," <proc>
+//  WN  PROC    "," <mod>
+//  WN  CPU     "," <mod>
+//  WN  ICACHE  "," <mod>
+//  WN  DCACHE  "," <mod>
+//  WN  ITLB    "," <mod>
+//  WN  DTLB    "," <mod>
 //  WN  MEM     "," <adr>
 //  WN  CODE    "," <adr>
 //  WN  TEXT    "," <str>
@@ -2115,6 +2120,20 @@ void SimCommandsWin::winNewWinCmd( ) {
     winType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
  
     switch ( winType ) {
+
+        case TOK_PROC: {
+
+            tok -> acceptComma( );
+            int modNum = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC );
+            tok -> checkEOS( );
+
+            glb -> winDisplay -> windowNewCpuState( modNum );
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TK_INSTR_TLB );  
+            glb -> winDisplay -> windowNewTlb( modNum, T64_TK_DATA_TLB );
+            glb -> winDisplay -> windowNewCache( modNum, T64_CK_INSTR_CACHE );
+            glb -> winDisplay -> windowNewCache( modNum, T64_CK_DATA_CACHE ); 
+
+        } break;
 
         case TOK_CPU: {
 

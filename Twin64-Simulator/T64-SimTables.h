@@ -56,6 +56,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u = { .val = 0  }},
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                      },
     { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                      },
+    { .name = "PROC",        .typ = TYP_SYM,    .tid = TOK_PROC                     },              
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                      },
     { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB                     },
     { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB                     },

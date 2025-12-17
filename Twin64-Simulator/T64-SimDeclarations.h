@@ -217,9 +217,10 @@ enum SimTokId : uint16_t {
     TOK_MEM                 = 204,      TOK_CODE                = 205,  
     TOK_STATS               = 206,      TOK_TEXT                = 207,        
    
-    TOK_SYS                 = 210,      TOK_CPU                 = 211,   
-    TOK_ITLB                = 212,      TOK_DTLB                = 213,  
-    TOK_ICACHE              = 214,      TOK_DCACHE              = 215,
+    TOK_SYS                 = 210,      TOK_PROC                = 211,
+    TOK_CPU                 = 212,   
+    TOK_ITLB                = 213,      TOK_DTLB                = 214,  
+    TOK_ICACHE              = 215,      TOK_DCACHE              = 216,
    
     //------------------------------------------------------------------------------------
     // Line Commands.
