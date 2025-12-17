@@ -1365,7 +1365,7 @@ void SimCommandsWin::histCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::doCmd( ) {
 
-    int cmdId = 0;
+    int cmdId = -1;
     
     if ( tok -> tokId( ) != TOK_EOS ) {
 

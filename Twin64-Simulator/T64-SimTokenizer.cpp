@@ -406,7 +406,7 @@ void SimTokenizer::parseIdent( ) {
     
     if ( index == - 1 ) {
         
-        strncpy( currentToken.name, identBuf, sizeof( MAX_TOK_NAME_SIZE ));
+        strncpy( currentToken.name, identBuf, MAX_TOK_NAME_SIZE );
         currentToken.typ    = TYP_IDENT;
         currentToken.tid    = TOK_IDENT;
     }
