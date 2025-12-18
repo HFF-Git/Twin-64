@@ -352,6 +352,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_EXPECTED_EXPR,              
       .errStr = (char *) "Expected an expression" },
+
+    { .errNum = ERR_FILE_NOT_FOUND,             
+      .errStr = (char *) "File not found" },
    
     { .errNum = ERR_UNEXPECTED_EOS,             
       .errStr = (char *) "Unexpected end of command line" },

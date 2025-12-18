@@ -190,8 +190,8 @@ enum SimTokId : uint16_t {
     //
     //------------------------------------------------------------------------------------
     TOK_NIL                 = 0,        TOK_ERR                 = 1,        
-    TOK_EOS                 = 2,        TOK_COMMA               = 3,        
-    TOK_PERIOD              = 4,        TOK_COLON               = 5,
+    TOK_EOS                 = 2,        TOK_COMMA               = 3,            
+    TOK_PERIOD              = 4,        TOK_COLON               = 5,        
     TOK_LPAREN              = 6,        TOK_RPAREN              = 7,        
     TOK_QUOTE               = 8,        
 
@@ -371,7 +371,8 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_STR                = 324,
     ERR_EXPECTED_EXPR               = 325,
     
-    ERR_UNEXPECTED_EOS              = 350,
+    ERR_FILE_NOT_FOUND              = 350,
+    ERR_UNEXPECTED_EOS              = 351,
     
     ERR_ENV_VAR_NOT_FOUND           = 400,
     ERR_ENV_VALUE_EXPR              = 401,
@@ -512,10 +513,10 @@ struct SimToken {
 };
 
 //----------------------------------------------------------------------------------------
-// Tokenizer base class. The tokenizer object scans an input character stream.
-// It breaks the stream into tokens. The tokenizer raises exceptions. The base 
-// class contains the common routines and data structures. The derived classes 
-// implement the character input routines.
+// Tokenizer base abstract class. The tokenizer object scans an input character
+// stream. It breaks the stream into tokens. The tokenizer raises exceptions. 
+// The base class contains the common routines and data structures. The derived 
+// classes implement the character input routines.
 //
 //----------------------------------------------------------------------------------------
 struct SimTokenizer {
@@ -536,10 +537,7 @@ struct SimTokenizer {
     char            *tokName( );
     T64Word         tokVal( );
     char            *tokStr( );
-    
-    int             tokCharIndex( );
-    char            *tokenLineStr( );
-
+   
     void            checkEOS( );
     void            acceptComma( );
     void            acceptLparen( );
@@ -548,18 +546,17 @@ struct SimTokenizer {
 
     private:
     
-    void            nextChar( );
+    virtual void    nextChar( ) = 0;
     void            parseNum( );
     void            parseString( );
     void            parseIdent( );
 
+    protected:
+
+    char            currentChar     = ' ';
+    SimToken        *tokTab         = nullptr;   
     SimToken        currentToken;
-    int             currentLineLen          = 0;
-    int             currentCharIndex        = 0;
-    char            currentChar             = ' ';
-    SimToken        *tokTab                 = nullptr;
-    char            tokenLine[ 256 ]        = { 0 };
-    char            strTokenBuf[ 256 ]      = { 0 };    
+     
 };
 
 //----------------------------------------------------------------------------------------
@@ -567,7 +564,6 @@ struct SimTokenizer {
 // The tokenizer will return the tokens found in the line. The tokenizer raises 
 // exceptions.
 //
-// ??? not connected yet ... just a sketch
 //----------------------------------------------------------------------------------------
 struct SimTokenizerFromString : public SimTokenizer {
     
@@ -579,7 +575,10 @@ struct SimTokenizerFromString : public SimTokenizer {
     private:
 
     void            nextChar( );
-    char            tokenLine[ 256 ] = { 0 };
+
+    int             currentCharIndex    = 0;
+    int             currentLineLen      = 0;
+    char            tokenLine[ 256 ]    = { 0 };
 
 };
 
@@ -587,23 +586,27 @@ struct SimTokenizerFromString : public SimTokenizer {
 // Tokenizer from file. We may need one day to read commands from a file. This
 // tokenizer reads characters from a file stream. The tokenizer raises exceptions.
 //
-// ??? not connected yet ... just a sketch
 //----------------------------------------------------------------------------------------
 struct SimTokenizerFromFile : public SimTokenizer {
     
     public:
     
     SimTokenizerFromFile( );
-    void setupTokenizer( char *filePath, SimToken *tokTab );
+    virtual ~SimTokenizerFromFile( );
+
+    void    setupTokenizer( char *filePath, SimToken *tokTab );
+    int     getCurrentLineIndex( );
+    int     getCurrentCharPos( );
     
     private:
     
     void    openFile( char *filePath );
     void    closeFile( );
-
     void    nextChar( );
 
-    FILE    *file       = nullptr;
+    int    currentLineIndex     = 0;
+    int    currentCharIndex     = 0;
+    FILE   *srcFile             = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -981,6 +984,8 @@ struct SimWinScrollable : SimWin {
     public:
     
     SimWinScrollable( SimGlobals *glb );
+
+    virtual         ~ SimWinScrollable( );
     
     void            setHomeItemAdr( T64Word adr );
     T64Word         getHomeItemAdr( );
@@ -1274,7 +1279,9 @@ private:
     
     SimGlobals          *glb            = nullptr;
     SimCmdHistory       *hist           = nullptr;
-    SimTokenizer        *tok            = nullptr;
+    //SimTokenizer        *tok            = nullptr;
+    SimTokenizerFromString *tok        = nullptr;
+    
     SimExprEvaluator    *eval           = nullptr;
     SimWinOutBuffer     *winOut         = nullptr;
     T64Assemble         *inlineAsm      = nullptr;

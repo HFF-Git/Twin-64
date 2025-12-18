@@ -342,7 +342,10 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
     
     this -> glb = glb;
     
-    tok         = new SimTokenizer( );
+    // tok         = new SimTokenizer( );
+    tok        = new SimTokenizerFromString( );
+
+
     eval        = new SimExprEvaluator( glb, tok );
     hist        = new SimCmdHistory( );
     winOut      = new SimWinOutBuffer( );

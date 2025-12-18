@@ -33,17 +33,6 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
-    // ??? rather make a flag on the window object ?
-
-    bool isWinScrollable ( SimWinType typ ) {
-
-        return (( typ == WT_MEM_WIN     ) ||
-                ( typ == WT_CODE_WIN    ) ||
-                ( typ == WT_TLB_WIN     ) ||
-                ( typ == WT_CACHE_WIN   ) ||
-                ( typ == WT_TEXT_WIN    ));  
-    }
-
 }; // namespace
 
 //----------------------------------------------------------------------------------------
@@ -188,6 +177,7 @@ char *SimWinDisplay::getWinTypeName( int winNum ) {
             default:               return((char *) "N/A" );
         }
     }
+    else throw( ERR_INVALID_WIN_ID );
 }
 
 int SimWinDisplay::getWinStackNum( int winNum ) {
@@ -684,11 +674,13 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( ! isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
-        throw (ERR_INVALID_WIN_ID );
-    
-    ((SimWinScrollable *) windowList[ winNum ] ) -> winForward( amt );
-    setCurrentWindow( winNum );
+
+    if (SimWinScrollable* w = dynamic_cast<SimWinScrollable*>( windowList[ winNum ])) {
+
+        w -> winForward( amt ); 
+        setCurrentWindow( winNum );
+    } 
+    else throw ( ERR_INVALID_WIN_ID );
 }
 
 //----------------------------------------------------------------------------------------
@@ -704,11 +696,13 @@ void SimWinDisplay::windowBackward( int amt, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
-        throw (ERR_INVALID_WIN_ID );
-    
-    ((SimWinScrollable *) windowList[ winNum ] ) -> winBackward( amt );
-    setCurrentWindow( winNum );
+
+    if (SimWinScrollable* w = dynamic_cast<SimWinScrollable*>( windowList[ winNum ])) {
+
+        w -> winBackward( amt ); 
+        setCurrentWindow( winNum );
+    } 
+    else throw ( ERR_INVALID_WIN_ID );
 }
 
 //----------------------------------------------------------------------------------------
@@ -722,11 +716,13 @@ void SimWinDisplay::windowJump( int pos, int winNum ) {
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    if ( !isWinScrollable( windowList[ winNum ] -> getWinType( ))) 
-        throw (ERR_INVALID_WIN_ID );
-    
-    ((SimWinScrollable *) windowList[ winNum ] ) -> winJump( pos );
-    setCurrentWindow( winNum );
+   
+    if (SimWinScrollable* w = dynamic_cast<SimWinScrollable*>( windowList[ winNum ])) {
+
+        w ->  winJump( pos ); 
+        setCurrentWindow( winNum );
+    } 
+    else throw ( ERR_INVALID_WIN_ID );
 }
 
 //----------------------------------------------------------------------------------------

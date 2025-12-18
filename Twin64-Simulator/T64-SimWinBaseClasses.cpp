@@ -520,10 +520,12 @@ void SimWin::reDraw( ) {
 // Methods for the scrollable window abstract class.
 //
 //----------------------------------------------------------------------------------------
-// Object creator.
+// Object creator / destructor.
 //
 //----------------------------------------------------------------------------------------
 SimWinScrollable::SimWinScrollable( SimGlobals *glb ) : SimWin( glb ) { }
+
+SimWinScrollable:: ~ SimWinScrollable( ) { }
 
 //----------------------------------------------------------------------------------------
 // Getter/Setter methods for scrollable window attributes.

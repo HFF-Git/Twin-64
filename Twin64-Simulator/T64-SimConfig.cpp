@@ -160,7 +160,19 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
 }
 
 //----------------------------------------------------------------------------------------
-// ??? some code here to read a JSON config file and set up the simulator ...
-// ??? use cJSON library ... ? Also on Windows... ?
 // 
+// 
+//----------------------------------------------------------------------------------------
+//
+// the idea is to have two more commands than add and remove a module. 
+//
+// NM <mod-type> <mod-params>  - add a new module of type mod-type with parameters
+// RM <mod-num>                - remove module with module number mod-num
+//
+// the  parameters are module type dependent. Many of the parameters are 
+// enumerated values for caches, TLBs, etc. We could just use their simple 
+// numbers or accept their names and convert them to a number internally. 
+//
+// The NM command could then be used in an XF file as the initial setup.
+// Best of all, we around to come up with config file syntax and a parser for it.
 //----------------------------------------------------------------------------------------

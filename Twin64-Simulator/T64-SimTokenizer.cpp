@@ -41,6 +41,8 @@ namespace {
 const int   TOK_NAME_SIZE   = 32;
 const char  EOS_CHAR        = 0;
 
+char        strTokenBuf[ MAX_TOK_STR_SIZE ] = { 0 };
+
 //----------------------------------------------------------------------------------------
 // The lookup function. We just do a linear search for now.
 //
@@ -78,7 +80,6 @@ void addChar( char *buf, int size, char ch ) {
     }
 }
 
-
 }; // namespace
 
 //----------------------------------------------------------------------------------------
@@ -86,22 +87,6 @@ void addChar( char *buf, int size, char ch ) {
 //
 //----------------------------------------------------------------------------------------
 SimTokenizer::SimTokenizer( ) { }
-
-//----------------------------------------------------------------------------------------
-// We initialize a couple of globals that represent the current state of the 
-// parsing process. This call is the first before any other method can be 
-// called.
-//
-//----------------------------------------------------------------------------------------
-void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
-    
-    strncpy( tokenLine, lineBuf, strlen( lineBuf ) + 1 );
-    
-    this -> tokTab                  = tokTab;
-    this -> currentLineLen          = (int) strlen( tokenLine );
-    this -> currentCharIndex        = 0;
-    this -> currentChar             = ' ';
-}
 
 //----------------------------------------------------------------------------------------
 // helper functions for the current token.
@@ -145,30 +130,6 @@ char *SimTokenizer::tokName( ) {
 char *SimTokenizer::tokStr( ) { 
     
     return( currentToken.u.str );
-}
-
-int SimTokenizer::tokCharIndex( ) { 
-    
-    return( currentCharIndex ); 
-}
-
-char *SimTokenizer::tokenLineStr( ) { 
-    
-    return( tokenLine ); 
-}
-
-//----------------------------------------------------------------------------------------
-// "nextChar" returns the next character from the token line string.
-//
-//----------------------------------------------------------------------------------------
-void SimTokenizer::nextChar( ) {
-    
-    if ( currentCharIndex < currentLineLen ) {
-        
-        currentChar = tokenLine[ currentCharIndex ];
-        currentCharIndex ++;
-    }
-    else currentChar = EOS_CHAR;
 }
 
 //----------------------------------------------------------------------------------------
@@ -568,3 +529,124 @@ SimTokId SimTokenizer::acceptTokSym( SimErrMsgId errId ) {
     }
     else throw ( errId );
 }
+
+
+//****************************************************************************************
+//****************************************************************************************
+//
+// Methods for SimTokenizerFromString class.   
+//
+//----------------------------------------------------------------------------------------
+SimTokenizerFromString::SimTokenizerFromString(  ) : SimTokenizer( ) { }
+
+//----------------------------------------------------------------------------------------
+// We initialize a couple of globals that represent the current state of the 
+// parsing process. This call is the first before any other method can be 
+// called.
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizerFromString::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
+
+    strncpy( tokenLine, lineBuf, strlen( lineBuf ) + 1 );
+    
+    this -> tokTab                  = tokTab;
+    this -> currentLineLen          = (int) strlen( tokenLine );
+    this -> currentCharIndex        = 0;
+    this -> currentChar             = ' ';
+}
+
+//----------------------------------------------------------------------------------------
+// "nextChar" returns the next character from the token line string.
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizerFromString::nextChar( ) {
+
+    if ( currentCharIndex < currentLineLen ) {
+        
+        currentChar = tokenLine[ currentCharIndex ];
+        currentCharIndex ++;
+    }
+    else currentChar = EOS_CHAR;
+}
+
+//****************************************************************************************
+//****************************************************************************************
+//
+// Methods for SimTokenizerFromFile class.   
+//
+//----------------------------------------------------------------------------------------
+SimTokenizerFromFile::SimTokenizerFromFile(  ) : SimTokenizer( ) { }
+
+SimTokenizerFromFile::~SimTokenizerFromFile( ) {
+
+    closeFile( );
+}
+
+//----------------------------------------------------------------------------------------
+// We initialize a couple of globals that represent the current state of the 
+// parsing process. This call is the first before any other method can be 
+// called.
+//
+ 
+void SimTokenizerFromFile::setupTokenizer( char *filePath, SimToken *tokTab ) {
+
+    this -> tokTab          = tokTab;
+    this -> currentChar     = ' ';
+
+    openFile( filePath );
+}
+
+//----------------------------------------------------------------------------------------
+// "openFile" opens the source file for reading.
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizerFromFile::openFile( char *filePath ) {
+    
+    srcFile = fopen( filePath, "r" );
+    
+    if ( srcFile == nullptr ) throw ( ERR_FILE_NOT_FOUND );
+}
+
+//----------------------------------------------------------------------------------------
+// "closeFile" closes the source file.
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizerFromFile::closeFile( ) {
+
+    if ( srcFile != nullptr ) {
+        
+        fclose( srcFile );
+        srcFile = nullptr;
+    }
+}   
+
+ 
+//----------------------------------------------------------------------------------------
+// "nextChar" returns the next character from the source file. We also maintain a 
+// character and line index.
+//
+//----------------------------------------------------------------------------------------
+void SimTokenizerFromFile::nextChar( ) {
+
+    if ( srcFile != nullptr ) {
+        
+        int ch = fgetc( srcFile );
+      
+        if ( ch == EOF ) {
+
+            currentChar = EOS_CHAR;
+        }
+        else if ( ch == '\n' ) {
+            
+            currentLineIndex ++;
+            currentCharIndex = 0;
+            currentChar      = ' ';
+        }
+        else {
+            
+            currentCharIndex ++;
+            currentChar = (char) ch;
+        }
+    }
+    else currentChar = EOS_CHAR;
+}   
