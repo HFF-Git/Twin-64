@@ -1047,8 +1047,7 @@ void SimCommandsWin::envCmd( ) {
         char envName[ MAX_ENV_NAME_SIZE ];
         
         strcpy( envName, tok -> tokName( ));
-        upshiftStr( envName );
-        
+   
         tok -> nextToken( );
         if ( tok -> isToken( TOK_EOS )) {
             
@@ -1110,7 +1109,7 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //
 //  DM [ <mNum> ]
 //
-// ??? convert to also show a single module ...
+// ??? is mNum useful here ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModuleCmd( ) {
 

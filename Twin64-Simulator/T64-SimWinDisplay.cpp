@@ -205,19 +205,14 @@ bool SimWinDisplay::isCurrentWin( int winNum ) {
     return(( validWindowNum( winNum ) && ( currentWinNum == winNum )));
 }
 
-bool SimWinDisplay::isWinScrollable ( int winNum ) {
 
-    if ( validWindowNum( winNum )) {
+bool SimWinDisplay::isWinScrollable ( int typ ) {
 
-        SimWinType typ = windowList[ winNum ] -> getWinType( );
         return (( typ == WT_MEM_WIN     ) ||
                 ( typ == WT_CODE_WIN    ) ||
                 ( typ == WT_TLB_WIN     ) ||        
                 ( typ == WT_CACHE_WIN   ) ||
                 ( typ == WT_TEXT_WIN    ));
-    }
-
-    return( false );
 }
 
 bool SimWinDisplay::isWinEnabled( int winNum ) {
@@ -865,7 +860,7 @@ void SimWinDisplay::windowNewTlb( int modNum, T64TlbKind tKind ) {
     currentWinNum = slot;
 }
 
-void SimWinDisplay::windowNewCache( int modNum, T64CacheType cType ) {
+void SimWinDisplay::windowNewCache( int modNum, T64CacheKind cType ) {
 
     int slot = getFreeWindowSlot( );
 

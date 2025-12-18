@@ -46,13 +46,17 @@ const char  EOS_CHAR        = 0;
 //
 //----------------------------------------------------------------------------------------
 int lookupToken( char *inputStr, SimToken *tokTab ) {
-    
-    if (( strlen( inputStr ) == 0 ) || 
-        ( strlen ( inputStr ) > TOK_NAME_SIZE )) return( -1 );
+
+    char tempStr[ TOK_NAME_SIZE + 1 ] = { 0 };
+    strncpy( tempStr, inputStr, TOK_NAME_SIZE );
+    upshiftStr( tempStr );
+
+    if (( strlen( tempStr ) == 0 ) || 
+        ( strlen ( tempStr ) > TOK_NAME_SIZE )) return( -1 );
     
     for ( int i = 0; i < MAX_CMD_TOKEN_TAB; i++  ) {
         
-        if ( strcmp( inputStr, tokTab[ i ].name ) == 0 ) return( i );
+        if ( strcmp( tempStr, tokTab[ i ].name ) == 0 ) return( i );
     }
     
     return( -1 );
@@ -96,7 +100,6 @@ void SimTokenizer::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
     this -> tokTab                  = tokTab;
     this -> currentLineLen          = (int) strlen( tokenLine );
     this -> currentCharIndex        = 0;
-    this -> currentTokCharIndex     = 0;
     this -> currentChar             = ' ';
 }
 
@@ -245,7 +248,6 @@ void SimTokenizer::parseNum( ) {
 // perhaps for the future. We will just parse it, but record no result. One day,
 // the entire simulator might use the lexer functions. Then we need it.
 //
-// ??? changes...
 //----------------------------------------------------------------------------------------
 void SimTokenizer::parseString( ) {
     
@@ -397,11 +399,6 @@ void SimTokenizer::parseIdent( ) {
         nextChar( );
     }
     
-    // ??? should we rather do the upshift in the lookup ?
-    // ??? should we keep the name case sensitive ?
-    
-    upshiftStr( identBuf );
-    
     int index = lookupToken( identBuf, tokTab );
     
     if ( index == - 1 ) {
@@ -425,8 +422,6 @@ void SimTokenizer::nextToken( ) {
     currentToken.u.val  = 0;
     
     while (( currentChar == ' '  ) || ( currentChar == '\n' )) nextChar( );
-
-    currentTokCharIndex = currentCharIndex - 1;
     
     if ( isalpha( currentChar )) {
         

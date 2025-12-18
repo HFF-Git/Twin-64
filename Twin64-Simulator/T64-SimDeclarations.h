@@ -512,8 +512,10 @@ struct SimToken {
 };
 
 //----------------------------------------------------------------------------------------
-// Tokenizer object. The command line interface parse their input buffer line. The 
-// tokenizer will return the tokens found in the line. The tokenizer raises exceptions.
+// Tokenizer base class. The tokenizer object scans an input character stream.
+// It breaks the stream into tokens. The tokenizer raises exceptions. The base 
+// class contains the common routines and data structures. The derived classes 
+// implement the character input routines.
 //
 //----------------------------------------------------------------------------------------
 struct SimTokenizer {
@@ -554,11 +556,54 @@ struct SimTokenizer {
     SimToken        currentToken;
     int             currentLineLen          = 0;
     int             currentCharIndex        = 0;
-    int             currentTokCharIndex     = 0;
     char            currentChar             = ' ';
     SimToken        *tokTab                 = nullptr;
     char            tokenLine[ 256 ]        = { 0 };
     char            strTokenBuf[ 256 ]      = { 0 };    
+};
+
+//----------------------------------------------------------------------------------------
+// Tokenizer from string. The command line interface parse their input buffer line.
+// The tokenizer will return the tokens found in the line. The tokenizer raises 
+// exceptions.
+//
+// ??? not connected yet ... just a sketch
+//----------------------------------------------------------------------------------------
+struct SimTokenizerFromString : public SimTokenizer {
+    
+    public:
+    
+    SimTokenizerFromString( );
+    void setupTokenizer( char *lineBuf, SimToken *tokTab ); 
+    
+    private:
+
+    void            nextChar( );
+    char            tokenLine[ 256 ] = { 0 };
+
+};
+
+//----------------------------------------------------------------------------------------
+// Tokenizer from file. We may need one day to read commands from a file. This
+// tokenizer reads characters from a file stream. The tokenizer raises exceptions.
+//
+// ??? not connected yet ... just a sketch
+//----------------------------------------------------------------------------------------
+struct SimTokenizerFromFile : public SimTokenizer {
+    
+    public:
+    
+    SimTokenizerFromFile( );
+    void setupTokenizer( char *filePath, SimToken *tokTab );
+    
+    private:
+    
+    void    openFile( char *filePath );
+    void    closeFile( );
+
+    void    nextChar( );
+
+    FILE    *file       = nullptr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -1288,7 +1333,7 @@ public:
     void            windowNewAbsCode( int modNum, T64Word adr );
     void            windowNewCpuState( int modNum );
     void            windowNewTlb( int modNum, T64TlbKind tTyp );
-    void            windowNewCache( int modNum, T64CacheType cTyp );
+    void            windowNewCache( int modNum, T64CacheKind cTyp );
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd );

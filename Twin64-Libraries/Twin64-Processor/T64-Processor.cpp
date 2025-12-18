@@ -48,8 +48,8 @@ T64Processor::T64Processor( T64System           *sys,
                             T64CpuType          cpuType,
                             T64TlbType          iTlbType,
                             T64TlbType          dTlbType,
-                            T64CacheStructure   iCacheStructure,
-                            T64CacheStructure   dCacheStructure,
+                            T64CacheType   iCacheStructure,
+                            T64CacheType   dCacheStructure,
                             T64Word             hpaAdr, 
                             int                 hpaLen,
                             T64Word             spaAdr,
@@ -74,6 +74,19 @@ T64Processor::T64Processor( T64System           *sys,
     dCache  = new T64Cache( this, T64_CK_DATA_CACHE, dCacheStructure );
 
     this -> reset( );
+}
+
+//----------------------------------------------------------------------------------------
+// Destructor.
+//
+//----------------------------------------------------------------------------------------
+T64Processor:: ~T64Processor( ) {
+
+    delete cpu;
+    delete iTlb;
+    delete dTlb;
+    delete iCache;
+    delete dCache;
 }
 
 //----------------------------------------------------------------------------------------

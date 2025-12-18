@@ -77,16 +77,16 @@ enum T64TlbType : int {
 //  T64_CT_<ways>W_<sets>S_<words>L
 //
 //----------------------------------------------------------------------------------------
-enum T64CacheType : int {
+enum T64CacheKind : int {
 
     T64_CK_NIL              = 0,
     T64_CK_INSTR_CACHE      = 1,
     T64_CK_DATA_CACHE       = 2,
-    T64_CK_UINFIED_CACHE    = 3,
+    T64_CK_UNIFIED_CACHE    = 3,
 };
 
 
-enum T64CacheStructure : int {
+enum T64CacheType : int {
 
     T64_CT_NIL              = 0,
     T64_CT_2W_128S_4L       = 1,
@@ -130,9 +130,11 @@ struct T64Cache {
 
     public:
 
-    T64Cache( T64Processor      *proc, 
-              T64CacheType      cacheType, 
-              T64CacheStructure cacheStructure );
+    T64Cache( T64Processor  *proc, 
+              T64CacheKind  cacheType, 
+              T64CacheType  cacheStructure );
+
+    virtual         ~ T64Cache( );
 
     void                reset( );
     void                step( );
@@ -156,8 +158,8 @@ struct T64Cache {
     int                 getWays( );
     int                 getSetSize( );
     int                 getCacheLineSize( );
-    T64CacheType        getCacheKind( );
-    T64CacheType        getCacheType( );
+    T64CacheKind        getCacheKind( );
+    T64CacheKind        getCacheType( );
 
     private: 
 
@@ -189,8 +191,8 @@ struct T64Cache {
 
     private: 
 
-    T64CacheType        cacheType       = T64_CK_NIL;
-    T64CacheStructure   cacheStructure  = T64_CT_NIL;
+    T64CacheKind        cacheKind       = T64_CK_NIL;
+    T64CacheType        cacheType       = T64_CT_NIL;
 
     T64CacheLineInfo    *cacheInfo      = nullptr;
     uint8_t             *cacheData      = nullptr;
@@ -246,6 +248,8 @@ struct T64Tlb {
     public:
 
     T64Tlb( T64Processor *proc, T64TlbKind tlbKind, T64TlbType tlbType );
+
+    virtual         ~ T64Tlb( );
     
     void            reset( );
     T64TlbEntry     *lookup( T64Word vAdr );
@@ -278,6 +282,8 @@ struct T64Cpu {
     public: 
 
     T64Cpu( T64Processor *proc, T64CpuType cpuType );
+
+    virtual         ~ T64Cpu( );
 
     void            reset( );
     void            step( );
@@ -336,8 +342,9 @@ struct T64Cpu {
 };
 
 //----------------------------------------------------------------------------------------
-// The CPU core executes the instructions. The processor has the interfaces called by
-// the simulator. This includes interfaces to TLBs and caches. 
+// The CPU core executes the instructions. A processor module contains the CPU core,
+// TLBs and caches. The processor module connects to the system bus for memory and
+// IO access. 
 //
 // ??? a call to "step" must run to completion:
 // 
@@ -363,12 +370,14 @@ struct T64Processor : T64Module {
                   T64CpuType          cpuType,
                   T64TlbType          iTlbType,
                   T64TlbType          dTlbType,
-                  T64CacheStructure   iCacheStructure,
-                  T64CacheStructure   dCacheStructure,
+                  T64CacheType   iCacheStructure,
+                  T64CacheType   dCacheStructure,
                   T64Word             hpaAdr, 
                   int                 hpaLen,
                   T64Word             spaAdr,
                   int                 spaLen );
+    
+    virtual        ~ T64Processor( );
     
     void            reset( );
     void            step( );

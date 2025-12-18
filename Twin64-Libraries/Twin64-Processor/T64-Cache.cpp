@@ -213,11 +213,11 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 //
 //----------------------------------------------------------------------------------------
 T64Cache::T64Cache( T64Processor        *proc, 
-                    T64CacheType        cacheType, 
-                    T64CacheStructure   cacheStructure ) { 
+                    T64CacheKind        cacheType, 
+                    T64CacheType   cacheStructure ) { 
 
-    this -> cacheType       = cacheType;
-    this -> cacheStructure  = cacheStructure;
+    this -> cacheKind       = cacheType;
+    this -> cacheType  = cacheStructure;
     this -> proc            = proc;
 
     switch ( cacheStructure ) {
@@ -279,6 +279,16 @@ T64Cache::T64Cache( T64Processor        *proc,
     cacheInfo = (T64CacheLineInfo *) malloc( ways * sets * sizeof( T64CacheLineInfo ));
     cacheData = (uint8_t *) malloc( ways * sets * lineSize );
 }
+
+//----------------------------------------------------------------------------------------
+// Destructor.
+//
+//----------------------------------------------------------------------------------------
+T64Cache:: ~T64Cache( ) {
+
+    free( cacheInfo );
+    free( cacheData );
+}   
 
 //----------------------------------------------------------------------------------------
 // Reset. For now, clear the statistics.
