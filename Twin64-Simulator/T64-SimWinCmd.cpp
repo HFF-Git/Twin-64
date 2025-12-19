@@ -1112,9 +1112,20 @@ void SimCommandsWin::loadElfFileCmd( ) {
 //
 //  DM [ <mNum> ]
 //
-// ??? is mNum useful here ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModuleCmd( ) {
+
+    int modNum = -1;
+
+     if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WIN_STACKS );
+        tok -> checkEOS( );
+    }
+    else if ( ! tok -> isToken( TOK_EOS )) {
+        
+        throw ( ERR_INVALID_ARG );
+    }
 
     winOut -> writeChars( "%-5s%-7s%-16s%-16s%-8s\n", 
                             "Mod", "Type", "HPA", "SPA", "Size" );
@@ -1123,6 +1134,8 @@ void SimCommandsWin::displayModuleCmd( ) {
 
         T64Module *mPtr = glb -> system -> lookupByModNum( i );
         if ( mPtr != nullptr ) {
+
+            if (( modNum != -1 ) && ( modNum != i )) continue;
 
             winOut -> writeChars( "%02d   ", i  );
 
@@ -1145,8 +1158,6 @@ void SimCommandsWin::displayModuleCmd( ) {
             winOut -> writeChars( "\n" );
         }
     }
-
-    tok -> checkEOS( );
 }
 
 //----------------------------------------------------------------------------------------

@@ -203,58 +203,58 @@ void SimTokenizer::parseNum( ) {
     currentToken.u.val = tmpVal;
 }
 
+
 //----------------------------------------------------------------------------------------
 // "parseString" gets a string. We manage special characters inside the string 
 // with the "\" prefix. Right now, we do not use strings, so the function is 
 // perhaps for the future. We will just parse it, but record no result. One day,
-// the entire simulator might use the lexer functions. Then we need it.
+// the entire simulator might use the string functions. Then we need it.
 //
 //----------------------------------------------------------------------------------------
-void SimTokenizer::parseString( ) {
-    
-    currentToken.tid        = TOK_STR;
-    currentToken.typ        = TYP_STR;
-    currentToken.u.str      = nullptr;
+void SimTokenizer::parseString() {
 
-    strTokenBuf[ 0 ] = '\0';             
+    currentToken.tid   = TOK_STR;
+    currentToken.typ   = TYP_STR;
+    currentToken.u.str = nullptr;
 
-    nextChar( );
-    while (( currentChar != EOS_CHAR ) && ( currentChar != '"' )) {
+    strTokenBuf[0] = '\0';
 
-        if ( currentChar == '\\' ) {
-            
-            nextChar( );
-            if ( currentChar != EOS_CHAR ) {
-                
-                if ( currentChar == 'n' ) {
+    do {
+       
+        nextChar();
 
-                    strcat( strTokenBuf, (char *) "\n" );
+        while ((currentChar != EOS_CHAR) && (currentChar != '"')) {
+
+            if (currentChar == '\\') {
+
+                nextChar();
+
+                if (currentChar == EOS_CHAR)
+                    throw(ERR_EXPECTED_CLOSING_QUOTE);
+
+                switch (currentChar) {
+
+                    case 'n':  strcat( strTokenBuf, "\n"); break;
+                    case 't':  strcat( strTokenBuf, "\t"); break;
+                    case '\\': strcat( strTokenBuf, "\\"); break;
+                    case '"':  strcat( strTokenBuf, "\""); break;
+                    
+                    default:   addChar( strTokenBuf, sizeof(strTokenBuf), currentChar);
                 } 
-                else if ( currentChar == 't' ) {  
-                    
-                    strcat( strTokenBuf, (char *) "\t" );
-                }
-                else if ( currentChar == '\\' ) { 
-                    
-                    strcat( strTokenBuf, (char *) "\\" );
-                }
-                else {
-                    
-                    addChar( strTokenBuf, 
-                             sizeof( strTokenBuf ), 
-                             currentChar );
-                }
             }
-            else throw ( ERR_EXPECTED_CLOSING_QUOTE );
+            else addChar( strTokenBuf, sizeof(strTokenBuf), currentChar );
+
+            nextChar();
         }
-        else addChar( strTokenBuf, sizeof( strTokenBuf ), currentChar );
-        
+
+        if ( currentChar != '"' ) throw( ERR_EXPECTED_CLOSING_QUOTE );
+
         nextChar( );
-    }
+        while ( isspace( currentChar )) nextChar( );
+
+    } while ( currentChar == '"' );
 
     currentToken.u.str = strTokenBuf;
-
-    nextChar( );
 }
 
 //----------------------------------------------------------------------------------------

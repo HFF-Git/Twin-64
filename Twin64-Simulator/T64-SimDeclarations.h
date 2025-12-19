@@ -37,9 +37,9 @@
 #include "T64-Memory.h"
 
 //----------------------------------------------------------------------------------------
-// When we say windows, don't think about a modern graphical window system. The simulator
-// is a simple terminal screen with portions of the screen representing a "window". 
-// The general screen structure is:
+// When we say windows, don't think about a modern graphical window system. The 
+// simulator is a simple terminal screen with portions of the screen representing 
+// a "window". The general screen structure is:
 //
 //          |---> column (absolute)
 //          |
@@ -69,14 +69,14 @@
 //                  :                                                        :
 //                  :--------------------------------------------------------:
 //
-// Total size of the screen can vary. It is the sum of all active window line plus the
-// command window lines. Command window is a bit special on that it has an input line
-// at the lowest line. Scroll lock after the active windows before the command window.
-// Routines to move cursor, print fields with attributes.
+// Total size of the screen can vary. It is the sum of all active window line plus
+// the command window lines. Command window is a bit special on that it has an input
+// lineat the lowest line. Scroll lock after the active windows before the command
+// window. Routines to move cursor, print fields with attributes.
 //
-// In addition, windows can be organized in stacks. The stacks are displayed next to
-// each other, which is quite helpful, but could make the columns needed quite large. 
-// The command window will in this case span all stacks.
+// In addition, windows can be organized in stacks. The stacks are displayed next
+// to each other, which is quite helpful, but could make the columns needed quite
+// large. The command window will in this case span all stacks.
 //
 //----------------------------------------------------------------------------------------
 
@@ -179,8 +179,8 @@ enum SimTokTypeId : int {
 //----------------------------------------------------------------------------------------
 // Tokens are the labels for reserved words and symbols recognized by the tokenizer 
 // objects. Tokens have a name, a token id, a token type and an optional value with 
-// further data. See also the "SimTables" include file how types and token Id are used
-// to build the command and expression tokens.
+// further data. See also the "SimTables" include file how types and token Id are 
+// used to build the command and expression tokens.
 //
 //----------------------------------------------------------------------------------------
 enum SimTokId : uint16_t {
@@ -441,8 +441,12 @@ const char ENV_WIN_TEXT_LINE_WIDTH[ ]   = "WIN_TEXT_WIDTH";
 const char ENV_CURRENT_PROC[ ]          = "CURRENT_PROC";
 
 //----------------------------------------------------------------------------------------
-// Forward declaration of the globals structure. Every object will have access to the
-// globals structure, so we do not have to pass around references to all the individual
+// Forward declaration of the globals structure. Every object will have access to 
+// the globals structure, so we do not have to pass around references to all the
+// individual objects. The globals structure contains references to all the important
+// objects in the simulator. Every object will have access to the important objects
+// globals structure, so we do not have to pass around references to all the 
+// individual objects. The globals structure contains references to all the important
 // objects.
 //
 //----------------------------------------------------------------------------------------
@@ -491,11 +495,13 @@ struct SimHelpMsgEntry {
 };
 
 //----------------------------------------------------------------------------------------
-// The command line interpreter works the command line as a list of tokens. A token 
-// found in a string is recorded using the token structure. The token types are 
-// numeric and strings. The string is a buffer in the tokenizer. Scanning a new token
-// potentially overwrites or invalidates the string. You need to copy it to a safe 
-// place before scanning the next token.
+// The command line interpreter works the command line as a list of tokens. A 
+// token found in a string is recorded using the token structure. The token types 
+// are found in a string is recorded using the token structure. The token types 
+// are found in a string is recorded using the token structure. The supported 
+// token types are numeric and strings. The string is a buffer in the tokenizer. 
+// Scanning a new token potentially overwrites or invalidates the string. You 
+// need to copy it to a safe place before scanning the next token.
 //
 //----------------------------------------------------------------------------------------
 struct SimToken {
@@ -1344,6 +1350,7 @@ public:
     void            windowNewText( char *pathStr );
 
     void            windowKill( int winNumStart, int winNumEnd );
+    void            windowKillByModNum( int modNum );
     void            windowSetStack( int winStack, int winNumStart, int winNumEnd );
     
     int             getCurrentWindow( );

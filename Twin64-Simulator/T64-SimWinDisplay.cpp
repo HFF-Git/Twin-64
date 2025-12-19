@@ -936,3 +936,34 @@ void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
         }
     }
 }
+
+//----------------------------------------------------------------------------------------
+// When we remove a window, we need to also remove all windows associated with a 
+// module. This is what the "windowKillByModNum" method does. It runs through the
+// window list and removes all windows that are associated with the passed module
+// number.
+//----------------------------------------------------------------------------------------
+void SimWinDisplay::windowKillByModNum( int modNum ) {      
+
+    for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+
+        if (( windowList[ i ] != nullptr ) && 
+            ( windowList[ i ] -> getWinModNum( ) == modNum )) {
+
+            delete ( SimWin * ) windowList[ i ];
+            windowList[ i ] = nullptr;
+                
+            if ( currentWinNum == i ) {
+                 
+                for ( int i = 1; i < MAX_WINDOWS; i++ ) {
+                        
+                    if ( validWindowNum( i )) {
+                            
+                        currentWinNum = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}   
