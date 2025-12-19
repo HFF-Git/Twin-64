@@ -81,7 +81,7 @@ void SimWin::setWinIndex( int arg ) {
 
 void SimWin::setWinName( char *name ) {
 
-    strncpy( winName, name, MAX_WIN_NAME - 1 );
+    strncpy( winName, name, MAX_WIN_NAME );
 }
 
 char *SimWin::getWinName( ) {

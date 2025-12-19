@@ -278,6 +278,8 @@ T64Cache::T64Cache( T64Processor        *proc,
 
     cacheInfo = (T64CacheLineInfo *) malloc( ways * sets * sizeof( T64CacheLineInfo ));
     cacheData = (uint8_t *) malloc( ways * sets * lineSize );
+
+    reset( );
 }
 
 //----------------------------------------------------------------------------------------

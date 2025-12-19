@@ -95,6 +95,16 @@ void T64Tlb::reset( ) {
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
         
         map[ i ].valid = false;
+        map[ i ].locked       = false;
+        map[ i ].modified     = false;
+        map[ i ].uncached     = false;
+        map[ i ].trapOnBranch = false;
+        map[ i ].vAdr         = 0;
+        map[ i ].pAdr         = 0;
+        map[ i ].pSize        = 0;
+        map[ i ].pLev1        = false;
+        map[ i ].pLev2        = false;
+        map[ i ].pageType     = 0;
     }
 
     timeCounter = 0;
