@@ -50,7 +50,7 @@ public:
 
     int         getErrId( );
     int         getErrPos( );
-    const char   *getErrStr( int errId );
+    const char  *getErrStr( int errId );
 };
 
 //----------------------------------------------------------------------------------------

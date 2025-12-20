@@ -392,6 +392,12 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
     { .errNum = ERR_UNDEFINED_PFUNC,            
       .errStr = (char *) "Unknown predefined function" },
 
+    { .errNum = ERR_IN_ASM_PFUNC,            
+      .errStr = (char *) "Error in ASM function" },
+
+    { .errNum = ERR_IN_DISASM_PFUNC,            
+    .errStr = (char *) "Error in DISASM function" },
+    
     { .errNum = ERR_ENV_PREDEFINED,             
       .errStr = (char *) "ENV variable is predefined" },
 

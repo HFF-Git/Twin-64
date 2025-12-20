@@ -131,10 +131,14 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr ) {
         
         if ( ret == 0 ) {
             
-            rExpr -> typ    = TYP_NUM;
+            rExpr -> typ   = TYP_NUM;
             rExpr -> u.val = instr;
         }
-        else throw ( ret );
+        else {
+            
+            // ??? how do we map the ASM error codes to out error code ?
+            throw ( ERR_IN_ASM_PFUNC );
+        }
     }
     else throw ( ERR_EXPECTED_STR );
 

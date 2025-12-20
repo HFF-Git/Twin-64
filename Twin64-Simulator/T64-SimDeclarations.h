@@ -357,7 +357,8 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_INSTR_VAL          = 117,
     ERR_EXPECTED_INSTR_OPT          = 318,
    
-    
+    ERR_IN_ASM_PFUNC                = 320,
+    ERR_IN_DISASM_PFUNC             = 321,
 
    
     ERR_INVALID_ELF_FILE            = 700,

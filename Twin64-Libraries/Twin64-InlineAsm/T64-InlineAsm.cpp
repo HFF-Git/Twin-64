@@ -263,6 +263,8 @@ enum InstrTemplate : uint32_t {
     OPF_OR       = ( OPC_OR     << 26 ),
     OPF_XOR      = ( OPC_XOR    << 26 ),
     OPF_CMP      = ( OPC_CMP_A  << 26 ),
+    OPF_CMP_A    = ( OPC_CMP_A  << 26 ),
+    OPF_CMP_B    = ( OPC_CMP_B  << 26 ),
     OPF_BITOP    = ( OPC_BITOP  << 26 ),
     OPF_SHAOP    = ( OPC_SHAOP  << 26 ),
     OPF_IMMOP    = ( OPC_IMMOP  << 26 ),
@@ -1322,6 +1324,24 @@ void setInstrDwField( uint32_t *instr, uint32_t instrFlags ) {
 }
 
 //----------------------------------------------------------------------------------------
+// For the indexed addressing mode, the offset needs to be in alignment with the
+// data width.
+//
+//----------------------------------------------------------------------------------------
+void checkOfsAlignment( int ofs, uint32_t instrFlags ) {
+
+    if ( ! hasDataWidthFlags( instrFlags )) instrFlags |= IF_D;
+
+    if ( ! ( instrFlags & IF_B )) { 
+
+        if ( ! ((( instrFlags & IF_H ) && ( isAligned( ofs, 2 ))) ||
+            (( instrFlags & IF_W ) && ( isAligned( ofs, 4 ))) ||
+            (( instrFlags & IF_D ) && ( isAligned( ofs, 8 ))))) 
+            throw( ERR_INVALID_OFS );
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // "parseInstrOptions" will analyze the opCode option string. An opCode option 
 // string is a sequence of characters after the ".". We will look at each char in 
 // the "name" and set the options for the particular instruction. There are also 
@@ -1489,6 +1509,13 @@ void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
 //      opCode [ "." <opt> ] <targetReg> "," [ <num> ]  "(" <baseReg> ")"  
 //      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"  
 //
+// There are a couple of exceptions to handle. First, the CMP instruction mnemonic
+// needs to be mapped to CMP_A amd CMP_B code, depending on teh actual instruuction 
+// format.
+//
+// When we have the indexed addressig mode, the numeric offset needs to be in 
+// alignment with the data width.
+//
 //----------------------------------------------------------------------------------------
 void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1513,12 +1540,16 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
 
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
-      
+
         replaceInstrGroupField( instr, OPG_MEM );
-        replaceInstrOpCodeField( instr, OPC_CMP_A );
+
+        if ( instrOpToken == TOK_OP_CMP ) 
+           replaceInstrOpCodeField( instr, OPC_CMP_A );
+
+        checkOfsAlignment( rExpr.val, instrFlags );
         setInstrDwField( instr, instrFlags );
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
-        
+  
         acceptLparen( );
         acceptRegB( instr );        
         acceptRparen( );
@@ -1537,16 +1568,24 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             if ( rExpr.typ == TYP_NUM ) {
 
                 replaceInstrGroupField( instr, OPG_ALU );
-                replaceInstrOpCodeField( instr, OPC_CMP_A );
-                
+
+                if ( instrOpToken == TOK_OP_CMP ) 
+                    replaceInstrOpCodeField( instr, OPF_CMP_A );
+            
                 depositInstrBit( instr, 19, true );
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrImm15( instr, (uint32_t) rExpr.val );
             }
             else if ( rExpr.typ == TYP_GREG ) {
-                
-                replaceInstrGroupField( instr, OPG_ALU );
-                replaceInstrOpCodeField( instr, OPC_CMP_B );
+
+                if ( instrOpToken == TOK_OP_CMP ) {
+
+                    replaceInstrGroupField( instr, OPG_ALU );
+
+                    if ( instrOpToken == TOK_OP_CMP )
+                        replaceInstrOpCodeField( instr, OPF_CMP_B );
+                }
+
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrRegA( instr, (uint32_t) rExpr.val );
             }
@@ -1557,7 +1596,10 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         else if ( isToken( TOK_LPAREN )) {
 
             replaceInstrGroupField( instr, OPG_MEM );
-            replaceInstrOpCodeField( instr, OPC_CMP_B );
+            
+            if ( instrOpToken == TOK_OP_CMP )
+                replaceInstrOpCodeField( instr, OPF_CMP_B );
+
             setInstrDwField( instr, instrFlags );
             depositInstrBit( instr, 19, true );
             depositInstrRegA( instr, (uint32_t) rExpr.val );
