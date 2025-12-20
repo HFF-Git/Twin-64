@@ -347,7 +347,8 @@ enum InstrFlags : uint32_t {
     IM_AND_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N | IF_C ),
     IM_OR_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
     IM_XOR_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
-    IM_CMP_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_EQ | IF_LT | IF_NE | IF_GE ),
+    IM_CMP_OP   = ( IF_B | IF_H | IF_W | IF_D | 
+                    IF_EQ | IF_NE | IF_LT | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
     IM_EXTR_OP  = ( IF_S ),
     IM_DEP_OP   = ( IF_Z | IF_I ),
     IM_SHLxA_OP = ( IF_I ),
@@ -1279,6 +1280,14 @@ inline bool hasDataWidthFlags( uint32_t instrFlags ) {
             ( instrFlags & IF_W ) || ( instrFlags & IF_D ));
 }
 
+inline bool hasCmpCodeFlags( uint32_t instrFlags ) {
+    
+    return (( instrFlags & IF_EQ ) || ( instrFlags & IF_NE ) ||
+            ( instrFlags & IF_LT ) || ( instrFlags & IF_LE ) ||
+            ( instrFlags & IF_GT ) || ( instrFlags & IF_GE ) ||
+            ( instrFlags & IF_EV ) || ( instrFlags & IF_OD ));
+}
+
 inline void replaceInstrGroupField( T64Instr *instr, uint32_t instrMask ) {
     
     *instr &= 0x3FFFFFFF;
@@ -1298,14 +1307,14 @@ inline void replaceInstrOpCodeField( T64Instr *instr, uint32_t instrMask ) {
 //----------------------------------------------------------------------------------------
 void setInstrCompareCondField( uint32_t *instr, uint32_t instrFlags ) {
 
-    if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 20, 2, 0 );
-    else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 20, 2, 1 );
-    else if ( instrFlags & IF_NE )  depositInstrFieldU( instr, 20, 2, 2 );
-    else if ( instrFlags & IF_GE )  depositInstrFieldU( instr, 20, 2, 3 );
-    else if ( instrFlags & IF_LE )  depositInstrFieldU( instr, 20, 2, 4 );
-    else if ( instrFlags & IF_EV )  depositInstrFieldU( instr, 20, 2, 5 );
-    else if ( instrFlags & IF_GT )  depositInstrFieldU( instr, 20, 2, 6 );
-    else if ( instrFlags & IF_OD )  depositInstrFieldU( instr, 20, 2, 7 );
+    if      ( instrFlags & IF_EQ )  depositInstrFieldU( instr, 19, 3, 0 );
+    else if ( instrFlags & IF_LT )  depositInstrFieldU( instr, 19, 3, 1 );
+    else if ( instrFlags & IF_GT )  depositInstrFieldU( instr, 19, 3, 2 );
+    else if ( instrFlags & IF_EV )  depositInstrFieldU( instr, 19, 3, 3 );
+    else if ( instrFlags & IF_NE )  depositInstrFieldU( instr, 19, 3, 4 );
+    else if ( instrFlags & IF_GE )  depositInstrFieldU( instr, 19, 3, 5 );
+    else if ( instrFlags & IF_LE )  depositInstrFieldU( instr, 19, 3, 6 );
+    else if ( instrFlags & IF_OD )  depositInstrFieldU( instr, 19, 3, 7 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1513,7 +1522,7 @@ void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
 // needs to be mapped to CMP_A amd CMP_B code, depending on teh actual instruuction 
 // format.
 //
-// When we have the indexed addressig mode, the numeric offset needs to be in 
+// When we have the indexed addressing mode, the numeric offset needs to be in 
 // alignment with the data width.
 //
 //----------------------------------------------------------------------------------------
@@ -1534,7 +1543,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             
         throw ( ERR_INVALID_INSTR_OPT );
     }
-    
+
     acceptRegR( instr );
     acceptComma( );
 
@@ -1623,8 +1632,9 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else if ( instrOpToken == TOK_OP_CMP ) {
 
-        // ??? we have two separate opcodes.... 
-        
+        if ( ! hasCmpCodeFlags( instrFlags )) 
+            throw( ERR_INVALID_INSTR_MODE );
+
         setInstrCompareCondField( instr, instrFlags );
     }
 }

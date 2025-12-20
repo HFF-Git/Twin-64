@@ -57,13 +57,12 @@ int printCondField( char *buf, uint32_t cmpCode ) {
             
         case 0:  return ( snprintf( buf, 4, ".EQ" ));
         case 1:  return ( snprintf( buf, 4, ".LT" ));
-        case 2:  return ( snprintf( buf, 4, ".NE" ));
-        case 3:  return ( snprintf( buf, 4, ".LE" ));
-        case 4:  return ( snprintf( buf, 4, ".EV" ));
-        case 5:  return ( snprintf( buf, 4, ".OD" ));
-
-        case 6:
-        case 7:
+        case 2:  return ( snprintf( buf, 4, ".GT" ));
+        case 3:  return ( snprintf( buf, 4, ".EV" ));
+        case 4:  return ( snprintf( buf, 4, ".NE" ));
+        case 5:  return ( snprintf( buf, 4, ".GE" ));
+        case 6:  return ( snprintf( buf, 4, ".LE" ));
+        case 7:  return ( snprintf( buf, 4, ".OD" ));
         default: return ( snprintf( buf, 4, ".**" ));
     }
 }
@@ -187,7 +186,7 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
         case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
             
             int cursor = snprintf( buf, LEN_16, "CMP" );
-            printCondField( buf + cursor, extractInstrField( instr, 20, 2 ));
+            cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
             return ( cursor );
         }
             
@@ -196,7 +195,7 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
             
             int cursor = snprintf( buf, LEN_16, "CMP" );
             cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
-            cursor += printCondField( buf + cursor, extractInstrField( instr,20,2 ));
+            cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
             return ( cursor );
         }
             
