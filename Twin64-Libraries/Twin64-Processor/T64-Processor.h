@@ -85,7 +85,6 @@ enum T64CacheKind : int {
     T64_CK_UNIFIED_CACHE    = 3,
 };
 
-
 enum T64CacheType : int {
 
     T64_CT_NIL              = 0,
@@ -364,18 +363,18 @@ struct T64Processor : T64Module {
     
     public:
 
-    T64Processor( T64System           *sys,
-                  int                 modNum,
-                  T64Options          options,  
-                  T64CpuType          cpuType,
-                  T64TlbType          iTlbType,
-                  T64TlbType          dTlbType,
-                  T64CacheType   iCacheStructure,
-                  T64CacheType   dCacheStructure,
-                  T64Word             hpaAdr, 
-                  int                 hpaLen,
-                  T64Word             spaAdr,
-                  int                 spaLen );
+    T64Processor( T64System         *sys,
+                  int               modNum,
+                  T64Options        options,  
+                  T64CpuType        cpuType,
+                  T64TlbType        iTlbType,
+                  T64TlbType        dTlbType,
+                  T64CacheType      iCacheType,
+                  T64CacheType      dCacheType,
+                  T64Word           hpaAdr, 
+                  int               hpaLen,
+                  T64Word           spaAdr,
+                  int               spaLen );
     
     virtual        ~ T64Processor( );
     

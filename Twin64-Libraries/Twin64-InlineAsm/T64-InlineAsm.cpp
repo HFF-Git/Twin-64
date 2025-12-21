@@ -598,7 +598,7 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_DIAG,  .val = ( OPG_SYS | OPF_DIAG   | OPM_FLD_0 ) },
     
     //------------------------------------------------------------------------------------
-    // Assembler synthetic mnemonics. They ar like the assembler mnemonics, except 
+    // Assembler synthetic mnemonics. They are like the assembler mnemonics, except 
     // that they pre decode some bits settings in the option fields and reduce the 
     // ".<opt>" notation settings through meaningful instruction mnemonics.
     //
@@ -684,6 +684,23 @@ void addChar( char *buf, int size, char ch ) {
         
         buf[ len ]     = ch;
         buf[ len + 1 ] = 0;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void upshiftStr( char *str ) {
+    
+    size_t len = strlen( str );
+    
+    if ( len > 0 ) {
+        
+        for ( size_t i = 0; i < len; i++ ) {
+            
+            str[ i ] = (char) toupper((int) str[ i ] );
+        }
     }
 }
 
@@ -1519,7 +1536,7 @@ void parseNopInstr( uint32_t *instr, uint32_t instrOpToken ) {
 //      opCode [ "." <opt> ] <targetReg> "," <indexReg> "(" <baseReg> ")"  
 //
 // There are a couple of exceptions to handle. First, the CMP instruction mnemonic
-// needs to be mapped to CMP_A amd CMP_B code, depending on teh actual instruuction 
+// needs to be mapped to CMP_A and CMP_B code, depending on the actual instruction 
 // format.
 //
 // When we have the indexed addressing mode, the numeric offset needs to be in 

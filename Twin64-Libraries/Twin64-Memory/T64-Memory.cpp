@@ -46,6 +46,8 @@ namespace {
 //----------------------------------------------------------------------------------------
 T64Memory::T64Memory( T64System     *sys, 
                       int           modNum, 
+                      T64MemKind    mKind,
+                      T64MemType    mType,
                       T64Word       hpaAdr, 
                       int           hpaLen,
                       T64Word       spaAdr,
@@ -60,9 +62,12 @@ T64Memory::T64Memory( T64System     *sys,
                                  ) {
     
     this -> sys     = sys;
+    this -> mKind   = mKind;
+    this -> mType   = mType;
     this -> hpaLen  = roundup( hpaLen, T64_PAGE_SIZE_BYTES );
     this -> spaLen  = roundup( spaLen, T64_PAGE_SIZE_BYTES );
-    this -> memData = (uint8_t *) calloc( spaLen, sizeof( uint8_t ));
+    this -> memData = nullptr;
+    reset( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -79,7 +84,9 @@ void T64Memory::reset( ) {
 // Each module has a step function. Ours does nothing.
 // 
 //----------------------------------------------------------------------------------------
-void T64Memory::step( ) { }
+void T64Memory::step( ) { 
+    
+}
 
 //----------------------------------------------------------------------------------------
 // Read function. We read a block of data from memory. The address the physical address

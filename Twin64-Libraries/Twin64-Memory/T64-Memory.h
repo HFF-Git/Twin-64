@@ -29,6 +29,22 @@
 #include "T64-System.h"
 
 //----------------------------------------------------------------------------------------
+// Memory. There are two basic kinds of memory. ReadWrite and ReadOnly.
+//
+//----------------------------------------------------------------------------------------
+enum T64MemKind : int {
+
+    T64_MK_NIL          = 0,
+    T64_MK_RAM          = 1,
+    T64_MK_ROM          = 2
+};
+
+enum T64MemType : int {
+
+    T64_MT_NIL          = 0
+};
+
+//----------------------------------------------------------------------------------------
 // T64 Memory module. A physical memory module is an array of pages. Each module 
 // covers a range of physical memory and reacts to read and write bus operations.
 // Although the memory module does not participate in cache coherency operations,
@@ -41,6 +57,8 @@ public:
     
     T64Memory( T64System    *sys, 
                int          modNum, 
+               T64MemKind   mKind,
+               T64MemType   mType,
                T64Word      hpaAdr, 
                int          hpaLen,
                T64Word      spaAdr,
@@ -82,10 +100,11 @@ private:
     bool        read( T64Word adr, uint8_t *data, int len );
     bool        write( T64Word adr, uint8_t *data, int len );
     
+    T64MemKind  mKind       = T64_MK_NIL;
+    T64MemType  mType       = T64_MT_NIL;
     T64System   *sys        = nullptr;
     uint8_t     *memData    = nullptr;
     bool        spaReadOnly = false;
-    
 };
 
 #endif // T64-Memory.h

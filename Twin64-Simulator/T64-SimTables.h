@@ -56,7 +56,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u = { .val = 0  }},
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                      },
     { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                      },
-    { .name = "PROC",        .typ = TYP_SYM,    .tid = TOK_PROC                     },              
+    { .name = "PROC",       .typ = TYP_SYM,     .tid = TOK_PROC                     },              
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                      },
     { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB                     },
     { .name = "DTLB",       .typ = TYP_SYM,     .tid = TOK_DTLB                     },
@@ -226,7 +226,40 @@ const SimToken cmdTokTab[ ] = {
     // ??? tons of more predefines....
 
     { .name = "S32",        .typ = TYP_P_FUNC, .tid = PF_S32,      .u = { .val = 0 }},
+
+    //------------------------------------------------------------------------------------
+    // TLB and Cache configuration types.
+    //
+    //------------------------------------------------------------------------------------
+    { .name = "OK_TLB_FA_64S",              .typ = TYP_SYM, 
+      .tid = TOK_TLB_FA_64S,                .u = { .val = 0 }},   
+
+    { .name = "TOK_TLB_FA_128S",            .typ = TYP_SYM, 
+      .tid = TOK_TLB_FA_128S,               .u = { .val = 0 }},
+
+    { .name = "TOK_CACHE_SA_2W_128S_4L",    .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
+
+    { .name = "TOK_CACHE_SA_4W_128S_4L",    .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
+
+    { .name = "TOK_CACHE_SA_8W_128S_4L",    .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
+
+    { .name = "TOK_CACHE_SA_2W_64S_8L",     .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},
+
+    { .name = "TOK_CACHE_SA_4W_64S_8L",     .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},  
     
+    { .name = "TOK_CACHE_SA_8W_64S_8L",     .typ = TYP_SYM, 
+      .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},
+
+    { .name = "TOK_MEM_READ_ONLY",          .typ = TYP_SYM, 
+      .tid = TOK_MEM_READ_ONLY,             .u = { .val = 0 }},
+
+    { .name = "TOK_MEM_READ_WRITE",         .typ = TYP_SYM, 
+      .tid = TOK_MEM_READ_WRITE,            .u = { .val = 0 }}
 };
 
 const int MAX_CMD_TOKEN_TAB = sizeof( cmdTokTab ) / sizeof( SimToken );

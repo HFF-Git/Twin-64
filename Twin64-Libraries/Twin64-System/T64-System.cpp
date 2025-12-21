@@ -83,6 +83,16 @@ void T64System::initModuleMap( ) {
     }
 }
 
+ int  T64System::getFreeModuleNum( ) {
+
+    for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
+
+       if ( moduleMap[ i ] == nullptr ) return ( i );
+    }
+
+    return( -1 );
+ }
+
 //----------------------------------------------------------------------------------------
 // Add to the module map. The entries in the module map are sorted by the SPA 
 // address range, which also cannot overlap. We look for the insertion position,

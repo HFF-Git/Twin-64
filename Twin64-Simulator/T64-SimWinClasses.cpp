@@ -76,38 +76,6 @@ const char *pageTypeStr( uint8_t pTyp ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Routine for creating the access rights string. It consists of the page access and 
-// the two privilege levels.
-//
-//----------------------------------------------------------------------------------------
-int buildAccessRightsStr( char *bufStr, int type, int p1, int p2 ) {
-    
-    switch( type ) {
-            
-        case ACC_READ_ONLY:     return( snprintf( bufStr, 10, 
-                                                  "[ro:%1d:%1d]", 
-                                                  p1 % 2, 
-                                                  p2 % 2 )); 
-        
-
-        case ACC_READ_WRITE:    return( snprintf( bufStr, 10, 
-                                                  "[rW:%1d:%1d]", 
-                                                  p1 % 2, 
-                                                  p2 % 2 ));
-
-        case ACC_EXECUTE:       return( snprintf( bufStr, 10, 
-                                                  "[ex:%1d:%1d]", 
-                                                  p1 % 2, 
-                                                  p2 % 2 ));
-
-        default:                return( snprintf( bufStr, 10, 
-                                                  "[ex:%1d:%1d]", 
-                                                  p1 % 2, 
-                                                  p2 % 2 ));        
-    }
-}
-
-//----------------------------------------------------------------------------------------
 // Line sanitizing. We cannot just print out whatever is in the line buffer, since 
 // it may contains dangerous escape sequences, which would garble our terminal 
 // screen layout. In the command window we just allow "safe" escape sequences, 
@@ -122,11 +90,6 @@ bool isSafeFinalByte( char finalByte ) {
     
     //Example:  m = SGR (color/formatting), others can be added
     return finalByte == 'm';
-}
-
-bool isDangerousFinalByte( char finalByte ) {
-    
-    return strchr("ABCDHfJKnsu", finalByte) != NULL;
 }
 
 void sanitizeLine( const char *inputStr, char *outputStr ) {

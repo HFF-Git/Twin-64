@@ -430,10 +430,4 @@ inline bool isInIoAdrRange( T64Word adr ) {
     return(( adr >= T64_IO_MEM_START ) && ( adr <= T64_IO_MEM_LIMIT ));
 }
 
-//----------------------------------------------------------------------------------------
-// Little helpers.
-//
-//----------------------------------------------------------------------------------------
-void upshiftStr( char *str );
-
 #endif // T64_Common_Util_h

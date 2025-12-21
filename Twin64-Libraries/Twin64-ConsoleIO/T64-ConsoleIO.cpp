@@ -219,36 +219,6 @@ int SimConsoleIO::readChar( ) {
 // accumulate larger sequences and only use "writeChars" for printing.
 //
 //----------------------------------------------------------------------------------------
-#if 0 // ??? old version 
-
-int SimConsoleIO::writeChars( const char *format, ... ) {
-    
-    va_list args;
-    
-    va_start( args, format );
-    int len = vsnprintf( outputBuffer, sizeof( outputBuffer ), format, args );
-    va_end(args);
-    
-    if ( len > 0 ) {
-        
-        for ( int i = 0; i < len; i++  ) {
-          
-            #if __APPLE__
-            write( STDOUT_FILENO, &outputBuffer[ i ], 1 );
-
-             #else
-            
-             _putch( int( outputBuffer[ i ]) );
-            
-            #endif
-        }
-    }
-    
-    return( len );
-}
-
-#else
-
 int SimConsoleIO::writeChars( const char *format, ... ) {
 
     va_list args;
@@ -287,7 +257,6 @@ int SimConsoleIO::writeChars( const char *format, ... ) {
 
     return len;
 }
-#endif
 
 //****************************************************************************************
 //****************************************************************************************

@@ -212,15 +212,15 @@ static inline uint8_t plru8Update( uint8_t state, int way ) {
 // precompute bit offsets, masks, and so on.
 //
 //----------------------------------------------------------------------------------------
-T64Cache::T64Cache( T64Processor        *proc, 
-                    T64CacheKind        cacheType, 
-                    T64CacheType   cacheStructure ) { 
+T64Cache::T64Cache( T64Processor    *proc, 
+                    T64CacheKind    cKind, 
+                    T64CacheType    cType ) { 
 
-    this -> cacheKind       = cacheType;
-    this -> cacheType  = cacheStructure;
-    this -> proc            = proc;
+    this -> cacheKind   = cKind;
+    this -> cacheType   = cType;
+    this -> proc        = proc;
 
-    switch ( cacheStructure ) {
+    switch ( cType ) {
 
         case T64_CT_2W_64S_8L: 
         case T64_CT_2W_128S_4L:     ways = 2;   break;
@@ -234,7 +234,7 @@ T64Cache::T64Cache( T64Processor        *proc,
         default:                    ways = 2; 
     }
 
-    switch ( cacheStructure ) {
+    switch ( cType ) {
 
         case T64_CT_2W_128S_4L:    
         case T64_CT_4W_128S_4L:

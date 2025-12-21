@@ -48,8 +48,8 @@ T64Processor::T64Processor( T64System           *sys,
                             T64CpuType          cpuType,
                             T64TlbType          iTlbType,
                             T64TlbType          dTlbType,
-                            T64CacheType   iCacheStructure,
-                            T64CacheType   dCacheStructure,
+                            T64CacheType        iCacheType,
+                            T64CacheType        dCacheType,
                             T64Word             hpaAdr, 
                             int                 hpaLen,
                             T64Word             spaAdr,
@@ -70,8 +70,8 @@ T64Processor::T64Processor( T64System           *sys,
     iTlb    = new T64Tlb( this, T64_TK_INSTR_TLB, iTlbType );
     dTlb    = new T64Tlb( this, T64_TK_DATA_TLB, dTlbType );
 
-    iCache  = new T64Cache( this, T64_CK_INSTR_CACHE, iCacheStructure );
-    dCache  = new T64Cache( this, T64_CK_DATA_CACHE, dCacheStructure );
+    iCache  = new T64Cache( this, T64_CK_INSTR_CACHE, iCacheType );
+    dCache  = new T64Cache( this, T64_CK_DATA_CACHE, dCacheType );
 
     this -> reset( );
 }

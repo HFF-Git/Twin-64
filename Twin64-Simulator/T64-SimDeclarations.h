@@ -71,7 +71,7 @@
 //
 // Total size of the screen can vary. It is the sum of all active window line plus
 // the command window lines. Command window is a bit special on that it has an input
-// lineat the lowest line. Scroll lock after the active windows before the command
+// line at the lowest line. Scroll lock after the active windows before the command
 // window. Routines to move cursor, print fields with attributes.
 //
 // In addition, windows can be organized in stacks. The stacks are displayed next
@@ -221,7 +221,17 @@ enum SimTokId : uint16_t {
     TOK_CPU                 = 212,   
     TOK_ITLB                = 213,      TOK_DTLB                = 214,  
     TOK_ICACHE              = 215,      TOK_DCACHE              = 216,
+
+    TOK_TLB_FA_64S          = 300,      TOK_TLB_FA_128S         = 301,
    
+    TOK_CACHE_SA_2W_128S_4L = 310,      TOK_CACHE_SA_4W_128S_4L = 311, 
+    TOK_CACHE_SA_8W_128S_4L = 312, 
+
+    TOK_CACHE_SA_2W_64S_8L  = 313,      TOK_CACHE_SA_4W_64S_8L  = 314, 
+    TOK_CACHE_SA_8W_64S_8L  = 315,
+
+    TOK_MEM_READ_ONLY       = 320,      TOK_MEM_READ_WRITE      = 321,
+
     //------------------------------------------------------------------------------------
     // Line Commands.
     //

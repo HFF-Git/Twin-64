@@ -172,6 +172,7 @@ struct T64System {
 
     T64System( );
 
+    int                 getFreeModuleNum( );
     int                 addToModuleMap( T64Module *module );
     
     T64ModuleType       getModuleType( int modNum );

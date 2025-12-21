@@ -25,7 +25,6 @@
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 
-
 //----------------------------------------------------------------------------------------
 // Local data for command line option parsing.
 //
@@ -169,10 +168,17 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
 // NM <mod-type> <mod-params>  - add a new module of type mod-type with parameters
 // RM <mod-num>                - remove module with module number mod-num
 //
-// the  parameters are module type dependent. Many of the parameters are 
-// enumerated values for caches, TLBs, etc. We could just use their simple 
-// numbers or accept their names and convert them to a number internally. 
+// Example:
 //
+// MN proc, itlb, FA_64S, dtlb, FA_64S, icache, SA_2W_128S_4L, dcache, SA_8W_128S_4L
+//
+// MN proc, ( cpu: NIL ), ( itlb:FA_64S ), ( dtlb:FA_64S ), ( icache:SA_2W_128S_4L ), ...
+// seems easer to read...
+// 
 // The NM command could then be used in an XF file as the initial setup.
 // Best of all, we around to come up with config file syntax and a parser for it.
+//
+// The module number is assigned by the system, not the config!
+//
+//
 //----------------------------------------------------------------------------------------
