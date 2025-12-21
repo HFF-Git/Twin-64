@@ -30,7 +30,7 @@
 
 const char SIM_VERSION[ ] = "A.00.01";
 const char SIM_GIT_BRANCH[ ] = "main";
-const int  SIM_PATCH_LEVEL = 3;
+const int  SIM_PATCH_LEVEL = 4;
 
 #if __APPLE__
 const bool SIM_IS_APPLE = true;
