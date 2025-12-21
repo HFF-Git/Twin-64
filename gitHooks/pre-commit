@@ -31,7 +31,7 @@ fi
 VERSION_FILE="$REPO_ROOT/Twin64-Simulator/T64-SimVersion.h"
 
 # Update the patch level using Python
-python "$SCRIPT_PATH" "$VERSION_FILE"
+python3 "$SCRIPT_PATH" "$VERSION_FILE"
 
 # Stage the modified version file
 git add "$VERSION_FILE"
