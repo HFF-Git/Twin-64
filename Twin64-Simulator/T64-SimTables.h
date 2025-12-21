@@ -63,6 +63,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ICACHE",     .typ = TYP_SYM,     .tid = TOK_ICACHE                   },
     { .name = "DCACHE",     .typ = TYP_SYM,     .tid = TOK_DCACHE                   },
     { .name = "MEM",        .typ = TYP_SYM,     .tid = TOK_MEM                      },
+    { .name = "IO",         .typ = TYP_SYM,     .tid = TOK_IO                       },
     { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT                     },
 
     { .name = "DEC",        .typ = TYP_SYM,     .tid = TOK_DEC,   .u = { .val = 10 }},
@@ -93,6 +94,8 @@ const SimToken cmdTokTab[ ] = {
     
     { .name = "DM",         .typ = TYP_CMD,     .tid = CMD_DM                       },
     { .name = "DW",         .typ = TYP_CMD,     .tid = CMD_DW                       },
+    { .name = "NM",         .typ = TYP_CMD,     .tid = CMD_NM                       },
+    { .name = "RM",         .typ = TYP_CMD,     .tid = CMD_RM                       },
     { .name = "RESET",      .typ = TYP_CMD,     .tid = CMD_RESET                    },
     { .name = "RUN",        .typ = TYP_CMD,     .tid = CMD_RUN                      },
     { .name = "STEP",       .typ = TYP_CMD,     .tid = CMD_STEP                     },
@@ -231,34 +234,34 @@ const SimToken cmdTokTab[ ] = {
     // TLB and Cache configuration types.
     //
     //------------------------------------------------------------------------------------
-    { .name = "OK_TLB_FA_64S",              .typ = TYP_SYM, 
+    { .name = "TLB_FA_64S",                 .typ = TYP_SYM, 
       .tid = TOK_TLB_FA_64S,                .u = { .val = 0 }},   
 
-    { .name = "TOK_TLB_FA_128S",            .typ = TYP_SYM, 
+    { .name = "TLB_FA_128S",                .typ = TYP_SYM, 
       .tid = TOK_TLB_FA_128S,               .u = { .val = 0 }},
 
-    { .name = "TOK_CACHE_SA_2W_128S_4L",    .typ = TYP_SYM, 
+    { .name = "CACHE_SA_2W_128S_4L",        .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
 
-    { .name = "TOK_CACHE_SA_4W_128S_4L",    .typ = TYP_SYM, 
+    { .name = "CACHE_SA_4W_128S_4L",        .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
 
-    { .name = "TOK_CACHE_SA_8W_128S_4L",    .typ = TYP_SYM, 
+    { .name = "CACHE_SA_8W_128S_4L",        .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_128S_4L,       .u = { .val = 0 }},
 
-    { .name = "TOK_CACHE_SA_2W_64S_8L",     .typ = TYP_SYM, 
+    { .name = "CACHE_SA_2W_64S_8L",         .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},
 
-    { .name = "TOK_CACHE_SA_4W_64S_8L",     .typ = TYP_SYM, 
+    { .name = "CACHE_SA_4W_64S_8L",         .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},  
     
-    { .name = "TOK_CACHE_SA_8W_64S_8L",     .typ = TYP_SYM, 
+    { .name = "CACHE_SA_8W_64S_8L",         .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},
 
-    { .name = "TOK_MEM_READ_ONLY",          .typ = TYP_SYM, 
+    { .name = "MEM_READ_ONLY",              .typ = TYP_SYM, 
       .tid = TOK_MEM_READ_ONLY,             .u = { .val = 0 }},
 
-    { .name = "TOK_MEM_READ_WRITE",         .typ = TYP_SYM, 
+    { .name = "MEM_READ_WRITE",             .typ = TYP_SYM, 
       .tid = TOK_MEM_READ_WRITE,            .u = { .val = 0 }}
 };
 
@@ -595,10 +598,24 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
 
     {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_NM,
+        .cmdNameStr     = (char *) "nm",
+        .cmdSyntaxStr   = (char *) "nm <mType> , [ <key> = <val> { , <key> = <val> } ]",
+        .helpStr        = (char *) "adds a module to the system"
+    },
+
+     {
+        .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RM,
+        .cmdNameStr     = (char *) "rm",
+        .cmdSyntaxStr   = (char *) "rm <mNum>",
+        .helpStr        = (char *) "removes a module from the system"
+    },
+
+    {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DM,
         .cmdNameStr     = (char *) "dm",
         .cmdSyntaxStr   = (char *) "dm [ <mNum>]",
-        .helpStr        = (char *) "display modules info"
+        .helpStr        = (char *) "display module info"
     },
 
     {

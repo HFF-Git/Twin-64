@@ -193,7 +193,7 @@ enum SimTokId : uint16_t {
     TOK_EOS                 = 2,        TOK_COMMA               = 3,            
     TOK_PERIOD              = 4,        TOK_COLON               = 5,        
     TOK_LPAREN              = 6,        TOK_RPAREN              = 7,        
-    TOK_QUOTE               = 8,        
+    TOK_QUOTE               = 8,        TOK_EQUAL               = 9,    
 
     TOK_PLUS                = 10,       TOK_MINUS               = 11,        
     TOK_MULT                = 12,       TOK_DIV                 = 13,
@@ -218,9 +218,9 @@ enum SimTokId : uint16_t {
     TOK_STATS               = 206,      TOK_TEXT                = 207,        
    
     TOK_SYS                 = 210,      TOK_PROC                = 211,
-    TOK_CPU                 = 212,   
-    TOK_ITLB                = 213,      TOK_DTLB                = 214,  
-    TOK_ICACHE              = 215,      TOK_DCACHE              = 216,
+    TOK_CPU                 = 212,      TOK_IO                  = 213,
+    TOK_ITLB                = 214,      TOK_DTLB                = 215,  
+    TOK_ICACHE              = 216,      TOK_DCACHE              = 217,
 
     TOK_TLB_FA_64S          = 300,      TOK_TLB_FA_128S         = 301,
    
@@ -244,15 +244,16 @@ enum SimTokId : uint16_t {
          
     CMD_XF                  = 1007,     CMD_LF                  = 1008,
     CMD_WRITE_LINE          = 1009,     CMD_DM                  = 1010,     
-    CMD_DW                  = 1011,    
+    CMD_DW                  = 1011,     CMD_NM                  = 1012,
+    CMD_RM                  = 1013,
     
-    CMD_RESET               = 1013,     CMD_RUN                 = 1014,     
-    CMD_STEP                = 1015,     CMD_MR                  = 1016,
-    CMD_DA                  = 1017,     CMD_MA                  = 1018,
-    CMD_ITLB_I              = 1019,     CMD_ITLB_D              = 1020, 
-    CMD_PTLB_I              = 1021,     CMD_PTLB_D              = 1022,
-    CMD_PCA_I               = 1023,     CMD_PCA_D               = 1024,
-    CMD_FCA_I               = 1025,     CMD_FCA_D               = 1026,
+    CMD_RESET               = 1020,     CMD_RUN                 = 1021,     
+    CMD_STEP                = 1022,     CMD_MR                  = 1023,
+    CMD_DA                  = 1024,     CMD_MA                  = 1025,
+    CMD_ITLB_I              = 1026,     CMD_ITLB_D              = 1027, 
+    CMD_PTLB_I              = 1028,     CMD_PTLB_D              = 1029,
+    CMD_PCA_I               = 1030,     CMD_PCA_D               = 1031,
+    CMD_FCA_I               = 1032,     CMD_FCA_D               = 1033,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -347,18 +348,19 @@ enum SimErrMsgId : int {
    
     
     ERR_EXPECTED_COMMA              = 100,
-    ERR_EXPECTED_LPAREN             = 101,
-    ERR_EXPECTED_RPAREN             = 102,
-    ERR_EXPECTED_CLOSING_QUOTE      = 323,
-    ERR_EXPECTED_NUMERIC            = 103,
-    ERR_EXPECTED_EXT_ADR            = 104,
-    ERR_EXPECTED_FILE_NAME          = 105,
-    ERR_EXPECTED_WIN_ID             = 106,
-    ERR_EXPECTED_WIN_TYPE           = 107,
-    ERR_EXPECTED_STACK_ID           = 108,
-    ERR_EXPECTED_REG_OR_SET         = 109,
-    ERR_EXPECTED_REG_SET            = 110,
-    ERR_EXPECTED_GENERAL_REG        = 111,
+    ERR_EXPECTED_COLON              = 101,
+    ERR_EXPECTED_LPAREN             = 102,
+    ERR_EXPECTED_RPAREN             = 103,
+    ERR_EXPECTED_CLOSING_QUOTE      = 104,
+    ERR_EXPECTED_NUMERIC            = 105,
+    ERR_EXPECTED_EXT_ADR            = 106,
+    ERR_EXPECTED_FILE_NAME          = 107,
+    ERR_EXPECTED_WIN_ID             = 108,
+    ERR_EXPECTED_WIN_TYPE           = 109,
+    ERR_EXPECTED_STACK_ID           = 110,
+    ERR_EXPECTED_REG_OR_SET         = 111,
+    ERR_EXPECTED_REG_SET            = 112,
+    ERR_EXPECTED_GENERAL_REG        = 113,
   
     ERR_EXPECTED_OFS                = 213,
     ERR_EXPECTED_START_OFS          = 214,
@@ -557,6 +559,8 @@ struct SimTokenizer {
    
     void            checkEOS( );
     void            acceptComma( );
+    void            acceptColon( );
+    void            acceptEqual( );
     void            acceptLparen( );
     void            acceptRparen( );
     SimTokId        acceptTokSym( SimErrMsgId errId );
@@ -1247,6 +1251,13 @@ private:
     void            doCmd( );
     void            redoCmd( );
     
+    void            addProcModule( );
+    void            addMemModule( );
+    void            addIoModule( );
+
+    void            addModuleCmd( );
+    void            removeModuleCmd( );
+
     void            displayModuleCmd( );
     void            displayStackCmd( );
     void            displayWindowCmd( );
@@ -1292,18 +1303,16 @@ private:
     void            winToggleCmd( );
     void            winExchangeCmd( );
 
-    private:
+private:
     
-    SimGlobals          *glb            = nullptr;
-    SimCmdHistory       *hist           = nullptr;
-    //SimTokenizer        *tok            = nullptr;
-    SimTokenizerFromString *tok        = nullptr;
-    
-    SimExprEvaluator    *eval           = nullptr;
-    SimWinOutBuffer     *winOut         = nullptr;
-    T64Assemble         *inlineAsm      = nullptr;
-    T64DisAssemble      *disAsm         = nullptr;   
-    SimTokId            currentCmd      = TOK_NIL;
+    SimGlobals              *glb        = nullptr;
+    SimCmdHistory           *hist       = nullptr;
+    SimTokenizerFromString  *tok        = nullptr;
+    SimExprEvaluator        *eval       = nullptr;
+    SimWinOutBuffer         *winOut     = nullptr;
+    T64Assemble             *inlineAsm  = nullptr;
+    T64DisAssemble          *disAsm     = nullptr;   
+    SimTokId                currentCmd  = TOK_NIL;
 };
 
 //----------------------------------------------------------------------------------------

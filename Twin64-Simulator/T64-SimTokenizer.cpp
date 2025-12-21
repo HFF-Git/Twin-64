@@ -425,6 +425,12 @@ void SimTokenizer::nextToken( ) {
         currentToken.tid   = TOK_COLON;
         nextChar( );
     }
+    else if ( currentChar == '=' ) {
+        
+        currentToken.typ   = TYP_SYM;
+        currentToken.tid   = TOK_EQUAL;
+        nextChar( );
+    }
     else if ( currentChar == '+' ) {
         
         currentToken.tid = TOK_PLUS;
@@ -522,6 +528,18 @@ void SimTokenizer::acceptComma( ) {
     
     if ( isToken( TOK_COMMA )) nextToken( );
     else throw ( ERR_EXPECTED_COMMA );
+}
+
+void SimTokenizer::acceptColon( ) {
+    
+    if ( isToken( TOK_COLON )) nextToken( );
+    else throw ( ERR_EXPECTED_COLON );
+}
+
+void SimTokenizer::acceptEqual( ) {
+    
+    if ( isToken( TOK_EQUAL )) nextToken( );
+    else throw ( ERR_EXPECTED_COLON );
 }
 
 void SimTokenizer::acceptLparen( ) {

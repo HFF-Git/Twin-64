@@ -183,11 +183,6 @@ bool isSafeFinalByte( char finalByte ) {
     return finalByte == 'm';
 }
 
-bool isDangerousFinalByte( char finalByte ) {
-    
-    return strchr("ABCDHfJKnsu", finalByte) != NULL;
-}
-
 void sanitizeLine( const char *inputStr, char *outputStr ) {
     
     const char  *src = inputStr;
@@ -803,6 +798,162 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "addProcModule" parses the parameters for a PROC module. We are entered with 
+// the token being the module type keyword. The routine loops over the key/value
+// pairs to get all module type info. Omitted key/value pairs are set to reasonable
+// defaults.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::addProcModule( ) {
+
+    SimTokId iTlbType   = TOK_TLB_FA_64S;
+    SimTokId dTlbType   = TOK_TLB_FA_64S;
+    SimTokId iCacheType = TOK_CACHE_SA_2W_128S_4L;
+    SimTokId dCacheType = TOK_CACHE_SA_4W_128S_4L;
+
+    tok -> nextToken( );
+    while ( tok -> isToken( TOK_COMMA )) {
+
+        tok -> nextToken( );
+
+        switch ( tok -> tokId( )) {
+
+            case TOK_ITLB: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_TLB_FA_64S ))) &&
+                    ( ! ( tok -> isToken( TOK_TLB_FA_128S )))) 
+                    throw( ERR_INVALID_ARG );
+
+                iTlbType = tok -> tokId( );
+
+            } break;
+
+            case TOK_DTLB: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_TLB_FA_64S ))) &&
+                    ( ! ( tok -> isToken( TOK_TLB_FA_128S )))) 
+                    throw( ERR_INVALID_ARG );
+
+                dTlbType = tok -> tokId( );
+                    
+            } break;
+
+            case TOK_ICACHE: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_CACHE_SA_2W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_2W_64S_8L  ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_64S_8L  ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_64S_8L  ))))
+                    throw( ERR_INVALID_ARG );
+
+                iCacheType = tok -> tokId( );
+                    
+            } break;
+
+            case TOK_DCACHE: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_CACHE_SA_2W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_128S_4L ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_2W_64S_8L  ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_64S_8L  ))) &&
+                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_64S_8L  ))))
+                    throw( ERR_INVALID_ARG );
+
+                dCacheType = tok -> tokId( );
+                    
+            } break;
+
+            default: throw( ERR_INVALID_MODULE_TYPE );
+
+        }
+
+        tok -> nextToken( );
+    }
+
+    tok -> checkEOS( );
+
+    // ??? now create the proc module...
+    // ??? need a free module id
+    // ??? do i have all parameters ?
+}
+
+//----------------------------------------------------------------------------------------
+// "addMemModule" parses the parameters for a memory module. We are entered with 
+// the token being the module type keyword. The routine loops over the key/value
+// pairs to get all module type info. Omitted key/value pairs are set to reasonable
+// defaults.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::addMemModule( ) {
+
+    SimTokId mType = TOK_MEM_READ_WRITE;
+
+    tok -> nextToken( );
+    while ( tok -> isToken( TOK_COMMA )) {
+
+        tok -> nextToken( );
+
+        switch ( tok -> tokId( )) {
+
+            case TOK_MEM: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_MEM_READ_WRITE ))) &&
+                    ( ! ( tok -> isToken( TOK_MEM_READ_ONLY )))) 
+                    throw( ERR_INVALID_ARG );
+
+                mType = tok -> tokId( );
+
+            } break;
+
+            // ??? how to get the SPA data....
+
+
+            default: throw( ERR_INVALID_MODULE_TYPE );
+        }
+
+        tok -> nextToken( );
+    }
+
+    tok -> checkEOS( );
+
+    // ??? now create the memory module...
+    // ??? need a free module id
+    // ??? do i have all parameters ?
+
+}
+
+//----------------------------------------------------------------------------------------
+// "addIoModule" parses the parameters for an IO module. We are entered with the
+// token being the module type keyword. The routine loops over the key/value pairs
+// to get all module type info. Omitted key/value pairs are set to reasonable
+// defaults.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::addIoModule( ) {
+
+    // ??? model after MEM module .....
+
+}
+
+//----------------------------------------------------------------------------------------
 // Display absolute memory content. We will show the memory starting with offset. 
 // The words per line is an environmental variable setting. The offset is rounded 
 // down to the next 8-byte boundary, the limit is rounded up to the next 8-byte 
@@ -1107,11 +1258,53 @@ void SimCommandsWin::loadElfFileCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Add a module to the system. This command will add a module to the system. It is 
+// typically used during startup when all modules are created. 
+// 
+//  NM <mType> [ "," <key> "=" <value> { "," <key> "=" <value> } ]
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::addModuleCmd( ) {
+
+
+    switch ( tok -> tokId( )) {
+
+        case TOK_PROC:  addProcModule( );   break;
+        case TOK_MEM:   addMemModule( );    break;
+        case TOK_IO:    addIoModule( );     break;
+        default:        throw( ERR_INVALID_MODULE_TYPE );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+// Remove a  module from the system. This command will remove the module and also
+// close any related window that was created referencing this module.
+//
+//  RM <mNum>
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::removeModuleCmd( ) {
+
+    int modNum = -1;
+
+     if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_MODULES );
+        tok -> checkEOS( );
+    }
+    else if ( ! tok -> isToken( TOK_EOS )) {
+        
+        throw ( ERR_INVALID_ARG );
+    }
+
+    // ??? remove the module
+    // ??? kill all related windows
+
+}
+
+//----------------------------------------------------------------------------------------
 // Display Module Table command. The simulator features a system bus to which the 
 // modules are plugged in. This command shows all known modules.
 //
 //  DM [ <mNum> ]
-//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModuleCmd( ) {
 
@@ -1119,7 +1312,7 @@ void SimCommandsWin::displayModuleCmd( ) {
 
      if ( tok -> tokTyp( ) == TYP_NUM ) {
 
-        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WIN_STACKS );
+        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_MODULES );
         tok -> checkEOS( );
     }
     else if ( ! tok -> isToken( TOK_EOS )) {
@@ -2401,7 +2594,10 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_RUN:           runCmd( );                      break;
                     case CMD_STEP:          stepCmd( );                     break;
 
-                    case CMD_DM:            displayModuleCmd( );            break;                    
+                    case CMD_NM:            addModuleCmd( );                break;
+                    case CMD_RM:            removeModuleCmd( );             break;
+                    case CMD_DM:            displayModuleCmd( );            break;   
+
                     case CMD_DW:            displayWindowCmd( );            break;  
 
                     case CMD_MR:            modifyRegCmd( );                break;
