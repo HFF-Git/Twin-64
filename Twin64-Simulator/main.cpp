@@ -36,13 +36,18 @@
 //----------------------------------------------------------------------------------------
 // Here we go.
 //
+// ??? need to think about. The verbose output is shown but then overwritten by 
+// the window output mechanism. This a bit of a chicken and egg issue. When we 
+// want program parameter options for the simulator display itself, then we
+// have to analyze before creating the window display.
+//
 //----------------------------------------------------------------------------------------
 int main( int argc, char * argv[] ) {
 
-    processCmdLineOptions( argc, argv );
-   
     SimGlobals *glb     = new SimGlobals( );
 
+    processCmdLineOptions( glb, argc, argv );
+   
     glb -> console      = new SimConsoleIO( );
     glb -> env          = new SimEnv( glb, 100 );
     glb -> winDisplay   = new SimWinDisplay( glb );

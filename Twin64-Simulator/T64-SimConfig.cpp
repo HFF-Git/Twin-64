@@ -96,11 +96,11 @@ int parseCmdLineOptions( int    argc,
 
 //----------------------------------------------------------------------------------------
 // "processCmdLineOptions" function to process all command line options. We call the
-// parser in a loop to get all options one by one.
+// parser in a loop to get all options one by one. The help option is special in 
+// that it will list the program call help and then exit.
 //
-// ??? under construction ...
 //----------------------------------------------------------------------------------------
-void processCmdLineOptions( int argc, char *argv[ ] ) {
+void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
     char *optArg = NULL;
     int   optVal = 0;
@@ -112,28 +112,53 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
 
         switch ( optVal ) {
 
-            case 'h':   // help
+            case 'h':  {
 
-                printf( "Twin64 Simulator Version %s\n", SIM_VERSION );
-                printf( "Usage: twin64 [options]\n" );
+                printf( "Twin64 Simulator Version %s, PatchLevel %d\n\n", 
+                        SIM_VERSION, SIM_PATCH_LEVEL );
+
+                printf( "Usage: Twin64-Simulator [options]\n\n" );
+
                 printf( "Options:\n" );
                 printf( "  --help                 : display this help message\n" );
+                printf( "  --version              : display program version\n" );
                 printf( "  --verbose              : enable verbose output\n" );
                 printf( "  --configfile=<file>    : specify configuration file\n" );
                 printf( "  --logfile=<file>       : specify log file\n" );
                 exit( 0 );
-                break;
+            
+            } break;
 
             case 'v': {
 
+                printf( "Twin64 Simulator Version %s, PatchLevel %d\n\n", 
+                        SIM_VERSION, SIM_PATCH_LEVEL );
+                exit( 0 );
 
+            } break;
+
+            case 'd': {
+
+                glb -> verboseFlag = true;
+        
             } break;
 
             case 'f': {
 
                 if ( optArg ) {
 
+                    strncpy( glb -> configFile, optArg, MAX_FILE_PATH_SIZE - 1 );
+                    glb -> configFile[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
 
+                    if ( glb->verboseFlag ) {
+
+                        printf( "Using config file: %s\n", glb->configFile );
+                    }   
+                } 
+                else {
+                
+                    printf( "Error: --configfile requires a filename\n" );
+                    exit( 1 );
                 }
 
             } break; 
@@ -141,19 +166,37 @@ void processCmdLineOptions( int argc, char *argv[ ] ) {
             case 'l': {
 
                 if ( optArg ) {
+        
+                    strncpy( glb -> logFile, optArg, MAX_FILE_PATH_SIZE - 1 );
+                    glb -> logFile[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
 
+                    #if 0
+                    glb -> logFp = fopen(glb->logFile, "w");
+                    if ( ! glb-> logFp ) {
+                        
+                        perror("Failed to open log file");
+                        exit(1);
+                    }
+                    #endif
 
+                    if ( glb->verboseFlag ) {
+
+                        printf("Logging to file: %s\n", glb -> logFile);
+                    }
+                }
+                else {
+        
+                    printf("Error: --logfile requires a filename\n");
+                    exit(1);
                 }
 
             } break; 
 
-            case '?': {
+            default: {
 
-
-            }  break;
-
-            default: ;
-               
+                printf( "Invalid command parameter option, use help\n" );
+                exit( 1 );
+            };
         }
     }
 }

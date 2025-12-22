@@ -232,6 +232,8 @@ enum SimTokId : uint16_t {
 
     TOK_MEM_READ_ONLY       = 320,      TOK_MEM_READ_WRITE      = 321,
 
+    TOK_MOD_SPA_ADR         = 322,      TOK_MOD_SPA_LEN         = 323,
+
     //------------------------------------------------------------------------------------
     // Line Commands.
     //
@@ -425,6 +427,8 @@ enum SimErrMsgId : int {
     ERR_CACHE_SET_NUM               = 603,
     ERR_CACHE_NOT_CONFIGURED        = 604,
     ERR_CACHE_SIZE_EXCEEDED         = 605,
+
+    ERR_MEM_OP_FAILED               = 700,
 };
 
 //----------------------------------------------------------------------------------------
@@ -1413,12 +1417,6 @@ public:
 };
 
 //----------------------------------------------------------------------------------------
-// Our entry into parsing program command line options.
-//
-//----------------------------------------------------------------------------------------
-void processCmdLineOptions( int argc, char *argv[ ] );
-
-//----------------------------------------------------------------------------------------
 // The globals, accessible to all objects. To ease the passing around there is the
 // idea a global structure with a reference to all the individual objects.
 //
@@ -1428,8 +1426,18 @@ struct SimGlobals {
     SimConsoleIO        *console        = nullptr;
     SimEnv              *env            = nullptr;
     SimWinDisplay       *winDisplay     = nullptr;
-    
     T64System           *system         = nullptr;
+
+    bool                verboseFlag                     = false;
+    char                configFile[MAX_FILE_PATH_SIZE]  = { 0 };
+    char                logFile[MAX_FILE_PATH_SIZE]     = { 0 };
+
 };
+
+//----------------------------------------------------------------------------------------
+// Our entry into parsing program command line options.
+//
+//----------------------------------------------------------------------------------------
+void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] );
 
 #endif  // Sim_Declarations_h

@@ -30,11 +30,12 @@
 // The simulator offers a set of command line options. Each option has a name, an 
 // argument type and a value returned when the option is found.
 //
-// ??? under construction...
 //----------------------------------------------------------------------------------------
 static struct SimCmdLineOptions optionTable[ ] = {
+
         { "help",       OPT_NO_ARGUMENT,       'h' },
-        { "verbose",    OPT_NO_ARGUMENT,       'v' },
+        { "version",    OPT_NO_ARGUMENT,       'v' },
+        { "verbose",    OPT_NO_ARGUMENT,       'd' },
         { "configfile", OPT_REQUIRED_ARGUMENT, 'f' },
         { "logfile",    OPT_REQUIRED_ARGUMENT, 'l' },
         {0, OPT_NO_ARGUMENT, 0}
@@ -56,6 +57,7 @@ const SimToken cmdTokTab[ ] = {
     { .name = "NIL",        .typ = TYP_SYM,     .tid = TOK_NIL,   .u = { .val = 0  }},
     { .name = "ALL",        .typ = TYP_SYM,     .tid = TOK_ALL                      },
     { .name = "SYS",        .typ = TYP_SYM,     .tid = TOK_SYS                      },
+    { .name = "MOD",        .typ = TYP_SYM,     .tid = TOK_MOD                      },
     { .name = "PROC",       .typ = TYP_SYM,     .tid = TOK_PROC                     },              
     { .name = "CPU",        .typ = TYP_SYM,     .tid = TOK_CPU                      },
     { .name = "ITLB",       .typ = TYP_SYM,     .tid = TOK_ITLB                     },
@@ -262,7 +264,14 @@ const SimToken cmdTokTab[ ] = {
       .tid = TOK_MEM_READ_ONLY,             .u = { .val = 0 }},
 
     { .name = "MEM_READ_WRITE",             .typ = TYP_SYM, 
-      .tid = TOK_MEM_READ_WRITE,            .u = { .val = 0 }}
+      .tid = TOK_MEM_READ_WRITE,            .u = { .val = 0 }},
+
+    { .name = "TOK_MOD_SPA_ADR",             .typ = TYP_SYM, 
+      .tid = TOK_MOD_SPA_ADR,                .u = { .val = 0 }},
+
+    { .name = "TOK_MOD_SPA_LEN",             .typ = TYP_SYM, 
+      .tid = TOK_MOD_SPA_LEN,                .u = { .val = 0 }}
+
 };
 
 const int MAX_CMD_TOKEN_TAB = sizeof( cmdTokTab ) / sizeof( SimToken );
@@ -496,7 +505,10 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_CACHE_SET_NUM,              
       .errStr = (char *) "Invalid cache set" },
-    
+
+    { .errNum = ERR_MEM_OP_FAILED,              
+      .errStr = (char *) "Memory operation error" },  
+      
 };
 
 const int MAX_ERR_MSG_TAB = sizeof( errMsgTab ) / sizeof( SimErrMsgTabEntry );

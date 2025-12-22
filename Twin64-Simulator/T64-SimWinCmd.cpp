@@ -806,6 +806,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addProcModule( ) {
 
+    int      modNum     = -1;
     SimTokId iTlbType   = TOK_TLB_FA_64S;
     SimTokId dTlbType   = TOK_TLB_FA_64S;
     SimTokId iCacheType = TOK_CACHE_SA_2W_128S_4L;
@@ -817,6 +818,18 @@ void SimCommandsWin::addProcModule( ) {
         tok -> nextToken( );
 
         switch ( tok -> tokId( )) {
+
+            case TOK_MOD: {
+
+                tok -> nextToken( );
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, MAX_MODULES );
+                }
+                else throw( ERR_INVALID_ARG );
+
+            } break;
 
             case TOK_ITLB: {
 
@@ -901,7 +914,10 @@ void SimCommandsWin::addProcModule( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addMemModule( ) {
 
-    SimTokId mType = TOK_MEM_READ_WRITE;
+    int      modNum = -1;
+    SimTokId mType  = TOK_MEM_READ_WRITE;
+    T64Word  spaAdr = 0;
+    T64Word  spaLen = 0;
 
     tok -> nextToken( );
     while ( tok -> isToken( TOK_COMMA )) {
@@ -909,6 +925,18 @@ void SimCommandsWin::addMemModule( ) {
         tok -> nextToken( );
 
         switch ( tok -> tokId( )) {
+
+            case TOK_MOD: {
+
+                tok -> nextToken( );
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, MAX_MODULES );
+                }
+                else throw( ERR_INVALID_ARG );
+                
+            } break;
 
             case TOK_MEM: {
 
@@ -923,8 +951,33 @@ void SimCommandsWin::addMemModule( ) {
 
             } break;
 
-            // ??? how to get the SPA data....
+            case TOK_MOD_SPA_ADR: {
 
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    spaAdr = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, UINT32_MAX );
+                }
+                else throw( ERR_INVALID_ARG );
+
+            } break;
+
+            case TOK_MOD_SPA_LEN: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    spaLen = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, UINT32_MAX );
+                }
+                else throw( ERR_INVALID_ARG );
+
+            } break;
 
             default: throw( ERR_INVALID_MODULE_TYPE );
         }
@@ -949,7 +1002,82 @@ void SimCommandsWin::addMemModule( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addIoModule( ) {
 
-    // ??? model after MEM module .....
+    int      modNum = -1;
+    SimTokId ioType = TOK_NIL; // ??? for now ...
+    T64Word  spaAdr = 0;
+    T64Word  spaLen = 0;
+
+    tok -> nextToken( );
+    while ( tok -> isToken( TOK_COMMA )) {
+
+        tok -> nextToken( );
+
+        switch ( tok -> tokId( )) {
+
+            case TOK_MOD: {
+
+                tok -> nextToken( );
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, MAX_MODULES );
+                }
+                else throw( ERR_INVALID_ARG );
+                
+            } break;
+
+            case TOK_MEM: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if (( ! ( tok -> isToken( TOK_MEM_READ_WRITE ))) &&
+                    ( ! ( tok -> isToken( TOK_MEM_READ_ONLY )))) 
+                    throw( ERR_INVALID_ARG );
+
+                ioType = tok -> tokId( );
+
+            } break;
+
+            case TOK_MOD_SPA_ADR: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    spaAdr = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, UINT32_MAX );
+                }
+                else throw( ERR_INVALID_ARG );
+
+            } break;
+
+            case TOK_MOD_SPA_LEN: {
+
+                tok -> nextToken( );
+                tok -> acceptEqual( );
+
+                if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                    spaLen = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                    0, UINT32_MAX );
+                }
+                else throw( ERR_INVALID_ARG );
+
+            } break;
+
+            default: throw( ERR_INVALID_MODULE_TYPE );
+        }
+
+        tok -> nextToken( );
+    }
+
+    tok -> checkEOS( );
+
+    // ??? now create the IO module...
+    // ??? need a free module id
+    // ??? do i have all parameters ?
 
 }
 
@@ -1537,7 +1665,6 @@ void SimCommandsWin::writeLineCmd( ) {
 //
 //  HIST [ depth ]
 //
-// ??? how about a negative depth shows relative numbers ?
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::histCmd( ) {
     
@@ -1682,7 +1809,7 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 
     if ( ! glb -> system -> writeMem( adr, (uint8_t *) &val, sizeof( T64Word ))) {
 
-        throw( 9998 ); // ??? fix ...
+        throw( ERR_MEM_OP_FAILED );
     }
 }
 
@@ -2069,7 +2196,7 @@ void SimCommandsWin::winForwardCmd( ) {
     
     if ( tok -> tokId( ) != TOK_EOS ) {
       
-        winItems = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 ); // ??? max
+        winItems = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
       
         if ( tok -> isToken( TOK_COMMA )) {
             
