@@ -36,11 +36,6 @@
 //----------------------------------------------------------------------------------------
 // Here we go.
 //
-// ??? need to think about. The verbose output is shown but then overwritten by 
-// the window output mechanism. This a bit of a chicken and egg issue. When we 
-// want program parameter options for the simulator display itself, then we
-// have to analyze before creating the window display.
-//
 //----------------------------------------------------------------------------------------
 int main( int argc, char * argv[] ) {
 

@@ -777,6 +777,19 @@ void SimCommandsWin::printWelcome( ) {
         
         winOut -> writeChars( "Git Branch: %s\n",
                               glb -> env -> getEnvVarStr((char *) ENV_GIT_BRANCH ));
+
+        if ( glb -> verboseFlag ) {
+
+            if ( strlen( glb -> configFileName ) > 0 ) {
+                
+                winOut -> writeChars( "Config File: %s\n", glb -> configFileName );
+            }
+
+            if ( strlen( glb -> logFileName ) > 0 ) {
+                
+                winOut -> writeChars( "Log File: %s\n", glb -> logFileName );
+            }
+        }
         
         winOut -> writeChars( "\n" );
     }

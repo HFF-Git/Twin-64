@@ -147,13 +147,8 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
                 if ( optArg ) {
 
-                    strncpy( glb -> configFile, optArg, MAX_FILE_PATH_SIZE - 1 );
-                    glb -> configFile[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
-
-                    if ( glb->verboseFlag ) {
-
-                        printf( "Using config file: %s\n", glb->configFile );
-                    }   
+                    strncpy( glb -> configFileName, optArg, MAX_FILE_PATH_SIZE - 1 );
+                    glb -> configFileName[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
                 } 
                 else {
                 
@@ -167,8 +162,8 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
                 if ( optArg ) {
         
-                    strncpy( glb -> logFile, optArg, MAX_FILE_PATH_SIZE - 1 );
-                    glb -> logFile[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
+                    strncpy( glb -> logFileName, optArg, MAX_FILE_PATH_SIZE - 1 );
+                    glb -> logFileName[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
 
                     #if 0
                     glb -> logFp = fopen(glb->logFile, "w");
@@ -178,11 +173,6 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
                         exit(1);
                     }
                     #endif
-
-                    if ( glb->verboseFlag ) {
-
-                        printf("Logging to file: %s\n", glb -> logFile);
-                    }
                 }
                 else {
         
