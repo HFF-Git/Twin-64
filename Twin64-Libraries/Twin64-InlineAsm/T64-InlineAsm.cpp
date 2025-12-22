@@ -481,22 +481,22 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_DSR,   .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_2 ) },
     
     {   .name   = "SHL1A",      .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
+        .tid    = TOK_OP_SHL1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_0 ) },
 
     {   .name   = "SHL2A",      .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_4 ) },
+        .tid    = TOK_OP_SHL2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_0 ) },
 
     {   .name   = "SHL3A",      .typ = TYP_OP_CODE, 
-        .tid = TOK_OP_SHL3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_6 ) },
+        .tid = TOK_OP_SHL3A,    .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_0 ) },
 
     {   .name   = "SHR1A",      .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_3 ) },
+        .tid    = TOK_OP_SHR1A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
 
     {   .name   = "SHR2A",      .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_5 ) },
+        .tid    = TOK_OP_SHR2A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
 
     {   .name   = "SHR3A",      .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_7 ) },
+        .tid    = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
     
     {   .name   = "LDI",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
@@ -1831,7 +1831,14 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) {
 
         throw ( ERR_INVALID_INSTR_OPT );
-    } 
+    }
+    
+    switch( instrOpToken ) {
+        
+        case TOK_OP_SHL1A: depositInstrField( instr, 13, 2, 1 ); break;
+        case TOK_OP_SHL2A: depositInstrField( instr, 13, 2, 2 ); break;
+        case TOK_OP_SHL3A: depositInstrField( instr, 13, 2, 3 ); break;
+    }
     
     acceptRegR( instr );
     acceptComma( );
@@ -1841,12 +1848,12 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        depositInstrBit( instr, 13, true );
+        depositInstrField( instr, 19, 3, 0 );
         depositInstrRegA( instr, (uint32_t) rExpr.val );
     }
     else if ( rExpr.typ == TYP_NUM ) {
         
-        depositInstrBit( instr,14, true );
+        depositInstrField( instr, 19, 3, 1 );
         depositInstrImm13( instr, (uint32_t) rExpr.val );
     }
     else throw ( ERR_EXPECTED_GENERAL_REG );
@@ -1876,6 +1883,13 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
 
         throw ( ERR_INVALID_INSTR_OPT );
     } 
+
+    switch( instrOpToken ) {
+        
+        case TOK_OP_SHL1A: depositInstrField( instr, 13, 2, 1 ); break;
+        case TOK_OP_SHL2A: depositInstrField( instr, 13, 2, 2 ); break;
+        case TOK_OP_SHL3A: depositInstrField( instr, 13, 2, 3 ); break;
+    }
     
     acceptRegR( instr );
     acceptComma( );
@@ -1885,12 +1899,12 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) {
         
-        depositInstrBit( instr, 13, true );
+        depositInstrField( instr, 19, 3, 2 );
         depositInstrRegA( instr, (uint32_t) rExpr.val );
     }
     else if ( rExpr.typ == TYP_NUM ) {
         
-        depositInstrBit( instr,14, true );
+        depositInstrField( instr, 19, 3, 3 );
         depositInstrImm13( instr, (uint32_t) rExpr.val );
     }
     else throw ( ERR_EXPECTED_GENERAL_REG );

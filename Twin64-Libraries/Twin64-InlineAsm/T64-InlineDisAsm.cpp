@@ -234,16 +234,33 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
         }
             
         case ( OPC_GRP_ALU * 16 + OPC_SHAOP ): {
-          
+
             switch ( extractInstrField( instr, 19, 3 )) {
                     
-                case 2: return ( snprintf( buf, LEN_16, "SHL1A" )); 
-                case 4: return ( snprintf( buf, LEN_16, "SHL2A" ));
-                case 6: return ( snprintf( buf, LEN_16, "SHL3A" )); 
+                case 0:
+                case 1: {
+
+                    switch ( extractInstrField( instr, 13, 2 )) {
+                    
+                        case 1: return ( snprintf( buf, LEN_16, "SHL1A" )); 
+                        case 2: return ( snprintf( buf, LEN_16, "SHL2A" ));
+                        case 3: return ( snprintf( buf, LEN_16, "SHL3A" )); 
+                        default: return ( snprintf( buf, LEN_16, "**SHAOP**" ));
+                    }
                 
-                case 3: return ( snprintf( buf, LEN_16, "SHR1A" )); 
-                case 5: return ( snprintf( buf, LEN_16, "SHR2A" )); 
-                case 7: return ( snprintf( buf, LEN_16, "SHR3A" ));
+                } break;
+
+                case 2: 
+                case 3: {
+
+                    switch ( extractInstrField( instr, 13, 2 )) {
+                    
+                        case 1: return ( snprintf( buf, LEN_16, "SHR1A" )); 
+                        case 2: return ( snprintf( buf, LEN_16, "SHR2A" ));
+                        case 3: return ( snprintf( buf, LEN_16, "SHR3A" )); 
+                        default: return ( snprintf( buf, LEN_16, "**SHAOP**" ));
+                    }
+                }  break;
                
                 default: return ( snprintf( buf, LEN_16, "**SHAOP**" ));
             }
