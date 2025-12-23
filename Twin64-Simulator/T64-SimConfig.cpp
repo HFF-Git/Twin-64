@@ -120,11 +120,12 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
                 printf( "Usage: Twin64-Simulator [options]\n\n" );
 
                 printf( "Options:\n" );
-                printf( "  --help                 : display this help message\n" );
-                printf( "  --version              : display program version\n" );
-                printf( "  --verbose              : enable verbose output\n" );
-                printf( "  --configfile=<file>    : specify configuration file\n" );
-                printf( "  --logfile=<file>       : specify log file\n" );
+                printf( "  --help               : display this help message\n" );
+                printf( "  --version            : display program version\n" );
+                printf( "  --verbose            : enable verbose output\n" );
+                printf( "  --configfile=<file>  : specify configuration file\n" );
+                printf( "  --logfile=<file>     : specify log file\n" );
+                printf( "  --initfile=<file>    : specify init file\n" );
                 exit( 0 );
             
             } break;
@@ -181,6 +182,23 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
                 }
 
             } break; 
+
+            case 'i': {
+
+                if ( optArg ) {
+        
+                    strncpy( glb -> initFileName, optArg, MAX_FILE_PATH_SIZE - 1 );
+                    glb -> initFileName[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
+
+                    // ??? what to do with the file ?
+                }
+                else {
+        
+                    printf("Error: --initfile requires a filename\n");
+                    exit(1);
+                }
+
+            } break;
 
             default: {
 

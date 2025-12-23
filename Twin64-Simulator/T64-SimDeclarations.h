@@ -1431,9 +1431,10 @@ struct SimGlobals {
     SimWinDisplay       *winDisplay     = nullptr;
     T64System           *system         = nullptr;
 
-    bool                verboseFlag                         = false;
-    char                configFileName[MAX_FILE_PATH_SIZE]  = { 0 };
-    char                logFileName[MAX_FILE_PATH_SIZE]     = { 0 };
+    bool                verboseFlag                             = false;
+    char                configFileName[ MAX_FILE_PATH_SIZE ]    = { 0 };
+    char                logFileName[ MAX_FILE_PATH_SIZE ]       = { 0 };
+    char                initFileName[ MAX_FILE_PATH_SIZE ]      = { 0 };      
 
 };
 

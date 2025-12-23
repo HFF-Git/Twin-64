@@ -33,11 +33,12 @@
 //----------------------------------------------------------------------------------------
 static struct SimCmdLineOptions optionTable[ ] = {
 
-        { "help",       OPT_NO_ARGUMENT,       'h' },
-        { "version",    OPT_NO_ARGUMENT,       'v' },
-        { "verbose",    OPT_NO_ARGUMENT,       'd' },
-        { "configfile", OPT_REQUIRED_ARGUMENT, 'f' },
-        { "logfile",    OPT_REQUIRED_ARGUMENT, 'l' },
+        { "help",       OPT_NO_ARGUMENT,        'h' },
+        { "version",    OPT_NO_ARGUMENT,        'v' },
+        { "verbose",    OPT_NO_ARGUMENT,        'd' },
+        { "configfile", OPT_REQUIRED_ARGUMENT,  'f' },
+        { "logfile",    OPT_REQUIRED_ARGUMENT,  'l' },
+        { "initfile",   OPT_REQUIRED_ARGUMENT,  'i' },
         {0, OPT_NO_ARGUMENT, 0}
     };
 
