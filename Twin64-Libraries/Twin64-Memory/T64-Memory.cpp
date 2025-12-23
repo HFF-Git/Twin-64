@@ -70,6 +70,10 @@ T64Memory::T64Memory( T64System     *sys,
     reset( );
 }
 
+T64Memory:: ~T64Memory( ) {
+
+}
+
 //----------------------------------------------------------------------------------------
 // Reset the memory module. We clear out the physical memory range.
 //

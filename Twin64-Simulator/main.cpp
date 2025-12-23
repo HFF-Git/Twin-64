@@ -69,8 +69,8 @@ int main( int argc, char * argv[] ) {
     T64Memory *pdc = 
         new T64Memory(  glb -> system,
                         0, 
-                        T64_MK_ROM,
-                        T64_MT_NIL,
+                        T64_MK_NIL,
+                        T64_MT_ROM,
                         T64_IO_HPA_MEM_START + ( 0 * T64_PAGE_SIZE_BYTES ),
                         T64_PAGE_SIZE_BYTES,
                         T64_PDC_MEM_START,
@@ -79,8 +79,8 @@ int main( int argc, char * argv[] ) {
     T64Memory *mem1 = 
         new T64Memory(  glb -> system,
                         1, 
-                        T64_MK_RAM,
-                        T64_MT_NIL,
+                        T64_MK_NIL,
+                        T64_MT_RAM,
                         T64_IO_HPA_MEM_START + ( 1 * T64_PAGE_SIZE_BYTES ),
                         T64_PAGE_SIZE_BYTES,
                         0,
@@ -89,8 +89,8 @@ int main( int argc, char * argv[] ) {
     T64Memory *mem2 = 
         new T64Memory(  glb -> system,
                         2,
-                        T64_MK_RAM,
-                        T64_MT_NIL, 
+                        T64_MK_NIL,
+                        T64_MT_RAM, 
                         T64_IO_HPA_MEM_START + ( 2 * T64_PAGE_SIZE_BYTES ),
                         T64_PAGE_SIZE_BYTES,
                         64 * T64_PAGE_SIZE_BYTES,

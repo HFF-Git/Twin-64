@@ -34,14 +34,14 @@
 //----------------------------------------------------------------------------------------
 enum T64MemKind : int {
 
-    T64_MK_NIL          = 0,
-    T64_MK_RAM          = 1,
-    T64_MK_ROM          = 2
+    T64_MK_NIL          = 0
 };
 
 enum T64MemType : int {
 
-    T64_MT_NIL          = 0
+    T64_MT_NIL          = 0,
+    T64_MT_RAM          = 1,
+    T64_MT_ROM          = 2
 };
 
 //----------------------------------------------------------------------------------------
@@ -63,6 +63,8 @@ public:
                int          hpaLen,
                T64Word      spaAdr,
                int          spaLen);
+
+    virtual     ~ T64Memory( );
     
     void        reset( );
     void        step( );

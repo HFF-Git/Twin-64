@@ -32,10 +32,13 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
-// Check whether HPA or SPA address range of two modules overlap.
+// Check whether the module number is the same and whether HPA or SPA address range
+// of two modules overlap.
 //
 //----------------------------------------------------------------------------------------
 bool overlap( T64Module *a, T64Module *b ) {
+
+    if ( a -> getModuleNum( ) == b -> getModuleNum( )) return( true );
 
     T64Word aSpaStart = a -> getSpaAdr( );
     if ( a -> getSpaLen( ) > UINT64_MAX - aSpaStart ) return ( true );
@@ -77,21 +80,13 @@ T64System::T64System( ) {
 
 void T64System::initModuleMap( ) {
 
-     for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
+    for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
 
         moduleMap[ i ] = nullptr;
     }
+
+    moduleMapHwm = 0;
 }
-
- int  T64System::getFreeModuleNum( ) {
-
-    for ( int i = 0; i < MAX_MOD_MAP_ENTRIES; i++ ) {
-
-       if ( moduleMap[ i ] == nullptr ) return ( i );
-    }
-
-    return( -1 );
- }
 
 //----------------------------------------------------------------------------------------
 // Add to the module map. The entries in the module map are sorted by the SPA 
@@ -101,8 +96,8 @@ void T64System::initModuleMap( ) {
 //----------------------------------------------------------------------------------------
 int T64System::addToModuleMap( T64Module *module ) {
 
-    if ( module -> getModuleNum( ) >= MAX_MOD_MAP_ENTRIES ) return ( -1 );
-    
+    int modNum = module -> getModuleNum( );
+
     for ( int i = 0; i < moduleMapHwm; ++i ) {
 
         if ( overlap( moduleMap[ i ], module )) return ( -2 ); 
@@ -119,7 +114,37 @@ int T64System::addToModuleMap( T64Module *module ) {
 
     return ( 0 );
 }
-    
+
+//----------------------------------------------------------------------------------------
+// Remove a module from the module map. The map remains sorted by SPA address.
+// We find the module, shift all entries after it down, and decrement HWM.
+//
+// Returns 0 on success, -1 if not found.
+//----------------------------------------------------------------------------------------
+int T64System::removeFromModuleMap( T64Module *module ) {
+
+    int pos = -1;
+
+    for ( int i = 0; i < moduleMapHwm; ++i ) {
+
+        if ( moduleMap[ i ] == module ) {
+            pos = i;
+            break;
+        }
+    }
+
+    if ( pos < 0 ) return ( -1 );   // not found
+
+    for ( int i = pos; i < moduleMapHwm - 1; ++i ) {
+
+        moduleMap[ i ] = moduleMap[ i + 1 ];
+    }
+
+    moduleMapHwm--;
+
+    return ( 0 );
+}
+
 //----------------------------------------------------------------------------------------
 // Find the entry by its module number.
 //
@@ -363,8 +388,6 @@ T64Module::T64Module( T64ModuleType    modType,
     this -> spaAdr          = spaAdr;
     this -> spaLen          = spaLen;
     this -> spaLimit        = spaAdr + spaLen - 1;
-
-    // ??? cross check start, len and limit ?
 }
 
 int T64Module::getModuleNum( ) {
@@ -396,11 +419,9 @@ const char *T64Module::getModuleTypeName( ) {
 T64Word T64Module::getHpaAdr( ) {
 
     return ( hpaAdr );
-
 }
 
 int T64Module::getHpaLen( ) {
-
 
     return ( hpaLen );
 }
@@ -408,7 +429,6 @@ int T64Module::getHpaLen( ) {
 T64Word T64Module::getSpaAdr( )  {
 
     return ( spaAdr );
-
 }
 
 int T64Module::getSpaLen( )  {

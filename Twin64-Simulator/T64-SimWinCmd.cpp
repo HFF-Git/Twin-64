@@ -819,12 +819,12 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addProcModule( ) {
 
-    int      modNum     = -1;
-    SimTokId iTlbType   = TOK_TLB_FA_64S;
-    SimTokId dTlbType   = TOK_TLB_FA_64S;
-    SimTokId iCacheType = TOK_CACHE_SA_2W_128S_4L;
-    SimTokId dCacheType = TOK_CACHE_SA_4W_128S_4L;
-
+    int          modNum     = -1;
+    T64TlbType   iTlbType   = T64_TT_FA_64S; 
+    T64TlbType   dTlbType   = T64_TT_FA_64S; 
+    T64CacheType iCacheType = T64_CT_2W_128S_4L;
+    T64CacheType dCacheType = T64_CT_4W_128S_4L;
+    
     tok -> nextToken( );
     while ( tok -> isToken( TOK_COMMA )) {
 
@@ -849,11 +849,11 @@ void SimCommandsWin::addProcModule( ) {
                 tok -> nextToken( );
                 tok -> acceptEqual( );
 
-                if (( ! ( tok -> isToken( TOK_TLB_FA_64S ))) &&
-                    ( ! ( tok -> isToken( TOK_TLB_FA_128S )))) 
-                    throw( ERR_INVALID_ARG );
-
-                iTlbType = tok -> tokId( );
+                if ( tok -> isToken( TOK_TLB_FA_64S )) 
+                    iTlbType = T64_TT_FA_64S;
+                else if ( tok -> isToken( TOK_TLB_FA_128S )) 
+                    iTlbType = T64_TT_FA_128S;
+                else throw( ERR_INVALID_ARG );
 
             } break;
 
@@ -862,12 +862,12 @@ void SimCommandsWin::addProcModule( ) {
                 tok -> nextToken( );
                 tok -> acceptEqual( );
 
-                if (( ! ( tok -> isToken( TOK_TLB_FA_64S ))) &&
-                    ( ! ( tok -> isToken( TOK_TLB_FA_128S )))) 
-                    throw( ERR_INVALID_ARG );
-
-                dTlbType = tok -> tokId( );
-                    
+                if ( tok -> isToken( TOK_TLB_FA_64S )) 
+                    dTlbType = T64_TT_FA_64S;
+                else if ( tok -> isToken( TOK_TLB_FA_128S )) 
+                    dTlbType = T64_TT_FA_128S;
+                else throw( ERR_INVALID_ARG );
+      
             } break;
 
             case TOK_ICACHE: {
@@ -875,16 +875,47 @@ void SimCommandsWin::addProcModule( ) {
                 tok -> nextToken( );
                 tok -> acceptEqual( );
 
-                if (( ! ( tok -> isToken( TOK_CACHE_SA_2W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_2W_64S_8L  ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_64S_8L  ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_64S_8L  ))))
-                    throw( ERR_INVALID_ARG );
+                switch ( tok -> tokId( )) {
 
-                iCacheType = tok -> tokId( );
+                    case TOK_CACHE_SA_2W_128S_4L: {
+                        
+                        iCacheType = T64_CT_2W_128S_4L; 
                     
+                    } break;
+
+                    case TOK_CACHE_SA_4W_128S_4L: {
+                        
+                        iCacheType = T64_CT_4W_128S_4L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_8W_128S_4L: {
+                        
+                        iCacheType = T64_CT_8W_128S_4L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_2W_64S_8L: {
+                        
+                        iCacheType = T64_CT_2W_64S_8L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_4W_64S_8L: {
+                        
+                        iCacheType = T64_CT_4W_64S_8L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_8W_64S_8L: {
+                        
+                        iCacheType = T64_CT_8W_64S_8L; 
+                    
+                    } break;
+                
+                    default: throw( ERR_INVALID_ARG );
+                }
+
             } break;
 
             case TOK_DCACHE: {
@@ -892,20 +923,50 @@ void SimCommandsWin::addProcModule( ) {
                 tok -> nextToken( );
                 tok -> acceptEqual( );
 
-                if (( ! ( tok -> isToken( TOK_CACHE_SA_2W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_128S_4L ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_2W_64S_8L  ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_4W_64S_8L  ))) &&
-                    ( ! ( tok -> isToken( TOK_CACHE_SA_8W_64S_8L  ))))
-                    throw( ERR_INVALID_ARG );
+                switch ( tok -> tokId( )) {
 
-                dCacheType = tok -> tokId( );
+                    case TOK_CACHE_SA_2W_128S_4L: {
+                        
+                        dCacheType = T64_CT_2W_128S_4L; 
                     
+                    } break;
+
+                    case TOK_CACHE_SA_4W_128S_4L: {
+                        
+                        dCacheType = T64_CT_4W_128S_4L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_8W_128S_4L: {
+                        
+                        dCacheType = T64_CT_8W_128S_4L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_2W_64S_8L: {
+                        
+                        dCacheType = T64_CT_2W_64S_8L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_4W_64S_8L: {
+                        
+                        dCacheType = T64_CT_4W_64S_8L; 
+                    
+                    } break;
+
+                    case TOK_CACHE_SA_8W_64S_8L: {
+                        
+                        dCacheType = T64_CT_8W_64S_8L; 
+                    
+                    } break;
+                
+                    default: throw( ERR_INVALID_ARG );
+                }
+
             } break;
 
             default: throw( ERR_INVALID_MODULE_TYPE );
-
         }
 
         tok -> nextToken( );
@@ -913,9 +974,24 @@ void SimCommandsWin::addProcModule( ) {
 
     tok -> checkEOS( );
 
-    // ??? now create the proc module...
-    // ??? need a free module id
-    // ??? do i have all parameters ?
+    T64Processor *p = new T64Processor( glb -> system,
+                                        modNum,
+                                        T64_PO_NIL,
+                                        T64_CPU_T_NIL,
+                                        iTlbType,
+                                        dTlbType,
+                                        iCacheType,
+                                        dCacheType,
+                                        0,
+                                        0,
+                                        0,
+                                        0 );
+                    
+    if ( glb -> system -> addToModuleMap( p ) != 0 ) {
+
+        delete p;
+        throw( SimErrMsgId( 9999 )); // ??? fix
+    }    
 }
 
 //----------------------------------------------------------------------------------------
@@ -927,10 +1003,10 @@ void SimCommandsWin::addProcModule( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addMemModule( ) {
 
-    int      modNum = -1;
-    SimTokId mType  = TOK_MEM_READ_WRITE;
-    T64Word  spaAdr = 0;
-    T64Word  spaLen = 0;
+    int         modNum  = -1;
+    T64MemType  mType   = T64_MT_RAM;   
+    T64Word     spaAdr  = 0;
+    T64Word     spaLen  = 0;
 
     tok -> nextToken( );
     while ( tok -> isToken( TOK_COMMA )) {
@@ -956,11 +1032,15 @@ void SimCommandsWin::addMemModule( ) {
                 tok -> nextToken( );
                 tok -> acceptEqual( );
 
-                if (( ! ( tok -> isToken( TOK_MEM_READ_WRITE ))) &&
-                    ( ! ( tok -> isToken( TOK_MEM_READ_ONLY )))) 
-                    throw( ERR_INVALID_ARG );
+                if ( tok -> isToken( TOK_MEM_READ_ONLY )) {
 
-                mType = tok -> tokId( );
+                    mType = T64_MT_ROM;
+                }
+                else if ( tok -> isToken( TOK_MEM_READ_WRITE )) {
+
+                    mType = T64_MT_RAM;
+                }
+                else throw( ERR_INVALID_ARG );
 
             } break;
 
@@ -1000,10 +1080,20 @@ void SimCommandsWin::addMemModule( ) {
 
     tok -> checkEOS( );
 
-    // ??? now create the memory module...
-    // ??? need a free module id
-    // ??? do i have all parameters ?
+    T64Memory *m = new T64Memory( glb -> system,
+                                  modNum, 
+                                  T64_MK_NIL,
+                                  mType,
+                                  0,
+                                  0, 
+                                 spaAdr,
+                                 spaLen );
 
+    if ( glb -> system -> addToModuleMap( m ) != 0 ) {
+
+        delete m;
+        throw( SimErrMsgId( 9999 )); // ??? fix
+    }    
 }
 
 //----------------------------------------------------------------------------------------
@@ -1015,82 +1105,7 @@ void SimCommandsWin::addMemModule( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addIoModule( ) {
 
-    int      modNum = -1;
-    SimTokId ioType = TOK_NIL; // ??? for now ...
-    T64Word  spaAdr = 0;
-    T64Word  spaLen = 0;
-
-    tok -> nextToken( );
-    while ( tok -> isToken( TOK_COMMA )) {
-
-        tok -> nextToken( );
-
-        switch ( tok -> tokId( )) {
-
-            case TOK_MOD: {
-
-                tok -> nextToken( );
-                if ( tok -> tokTyp( ) == TYP_NUM ) {
-
-                    modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
-                                                    0, MAX_MODULES );
-                }
-                else throw( ERR_INVALID_ARG );
-                
-            } break;
-
-            case TOK_MEM: {
-
-                tok -> nextToken( );
-                tok -> acceptEqual( );
-
-                if (( ! ( tok -> isToken( TOK_MEM_READ_WRITE ))) &&
-                    ( ! ( tok -> isToken( TOK_MEM_READ_ONLY )))) 
-                    throw( ERR_INVALID_ARG );
-
-                ioType = tok -> tokId( );
-
-            } break;
-
-            case TOK_MOD_SPA_ADR: {
-
-                tok -> nextToken( );
-                tok -> acceptEqual( );
-
-                if ( tok -> tokTyp( ) == TYP_NUM ) {
-
-                    spaAdr = eval -> acceptNumExpr( ERR_INVALID_ARG, 
-                                                    0, UINT32_MAX );
-                }
-                else throw( ERR_INVALID_ARG );
-
-            } break;
-
-            case TOK_MOD_SPA_LEN: {
-
-                tok -> nextToken( );
-                tok -> acceptEqual( );
-
-                if ( tok -> tokTyp( ) == TYP_NUM ) {
-
-                    spaLen = eval -> acceptNumExpr( ERR_INVALID_ARG, 
-                                                    0, UINT32_MAX );
-                }
-                else throw( ERR_INVALID_ARG );
-
-            } break;
-
-            default: throw( ERR_INVALID_MODULE_TYPE );
-        }
-
-        tok -> nextToken( );
-    }
-
-    tok -> checkEOS( );
-
-    // ??? now create the IO module...
-    // ??? need a free module id
-    // ??? do i have all parameters ?
+    // ??? analog to mem...
 
 }
 
@@ -1388,7 +1403,9 @@ void SimCommandsWin::execFileCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Load an ELF file command. 
+// Load an ELF file command. This commands is a bit under construction. So far
+// we just call a loader routine which places the segments in physical memory.
+// One day, we may have more structure to the command and what it is loading.
 //
 // LF "<filepath>"
 //----------------------------------------------------------------------------------------
@@ -1418,7 +1435,9 @@ void SimCommandsWin::addModuleCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // Remove a  module from the system. This command will remove the module and also
-// close any related window that was created referencing this module.
+// close any related window that was created referencing this module. We find the
+// module, and delete the object based on its type. We also need to delete all 
+// windows associated with it and finally the module slot itself.
 //
 //  RM <mNum>
 //----------------------------------------------------------------------------------------
@@ -1428,17 +1447,26 @@ void SimCommandsWin::removeModuleCmd( ) {
 
      if ( tok -> tokTyp( ) == TYP_NUM ) {
 
-        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_MODULES );
-        tok -> checkEOS( );
+        modNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_MODULES );    
     }
-    else if ( ! tok -> isToken( TOK_EOS )) {
+
+    tok -> checkEOS( );
+
+    T64Module *m = glb -> system -> lookupByModNum( modNum );
+    if ( m != nullptr ) {
         
-        throw ( ERR_INVALID_ARG );
+        switch( m -> getModuleType( )) {
+
+            case MT_PROC: delete (T64Processor *) m;    break;
+            case MT_MEM:  delete (T64Memory *) m;       break;
+
+            default: ; // ??? throw an error ?
+        }
+
+        glb -> winDisplay -> windowKillByModNum( modNum );
+        glb -> system -> removeFromModuleMap( m ); 
     }
-
-    // ??? remove the module
-    // ??? kill all related windows
-
+    else throw((SimErrMsgId) 9999 );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1495,7 +1523,8 @@ void SimCommandsWin::displayModuleCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Display Window Stack Table command. 
+// Display Window Stack Table command. It is quite handy to find out about all 
+// windows, especially the ones we disabled.
 //
 //  DW [ <sNum> ]
 //----------------------------------------------------------------------------------------
