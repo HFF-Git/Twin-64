@@ -98,8 +98,6 @@ struct T64Module {
 
     T64Module( T64ModuleType    modType, 
                int              modNum,
-               T64Word          hpaAdr,
-               int              hpaLen,
                T64Word          spaAdr,
                int              spaLen  );
 

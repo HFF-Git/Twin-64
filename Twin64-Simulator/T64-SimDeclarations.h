@@ -429,6 +429,9 @@ enum SimErrMsgId : int {
     ERR_CACHE_SIZE_EXCEEDED         = 605,
 
     ERR_MEM_OP_FAILED               = 700,
+
+    ERR_CREATE_PROC_MODULE          = 701,
+    ERR_CREATE_MEM_MODULE           = 702
 };
 
 //----------------------------------------------------------------------------------------

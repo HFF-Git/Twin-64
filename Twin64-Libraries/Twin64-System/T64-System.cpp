@@ -33,36 +33,46 @@ namespace {
 
 //----------------------------------------------------------------------------------------
 // Check whether the module number is equal and whether the HPA or SPA address 
-// range of two modules overlap.
+// range of two modules overlap. If we are passed the same modules, we will 
+// by definition overlap. Modules with an SPA len of zero do never overlap. 
 //
 //----------------------------------------------------------------------------------------
 bool overlap( T64Module *a, T64Module *b ) {
 
-    if ( a -> getModuleNum( ) == b -> getModuleNum( )) return( true );
+    const T64Word aModuleNum = a -> getModuleNum( );
+    const T64Word bModuleNum = b -> getModuleNum( );
+    if ( aModuleNum == bModuleNum ) return true;
 
-    T64Word aSpaStart = a -> getSpaAdr( );
-    if ( a -> getSpaLen( ) > UINT64_MAX - aSpaStart ) return ( true );
+    const T64Word aSpaLen = a -> getSpaLen( );
+    const T64Word bSpaLen = b -> getSpaLen( );
+    if (( aSpaLen == 0 ) || ( bSpaLen == 0 )) return ( false );
 
-    T64Word aSpaEnd   = aSpaStart + a -> getSpaLen( ) - 1;
+    const T64Word aSpaStart = a -> getSpaAdr( );
+    if ( aSpaLen > UINT64_MAX - aSpaStart ) return ( true );
 
-    T64Word bSpaStart = b -> getSpaAdr( );
-    if ( b -> getSpaLen( ) > UINT64_MAX - bSpaStart ) return ( true );
+    const T64Word aSpaEnd = aSpaStart + aSpaLen - 1;
 
-    T64Word bSpaEnd   = bSpaStart + b -> getSpaLen( ) - 1;
+    const T64Word bSpaStart = b -> getSpaAdr( );
+    if ( bSpaLen > UINT64_MAX - bSpaStart ) return ( true );
 
-    bool ovlSpa = ( aSpaStart <= bSpaEnd ) && ( aSpaEnd >= bSpaStart );
+    const T64Word bSpaEnd = bSpaStart + bSpaLen - 1;
 
-    T64Word aHpaStart = a -> getHpaAdr( );
-    if ( a -> getHpaLen( ) > UINT64_MAX - aHpaStart ) return ( true );
+    const bool ovlSpa = ( aSpaStart <= bSpaEnd ) && ( aSpaEnd   >= bSpaStart );
 
-    T64Word aHpaEnd   = aHpaStart + a -> getHpaLen( ) - 1;
+    const T64Word aHpaLen   = a -> getHpaLen( );
+    const T64Word bHpaLen   = b -> getHpaLen( );
+    const T64Word aHpaStart = a -> getHpaAdr( );
 
-    T64Word bHpaStart = b -> getHpaAdr( );
-    if ( b -> getHpaLen( ) > UINT64_MAX - bHpaStart ) return ( true );
+    if ( aHpaLen > UINT64_MAX - aHpaStart ) return ( true );
 
-    T64Word bHpaEnd   = bHpaStart + b -> getHpaLen( ) - 1;
+    const T64Word aHpaEnd = aHpaStart + aHpaLen - 1;
 
-    bool ovlHpa = ( aHpaStart <= bHpaEnd ) && ( aHpaEnd >= bHpaStart );
+    const T64Word bHpaStart = b -> getHpaAdr( );
+    if ( bHpaLen > UINT64_MAX - bHpaStart ) return ( true );
+
+    const T64Word bHpaEnd = bHpaStart + bHpaLen - 1;
+
+    const bool ovlHpa = ( aHpaStart <= bHpaEnd ) && ( aHpaEnd   >= bHpaStart );
 
     return ( ovlSpa || ovlHpa );
 }
@@ -97,7 +107,8 @@ void T64System::initModuleMap( ) {
 //----------------------------------------------------------------------------------------
 int T64System::addToModuleMap( T64Module *module ) {
 
-    int modNum = module -> getModuleNum( );
+    if (( module -> getModuleNum( ) < 0 ) || 
+        ( module -> getModuleNum( ) > MAX_MOD_MAP_ENTRIES )) return ( -1 );
 
     for ( int i = 0; i < moduleMapHwm; ++i ) {
 
@@ -378,18 +389,16 @@ bool T64System::writeMem( T64Word pAdr, uint8_t *data, int len ) {
 //----------------------------------------------------------------------------------------
 T64Module::T64Module( T64ModuleType    modType, 
                       int              modNum,
-                      T64Word          hpaAdr,
-                      int              hpaLen,
                       T64Word          spaAdr,
                       int              spaLen ) {
 
-    this -> moduleTyp       = modType;
-    this -> moduleNum       = modNum;
-    this -> hpaAdr          = hpaAdr;
-    this -> hpaLen          = hpaLen;
-    this -> spaAdr          = spaAdr;
-    this -> spaLen          = spaLen;
-    this -> spaLimit        = spaAdr + spaLen - 1;
+    this -> moduleTyp   = modType;
+    this -> moduleNum   = modNum;
+    this -> hpaAdr      =  T64_IO_HPA_MEM_START + ( modNum * T64_PAGE_SIZE_BYTES );
+    this -> hpaLen      = T64_PAGE_SIZE_BYTES;
+    this -> spaAdr      = spaAdr;
+    this -> spaLen      = spaLen;
+    this -> spaLimit    = spaAdr + spaLen - 1;
 }
 
 int T64Module::getModuleNum( ) {

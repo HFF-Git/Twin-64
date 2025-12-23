@@ -59,8 +59,6 @@ public:
                int          modNum, 
                T64MemKind   mKind,
                T64MemType   mType,
-               T64Word      hpaAdr, 
-               int          hpaLen,
                T64Word      spaAdr,
                int          spaLen);
 

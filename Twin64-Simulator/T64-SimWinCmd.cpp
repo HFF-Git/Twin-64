@@ -984,14 +984,12 @@ void SimCommandsWin::addProcModule( ) {
                                         iCacheType,
                                         dCacheType,
                                         0,
-                                        0,
-                                        0,
                                         0 );
                     
     if ( glb -> system -> addToModuleMap( p ) != 0 ) {
 
         delete p;
-        throw( SimErrMsgId( 9999 )); // ??? fix
+        throw( SimErrMsgId( ERR_CREATE_PROC_MODULE ));
     }    
 }
 
@@ -1085,16 +1083,14 @@ void SimCommandsWin::addMemModule( ) {
     T64Memory *m = new T64Memory( glb -> system,
                                   modNum, 
                                   T64_MK_NIL,
-                                  mType,
-                                  0,
-                                  0, 
-                                 spaAdr,
-                                 spaLen );
+                                  mType, 
+                                  spaAdr,
+                                  spaLen );
 
     if ( glb -> system -> addToModuleMap( m ) != 0 ) {
 
         delete m;
-        throw( SimErrMsgId( 9999 )); // ??? fix
+        throw( SimErrMsgId( ERR_CREATE_MEM_MODULE )); 
     }    
 }
 

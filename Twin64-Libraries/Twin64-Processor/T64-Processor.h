@@ -372,8 +372,6 @@ struct T64Processor : T64Module {
                   T64TlbType        dTlbType,
                   T64CacheType      iCacheType,
                   T64CacheType      dCacheType,
-                  T64Word           hpaAdr, 
-                  int               hpaLen,
                   T64Word           spaAdr,
                   int               spaLen );
     

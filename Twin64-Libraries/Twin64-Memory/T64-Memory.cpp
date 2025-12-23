@@ -48,15 +48,11 @@ T64Memory::T64Memory( T64System     *sys,
                       int           modNum, 
                       T64MemKind    mKind,
                       T64MemType    mType,
-                      T64Word       hpaAdr, 
-                      int           hpaLen,
                       T64Word       spaAdr,
                       int           spaLen ) : 
 
                       T64Module(    MT_MEM, 
                                     modNum,
-                                    hpaAdr, 
-                                    hpaLen,
                                     spaAdr,
                                     spaLen
                                  ) {
@@ -64,8 +60,6 @@ T64Memory::T64Memory( T64System     *sys,
     this -> sys     = sys;
     this -> mKind   = mKind;
     this -> mType   = mType;
-    this -> hpaLen  = roundup( hpaLen, T64_PAGE_SIZE_BYTES );
-    this -> spaLen  = roundup( spaLen, T64_PAGE_SIZE_BYTES );
     this -> memData = nullptr;
     reset( );
 }

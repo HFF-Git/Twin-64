@@ -508,7 +508,13 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_MEM_OP_FAILED,              
       .errStr = (char *) "Memory operation error" },  
-      
+
+    { .errNum = ERR_CREATE_PROC_MODULE,              
+      .errStr = (char *) "Create processor module error" }, 
+
+    { .errNum = ERR_CREATE_MEM_MODULE,              
+      .errStr = (char *) "Create memory module error" }
+   
 };
 
 const int MAX_ERR_MSG_TAB = sizeof( errMsgTab ) / sizeof( SimErrMsgTabEntry );

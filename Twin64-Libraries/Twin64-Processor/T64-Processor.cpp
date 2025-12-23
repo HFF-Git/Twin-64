@@ -50,15 +50,11 @@ T64Processor::T64Processor( T64System           *sys,
                             T64TlbType          dTlbType,
                             T64CacheType        iCacheType,
                             T64CacheType        dCacheType,
-                            T64Word             hpaAdr, 
-                            int                 hpaLen,
                             T64Word             spaAdr,
                             int                 spaLen ) : 
 
                             T64Module(      MT_PROC, 
                                             modNum,
-                                            hpaAdr,
-                                            hpaLen,
                                             spaAdr,
                                             spaLen ) {
 
