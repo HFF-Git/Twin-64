@@ -835,6 +835,7 @@ void SimCommandsWin::addProcModule( ) {
             case TOK_MOD: {
 
                 tok -> nextToken( );
+                tok -> acceptEqual( );
                 if ( tok -> tokTyp( ) == TYP_NUM ) {
 
                     modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
@@ -1018,6 +1019,7 @@ void SimCommandsWin::addMemModule( ) {
             case TOK_MOD: {
 
                 tok -> nextToken( );
+                tok -> acceptEqual( );
                 if ( tok -> tokTyp( ) == TYP_NUM ) {
 
                     modNum = eval -> acceptNumExpr( ERR_INVALID_ARG, 
@@ -1435,9 +1437,9 @@ void SimCommandsWin::addModuleCmd( ) {
 
 //----------------------------------------------------------------------------------------
 // Remove a  module from the system. This command will remove the module and also
-// close any related window that was created referencing this module. We find the
-// module, and delete the object based on its type. We also need to delete all 
-// windows associated with it and finally the module slot itself.
+// close any related window that was created referencing this module. First, all
+// windows associated are removed, then the object itself is removed from the 
+// module map. The garbage collector does the (sad) rest.
 //
 //  RM <mNum>
 //----------------------------------------------------------------------------------------
@@ -1453,20 +1455,11 @@ void SimCommandsWin::removeModuleCmd( ) {
     tok -> checkEOS( );
 
     T64Module *m = glb -> system -> lookupByModNum( modNum );
-    if ( m != nullptr ) {
-        
-        switch( m -> getModuleType( )) {
+    if ( m == nullptr ) throw((SimErrMsgId) 9999 );
 
-            case MT_PROC: delete (T64Processor *) m;    break;
-            case MT_MEM:  delete (T64Memory *) m;       break;
-
-            default: ; // ??? throw an error ?
-        }
-
-        glb -> winDisplay -> windowKillByModNum( modNum );
-        glb -> system -> removeFromModuleMap( m ); 
-    }
-    else throw((SimErrMsgId) 9999 );
+    glb -> winDisplay -> windowKillByModNum( modNum );
+    glb -> winDisplay -> setWinReFormat( );
+    glb -> system -> removeFromModuleMap( m );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1888,11 +1881,9 @@ void SimCommandsWin::modifyRegCmd( ) {
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
 
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
     if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    if ( proc -> getModuleType( ) != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     switch( regSetId ) {
 
@@ -1932,11 +1923,9 @@ void SimCommandsWin::purgeCacheCmd( ) {
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
    
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
     if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    if ( proc -> getModuleType( ) != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
     
     if      ( currentCmd == CMD_PCA_I ) proc -> getICachePtr( ) -> purge( vAdr );
     else if ( currentCmd == CMD_PCA_D ) proc -> getDCachePtr( ) -> purge( vAdr );
@@ -1962,10 +1951,9 @@ void SimCommandsWin::flushCacheCmd( ) {
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
    
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    if ( proc -> getModuleType( ) != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     if ( currentCmd == CMD_FCA_I ) {
 
@@ -2013,10 +2001,9 @@ void SimCommandsWin::insertTLBCmd( ) {
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
    
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    if ( proc -> getModuleType( ) != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     if ( currentCmd == CMD_ITLB_I ) {
         
@@ -2048,11 +2035,10 @@ void SimCommandsWin::purgeTLBCmd( ) {
         throw( ERR_INVALID_WIN_TYPE );
 
     int modNum = glb -> winDisplay -> getCurrentWinModNum( );
-    
-    T64ModuleType mType = glb -> system -> getModuleType( modNum );
-    if ( mType != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
-
+   
     T64Processor *proc = (T64Processor *) glb -> system -> lookupByModNum( modNum );
+    if ( proc == nullptr ) throw ( ERR_INVALID_MODULE_TYPE );
+    if ( proc -> getModuleType( ) != MT_PROC ) throw ( ERR_INVALID_MODULE_TYPE );
 
     if      ( currentCmd == CMD_PTLB_I ) proc -> getITlbPtr( ) -> purge( vAdr );
     else if ( currentCmd == CMD_PTLB_D ) proc -> getDTlbPtr( ) -> purge( vAdr );

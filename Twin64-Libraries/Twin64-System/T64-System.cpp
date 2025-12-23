@@ -4,8 +4,8 @@
 //
 //----------------------------------------------------------------------------------------
 // "T64System" is the system we simulate. It consist of a set of modules. A module
-// represents a processor, a memory unit, and so on. This of the system as a bus where
-// the modules are plugged into.
+// represents a processor, a memory unit, and so on. This of the system as a bus 
+// where the modules are plugged into.
 //
 //----------------------------------------------------------------------------------------
 //
@@ -32,8 +32,8 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
-// Check whether the module number is the same and whether HPA or SPA address range
-// of two modules overlap.
+// Check whether the module number is equal and whether the HPA or SPA address 
+// range of two modules overlap.
 //
 //----------------------------------------------------------------------------------------
 bool overlap( T64Module *a, T64Module *b ) {
@@ -93,6 +93,7 @@ void T64System::initModuleMap( ) {
 // address range, which also cannot overlap. We look for the insertion position,
 // shift all entries up after this position and insert the new entry.
 //
+// Returns 0 on success, -2 if address range overlap.
 //----------------------------------------------------------------------------------------
 int T64System::addToModuleMap( T64Module *module ) {
 
@@ -133,7 +134,7 @@ int T64System::removeFromModuleMap( T64Module *module ) {
         }
     }
 
-    if ( pos < 0 ) return ( -1 );   // not found
+    if ( pos < 0 ) return ( -1 );
 
     for ( int i = pos; i < moduleMapHwm - 1; ++i ) {
 
@@ -146,7 +147,7 @@ int T64System::removeFromModuleMap( T64Module *module ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Find the entry by its module number.
+// Find the module entry by its module number.
 //
 //----------------------------------------------------------------------------------------
 T64Module *T64System::lookupByModNum( int modNum ) {
@@ -164,7 +165,7 @@ T64Module *T64System::lookupByModNum( int modNum ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Find the entry that covers the address.
+// Find the module entry that covers the address.
 //
 //----------------------------------------------------------------------------------------
 T64Module *T64System::lookupByAdr( T64Word adr ) {
@@ -188,6 +189,7 @@ T64Module *T64System::lookupByAdr( T64Word adr ) {
 //----------------------------------------------------------------------------------------
 // Get the module type.
 //
+// ??? where used... rather encode where used ?
 //----------------------------------------------------------------------------------------
 T64ModuleType T64System::getModuleType( int modNum ) {
 
