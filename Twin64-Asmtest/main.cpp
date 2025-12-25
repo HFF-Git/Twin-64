@@ -3,12 +3,19 @@
 // Twin-64 - Inline Assembler/Disassembler Test Program.
 //
 //----------------------------------------------------------------------------------------
+// AsmTest is a simple program for testing the one line assembler and disassembler. 
+// It reads commands from standard input and executes them. The commands are:
 //
+//  A <argStr> -> assemble input argument
+//  D <val>    -> disassemble instruction value
+//  T <argStr> -> assemble input, show and pass to disassemble
+//  E          -> exit   
+//  ?          -> show help
 //
 //----------------------------------------------------------------------------------------
 //
 // T64 - A 64-bit CPU - One Line Assembler
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free

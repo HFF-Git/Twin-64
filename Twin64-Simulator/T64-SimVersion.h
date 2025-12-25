@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Simulator Version ID
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
 // the terms of the GNU General Public License as published by the Free Software
@@ -25,8 +25,7 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef TWIN64_SimVersion_h
-#define TWIN64_SimVersion_h
+#pragma once
 
 const char SIM_VERSION[ ] = "A.00.01";
 const char SIM_GIT_BRANCH[ ] = "main";
@@ -37,5 +36,3 @@ const bool SIM_IS_APPLE = true;
 #else
 const bool SIM_IS_APPLE = false;
 #endif
-
-#endif // TWIN64_SimVersion_h

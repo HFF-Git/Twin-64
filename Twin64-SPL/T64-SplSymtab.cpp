@@ -8,7 +8,7 @@
 //----------------------------------------------------------------------------------------
 //
 // Twin-64 -System Programming Language Compiler - Symbol Table
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
 // the terms of the GNU General Public License as published by the Free Software

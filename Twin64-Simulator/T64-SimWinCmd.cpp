@@ -29,9 +29,6 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-Common.h"
-#include "T64-Util.h"
-#include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 
@@ -337,10 +334,7 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
     
     this -> glb = glb;
     
-    // tok         = new SimTokenizer( );
     tok        = new SimTokenizerFromString( );
-
-
     eval        = new SimExprEvaluator( glb, tok );
     hist        = new SimCmdHistory( );
     winOut      = new SimWinOutBuffer( );
@@ -517,16 +511,39 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
                     state = CT_WIN_SPECIAL;
                 }
                 else if ( isCarriageReturnChar( ch )) {
+
+                    #if 0
                   
+                    if ( cmdBufLen > 0 && cmdBuf[ cmdBufLen - 1 ] == '\\' ) {
+
+                        cmdBufLen--;
+                        cmdBuf[ cmdBufLen ] = '\0';
+
+                        glb -> console ->writeCarriageReturn( );
+
+                        if ( glb -> console -> isConsole( ) ) {
+
+                            glb->console -> writeChars( "> " ); 
+                        }
+
+                        // Reset cursor for the new physical line
+                        cmdBufCursor = cmdBufLen;
+
+                        // Continue reading instead of returning
+                        break;
+                    }
+
+                    #endif
+
                     cmdBuf[ cmdBufLen ] = '\0';
-                    glb -> console -> writeCarriageReturn( );
-                    
+                    glb -> console -> writeCarriageReturn();
+
                     winOut -> addToBuffer( promptBuf );
                     winOut -> addToBuffer( cmdBuf );
                     winOut -> addToBuffer( "\n" );
-                    
                     cmdBufLen = removeComment( cmdBuf );
                     return ( cmdBufLen );
+
                 }
                 else if ( isBackSpaceChar( ch )) {
                     

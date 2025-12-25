@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU -Simulator command window
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
 // terms of the GNU General Public License as published by the Free Software Foundation,
@@ -24,9 +24,6 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-Common.h"
-#include "T64-Util.h"
-#include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 #include <elfio/elfio.hpp>

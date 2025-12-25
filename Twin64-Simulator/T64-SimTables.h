@@ -3,12 +3,13 @@
 //  Twin64 - A 64-bit CPU Simulator - Simulator Tables
 //
 //----------------------------------------------------------------------------------------
-// ...
+// SimTables contains the simulator constant table data, such as the command line
+// options, token tables and so on.
 //
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Simulator - Simulator Tables
-// Copyright (C) 2024 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
 // the terms of the GNU General Public License as published by the Free Software 
@@ -21,8 +22,7 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef SimTables_h
-#define SimTables_h
+#pragma once
 
 #include "T64-SimDeclarations.h"
 
@@ -33,13 +33,12 @@
 //----------------------------------------------------------------------------------------
 static struct SimCmdLineOptions optionTable[ ] = {
 
-        { "help",       OPT_NO_ARGUMENT,        'h' },
-        { "version",    OPT_NO_ARGUMENT,        'v' },
-        { "verbose",    OPT_NO_ARGUMENT,        'd' },
-        { "configfile", OPT_REQUIRED_ARGUMENT,  'f' },
-        { "logfile",    OPT_REQUIRED_ARGUMENT,  'l' },
-        { "initfile",   OPT_REQUIRED_ARGUMENT,  'i' },
-        {0, OPT_NO_ARGUMENT, 0}
+        { "help",       CL_OPT_NO_ARGUMENT,        CL_ARG_VAL_HELP },
+        { "version",    CL_OPT_NO_ARGUMENT,        CL_ARG_VAL_VERSION },
+        { "verbose",    CL_OPT_NO_ARGUMENT,        CL_ARG_VAL_VERBOSE },
+        { "configfile", CL_OPT_REQUIRED_ARGUMENT,  CL_ARG_VAL_CONFIG_FILE },
+        { "logfile",    CL_OPT_REQUIRED_ARGUMENT,  CL_ARG_VAL_LOG_FILE },
+        {0,             CL_OPT_NO_ARGUMENT,        0}
     };
 
 //----------------------------------------------------------------------------------------
@@ -897,5 +896,3 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
 };
 
 const int MAX_CMD_HELP_TAB = sizeof( cmdHelpTab ) / sizeof( SimHelpMsgEntry );
-
-#endif  // SimTables_h

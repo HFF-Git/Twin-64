@@ -8,7 +8,7 @@
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Simulator - Configuration 
-// Copyright (C) 2025 - 2025 Helmut Fieres
+// Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
 // the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,6 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#include "T64-SimVersion.h"
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
 
@@ -61,7 +60,7 @@ int parseCmdLineOptions( int    argc,
         if (( strncmp( name, optionTable[i].name, name_len ) == 0 ) &&
              ( strlen(optionTable[i].name) == name_len )) {
 
-            if ( optionTable[i].argOpt == OPT_REQUIRED_ARGUMENT) {
+            if ( optionTable[i].argOpt == CL_OPT_REQUIRED_ARGUMENT) {
                 
                 if ( eq ) {
 
@@ -78,7 +77,7 @@ int parseCmdLineOptions( int    argc,
                     return '?';
                 }
             } 
-            else if ( optionTable[ i ].argOpt == OPT_OPTIONAL_ARGUMENT ) {
+            else if ( optionTable[ i ].argOpt == CL_OPT_OPTIONAL_ARGUMENT ) {
                 
                 *optArg = (( eq ) ? ((char *)( eq + 1 )) : ( NULL ));
             
@@ -130,7 +129,7 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
             
             } break;
 
-            case 'v': {
+            case CL_ARG_VAL_VERSION: {
 
                 printf( "Twin64 Simulator Version %s, PatchLevel %d\n\n", 
                         SIM_VERSION, SIM_PATCH_LEVEL );
@@ -138,13 +137,13 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
             } break;
 
-            case 'd': {
+            case CL_ARG_VAL_VERBOSE: {
 
                 glb -> verboseFlag = true;
         
             } break;
 
-            case 'f': {
+            case CL_ARG_VAL_CONFIG_FILE: {
 
                 if ( optArg ) {
 
@@ -159,7 +158,7 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
             } break; 
 
-            case 'l': {
+            case CL_ARG_VAL_LOG_FILE: {
 
                 if ( optArg ) {
         
@@ -183,23 +182,6 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
 
             } break; 
 
-            case 'i': {
-
-                if ( optArg ) {
-        
-                    strncpy( glb -> initFileName, optArg, MAX_FILE_PATH_SIZE - 1 );
-                    glb -> initFileName[ MAX_FILE_PATH_SIZE - 1 ] = '\0';
-
-                    // ??? what to do with the file ?
-                }
-                else {
-        
-                    printf("Error: --initfile requires a filename\n");
-                    exit(1);
-                }
-
-            } break;
-
             default: {
 
                 printf( "Invalid command parameter option, use help\n" );
@@ -208,28 +190,3 @@ void processCmdLineOptions( SimGlobals *glb, int argc, char *argv[ ] ) {
         }
     }
 }
-
-//----------------------------------------------------------------------------------------
-// 
-// 
-//----------------------------------------------------------------------------------------
-//
-// the idea is to have two more commands than add and remove a module. 
-//
-// NM <mod-type> <mod-params>  - add a new module of type mod-type with parameters
-// RM <mod-num>                - remove module with module number mod-num
-//
-// Example:
-//
-// MN proc, itlb, FA_64S, dtlb, FA_64S, icache, SA_2W_128S_4L, dcache, SA_8W_128S_4L
-//
-// MN proc, ( cpu: NIL ), ( itlb:FA_64S ), ( dtlb:FA_64S ), ( icache:SA_2W_128S_4L ), ...
-// seems easer to read...
-// 
-// The NM command could then be used in an XF file as the initial setup.
-// Best of all, we around to come up with config file syntax and a parser for it.
-//
-// The module number is assigned by the system, not the config!
-//
-//
-//----------------------------------------------------------------------------------------
