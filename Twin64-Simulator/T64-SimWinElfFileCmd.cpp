@@ -2,26 +2,27 @@
 //
 //  Twin64 - A 64-bit CPU - ELF file loader
 //
-//------------------------------------------------------------------------------------------------------------
-// The ELF file loader will load an executable file into the simulator physical memory.
-// It is right now a rather simple loader intended for loading an initial program.
-// No virtual memory setup, no access rights checking and so on. Just plain load into
-// physical memory whatever you find in the ELF file.
+//----------------------------------------------------------------------------------------
+// The ELF file loader will load an executable file into the simulator physical 
+// memory. It is right now a rather simple loader intended for loading an initial 
+// program. No virtual memory setup, no access rights checking and so on. Just 
+// plain load into physical memory whatever you find in the ELF file.
 //
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU -Simulator command window
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, terms of the GNU General Public License as published by the Free 
+// Software Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-SimDeclarations.h"
@@ -29,8 +30,6 @@
 #include <elfio/elfio.hpp>
 
 using namespace ELFIO;
-
-const T64Word MAX_MEMORY_SIZE = 0xFFFFFFFFFF;
 
 //----------------------------------------------------------------------------------------
 // Local name space.
@@ -124,7 +123,8 @@ void loadSegmentIntoMemory( elfio           *reader,
         Elf_Xword       align       = segment -> get_align( );
         Elf_Word        flags       = segment -> get_flags( );
 
-        winOut -> writeChars( "Loading: Seg: %2d, adr: 0x%08x, mSize: 0x%08x, align: 0x%08x, ",
+        winOut -> writeChars( "Loading: Seg: %2d, adr: 0x%08x, "
+                              "mSize: 0x%08x, align: 0x%08x, ",
                               index, vAdr, memorySize, align );
         
         winOut -> writeChars( "R" );
@@ -133,17 +133,17 @@ void loadSegmentIntoMemory( elfio           *reader,
        
         winOut -> writeChars( "\n" );
     
-        if ( memorySize >= MAX_MEMORY_SIZE ) {
+        if ( memorySize >= T64_MAX_PHYS_MEM_LIMIT ) {
             
             throw( ERR_ELF_MEMORY_SIZE_EXCEEDED );
         }
         
-        if ( ! (( vAdr >= 0 ) && ( vAdr<= MAX_MEMORY_SIZE ))) {
+        if ( ! (( vAdr >= 0 ) && ( vAdr<= T64_MAX_PHYS_MEM_LIMIT ))) {
             
             throw( ERR_ELF_INVALID_ADR_RANGE );
         }
         
-        if ( vAdr + memorySize >= MAX_MEMORY_SIZE ) {
+        if ( vAdr + memorySize >= T64_MAX_PHYS_MEM_LIMIT ) {
             
             throw( ERR_ELF_MEMORY_SIZE_EXCEEDED );
         }

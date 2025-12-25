@@ -3,22 +3,23 @@
 //  Twin64 - A 64-bit CPU Simulator - Common utility functions
 //
 //----------------------------------------------------------------------------------------
-// ...
+// Throughout the Twin64 project we use a few common utility functions. They are
+// collected here.
 //
 //----------------------------------------------------------------------------------------
 //
 // Twin64 - A 64-bit CPU Simulator - Common Declarations
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #ifndef T64_Common_Util_h
@@ -30,11 +31,7 @@
 // Byte order conversion functions. They are different on Mac and Windows and LINUX,
 // GCC and CLANG.
 //
-// ??? do we need to have an option for a big endian machine, where we would do
-// nothing ?
 //----------------------------------------------------------------------------------------
-#include <stdint.h>
-
 #if defined(__APPLE__)
   #include <libkern/OSByteOrder.h>
   #define HOST_IS_BIG_ENDIAN  (__BIG_ENDIAN__)
@@ -48,12 +45,10 @@
 
 #if HOST_IS_BIG_ENDIAN
 
-inline uint16_t toBigEndian16(uint16_t val) { return val; }
-inline uint32_t toBigEndian32(uint32_t val) { return val; }
-inline uint64_t toBigEndian64(uint64_t val) { return val; }
-
+    inline uint16_t toBigEndian16(uint16_t val) { return val; }
+    inline uint32_t toBigEndian32(uint32_t val) { return val; }
+    inline uint64_t toBigEndian64(uint64_t val) { return val; }
 #else
-
   #if defined(__APPLE__)
     #include <libkern/OSByteOrder.h>
     inline uint16_t toBigEndian16(uint16_t val) { return OSSwapHostToBigInt16(val); }
@@ -117,8 +112,8 @@ inline bool copyToBigEndian( uint8_t *dst, uint8_t *src, int len ) {
     if (( len != 1 ) && ( len != 2 ) && 
         ( len != 4 ) && ( len != 8 )) return( false );     
 
-    if (((uintptr_t)dst & (len - 1)) != 0) return false;
-    if (((uintptr_t)src & (len - 1)) != 0) return false;
+    if (((uintptr_t)dst & ( len - 1 )) != 0) return false;
+    if (((uintptr_t)src & ( len - 1 )) != 0) return false;
 
     switch ( len ) {
 
@@ -243,8 +238,7 @@ inline int extractInstrImm13( T64Instr instr ) {
 
 inline int extractInstrScaledImm13( T64Instr instr ) {
     
-    int val = extractInstrImm13( instr ) << extractInstrDwField( instr );
-    return ( val );
+    return ( extractInstrImm13( instr ) << extractInstrDwField( instr ));
 }
 
 inline int extractInstrImm15( T64Instr instr ) {
@@ -392,7 +386,7 @@ inline bool willShiftLeftOverflow( T64Word val, int shift ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
+// Extract functions for virtual addresses.
 //
 //----------------------------------------------------------------------------------------
 inline T64Word vAdrSeg( T64Word vAdr ) {
@@ -400,7 +394,7 @@ inline T64Word vAdrSeg( T64Word vAdr ) {
     return( extractField64( vAdr, 32, 20 ));
 }
 
-inline T64Word vAdrSegOfs( T64Word vAdr ) {
+inline T64Word vAdrRegionOfs( T64Word vAdr ) {
 
    return( extractField64( vAdr, 0, 32 ));
 }
@@ -422,12 +416,17 @@ inline T64Word addAdrOfs( T64Word adr, T64Word ofs ) {
 
 
 //----------------------------------------------------------------------------------------
-// Address range check.
+// Virtual address range check.
 //
 //----------------------------------------------------------------------------------------
 inline bool isInIoAdrRange( T64Word adr ) {
 
     return(( adr >= T64_IO_MEM_START ) && ( adr <= T64_IO_MEM_LIMIT ));
+}
+
+inline bool isInPhysMemAdrRange( T64Word adr ) {
+
+    return(( adr >= 0 ) && ( adr <= T64_MAX_PHYS_MEM_LIMIT ));
 }
 
 #endif // T64_Common_Util_h

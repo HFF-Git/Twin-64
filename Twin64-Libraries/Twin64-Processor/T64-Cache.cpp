@@ -482,9 +482,6 @@ bool T64Cache::setCacheLineData( uint8_t *line,
 // to check if it was modified. If so, we need to flush the data first. Then we READ 
 // SHARED the new cache line into this slot. Finally, we return the requested data.
 //
-//
-// ??? on a cache hit, we need to convert the data ???
-// ??? on a cache line read, we just do nothing, the memory is in big endian...
 //----------------------------------------------------------------------------------------
 void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
@@ -557,8 +554,6 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 // Then we READ PRIVATE the new cache line into this slot. Finally, we update the 
 // cache line.
 //
-// ??? on a cache hit, we need to convert the data ???
-// ??? on a cache line read, we just do nothing, the memory is in big endian...
 //----------------------------------------------------------------------------------------
 void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
@@ -687,7 +682,7 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
 //----------------------------------------------------------------------------------------
 void T64Cache::read( T64Word pAdr, uint8_t *data, int len, bool cached ) {
     
-    if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
+    if (( isInPhysMemAdrRange( pAdr ) || ( ! cached ))) {
 
         if ( proc -> busOpReadUncached( proc -> getModuleNum( ),
                                         pAdr, 
@@ -707,7 +702,7 @@ void T64Cache::read( T64Word pAdr, uint8_t *data, int len, bool cached ) {
 //----------------------------------------------------------------------------------------
 void T64Cache::write( T64Word pAdr, uint8_t *data, int len, bool cached ) {
 
-    if (( isInIoAdrRange( pAdr ) || ( ! cached ))) {
+    if (( isInPhysMemAdrRange( pAdr ) || ( ! cached ))) {
 
         if ( ! proc -> busOpWriteUncached( proc -> getModuleNum( ),
                                            pAdr, 
@@ -721,21 +716,21 @@ void T64Cache::write( T64Word pAdr, uint8_t *data, int len, bool cached ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A cache flush operation. Only valid for non-I/O address range. The cache line
+// A cache flush operation. Only valid for virtual address ranges. The cache line
 // flush function will issue a write back when the line was modified.
 //
 //----------------------------------------------------------------------------------------
 void T64Cache::flush( T64Word pAdr ) {
 
-    if ( ! isInIoAdrRange( pAdr )) flushCacheLine( pAdr );
+    if ( ! isInPhysMemAdrRange( pAdr )) flushCacheLine( pAdr );
 }
 
 //----------------------------------------------------------------------------------------
-// A cache purge operation. Only valid for non-I/O address range. The cache line
+// A cache purge operation. Only valid for virtual address ranges. The cache line
 // purge function will invalidate the cache line entry.
 //
 //----------------------------------------------------------------------------------------
 void T64Cache::purge( T64Word pAdr ) {
 
-    if ( ! isInIoAdrRange( pAdr )) purgeCacheLine( pAdr );   
+    if ( ! isInPhysMemAdrRange( pAdr )) purgeCacheLine( pAdr );   
 }

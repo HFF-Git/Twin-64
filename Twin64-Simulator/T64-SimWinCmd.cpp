@@ -523,7 +523,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
 
                         if ( glb -> console -> isConsole( ) ) {
 
-                            glb->console -> writeChars( "> " ); 
+                            glb->console -> writeChars( ">>" ); 
                         }
 
                         // Reset cursor for the new physical line

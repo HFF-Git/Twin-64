@@ -59,8 +59,6 @@
 #include <stdarg.h>
 #include <iostream>
 #include <io.h>
-#define isatty _isatty  // phase out after test
-#define fileno _fileno  // phase out after test
 #endif
 
 //----------------------------------------------------------------------------------------

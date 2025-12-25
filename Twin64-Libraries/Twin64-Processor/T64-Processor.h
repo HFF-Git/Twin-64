@@ -3,7 +3,8 @@
 // T64 - A 64-bit CPU - Processor
 //
 //----------------------------------------------------------------------------------------
-// 
+// The Twin64 processor module contains the CPU core, TLBs and caches. The processor
+// module connects to the system bus for memory and IO access.
 //
 //----------------------------------------------------------------------------------------
 //
