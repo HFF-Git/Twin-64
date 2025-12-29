@@ -327,6 +327,7 @@ enum SimErrMsgId : int {
     ERR_INVALID_FMT_OPT             = 23,
 
     ERR_INVALID_MODULE_TYPE         = 24,
+   
 
 
     ERR_INVALID_NUM                 = 25,
@@ -355,6 +356,8 @@ enum SimErrMsgId : int {
     ERR_EXPECTED_STEPS              = 116,
     ERR_EXPECTED_INSTR_VAL          = 117,
     ERR_EXPECTED_INSTR_OPT          = 318,
+
+    ERR_EXPECTED_MOD_NUM            = 219,
    
     ERR_IN_ASM_PFUNC                = 320,
     ERR_IN_DISASM_PFUNC             = 321,

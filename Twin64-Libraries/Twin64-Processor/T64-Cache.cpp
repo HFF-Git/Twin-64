@@ -365,12 +365,12 @@ char *T64Cache::getCacheTypeString( ) {
 
     switch ( cacheType ) {
 
-        case T64_CT_2W_64S_8L:      return( (char *) "T64_CT_2W_64S_8L" );
-        case T64_CT_2W_128S_4L:     return( (char *) "T64_CT_2W_128S_4L" );
-        case T64_CT_4W_64S_8L:      return( (char *) "T64_CT_4W_64S_8L" );
-        case T64_CT_4W_128S_4L:     return( (char *) "T64_CT_4W_128S_4L" );
-        case T64_CT_8W_64S_8L:      return( (char *) "T64_CT_8W_64S_8L" );
-        case T64_CT_8W_128S_4L:     return( (char *) "T64_CT_8W_128S_4L" );
+        case T64_CT_2W_64S_8L:      return( (char *) "2W_64S_8L" );
+        case T64_CT_2W_128S_4L:     return( (char *) "2W_128S_4L" );
+        case T64_CT_4W_64S_8L:      return( (char *) "4W_64S_8L" );
+        case T64_CT_4W_128S_4L:     return( (char *) "4W_128S_4L" );
+        case T64_CT_8W_64S_8L:      return( (char *) "8W_64S_8L" );
+        case T64_CT_8W_128S_4L:     return( (char *) "8W_128S_4L" );
         default:                    return( (char *) "Unknown Cache Type" );
     }
 }

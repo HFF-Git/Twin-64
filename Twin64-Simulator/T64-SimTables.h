@@ -260,17 +260,17 @@ const SimToken cmdTokTab[ ] = {
     { .name = "CACHE_SA_8W_64S_8L",         .typ = TYP_SYM, 
       .tid = TOK_CACHE_SA_2W_64S_8L,        .u = { .val = 0 }},
 
-    { .name = "MEM_READ_ONLY",              .typ = TYP_SYM, 
+    { .name = "R_ONLY",                     .typ = TYP_SYM, 
       .tid = TOK_MEM_READ_ONLY,             .u = { .val = 0 }},
 
-    { .name = "MEM_READ_WRITE",             .typ = TYP_SYM, 
+    { .name = "R_W",                        .typ = TYP_SYM, 
       .tid = TOK_MEM_READ_WRITE,            .u = { .val = 0 }},
 
-    { .name = "TOK_MOD_SPA_ADR",             .typ = TYP_SYM, 
-      .tid = TOK_MOD_SPA_ADR,                .u = { .val = 0 }},
+    { .name = "SPA_ADR",                    .typ = TYP_SYM, 
+      .tid = TOK_MOD_SPA_ADR,               .u = { .val = 0 }},
 
-    { .name = "TOK_MOD_SPA_LEN",             .typ = TYP_SYM, 
-      .tid = TOK_MOD_SPA_LEN,                .u = { .val = 0 }}
+    { .name = "SPA_LEN",            .typ = TYP_SYM, 
+      .tid = TOK_MOD_SPA_LEN,               .u = { .val = 0 }}
 
 };
 
@@ -385,6 +385,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
 
     { .errNum = ERR_EXPECTED_INSTR_OPT,         
       .errStr = (char *) "Expected the instruction options" },
+
+    { .errNum = ERR_EXPECTED_MOD_NUM,         
+      .errStr = (char *) "Expected a module number" },
       
     { .errNum = ERR_EXPECTED_AN_OFFSET_VAL,     
       .errStr = (char *) "Expected an offset value" },

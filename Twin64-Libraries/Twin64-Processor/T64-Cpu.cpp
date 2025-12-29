@@ -11,15 +11,15 @@
 // T64 - A 64-bit CPU - CPU Core
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
 #include "T64-Processor.h"
@@ -62,7 +62,7 @@ T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 T64Cpu:: ~T64Cpu( ) { }   
 
 //----------------------------------------------------------------------------------------
-//
+// CPU reset method.
 //
 //----------------------------------------------------------------------------------------
 void T64Cpu::reset( ) {
@@ -76,7 +76,7 @@ void T64Cpu::reset( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// The register routines. Called externally by monitors and debuggers.
+// The register access routines. Called externally by monitors and debuggers.
 //
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::getGeneralReg( int index ) {
@@ -111,8 +111,8 @@ void T64Cpu::setPswReg( T64Word val ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Get the general register values based on the instruction field. These routines are
-// used by the instruction execution code.
+// Get/Set the general register values based on the instruction field. These 
+// routines are used by the instruction execution code.
 //
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::getRegR( uint32_t instr ) {

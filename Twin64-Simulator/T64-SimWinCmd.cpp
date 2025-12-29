@@ -992,6 +992,8 @@ void SimCommandsWin::addProcModule( ) {
 
     tok -> checkEOS( );
 
+    if ( modNum == -1 ) throw( SimErrMsgId( ERR_EXPECTED_MOD_NUM ));
+
     T64Processor *p = new T64Processor( glb -> system,
                                         modNum,
                                         T64_PO_NIL,
@@ -1096,6 +1098,8 @@ void SimCommandsWin::addMemModule( ) {
     }
 
     tok -> checkEOS( );
+
+    if ( modNum == -1 ) throw( SimErrMsgId( ERR_EXPECTED_MOD_NUM ));
 
     T64Memory *m = new T64Memory( glb -> system,
                                   modNum, 
@@ -1434,7 +1438,7 @@ void SimCommandsWin::loadElfFileCmd( ) {
 // Add a module to the system. This command will add a module to the system. It is 
 // typically used during startup when all modules are created. 
 // 
-//  NM <mType> [ "," <key> "=" <value> { "," <key> "=" <value> } ]
+//  NM <mType> [ { "," <key> "=" <value> }* ]
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addModuleCmd( ) {
 

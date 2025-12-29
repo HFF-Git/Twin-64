@@ -799,7 +799,7 @@ void SimWinCache::drawBanner( ) {
     printTextField((char *) " ( ", fmtDesc );
     printTextField((char *) cache -> getCacheTypeString( ), fmtDesc );
     printTextField((char *) " ) ", fmtDesc );
-    printTextField((char *) "  Set: " );
+    printTextField((char *) "  Way: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );

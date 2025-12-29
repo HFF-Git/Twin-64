@@ -103,7 +103,7 @@ void T64System::initModuleMap( ) {
 // address range, which also cannot overlap. We look for the insertion position,
 // shift all entries up after this position and insert the new entry.
 //
-// Returns 0 on success, -2 if address range overlap.
+// Returns 0 on success, -1 on an invalid module number, -2 on address range overlap.
 //----------------------------------------------------------------------------------------
 int T64System::addToModuleMap( T64Module *module ) {
 

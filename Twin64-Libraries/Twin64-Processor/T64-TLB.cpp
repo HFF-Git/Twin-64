@@ -269,7 +269,7 @@ char *T64Tlb::getTlbTypeString( ) {
 
     switch ( tlbType ) {
 
-        case T64_TT_FA_64S:     return ( (char *) "T64_TT_FA_64S" );
+        case T64_TT_FA_64S:     return ( (char *) "FA_64S" );
         default:                return ( (char *) "Unknown TLB Type" );
     }
 }
