@@ -254,3 +254,22 @@ int T64Tlb::getTlbSize( ) {
 
     return ( T64_MAX_TLB_SIZE );
 }
+
+T64TlbKind T64Tlb::getTlbKind( ) {
+
+    return ( tlbKind );
+}
+
+T64TlbType T64Tlb::getTlbType( ) {
+
+    return ( tlbType );
+}
+
+char *T64Tlb::getTlbTypeString( ) {
+
+    switch ( tlbType ) {
+
+        case T64_TT_FA_64S:     return ( (char *) "T64_TT_FA_64S" );
+        default:                return ( (char *) "Unknown TLB Type" );
+    }
+}

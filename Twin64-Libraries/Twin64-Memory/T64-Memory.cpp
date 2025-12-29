@@ -153,6 +153,30 @@ void  T64Memory::setSpaReadOnly( bool arg ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Getters for memory kind and type.
+//
+//----------------------------------------------------------------------------------------
+T64MemKind T64Memory::getMemKind( ) {   
+
+    return( mKind );
+}           
+
+T64MemType T64Memory::getMemType( ) {   
+
+    return( mType );
+}
+
+char *T64Memory::getMemTypeString( ) {   
+
+    switch ( mType ) {
+
+        case T64_MT_RAM:   return((char *) "RAM" );
+        case T64_MT_ROM:   return((char *) "ROM" );
+        default:           return((char *) "Unknown Mem Type" );
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // Bus operations. We listen to all of them and if the physical addresses matches 
 // our address range and we are not the source module, the request is handled. 
 // Since we do not have a cache, the request handling is very simple.

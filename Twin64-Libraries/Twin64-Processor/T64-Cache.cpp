@@ -351,6 +351,30 @@ T64Word T64Cache:: pAdrFromTag( uint32_t tag, uint32_t index ) {
     return(( tag << ( offsetBits + indexBits ) | ( index < indexShift )));
 }
 
+T64CacheKind T64Cache::getCacheKind( ) {
+
+    return( cacheKind );
+}
+
+T64CacheType T64Cache::getCacheType( ) {
+
+    return( cacheType );
+}
+
+char *T64Cache::getCacheTypeString( ) {
+
+    switch ( cacheType ) {
+
+        case T64_CT_2W_64S_8L:      return( (char *) "T64_CT_2W_64S_8L" );
+        case T64_CT_2W_128S_4L:     return( (char *) "T64_CT_2W_128S_4L" );
+        case T64_CT_4W_64S_8L:      return( (char *) "T64_CT_4W_64S_8L" );
+        case T64_CT_4W_128S_4L:     return( (char *) "T64_CT_4W_128S_4L" );
+        case T64_CT_8W_64S_8L:      return( (char *) "T64_CT_8W_64S_8L" );
+        case T64_CT_8W_128S_4L:     return( (char *) "T64_CT_8W_128S_4L" );
+        default:                    return( (char *) "Unknown Cache Type" );
+    }
+}
+
 //----------------------------------------------------------------------------------------
 // The set associative cache uses a pseudo LRU scheme. There are two local routines,
 // select a victim and update the state. Depending on the number of ways, we call the

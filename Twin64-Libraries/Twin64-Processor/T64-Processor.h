@@ -160,7 +160,8 @@ struct T64Cache {
     int                 getSetSize( );
     int                 getCacheLineSize( );
     T64CacheKind        getCacheKind( );
-    T64CacheKind        getCacheType( );
+    T64CacheType        getCacheType( );
+    char                *getCacheTypeString( );
 
     private: 
 
@@ -263,6 +264,10 @@ struct T64Tlb {
     
     int             getTlbSize( );
     T64TlbEntry     *getTlbEntry( int index );
+
+    T64TlbKind      getTlbKind( );  
+    T64TlbType      getTlbType( );
+    char           *getTlbTypeString( );
 
     private:
     

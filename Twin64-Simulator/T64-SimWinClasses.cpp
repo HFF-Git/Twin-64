@@ -400,15 +400,26 @@ void SimWinAbsMem::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawBanner( ) {
     
-    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
+    uint32_t    fmtDesc = FMT_BOLD | FMT_INVERSE;
 
     if ( getWinToggleVal( ) == 2 )  setRadix( 10 ); 
     else                            setRadix( 16 ); 
+
+    T64Memory *mem = (T64Memory *) glb -> system -> lookupByAdr( getCurrentItemAdr( ));
 
     setWinCursor( 1, 1 );
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:", fmtDesc );
     printNumericField( getWinModNum( ), fmtDesc | FMT_DEC );
+
+    if ( mem != nullptr ) {
+
+       printTextField((char *) " ( ", fmtDesc );
+       printTextField( mem -> getMemTypeString( ), fmtDesc );
+       printTextField((char *) " ) ", fmtDesc );
+
+    }
+
     printTextField((char *) "  Home: " );
     printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     padLine( fmtDesc );
@@ -671,8 +682,9 @@ void SimWinTlb::drawBanner( ) {
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
-    printTextField((char *) "  Current: " );
-    printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
+    printTextField((char *) " ( ", fmtDesc );
+    printTextField((char *) tlb -> getTlbTypeString( ), fmtDesc );
+    printTextField((char *) " ) ", fmtDesc );
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }
@@ -784,10 +796,11 @@ void SimWinCache::drawBanner( ) {
     printWindowIdField( fmtDesc );
     printTextField((char *) "Mod:" );
     printNumericField( getWinModNum( ), ( fmtDesc | FMT_DEC ));
+    printTextField((char *) " ( ", fmtDesc );
+    printTextField((char *) cache -> getCacheTypeString( ), fmtDesc );
+    printTextField((char *) " ) ", fmtDesc );
     printTextField((char *) "  Set: " );
     printNumericField( getWinToggleVal( ), ( fmtDesc | FMT_DEC ));
-    printTextField((char *) "  Current: " );
-    printNumericField( getCurrentItemAdr( ), ( fmtDesc | FMT_HEX_4 ));
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 }

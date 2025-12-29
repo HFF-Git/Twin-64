@@ -68,6 +68,10 @@ public:
     void        step( );
     void        setSpaReadOnly( bool arg );
 
+    T64MemKind  getMemKind( );
+    T64MemType  getMemType( );
+    char        *getMemTypeString( );
+
     bool        busOpReadUncached( int srcModNum,
                                  T64Word pAdr, 
                                  uint8_t *data, 

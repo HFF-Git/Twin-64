@@ -380,8 +380,8 @@ void SimCommandsWin::drawBanner( ) {
     padLine( fmtDesc ); 
 
     if ( glb -> winDisplay -> isWindowsOn( )) {
-           
-        printTextField((char *) "W", fmtDesc | FMT_LAST_FIELD );
+
+        printStackInfoField( fmtDesc | FMT_LAST_FIELD );
     }
 }
 
