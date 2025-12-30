@@ -299,8 +299,8 @@ struct T64Cpu {
     T64Word         getControlReg( int index );
     void            setControlReg( int index, T64Word val );
 
-    T64Word         getPswReg( );
-    void            setPswReg( T64Word val );
+    T64Word         getPsrReg( );
+    void            setPsrReg( T64Word val );
 
     private: 
 
@@ -316,12 +316,14 @@ struct T64Cpu {
     T64Word         extractDwField( uint32_t instr );
     
     void            privModeCheck( );
-    void            protectionCheck( uint32_t pId, bool wMode );
-    void            alignMentCheck( T64Word vAdr, int align );
+    bool            regionIdCheck( uint32_t pId, bool wMode );
+    void            instrAlignmentCheck( T64Word vAdr );
+    void            dataAlignmentCheck( T64Word vAdr, int len );
+    bool            isPhysMemAdr( T64Word vAdr );
     
     T64Word         instrRead( T64Word vAdr );
 
-    T64Word         dataRead( T64Word vAdr, int len  );
+    T64Word         dataRead( T64Word vAdr, int len, bool sExt );
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
     T64Word         dataReadRegBOfsRegX( uint32_t instr );
 
@@ -331,19 +333,17 @@ struct T64Cpu {
 
     void            instrExecute( uint32_t instr );
 
-    T64Word         ctlRegFile[ T64_MAX_CREGS ];
-    T64Word         genRegFile[ T64_MAX_GREGS ];
-    T64Word         pswReg;
+    T64Word         cRegFile[ T64_MAX_CREGS ];
+    T64Word         gRegFile[ T64_MAX_GREGS ];
+    T64Word         psrReg;
     uint32_t        instrReg;
     T64Word         resvReg;
 
     T64CpuType      cpuType = T64_CPU_T_NIL;
     T64Processor    *proc   = nullptr;
    
-    // ??? rework ....
-    bool            isPhysicalAdrRange( T64Word vAdr );
-    T64Word         lowerPhysMemAdr     = 0;
-    T64Word         upperPhysMemAdr     = T64_MAX_PHYS_MEM_LIMIT;
+    T64Word         lowerPhysMemAdr = 0;
+    T64Word         upperPhysMemAdr = T64_MAX_PHYS_MEM_LIMIT;
 };
 
 //----------------------------------------------------------------------------------------

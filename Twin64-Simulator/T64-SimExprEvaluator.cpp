@@ -360,7 +360,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr ) {
         }
         else if ( regType == TYP_PREG ) {
 
-            T64Word tmp = proc -> getCpuPtr( ) -> getPswReg( );
+            T64Word tmp = proc -> getCpuPtr( ) -> getPsrReg( );
             if      ( regId == 1 ) rExpr -> u.val = extractField64( tmp, 0, 52 );
             else if ( regId == 2 ) rExpr -> u.val = extractField64( tmp, 52, 12 );  
             rExpr -> typ = TYP_NUM;

@@ -196,7 +196,7 @@ void SimWinCpuState::drawBanner( ) {
     printTextField((char *) "Mod:", fmtDesc );
     printNumericField( modNum, fmtDesc | FMT_DEC );
 
-    T64Word psw = proc -> getCpuPtr( ) -> getPswReg( );
+    T64Word psw = proc -> getCpuPtr( ) -> getPsrReg( );
 
     printTextField((char *) " IA: ", fmtDesc );
     printNumericField( psw, fmtDesc | FMT_HEX_2_4_4_4 );

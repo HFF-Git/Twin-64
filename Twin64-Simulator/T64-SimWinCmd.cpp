@@ -1909,12 +1909,12 @@ void SimCommandsWin::modifyRegCmd( ) {
 
         case TYP_PREG:  {
 
-            T64Word tmp = proc -> getCpuPtr( ) -> getPswReg( );
+            T64Word tmp = proc -> getCpuPtr( ) -> getPsrReg( );
             
             if      ( regNum == 1 ) tmp = depositField( tmp, 0, 52, val );
             else if ( regNum == 2 ) tmp = depositField( tmp, 52, 12, val );
 
-            proc -> getCpuPtr( ) -> setPswReg( tmp );     
+            proc -> getCpuPtr( ) -> setPsrReg( tmp );     
             
         } break;
  

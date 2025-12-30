@@ -78,19 +78,20 @@ const   T64Word T64_IO_MEM_START            = 0xF0000000;
 const   T64Word T64_IO_MEM_LIMIT            = 0xFFFFFFFF;
 
 const   T64Word T64_PDC_MEM_START           = 0xF0000000;
-const   T64Word T64_PDC_MEM_LIMIT           = 0xFEFFFFFF;  
+const   T64Word T64_PDC_MEM_LIMIT           = 0xF0FFFFFF;  
 
-const   T64Word T64_IO_SPA_MEM_START        = 0xFF000000;
-const   T64Word T64_IO_SPA_MEM_LIMIT        = 0xFFDFFFFF;
+const   T64Word T64_IO_SPA_MEM_START        = 0xF1000000;
+const   T64Word T64_IO_SPA_MEM_LIMIT        = 0xFEFFFFFF;
 
-const   T64Word T64_IO_HPA_MEM_START        = 0xFFE00000;
-const   T64Word T64_IO_HPA_MEM_LIMIT        = 0xFFEFFFFF;
+const   T64Word T64_IO_HPA_MEM_START        = 0xFF000000;
+const   T64Word T64_IO_HPA_MEM_LIMIT        = 0xFFFFFFFF;
 
-const   T64Word T64_IO_BCAST_MEM_START      = 0xFFF00000;
+const   T64Word T64_IO_BCAST_MEM_START      = 0xFFFFF000;
 const   T64Word T64_IO_BCAST_MEM_LIMIT      = 0xFFFFFFFF;
 
-const   T64Word T64_DEF_PHYS_MEM_SIZE       = 0xEFFFFFFF;
-const   T64Word T64_MAX_PHYS_MEM_LIMIT       = 0xFFFFFFFFF;
+const   T64Word T64_DEF_PHYS_MEM_SIZE       = 1LL << 32;
+const   T64Word T64_DEF_PHYS_MEM_LIMIT      = 0xEFFFFFFF;
+const   T64Word T64_MAX_PHYS_MEM_LIMIT      = 0xFFFFFFFFF;
 
 const   T64Word T64_MAX_REGION_ID           = 0xFFFFF;
 const   T64Word T64_MAX_VIRT_MEM_LIMIT      = 0xFFFFFFFFFFFFF;
@@ -135,11 +136,13 @@ enum T64TrapCode : int {
     PRIV_VIOLATION_TRAP     = 9,
     TLB_ACCESS_TRAP         = 10,
 
-    NON_ACCESS_INSTR_TLB_TRAP = 11,
+    INSTR_TLB_MISS_TRAP         = 11,
+    DATA_TLB_MISS_TRAP          = 12,
 
-    NON_ACCESS_DATA_TLB_TRAP = 12,
+    NON_ACCESS_INSTR_TLB_TRAP   = 13,
+    NON_ACCESS_DATA_TLB_TRAP    = 14,
 
-    DATA_ALIGNMENT_TRAP     = 13, 
+    DATA_ALIGNMENT_TRAP     = 15, 
 
 };
 

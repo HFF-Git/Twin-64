@@ -38,14 +38,19 @@ namespace {
 // CPU
 //
 //----------------------------------------------------------------------------------------
-// CPU object constructor. We keep references to the individual processor components
-// for quick access.
+// CPU object constructor. We keep a reference to the processor object for access
+// the processor components and via the processor to the system.
 //
+// ??? need to set physical memory boundaries... where to get the correct value
+// from ? Initially, we could just accept the first 4Gb until we know better...
 //----------------------------------------------------------------------------------------
 T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 
     this -> proc    = proc;
     this -> cpuType = cpuType;
+
+    this -> lowerPhysMemAdr = 0;
+    this -> upperPhysMemAdr = T64_DEF_PHYS_MEM_LIMIT;
     
     switch ( cpuType ) {
 
@@ -64,55 +69,58 @@ T64Cpu:: ~T64Cpu( ) { }
 //----------------------------------------------------------------------------------------
 // CPU reset method.
 //
+// ??? get the actual physical memory size ?
 //----------------------------------------------------------------------------------------
 void T64Cpu::reset( ) {
 
-    for ( int i = 0; i < T64_MAX_CREGS; i++ ) ctlRegFile[ i ] = 0;
-    for ( int i = 0; i < T64_MAX_GREGS; i++ ) genRegFile[ i ] = 0;
+    for ( int i = 0; i < T64_MAX_CREGS; i++ ) cRegFile[ i ] = 0;
+    for ( int i = 0; i < T64_MAX_GREGS; i++ ) gRegFile[ i ] = 0;
     
-    pswReg              = 0;
-    instrReg            = 0;
-    resvReg             = 0;
+    psrReg          = 0;
+    instrReg        = 0;
+    resvReg         = 0;
+    lowerPhysMemAdr = 0;
+    upperPhysMemAdr = T64_DEF_PHYS_MEM_LIMIT;
 }
 
 //----------------------------------------------------------------------------------------
-// The register access routines. Called externally by monitors and debuggers.
+// The register access routines.
 //
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::getGeneralReg( int index ) {
     
     if ( index == 0 )   return( 0 );
-    else                return( genRegFile[ index % T64_MAX_GREGS ] );
+    else                return( gRegFile[ index % T64_MAX_GREGS ] );
 }
 
 void T64Cpu::setGeneralReg( int index, T64Word val ) {
     
-    if ( index != 0 ) genRegFile[ index % T64_MAX_GREGS ] = val;
+    if ( index != 0 ) gRegFile[ index % T64_MAX_GREGS ] = val;
 }
 
 T64Word T64Cpu::getControlReg( int index ) {
     
-    return( ctlRegFile[ index % T64_MAX_CREGS ] );
+    return( cRegFile[ index % T64_MAX_CREGS ] );
 }
 
 void T64Cpu::setControlReg( int index, T64Word val ) {
     
-    ctlRegFile[ index % T64_MAX_CREGS ] = val;
+    cRegFile[ index % T64_MAX_CREGS ] = val;
 }
 
-T64Word T64Cpu::getPswReg( ) {
+T64Word T64Cpu::getPsrReg( ) {
     
-    return( pswReg );
+    return( psrReg );
 }
 
-void T64Cpu::setPswReg( T64Word val ) {
+void T64Cpu::setPsrReg( T64Word val ) {
     
-    pswReg = val;
+    psrReg = val;
 }
 
 //----------------------------------------------------------------------------------------
-// Get/Set the general register values based on the instruction field. These 
-// routines are used by the instruction execution code.
+// Get/Set the general register values based on the register position in the
+// instruction. These routines are used by the instruction execution code.
 //
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::getRegR( uint32_t instr ) {
@@ -136,93 +144,87 @@ void T64Cpu::setRegR( uint32_t instr, T64Word val ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Privilege Mode Check.
+// Privilege Mode Check. We check the "X" bit in the processor state register
+// and raise a trap of we run in user mode.
 //
 //----------------------------------------------------------------------------------------
 void T64Cpu::privModeCheck( ) {
 
-    if ( extractBit64( pswReg, 0 ) != 0 ) {
+    if ( ! extractPsrXbit( psrReg )) {
 
         throw( T64Trap( PRIV_VIOLATION_TRAP ), 0, 0, 0 ); // fix ...
     }
 }
 
 //----------------------------------------------------------------------------------------
-// Protection check. If we are in user mode, we compare the pId with the protection 
-// identifiers stored in the control registers CR4 to CR7. We also check the write 
-// disable bit in the control register PID word. 
+// Protection check. If we are in user mode, we compare the region Id with the 
+// protection identifiers stored in the control registers CR4 to CR7. We also 
+// check the associated write disable bit in the control register word. 
 //
 //----------------------------------------------------------------------------------------
-void T64Cpu::protectionCheck( uint32_t pId, bool wMode ) {
+bool T64Cpu::regionIdCheck( uint32_t rId, bool wMode ) {
 
-    if ( extractBit64( pswReg, 0 ) != 0 ) {
+    if ( extractBit64( psrReg, 0 ) != 0 ) {
 
-        bool validPid   = false;
-        bool validAcc   = false;
-   
-        validPid = (( extractField64( ctlRegFile[ 4 ],  1, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 4 ], 33, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 5 ],  1, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 5 ], 33, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 6 ],  1, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 6 ], 33, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 7 ],  1, 31 ) == pId ) ||
-                    ( extractField64( ctlRegFile[ 7 ], 33, 31 ) == pId ));
-                
-        validAcc =  (( extractField64( ctlRegFile[ 4 ],  0, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 4 ], 32, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 5 ],  0, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 5 ], 32, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 6 ],  0, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 6 ], 32, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 7 ],  0, 1 ) && wMode ) ||
-                     ( extractField64( ctlRegFile[ 7 ], 32, 1 ) && wMode ));
+        for ( int i = 4; i < 8; i++ ) {
 
-        if (( ! validPid ) || ( ! validAcc )) {
+            if ((( extractField64( cRegFile[ i ],  0, 20 ) == rId   ) &&
+                 ( extractField64( cRegFile[ i ], 31,  1 ) == wMode )) ||
+                (( extractField64( cRegFile[ i ], 32, 20 ) == rId   ) &&
+                 ( extractField64( cRegFile[ i ], 63,  1 ) == wMode ))) {
 
-            throw( T64Trap( PROTECTION_TRAP, 0, 0, 0 )); // fix ...
-        }          
+                return( true );
+            }
+        }
+
+        return( false );        
     }   
 }
 
 //----------------------------------------------------------------------------------------
-// Alignment Check and Data length check. When we transfer a byte, alf, word or 
-// double word, the alignment and the transfer length need to be correct.
-//
+// Check address for being in the configured physical memory address range.
+// 
 //----------------------------------------------------------------------------------------
-void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
-
-    if ( ! isAlignedDataAdr( vAdr, align )) {
-
-        throw( T64Trap( INSTR_ALIGNMENT_TRAP ), 0, 0, 0 ); // fix ...
-    }
-}
-
-
-//----------------------------------------------------------------------------------------
-//
-// ??? be more specific: IO address range, physical memory range, physical total range
-//----------------------------------------------------------------------------------------
-bool T64Cpu::isPhysicalAdrRange( T64Word vAdr ) {
+bool T64Cpu::isPhysMemAdr( T64Word vAdr ) {
 
     return( isInRange( vAdr, lowerPhysMemAdr, upperPhysMemAdr ));
 }
 
+//----------------------------------------------------------------------------------------
+// Alignment checks.
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAlignmentCheck( T64Word adr ) {
+
+    if ( ! isAlignedDataAdr( adr, 4 )) {
+
+        throw( T64Trap( INSTR_ALIGNMENT_TRAP, 0, 0, 0 )); // Fix ...
+    }
+}
+
+void T64Cpu::dataAlignmentCheck( T64Word adr, int len ) {
+
+    if ( ! isAlignedDataAdr( adr, len )) {
+
+        throw( T64Trap( DATA_ALIGNMENT_TRAP, 0, 0, 0 )); // Fix ...
+    }
+}
 
 //----------------------------------------------------------------------------------------
-// Instruction read. This is the central routine that fetches an instruction word. We
-// first check the address range. For a physical address we must be in priv mode. For
-// a virtual address, the TLB is consulted for the translation and security checking.
+// Instruction read. This is the central routine that fetches an instruction word. 
+// We first check the address range. For a physical address we must be in priv mode.
+// For a virtual address, the TLB is consulted for the translation and access 
+// control.
 //
 // ??? if read fails, machine check ?
 //----------------------------------------------------------------------------------------
 T64Word T64Cpu::instrRead( T64Word vAdr ) {
 
     uint32_t instr = 0;
-   
-    alignMentCheck( vAdr, 4 );
 
-    if ( isPhysicalAdrRange( vAdr )) { 
+    instrAlignmentCheck( vAdr );
+
+    if ( isInPhysMemAdrRange( vAdr )) { 
 
         privModeCheck( );
         proc -> iCache -> read( vAdr, (uint8_t *) &instr, 4, false );     
@@ -232,10 +234,10 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
         T64TlbEntry *tlbPtr = proc -> iTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
-            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
+            throw ( T64Trap( INSTR_TLB_MISS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
+        regionIdCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
         proc -> iCache -> read( tlbPtr -> pAdr, 
                                 (uint8_t *) &instr, 
                                 4, 
@@ -254,14 +256,14 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
 //
 // ??? if read fails, machine check ?
 //----------------------------------------------------------------------------------------
-T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
+T64Word T64Cpu::dataRead( T64Word vAdr, int len, bool sExt ) {
 
     T64Word data    = 0;
     int     wordOfs = sizeof( T64Word ) - len;
+
+    dataAlignmentCheck( vAdr, len );
    
-    alignMentCheck( vAdr, len );
-  
-    if ( isPhysicalAdrRange( vAdr )) { 
+    if ( isPhysMemAdr( vAdr )) { 
         
         privModeCheck( );
         proc -> dCache -> read( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );
@@ -271,17 +273,20 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
         T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
-            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
+            throw ( T64Trap( DATA_TLB_MISS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
+        regionIdCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
         proc -> iCache -> read( tlbPtr -> pAdr, 
                                 ((uint8_t *) &data ) + wordOfs, 
                                 len, 
                                 tlbPtr -> uncached );
     }
 
-    // ??? sign extend
+    if ( sExt ) {
+
+        // ??? sign extend
+    }
 
     return( data );
 }
@@ -297,10 +302,10 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
 void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
 
     int wordOfs = sizeof( T64Word ) - len;
+
+    dataAlignmentCheck( vAdr, len );
   
-    alignMentCheck( vAdr, len );
- 
-    if ( isPhysicalAdrRange( vAdr )) { 
+    if ( isPhysMemAdr( vAdr )) { 
         
         privModeCheck( );
         proc -> dCache -> write( vAdr, ((uint8_t *) &data ) + wordOfs, len, false );           
@@ -310,10 +315,10 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
         T64TlbEntry *tlbPtr = proc -> dTlb -> lookup( vAdr );
         if ( tlbPtr == nullptr ) {
                 
-            throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
+            throw ( T64Trap( DATA_TLB_MISS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), true );
+        regionIdCheck( vAdrRegionId( tlbPtr ->vAdr ), true );
         proc -> dCache -> write( tlbPtr -> pAdr, 
                                  ((uint8_t *) &data ) + wordOfs, 
                                  len, 
@@ -330,9 +335,9 @@ T64Word T64Cpu::dataReadRegBOfsImm13( uint32_t instr ) {
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr ); 
     T64Word     ofs     = extractInstrScaledImm13( instr );
-    int         len     = 1U << dw;
+    int         len     = 1 << dw;
     
-    return( dataRead( addAdrOfs32( adr, ofs ), len ));
+    return( dataRead( addAdrOfs32( adr, ofs ), len, true ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -344,7 +349,7 @@ T64Word T64Cpu::dataReadRegBOfsRegX( uint32_t instr ) {
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
     T64Word     ofs     = getRegA( instr ) << dw;
-    int         len     = 1U << dw;
+    int         len     = 1 << dw;
     
     adr = addAdrOfs32( adr, ofs );
     
@@ -353,7 +358,7 @@ T64Word T64Cpu::dataReadRegBOfsRegX( uint32_t instr ) {
         throw ( T64Trap( DATA_ALIGNMENT_TRAP, 0, 0, 0 )); // fix 
     }
     
-    return( dataRead( adr, len ));
+    return( dataRead( adr, len, true ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -366,7 +371,7 @@ void T64Cpu::dataWriteRegBOfsImm13( uint32_t instr ) {
     T64Word     adr     = getRegB( instr );
     int         dw      = extractInstrDwField( instr );
     T64Word     ofs     = extractInstrScaledImm13( instr );
-    int         len     = 1U << dw;
+    int         len     = 1 << dw;
     T64Word     val     = getRegR( instr );
     
     dataWrite( addAdrOfs32( adr, ofs ), val, len );
@@ -387,16 +392,31 @@ void T64Cpu:: dataWriteRegBOfsRegX( uint32_t instr ) {
     
     adr = addAdrOfs32( adr, ofs );
     
-    if (( dw > 1 ) && ( !isAlignedDataAdr( adr, len ))) throw ( 0 );
+    if (( dw > 1 ) && ( !isAlignedDataAdr( adr, len ))) {
+        
+        throw ( T64Trap( DATA_ALIGNMENT_TRAP, 0, 0, 0 )); // fix 
+    }
     
-    dataWrite( addAdrOfs32( adr, ofs ), val, len );
+    dataWrite( adr, val, len );
+}
+
+void addOverFlowCheck( T64Word val1, T64Word val2 ) {
+
+    if ( willAddOverflow( val1, val2 )) 
+                            throw ( T64Trap( OVERFLOW_TRAP, 0, 0, 0 ));
+}
+
+void subUnderFlowCheck( T64Word val1, T64Word val2 ) {
+
+    if ( willSubOverflow( val1, val2 )) 
+                            throw ( T64Trap( OVERFLOW_TRAP, 0, 0, 0 ));
 }
 
 //----------------------------------------------------------------------------------------
-// Execute an instruction. This is the key routine of the emulator. Essentially a big
-// case statement. Each instruction is encoded based on the instruction group and the
-// opcode family. Inside each such cases, the option 1 field ( bits 19 .. 22 ) further
-// qualifies an instruction.
+// Execute an instruction. This is the key routine of the simulator. Essentially
+// a big case statement. Each instruction is encoded based on the instruction 
+// group and the opcode family. Inside each such cases, the option 1 field 
+// ( bits 19 .. 22 ) further qualifies an instruction.
 //
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrExecute( uint32_t instr ) {
@@ -415,11 +435,9 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         T64Word val1 = getRegB( instr );
                         T64Word val2 = getRegA( instr );
-                        
-                        if ( willAddOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 + val2 );
+
+                        addOverFlowCheck( val1, val2 );
+                        setRegR( instr, val1 + val2 );
                         
                     } break;
                         
@@ -428,17 +446,15 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         T64Word val1 = getRegB( instr );
                         T64Word val2 = extractInstrScaledImm13( instr );
                         
-                        if ( willAddOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 + val2 );
+                        addOverFlowCheck( val1, val2 );
+                        setRegR( instr, val1 + val2 );
                         
                     } break;
                         
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -450,11 +466,9 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         T64Word val1 = getRegR( instr );
                         T64Word val2 = dataReadRegBOfsImm13( instr );
-                        
-                        if ( willAddOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 + val2 );
+
+                        addOverFlowCheck( val1, val2 );
+                        setRegR( instr, val1 + val2 );
                         
                     } break;
                         
@@ -462,18 +476,16 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         T64Word val1 = getRegR( instr );
                         T64Word val2 = dataReadRegBOfsRegX( instr );
-                        
-                        if ( willAddOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 + val2 );
+
+                        addOverFlowCheck( val1, val2 );
+                        setRegR( instr, val1 + val2 );
                         
                     } break;
                         
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -485,11 +497,9 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         T64Word val1 = getRegB( instr );
                         T64Word val2 = getRegA( instr );
-                        
-                        if ( willSubOverflow( val1, val2 ))
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 - val2 );
+
+                        subUnderFlowCheck( val1, val2 );
+                        setRegR( instr, val1 - val2 );
                         
                     } break;
                         
@@ -498,17 +508,15 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         T64Word val1 = getRegB( instr );
                         T64Word val2 = extractInstrImm15( instr );
                         
-                        if ( willSubOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 - val2 );
+                        subUnderFlowCheck( val1, val2 );
+                        setRegR( instr, val1 - val2 );
                         
                     } break;
                         
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -521,10 +529,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         T64Word val1 = getRegR( instr );
                         T64Word val2 = dataReadRegBOfsImm13( instr );
                         
-                        if ( willSubOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 - val2 );
+                        subUnderFlowCheck( val1, val2 );
+                        setRegR( instr, val1 - val2 );
                         
                     } break;
                         
@@ -533,17 +539,15 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         T64Word val1 = getRegR( instr );
                         T64Word val2 = dataReadRegBOfsRegX( instr );
                         
-                        if ( willSubOverflow( val1, val2 )) 
-                            throw ( T64Trap( OVERFLOW_TRAP ));
-                        else 
-                            setRegR( instr, val1 - val2 );
+                        subUnderFlowCheck( val1, val2 );
+                        setRegR( instr, val1 - val2 );
                         
                     } break;
                         
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -554,11 +558,9 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val1 = getRegB( instr );
                     T64Word val2 = getRegA( instr );
                     
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
+                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
                     T64Word res = val1 & val2;
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    
                     setRegR( instr, res );
                 }
                 else {
@@ -567,14 +569,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    
                     T64Word res = val1 & val2;
-
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -585,10 +585,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val1 = getRegR( instr );
                     T64Word val2 = dataReadRegBOfsImm13( instr );
                     
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
-                    T64Word res = val1 & val2;
-                    
+                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
+                    T64Word res = val1 & val2; 
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
@@ -597,15 +595,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val1 = getRegR( instr );
                     T64Word val2 = dataReadRegBOfsRegX( instr );
                     
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
+                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
                     T64Word res = val1 & val2;
-
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -616,10 +612,8 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val1 = getRegB( instr );
                     T64Word val2 = getRegA( instr );
                     
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
+                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
                     T64Word res = val1 | val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
@@ -629,14 +623,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
                     T64Word res = val1 | val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -648,9 +640,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = dataReadRegBOfsImm13( instr );
                     
                     if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    
                     T64Word res = val1 | val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
@@ -660,14 +650,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = dataReadRegBOfsRegX( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
                     T64Word res = val1 | val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -679,9 +667,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = getRegA( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
                     T64Word res  = val1 ^ val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
@@ -691,14 +677,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = extractInstrImm15( instr );
                     
                     if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    
                     T64Word res = val1 ^ val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -710,9 +694,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = dataReadRegBOfsImm13( instr );
                     
                     if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    
                     T64Word res = val1 ^ val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
@@ -722,14 +704,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     T64Word val2 = dataReadRegBOfsRegX( instr );
                     
                     if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    
                     T64Word res = val1 ^ val2;
-                    
                     if ( extractInstrBit( instr, 21 )) res = ~ res;
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -749,12 +729,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 1: res = ( val1 <  val2 ) ? 1 : 0; break;
                     case 2: res = ( val1 >  val2 ) ? 1 : 0; break;
                     case 4: res = ( val1 != val2 ) ? 1 : 0; break;
-                    case 5: res = ( val1 >= val2 ) ? 1 : 0; break;
-                    case 6: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 5: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 6: res = ( val1 >= val2 ) ? 1 : 0; break;
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -772,12 +752,14 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                     case 0: res = ( val1 == val2 ) ? 1 : 0; break;
                     case 1: res = ( val1 <  val2 ) ? 1 : 0; break;
-                    case 2: res = ( val1 != val2 ) ? 1 : 0; break;
-                    case 3: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 2: res = ( val1 >  val2 ) ? 1 : 0; break;
+                    case 4: res = ( val1 != val2 ) ? 1 : 0; break;
+                    case 5: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 6: res = ( val1 >= val2 ) ? 1 : 0; break;
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -785,7 +767,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 switch ( extractInstrField( instr, 19, 3 )) {
                         
-                    case 0: { // EXTR
+                    case 0: { 
                         
                         T64Word val = getRegB( instr );
                         T64Word res  = 0;
@@ -793,7 +775,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         int     len  = extractInstrField( instr, 0, 6 );
                         
                         if ( extractInstrBit( instr, 13 ))   
-                            pos = (int) ctlRegFile[ 1 ]; // ??? fix ...
+                            pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
                         else                               
                             pos = extractInstrField( instr, 6, 6 );
                         
@@ -806,7 +788,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                     } break;
                         
-                    case 1: { // DEP
+                    case 1: {
                         
                         T64Word val1 = 0;
                         T64Word val2 = 0;
@@ -815,7 +797,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         int     len  = (int) extractInstrField( instr, 0, 6 );
                         
                         if ( extractInstrBit( instr, 13 ))    
-                            pos = (int) ctlRegFile[ 1 ]; // ??? fix ...
+                            pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
                         else                                
                             pos = (int) extractInstrField( instr, 6, 6 );
                         
@@ -831,11 +813,11 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         res = depositField( val1, pos, len , val2 );
                         setRegR( instr, res );
-                        pswReg = addAdrOfs32( pswReg, 4 );
+                        psrReg = addAdrOfs32( psrReg, 4 );
                         
                     } break;
                         
-                    case 3: { // DSR
+                    case 3: { 
                         
                         T64Word val1    = getRegB( instr );
                         T64Word val2    = getRegA( instr );
@@ -843,13 +825,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         T64Word res     = 0;
                         
                         if ( extractInstrBit( instr, 13 ))    
-                            shamt = (int) ctlRegFile[ 1 ]; // ??? fix ...
+                            shamt = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
                         else                                
                             shamt = (int) extractInstrField( instr, 6, 6 );
                         
                         res = shiftRight128( val1, val2, shamt );
                         setRegR( instr, res );
-                        pswReg = addAdrOfs32( pswReg, 4 );
+                        psrReg = addAdrOfs32( psrReg, 4 );
                         
                     } break;
                         
@@ -868,41 +850,39 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 if ( extractInstrBit( instr, 14 )) val2 = extractInstrImm13( instr );
                 else                               val2 = getRegB( instr );
                 
-                if ( extractInstrBit( instr, 19 )) { // SHRxA
+                if ( extractInstrBit( instr, 19 )) { 
                     
                     res = val1 >> shamt;
                 }
-                else { // SHLxA
+                else {
                     
                     if ( willShiftLeftOverflow( val1, shamt )) 
                         throw ( T64Trap( OVERFLOW_TRAP ));
 
                     res = val1 << shamt;
                 }
-                
-                if ( willAddOverflow( res, val2 )) 
-                    throw ( T64Trap( OVERFLOW_TRAP ));
 
-                setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                addOverFlowCheck( res, val2 );
+                setRegR( instr, res + val2 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_ALU * 16 + OPC_IMMOP ): {
-                
+
                 T64Word val = extractInstrImm20( instr );
-                T64Word res = 0;
+                T64Word res = getRegR( instr );
                 
                 switch ( extractInstrField( instr, 20, 2 )) {
                         
-                    case 0: res = val;          break;
-                    case 1: res = val << 12;    break;
-                    case 2: res = val << 32;    break;
-                    case 3: res = val << 52;    break;
+                    case 0: res = addAdrOfs32( res, val );      break;
+                    case 1: res = val << 12;                    break;
+                    case 2: depositField( res, 32, 20, val );   break;
+                    case 3: depositField( res, 52, 12, val );   break;
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -913,7 +893,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word res  = addAdrOfs32( base, ofs );
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -929,7 +909,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -942,7 +922,9 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 res = dataReadRegBOfsImm13( instr );
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
+
+                // ??? set reserved flag ?
                 
             } break;
                 
@@ -955,7 +937,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else    
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -966,26 +948,31 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else 
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_B ): {
                 
                 T64Word ofs     = extractInstrImm19( instr ) << 2;
-                T64Word rl      = addAdrOfs32( pswReg, 4 );
-                T64Word newIA   = addAdrOfs32( pswReg, ofs );
+                T64Word rl      = addAdrOfs32( psrReg, 4 );
+                T64Word newIA   = addAdrOfs32( psrReg, ofs );
                 
-                if ( extractInstrBit( instr, 19 )) {  // gateway
+                if ( extractInstrBit( instr, 19 )) { 
                     
-                    pswReg = newIA;
-                    setRegR( instr, rl );
+                    // ??? gateway check ?
+                    // ??? priv transfer check ?
+
+                    psrReg = newIA;
                 }
-                else { // regular branch
+                else {
+
+                    // ??? priv transfer check ?
                     
-                    pswReg = newIA;
-                    setRegR( instr, rl );
+                    psrReg = newIA;
                 }
+
+                setRegR( instr, rl );
                 
             } break;
                 
@@ -996,18 +983,17 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 0: {
 
                         T64Word ofs     = getRegB( instr ) << 2;
-                        T64Word rl      = addAdrOfs32( pswReg, 4 );
-                        T64Word newIA   = addAdrOfs32( pswReg, ofs );
+                        T64Word rl      = addAdrOfs32( psrReg, 4 );
+                        T64Word newIA   = addAdrOfs32( psrReg, ofs );
                 
-                        if ( extractInstrField( instr, 19, 3 ) != 0 ) 
+                        if ( extractInstrField( instr, 19, 3 ) != 0 ) {
+
                             throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
-                    
-                        if ( ! isAlignedDataAdr( newIA, 4 )) {
-                            
-                            throw( T64Trap( INSTR_ALIGNMENT_TRAP ));
                         }
-                
-                        pswReg = newIA;
+
+                        instrAlignmentCheck( newIA );
+                    
+                        psrReg = newIA;
                         setRegR( instr, rl );
                     
                     } break;
@@ -1016,57 +1002,59 @@ void T64Cpu::instrExecute( uint32_t instr ) {
 
                         T64Word base    = getRegB( instr );
                         T64Word ofs     = getRegA( instr );
-                        T64Word rl      = addAdrOfs32( pswReg, 4 );
+                        T64Word rl      = addAdrOfs32( psrReg, 4 );
                         T64Word newIA   = addAdrOfs32( base, ofs );
                 
-                        if ( extractInstrField( instr, 19, 3 ) != 0 ) 
+                        if ( extractInstrField( instr, 19, 3 ) != 0 ) {
+
                             throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
-                        if ( ! isAlignedDataAdr( newIA, 4 )) {
-                            
-                            throw( T64Trap( INSTR_ALIGNMENT_TRAP ));
                         }
-                
-                        pswReg = newIA;
+
+                        instrAlignmentCheck( newIA );
+                       
+                        psrReg = newIA;
                         setRegR( instr, rl );
                     
                     } break;
 
-                    default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                    default: { 
+                        
+                        throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                    }
                 }
 
             } break;   
                
             case ( OPC_GRP_BR * 16 + OPC_BB ): {
                 
-                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm13( instr ) << 2 );
                 bool    testVal = extractInstrBit( instr, 19 );
                 bool    testBit = 0;
                 int     pos     = 0;
                 
                 if ( extractInstrBit( instr, 20 ))  
-                    pos = 0; // use SAR
+                    pos = cRegFile[ CTL_REG_SHAMT ] & 0x3F;
                 else                                    
                     pos = (int) extractInstrField( instr, 13, 6 );
                 
                 testBit = extractInstrBit( instr, pos );
                 
-                if ( testVal ^ testBit )    pswReg = newIA;
-                else                        pswReg = addAdrOfs32( pswReg, 4 );
+                if ( testVal ^ testBit ) { 
+                    
+                    psrReg =addAdrOfs32( psrReg, extractInstrImm13( instr ) << 2 );
+                }
+                else psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
 
             case ( OPC_GRP_BR * 16 + OPC_ABR ): {
                 
-                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 T64Word sum     = 0;
                 int     cond    = (int) extractInstrField( instr, 19, 3 );
                 bool    res     = false;
 
-                if ( willAddOverflow( val1, val2 )) 
-                    throw ( T64Trap( OVERFLOW_TRAP ));
-                
+                addOverFlowCheck( val1, val2 );
                 sum = val1 + val2;
                 setRegR( instr, sum );
 
@@ -1077,19 +1065,21 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 2: res = ( sum >  0    ); break;
                     case 3: res = (( sum & 0x1 ) == 0 ); break;
                     case 4: res = ( sum != 0    ); break;
-                    case 5: res = ( sum >= 0    ); break;
-                    case 6: res = ( sum <= 0    ); break;
+                    case 5: res = ( sum <= 0    ); break;
+                    case 6: res = ( sum >= 0    ); break;
                     case 7: res = (( sum & 0x1 ) != 0 ); break;
                 }
                 
-                if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs32( pswReg, 4 );
+                if ( res ) { 
+                    
+                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
+                }
+                else psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_CBR ): {
                 
-                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
@@ -1101,18 +1091,20 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 1: res = ( val1 <  val2 ) ? 1 : 0; break;
                     case 2: res = ( val1 >  val2 ) ? 1 : 0; break;
                     case 4: res = ( val1 != val2 ) ? 1 : 0; break;
-                    case 5: res = ( val1 >= val2 ) ? 1 : 0; break;
-                    case 6: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 5: res = ( val1 <= val2 ) ? 1 : 0; break;
+                    case 6: res = ( val1 >= val2 ) ? 1 : 0; break;
                 }
                 
-                if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs32( pswReg, 4 );
+               if ( res ) { 
+                    
+                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
+                }
+                else psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_MBR ): {
                 
-                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val     = getRegB(instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
                 bool    res     = false;
@@ -1126,13 +1118,16 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 2: res = ( val >  0    ); break;
                     case 3: res = (( val & 0x1 ) == 0 ); break;
                     case 4: res = ( val != 0    ); break;
-                    case 5: res = ( val >= 0    ); break;
-                    case 6: res = ( val <= 0    ); break;
+                    case 5: res = ( val <= 0    ); break;
+                    case 6: res = ( val >= 0    ); break;
                     case 7: res = (( val & 0x1 ) != 0 ); break;
                 }
                 
-                if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs32( pswReg, 4 );
+                if ( res ) { 
+                    
+                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
+                }
+                else psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1142,10 +1137,14 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                     case 0:     setRegR( instr, 0 ); break; // ??? fix ...
                     case 1:     break;
-                    default:    throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+
+                    default:    { 
+                        
+                        throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+                    }
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1167,7 +1166,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1197,7 +1196,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1217,7 +1216,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1235,7 +1234,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1251,7 +1250,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1267,9 +1266,11 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 T64Word val2 = getRegA( instr );
                 
                 // do DIAG word...
+
+                // ??? perhaps have a diagHandler routine ...
                 
                 setRegR( instr, 0 );
-                pswReg = addAdrOfs32( pswReg, 4 );
+                psrReg = addAdrOfs32( psrReg, 4 );
                 
             } break;
                 
@@ -1279,7 +1280,10 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
             } break;
                 
-            default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+            default: {
+                
+                throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
+            }
         }
     }
     catch ( const T64Trap t ) {
@@ -1300,7 +1304,7 @@ void T64Cpu::step( ) {
     
     try {
         
-            instrReg = instrRead( extractField64( pswReg, 0, 52 ));
+            instrReg = instrRead( extractField64( psrReg, 0, 52 ));
             instrExecute( instrReg );
     }
     
@@ -1308,5 +1312,3 @@ void T64Cpu::step( ) {
         
     }
 }
-
-
