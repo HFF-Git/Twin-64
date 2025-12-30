@@ -511,7 +511,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( ! isAlignedDataAdr( pAdr, len )) {
         
-        throw( T64Trap( MACHINE_CHECK_TRAP ));
+        throw( T64Trap( MACHINE_CHECK ));
     }
 
     T64CacheLineInfo *cInfo;
@@ -534,7 +534,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
         
         if ( ! getCacheLineByIndex( vWay, setIndex, &cInfo, &cData )) {
         
-            throw( T64Trap( MACHINE_CHECK_TRAP ));
+            throw( T64Trap( MACHINE_CHECK ));
         }
     
         if ( cInfo -> valid ) {
@@ -547,7 +547,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
                                             cData,
                                             lineSize )) {
 
-                    throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
+                    throw( T64Trap( MACHINE_CHECK )); // ??? fill in ...
                 }
             }
 
@@ -559,7 +559,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
                                              cData, 
                                              lineSize )) {
 
-            throw( T64Trap( MACHINE_CHECK_TRAP )); // ??? fill in ...
+            throw( T64Trap( MACHINE_CHECK )); // ??? fill in ...
         }
     }
 
@@ -583,7 +583,7 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
     if ( ! isAlignedDataAdr( pAdr, len )) {
         
-        throw( T64Trap( MACHINE_CHECK_TRAP ));
+        throw( T64Trap( MACHINE_CHECK ));
     }
 
     T64CacheLineInfo *cInfo;
@@ -605,7 +605,7 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
         if ( ! getCacheLineByIndex( vWay, setIndex, &cInfo, &cData )) {
         
-            throw( T64Trap( MACHINE_CHECK_TRAP ));
+            throw( T64Trap( MACHINE_CHECK ));
         }
 
         if ( cInfo -> valid ) {
@@ -617,7 +617,7 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
                                                 cData, 
                                                 lineSize )) {        
                     
-                    throw( T64Trap( MACHINE_CHECK_TRAP ));
+                    throw( T64Trap( MACHINE_CHECK ));
                 }
             }
 
@@ -629,7 +629,7 @@ void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
                                                cData, 
                                                lineSize )) {
 
-            throw( T64Trap( MACHINE_CHECK_TRAP ));
+            throw( T64Trap( MACHINE_CHECK ));
         }
     }
 
@@ -658,7 +658,7 @@ void T64Cache::flushCacheLine( T64Word pAdr ) {
                                             cData, 
                                             lineSize )) {
         
-                throw( T64Trap( MACHINE_CHECK_TRAP ));
+                throw( T64Trap( MACHINE_CHECK ));
             }
 
             cInfo -> modified = false;
@@ -688,7 +688,7 @@ void T64Cache::purgeCacheLine( T64Word pAdr ) {
                                             cData, 
                                             lineSize )) {
         
-                throw( T64Trap( MACHINE_CHECK_TRAP ));
+                throw( T64Trap( MACHINE_CHECK ));
             }
      
             cInfo -> modified = false;
@@ -713,7 +713,7 @@ void T64Cache::read( T64Word pAdr, uint8_t *data, int len, bool cached ) {
                                         data, 
                                         len )) {
             
-            throw( T64Trap( MACHINE_CHECK_TRAP ));
+            throw( T64Trap( MACHINE_CHECK ));
         }
     }
     else readCacheData( pAdr, data, len );
@@ -733,7 +733,7 @@ void T64Cache::write( T64Word pAdr, uint8_t *data, int len, bool cached ) {
                                            data, 
                                            len )) {
 
-            throw( T64Trap( MACHINE_CHECK_TRAP ));
+            throw( T64Trap( MACHINE_CHECK ));
         }
     }
     else writeCacheData( pAdr, data, len );

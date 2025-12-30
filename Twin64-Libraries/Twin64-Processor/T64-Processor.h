@@ -304,6 +304,30 @@ struct T64Cpu {
 
     private: 
 
+    bool            isPhysMemAdr( T64Word vAdr );
+    bool            evalCond( int cond, T64Word val1, T64Word val2 );
+
+    void            privModeOperationTrap( );
+    void            instrTlbMissTrap( T64Word adr );
+    void            instrAlignmentTrap( T64Word adr );
+    void            instrMemProtectionTrap( T64Word adr );
+    void            dataTlbMissTrap( T64Word adr );
+    void            dataAlignmentTrap( T64Word adr );
+    void            dataMemProtectionTrap( T64Word adr );
+    void            overFlowTrap( );
+    void            illegalInstrTrap( );
+
+    void            privModeCheck( );
+    bool            regionIdCheck( uint32_t pId, bool wMode );
+    void            instrAlignmentCheck( T64Word vAdr );
+    void            instrProtectionCheck( T64Word adr );
+    void            dataAlignmentCheck( T64Word vAdr, int len );
+    void            dataProtectionCheck( T64Word adr, bool wMode );
+    void            addOverFlowCheck( T64Word val1, T64Word val2 );
+    void            subUnderFlowCheck( T64Word val1, T64Word val2 );
+
+    void            nextInstr( );
+
     T64Word         getRegR( uint32_t instr );
     T64Word         getRegB( uint32_t instr );
     T64Word         getRegA( uint32_t instr );
@@ -315,14 +339,7 @@ struct T64Cpu {
     T64Word         extractImm20U( uint32_t instr );
     T64Word         extractDwField( uint32_t instr );
     
-    void            privModeCheck( );
-    bool            regionIdCheck( uint32_t pId, bool wMode );
-    void            instrAlignmentCheck( T64Word vAdr );
-    void            dataAlignmentCheck( T64Word vAdr, int len );
-    bool            isPhysMemAdr( T64Word vAdr );
-    
     T64Word         instrRead( T64Word vAdr );
-
     T64Word         dataRead( T64Word vAdr, int len, bool sExt );
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
     T64Word         dataReadRegBOfsRegX( uint32_t instr );

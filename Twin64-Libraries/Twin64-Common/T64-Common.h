@@ -117,33 +117,35 @@ enum T64PageType : int {
 // T64 Traps. Traps are identified by their number. A trap handler is passed 
 // further information via the control registers.
 //
-// ??? fix trap numbers... match IVA table...
 //----------------------------------------------------------------------------------------
 enum T64TrapCode : int {
     
-    NO_TRAP                 = 0,
-    MACHINE_CHECK_TRAP      = 1,
+    NO_TRAP                         = 0,
+    MACHINE_CHECK                   = 1,
 
-    ILLEGAL_INSTR_TRAP      = 2,
-    INSTR_ALIGNMENT_TRAP    = 3,
+    POWER_FAILURE                   = 2, 
+    RECOVERY_COUNTER_TRAP           = 3,
+    EXTERNAL_INTERRUPT              = 4,
+
+    ILLEGAL_INSTR_TRAP              = 5,
+    PRIV_OPERATION_TRAP             = 6,
+    PRIV_REGISTER_TRAP              = 7,
+    OVERFLOW_TRAP                   = 8,
+
+    INSTR_TLB_MISS_TRAP             = 9,
+    NON_ACC_INSTR_TLB_MISS_TRAP     = 10,
+    INSTR_PROTECTION_TRAP           = 11,
+    INSTR_ALIGNMENT_TRAP            = 12,
+
+    DATA_TLB_MISS_TRAP              = 13,
+    NON_ACC_DATA_TLB_MISS_TRAP      = 14,
+    DATA_ACC_RIGHTS_TRAP            = 15,
+    DATA_PROTECTION_TRAP            = 16,
+    DATA_ALIGNMENT_TRAP             = 17,
       
-    PHYS_MEM_ADR_TRAP       = 4,
-    IO_MEM_ADR_TRAP         = 5,
+    PAGE_REF_TRAP                   = 18,
+    BREAK_INSTR_TRAP                = 19,
     
-    OVERFLOW_TRAP           = 6,
-    ACCESS_RIGHTS_TRAP      = 7,
-    PROTECTION_TRAP         = 8,
-    PRIV_VIOLATION_TRAP     = 9,
-    TLB_ACCESS_TRAP         = 10,
-
-    INSTR_TLB_MISS_TRAP         = 11,
-    DATA_TLB_MISS_TRAP          = 12,
-
-    NON_ACCESS_INSTR_TLB_TRAP   = 13,
-    NON_ACCESS_DATA_TLB_TRAP    = 14,
-
-    DATA_ALIGNMENT_TRAP     = 15, 
-
 };
 
 //----------------------------------------------------------------------------------------
