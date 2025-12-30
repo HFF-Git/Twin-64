@@ -107,7 +107,7 @@ bool T64Memory::read( T64Word adr, uint8_t *data, int len ) {
     else {
 
         if ( adr + len >= spaAdr + spaLen ) return( false );
-        if ( ! isAligned( adr, len )) return( false );
+        if ( ! isAlignedDataAdr( adr, len )) return( false );
 
         uint8_t *srcPtr = &memData[ adr - spaAdr ];
         return( copyToBigEndian( data, srcPtr, len ));
@@ -135,7 +135,7 @@ bool T64Memory::write( T64Word adr, uint8_t *data, int len ) {
     else {
 
         if ( adr + len >= spaAdr + spaLen ) return( false );
-        if ( ! isAligned( adr, len )) return( false );
+        if ( ! isAlignedDataAdr( adr, len )) return( false );
         if ( spaReadOnly ) return ( false );
 
         uint8_t *dstPtr = &memData[ adr - spaAdr ];

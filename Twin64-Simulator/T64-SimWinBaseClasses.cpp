@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator Windows Base Classes
+// Twin64Sim - A 64-bit CPU Simulator - Windows Base Classes
 //
 //----------------------------------------------------------------------------------------
 // The simulator use a set of windows to show the system state. No, don't think 
@@ -10,7 +10,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator Windows Base Classes
+// Twin64Sim - A 64-bit CPU Simulator - Windows Base Classes
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 

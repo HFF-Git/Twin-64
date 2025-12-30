@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - DisAssembler
+// T64 - A 64-bit Processor - DisAssembler
 //
 //----------------------------------------------------------------------------------------
 // The instruction disassemble routines will format an instruction word in a human 
@@ -14,7 +14,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - DisAssembler
+// T64 - A 64-bit Processor - DisAssembler
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator window classes
+// Twin64Sim - A 64-bit CPU Simulator - Window classes
 //
 //----------------------------------------------------------------------------------------
 // This module contains all of the methods for the different simulator windows. The 
@@ -9,7 +9,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator window classes
+// Twin64Sim - A 64-bit CPU Simulator - Window classes
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 

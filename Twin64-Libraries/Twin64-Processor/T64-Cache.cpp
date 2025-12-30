@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - Cache
+// T64 - A 64-bit Processor - Cache
 //
 //----------------------------------------------------------------------------------------
 // The Twin-64 processor has a cache subsystem. Since there can be more than one 
@@ -20,7 +20,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - Cache
+// T64 - A 64-bit Processor - Cache
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
@@ -509,7 +509,7 @@ bool T64Cache::setCacheLineData( uint8_t *line,
 //----------------------------------------------------------------------------------------
 void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) {
+    if ( ! isAlignedDataAdr( pAdr, len )) {
         
         throw( T64Trap( MACHINE_CHECK_TRAP ));
     }
@@ -581,7 +581,7 @@ void T64Cache::readCacheData( T64Word pAdr, uint8_t *data, int len ) {
 //----------------------------------------------------------------------------------------
 void T64Cache::writeCacheData( T64Word pAdr, uint8_t *data, int len ) {
 
-    if ( ! isAligned( pAdr, len )) {
+    if ( ! isAlignedDataAdr( pAdr, len )) {
         
         throw( T64Trap( MACHINE_CHECK_TRAP ));
     }

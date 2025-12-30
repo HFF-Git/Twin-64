@@ -1,13 +1,13 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin64 - A 64-bit CPU Simulator - Common Declarations
+//  Twin64Sim - A 64-bit CPU Simulator - Common Declarations
 //
 //----------------------------------------------------------------------------------------
 // ...
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator - Common Declarations
+// Twin64Sim - A 64-bit CPU Simulator - Common Declarations
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
@@ -21,8 +21,7 @@
 // If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef T64_Common_h
-#define T64_Common_h
+#pragma once
 
 //----------------------------------------------------------------------------------------
 // Mac and Windows know different include files and procedure names for some POSIX 
@@ -62,14 +61,14 @@
 #endif
 
 //----------------------------------------------------------------------------------------
-//
+// Fundamental data types.
 //
 //----------------------------------------------------------------------------------------
 typedef int64_t     T64Word;
 typedef uint32_t    T64Instr;
 
 //----------------------------------------------------------------------------------------
-//
+// Fundamental constant values.
 //
 //----------------------------------------------------------------------------------------
 const   int     T64_MAX_GREGS               = 16;
@@ -102,7 +101,7 @@ const   int     T64_VADR_BITS               = 52;
 const   int     T64_PADR_BITS               = 36;
 
 //----------------------------------------------------------------------------------------
-//
+// T64 page types.
 //
 //----------------------------------------------------------------------------------------
 enum T64PageType : int {
@@ -114,29 +113,34 @@ enum T64PageType : int {
 };
 
 //----------------------------------------------------------------------------------------
+// T64 Traps. Traps are identified by their number. A trap handler is passed 
+// further information via the control registers.
 //
-//
-// ??? fix trap numbers... IVA relevant...
+// ??? fix trap numbers... match IVA table...
 //----------------------------------------------------------------------------------------
 enum T64TrapCode : int {
     
     NO_TRAP                 = 0,
-    ILLEGAL_INSTR_TRAP      = 1,
-    INSTR_ALIGNMENT_TRAP    = 2,
+    MACHINE_CHECK_TRAP      = 1,
+
+    ILLEGAL_INSTR_TRAP      = 2,
+    INSTR_ALIGNMENT_TRAP    = 3,
       
     PHYS_MEM_ADR_TRAP       = 4,
     IO_MEM_ADR_TRAP         = 5,
     
     OVERFLOW_TRAP           = 6,
-    PROTECTION_TRAP         = 7,
-    PRIV_VIOLATION_TRAP     = 8,
-    TLB_ACCESS_TRAP         = 9,
+    ACCESS_RIGHTS_TRAP      = 7,
+    PROTECTION_TRAP         = 8,
+    PRIV_VIOLATION_TRAP     = 9,
+    TLB_ACCESS_TRAP         = 10,
 
-     
-    DATA_ALIGNMENT_TRAP     = 10, 
+    NON_ACCESS_INSTR_TLB_TRAP = 11,
 
-    MACHINE_CHECK_TRAP      = 11
-    
+    NON_ACCESS_DATA_TLB_TRAP = 12,
+
+    DATA_ALIGNMENT_TRAP     = 13, 
+
 };
 
 //----------------------------------------------------------------------------------------
@@ -176,18 +180,29 @@ enum ControlRegId : int {
     
     CTL_REG_CPU_INFO    = 0,
     CTL_REG_SHAMT       = 1,
-    
-    CTL_REG_PID0        = 4,
-    CTL_REG_PID1        = 5,
-    CTL_REG_PID2        = 6,
-    CTL_REG_PID3        = 7,
-    CTL_REG_IVA         = 8
+    CTL_REG_REC_CNTR    = 2,
+    CTL_REG_RESERVED_3  = 3,
+
+    CTL_REG_PID_0       = 4,
+    CTL_REG_PID_1       = 5,
+    CTL_REG_PID_2       = 6,
+    CTL_REG_PID_3       = 7,
+
+    CTL_REG_IVA         = 8,
+    CTL_REG_IPSW        = 9,
+    CTL_REG_IINSTR      = 10,
+    CTL_REG_IARG_0      = 11,
+    CTL_REG_IARG_1      = 12,
+
+    CTL_REG_SCRATCH_0    = 13,
+    CTL_REG_SCRATCH_1    = 14,
+    CTL_REG_SCRATCH_2    = 15
 };
 
 //----------------------------------------------------------------------------------------
-// Instruction groups and opcode families. Instructions are decoded in three fields. 
-// The first two bits contain the instruction group. Next are 4 bits for opcode family. 
-// Finally, bits 19..21 are further qualifying the instruction.
+// Instruction groups and opcode families. Instructions are decoded in three 
+// fields. The first two bits contain the instruction group. Next are 4 bits for
+// opcode family. Bits 19..21 are further qualifying the instruction.
 //
 //----------------------------------------------------------------------------------------
 enum OpCodeGroup : uint32_t {
@@ -240,5 +255,3 @@ enum OpCodeFam : uint32_t {
     OPC_TRAP        = 14U,
     OPC_DIAG        = 15U
 };
-
-#endif

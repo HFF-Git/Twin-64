@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin64 - A 64-bit CPU Simulator - Common utility functions
+//  Twin64Sim - A 64-bit CPU Simulator - Common utility functions
 //
 //----------------------------------------------------------------------------------------
 // Throughout the Twin64 project we use a few common utility functions. They are
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator - Common Declarations
+// Twin64Sim - A 64-bit CPU Simulator - Common Declarations
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
@@ -22,9 +22,7 @@
 // program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef T64_Common_Util_h
-#define T64_Common_Util_h
-
+#pragma once
 #include "T64-Common.h"
 
 //----------------------------------------------------------------------------------------
@@ -44,7 +42,6 @@
 #endif
 
 #if HOST_IS_BIG_ENDIAN
-
     inline uint16_t toBigEndian16(uint16_t val) { return val; }
     inline uint32_t toBigEndian32(uint32_t val) { return val; }
     inline uint64_t toBigEndian64(uint64_t val) { return val; }
@@ -64,7 +61,6 @@
     inline uint32_t toBigEndian32(uint32_t val) { return __builtin_bswap32(val); }
     inline uint64_t toBigEndian64(uint64_t val) { return __builtin_bswap64(val); }
   #endif
-
 #endif
 
 //----------------------------------------------------------------------------------------
@@ -77,28 +73,37 @@ inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
 }
 
 inline T64Word roundup(T64Word arg, int round) {
+
     if ( round == 0 ) return arg;
     return (( arg + round - 1 ) / round ) * round;
 }
 
 inline T64Word rounddown( T64Word arg, int round ) {
+
     if (round == 0) return arg;
     return (arg / round) * round;
 }
 
-inline bool isAligned( T64Word adr, int align ) {
+inline bool isAlignedDataAdr( T64Word adr, int align ) {
 
     if (( align == 1 ) || ( align == 2 ) || 
-        ( align == 4 ) || ( align == 8 )) 
+        ( align == 4 ) || ( align == 8 )) {
         
         return (( adr & ( align - 1 )) == 0 );
-    
+    }
     else return( false );
 }
 
-inline bool isAlignedPage( T64Word adr, int align ) {
+inline bool isAlignedPageAdr( T64Word adr, int align ) {
 
-    return (( adr & ( align - 1 )) == 0 );
+    if (( align == T64_PAGE_SIZE_BYTES                  ) ||
+        ( align == 16 * T64_PAGE_SIZE_BYTES             ) ||
+        ( align == 16 * 16 * T64_PAGE_SIZE_BYTES        ) ||
+        ( align == 16 * 16 * 16 * T64_PAGE_SIZE_BYTES   )) {
+
+            return (( adr & ( align - 1 )) == 0 );
+        }
+        else return( false );
 }
 
 //----------------------------------------------------------------------------------------
@@ -257,7 +262,8 @@ inline int extractInstrImm20( T64Instr instr ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Helper function for depositing value in the instruction.
+// Helper functions for depositing value in the instruction. The are mainly used 
+// by the inline assembler.
 //
 //----------------------------------------------------------------------------------------
 inline void depositInstrField( T64Instr *instr, int bitpos, int len, T64Word value ) {
@@ -389,7 +395,7 @@ inline bool willShiftLeftOverflow( T64Word val, int shift ) {
 // Extract functions for virtual addresses.
 //
 //----------------------------------------------------------------------------------------
-inline T64Word vAdrSeg( T64Word vAdr ) {
+inline T64Word vAdrRegionId( T64Word vAdr ) {
 
     return( extractField64( vAdr, 32, 20 ));
 }
@@ -399,21 +405,47 @@ inline T64Word vAdrRegionOfs( T64Word vAdr ) {
    return( extractField64( vAdr, 0, 32 ));
 }
 
+inline T64Word vAdrPageNum( T64Word vAdr ) {
+
+   return( extractField64( vAdr, 12, 40 ));
+}
+
 inline T64Word vAdrPageOfs( T64Word vAdr ) {
 
    return( extractField64( vAdr, 0, 12 ));
 }
 
 //----------------------------------------------------------------------------------------
-// Address arithmetic.
+// Extract functions for the PSR status bits.
 //
 //----------------------------------------------------------------------------------------
-inline T64Word addAdrOfs( T64Word adr, T64Word ofs ) {
-    
-    uint32_t newOfs = (uint32_t)( adr >> 32U ) + (uint32_t)ofs;
-    return (( adr & 0xFFFFFFFF00000000 ) | newOfs );
+inline bool extractPsrMbit( T64Word psr ) {
+
+    return( extractBit64( psr, 63 ));
 }
 
+inline bool extractPsrXbit( T64Word psr ) {
+
+    return( extractBit64( psr, 61 ));
+}
+
+// ??? more to come, align with document...
+
+//----------------------------------------------------------------------------------------
+// Address arithmetic. Address are computed using an unsigned 32-bit arithmetic.
+// The address "adr" is a 64 bit address to which we will add in the offset portion
+// the 32-bit signed "ofs" value. 
+//
+//----------------------------------------------------------------------------------------
+inline T64Word addAdrOfs32( T64Word adr, T64Word ofs ) {
+    
+    uint64_t uadr   = (uint64_t) adr;
+    uint32_t lo     = (uint32_t) uadr;
+    uint32_t newLo  = lo + (uint32_t) ofs;
+
+    uint64_t result = (uadr & 0xFFFFFFFF00000000ULL) | (uint64_t)newLo;
+    return (T64Word) result;
+}
 
 //----------------------------------------------------------------------------------------
 // Virtual address range check.
@@ -428,5 +460,3 @@ inline bool isInPhysMemAdrRange( T64Word adr ) {
 
     return(( adr >= 0 ) && ( adr <= T64_MAX_PHYS_MEM_LIMIT ));
 }
-
-#endif // T64_Common_Util_h

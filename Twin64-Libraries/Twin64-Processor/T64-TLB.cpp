@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - TLB
+// T64 - A 64-bit Processor - TLB
 //
 //----------------------------------------------------------------------------------------
 // The T64 CPU Simulator has a unified TLB. It is a fully associative TLB with 64
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - TLB
+// T64 - A 64-bit Processor - TLB
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
@@ -157,8 +157,8 @@ bool T64Tlb::insert( T64Word vAdr, T64Word info ) {
 
     if ( isInIoAdrRange( vAdr )) return ( true );
 
-    if ( ! isAlignedPage( vAdr, pSize )) return ( false );
-    if ( ! isAlignedPage( pAdr, pSize )) return ( false );
+    if ( ! isAlignedPageAdr( vAdr, pSize )) return ( false );
+    if ( ! isAlignedPageAdr( pAdr, pSize )) return ( false );
 
     for ( int i = 0; i < T64_MAX_TLB_SIZE; i++ ) {
     

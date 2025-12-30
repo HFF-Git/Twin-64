@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - CPU Core
+// T64 - A 64-bit Processor - CPU Core
 //
 //----------------------------------------------------------------------------------------
 // The CPU core is a submodule of the processor. It implements the actual CPU with
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - CPU Core
+// T64 - A 64-bit Processor - CPU Core
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
@@ -192,7 +192,7 @@ void T64Cpu::protectionCheck( uint32_t pId, bool wMode ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::alignMentCheck( T64Word vAdr, int align ) {
 
-    if ( ! isAligned( vAdr, align )) {
+    if ( ! isAlignedDataAdr( vAdr, align )) {
 
         throw( T64Trap( INSTR_ALIGNMENT_TRAP ), 0, 0, 0 ); // fix ...
     }
@@ -235,7 +235,7 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
+        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
         proc -> iCache -> read( tlbPtr -> pAdr, 
                                 (uint8_t *) &instr, 
                                 4, 
@@ -274,7 +274,7 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len ) {
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), false );
+        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), false );
         proc -> iCache -> read( tlbPtr -> pAdr, 
                                 ((uint8_t *) &data ) + wordOfs, 
                                 len, 
@@ -313,7 +313,7 @@ void T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len ) {
             throw ( T64Trap( TLB_ACCESS_TRAP, 0, 0, 0 )); // fix 
         }
 
-        protectionCheck( vAdrSeg( tlbPtr ->vAdr ), true );
+        protectionCheck( vAdrRegionId( tlbPtr ->vAdr ), true );
         proc -> dCache -> write( tlbPtr -> pAdr, 
                                  ((uint8_t *) &data ) + wordOfs, 
                                  len, 
@@ -332,7 +332,7 @@ T64Word T64Cpu::dataReadRegBOfsImm13( uint32_t instr ) {
     T64Word     ofs     = extractInstrScaledImm13( instr );
     int         len     = 1U << dw;
     
-    return( dataRead( addAdrOfs( adr, ofs ), len ));
+    return( dataRead( addAdrOfs32( adr, ofs ), len ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -346,9 +346,9 @@ T64Word T64Cpu::dataReadRegBOfsRegX( uint32_t instr ) {
     T64Word     ofs     = getRegA( instr ) << dw;
     int         len     = 1U << dw;
     
-    adr = addAdrOfs( adr, ofs );
+    adr = addAdrOfs32( adr, ofs );
     
-    if (( dw > 1 ) && ( !isAligned( adr, len ))) {
+    if (( dw > 1 ) && ( !isAlignedDataAdr( adr, len ))) {
                 
         throw ( T64Trap( DATA_ALIGNMENT_TRAP, 0, 0, 0 )); // fix 
     }
@@ -369,7 +369,7 @@ void T64Cpu::dataWriteRegBOfsImm13( uint32_t instr ) {
     int         len     = 1U << dw;
     T64Word     val     = getRegR( instr );
     
-    dataWrite( addAdrOfs( adr, ofs ), val, len );
+    dataWrite( addAdrOfs32( adr, ofs ), val, len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -385,11 +385,11 @@ void T64Cpu:: dataWriteRegBOfsRegX( uint32_t instr ) {
     int         len     = 1U << dw;
     T64Word     val     = getRegR( instr );
     
-    adr = addAdrOfs( adr, ofs );
+    adr = addAdrOfs32( adr, ofs );
     
-    if (( dw > 1 ) && ( !isAligned( adr, len ))) throw ( 0 );
+    if (( dw > 1 ) && ( !isAlignedDataAdr( adr, len ))) throw ( 0 );
     
-    dataWrite( addAdrOfs( adr, ofs ), val, len );
+    dataWrite( addAdrOfs32( adr, ofs ), val, len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -438,7 +438,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -473,7 +473,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -508,7 +508,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -543,7 +543,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     default: throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -574,7 +574,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -605,7 +605,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -636,7 +636,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -667,7 +667,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -698,7 +698,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -729,7 +729,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     setRegR( instr, res );
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -754,7 +754,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -777,7 +777,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -831,7 +831,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         res = depositField( val1, pos, len , val2 );
                         setRegR( instr, res );
-                        pswReg = addAdrOfs( pswReg, 4 );
+                        pswReg = addAdrOfs32( pswReg, 4 );
                         
                     } break;
                         
@@ -849,7 +849,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                         
                         res = shiftRight128( val1, val2, shamt );
                         setRegR( instr, res );
-                        pswReg = addAdrOfs( pswReg, 4 );
+                        pswReg = addAdrOfs32( pswReg, 4 );
                         
                     } break;
                         
@@ -884,7 +884,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     throw ( T64Trap( OVERFLOW_TRAP ));
 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -902,7 +902,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -910,10 +910,10 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 T64Word base = getRegB( instr );
                 T64Word ofs  = extractInstrScaledImm13( instr );
-                T64Word res  = addAdrOfs( base, ofs );
+                T64Word res  = addAdrOfs32( base, ofs );
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -929,7 +929,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -942,7 +942,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 
                 res = dataReadRegBOfsImm13( instr );
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -955,7 +955,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else    
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -966,15 +966,15 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else 
                     throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_B ): {
                 
                 T64Word ofs     = extractInstrImm19( instr ) << 2;
-                T64Word rl      = addAdrOfs( pswReg, 4 );
-                T64Word newIA   = addAdrOfs( pswReg, ofs );
+                T64Word rl      = addAdrOfs32( pswReg, 4 );
+                T64Word newIA   = addAdrOfs32( pswReg, ofs );
                 
                 if ( extractInstrBit( instr, 19 )) {  // gateway
                     
@@ -996,13 +996,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     case 0: {
 
                         T64Word ofs     = getRegB( instr ) << 2;
-                        T64Word rl      = addAdrOfs( pswReg, 4 );
-                        T64Word newIA   = addAdrOfs( pswReg, ofs );
+                        T64Word rl      = addAdrOfs32( pswReg, 4 );
+                        T64Word newIA   = addAdrOfs32( pswReg, ofs );
                 
                         if ( extractInstrField( instr, 19, 3 ) != 0 ) 
                             throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                     
-                        if ( ! isAligned( newIA, 4 )) {
+                        if ( ! isAlignedDataAdr( newIA, 4 )) {
                             
                             throw( T64Trap( INSTR_ALIGNMENT_TRAP ));
                         }
@@ -1016,12 +1016,12 @@ void T64Cpu::instrExecute( uint32_t instr ) {
 
                         T64Word base    = getRegB( instr );
                         T64Word ofs     = getRegA( instr );
-                        T64Word rl      = addAdrOfs( pswReg, 4 );
-                        T64Word newIA   = addAdrOfs( base, ofs );
+                        T64Word rl      = addAdrOfs32( pswReg, 4 );
+                        T64Word newIA   = addAdrOfs32( base, ofs );
                 
                         if ( extractInstrField( instr, 19, 3 ) != 0 ) 
                             throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
-                        if ( ! isAligned( newIA, 4 )) {
+                        if ( ! isAlignedDataAdr( newIA, 4 )) {
                             
                             throw( T64Trap( INSTR_ALIGNMENT_TRAP ));
                         }
@@ -1038,7 +1038,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                
             case ( OPC_GRP_BR * 16 + OPC_BB ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm13( instr ) << 2 );
+                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm13( instr ) << 2 );
                 bool    testVal = extractInstrBit( instr, 19 );
                 bool    testBit = 0;
                 int     pos     = 0;
@@ -1051,13 +1051,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 testBit = extractInstrBit( instr, pos );
                 
                 if ( testVal ^ testBit )    pswReg = newIA;
-                else                        pswReg = addAdrOfs( pswReg, 4 );
+                else                        pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
 
             case ( OPC_GRP_BR * 16 + OPC_ABR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
+                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 T64Word sum     = 0;
@@ -1083,13 +1083,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs( pswReg, 4 );
+                else        pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_CBR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
+                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val1    = getRegR( instr );
                 T64Word val2    = getRegB( instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
@@ -1106,13 +1106,13 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs( pswReg, 4 );
+                else        pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
             case ( OPC_GRP_BR * 16 + OPC_MBR ): {
                 
-                T64Word newIA   = addAdrOfs( pswReg, extractInstrImm15( instr ));
+                T64Word newIA   = addAdrOfs32( pswReg, extractInstrImm15( instr ));
                 T64Word val     = getRegB(instr );
                 int     cond    = (int) extractInstrField( instr, 20, 2 );
                 bool    res     = false;
@@ -1132,7 +1132,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 
                 if ( res )  pswReg = newIA;
-                else        pswReg = addAdrOfs( pswReg, 4 );
+                else        pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1145,7 +1145,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     default:    throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1167,7 +1167,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
                 setRegR( instr, res );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1197,7 +1197,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                     else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 }
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1217,7 +1217,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1235,7 +1235,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1251,7 +1251,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 }
                 else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
                 
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 
@@ -1269,7 +1269,7 @@ void T64Cpu::instrExecute( uint32_t instr ) {
                 // do DIAG word...
                 
                 setRegR( instr, 0 );
-                pswReg = addAdrOfs( pswReg, 4 );
+                pswReg = addAdrOfs32( pswReg, 4 );
                 
             } break;
                 

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - Processor
+// T64 - A 64-bit Processor - Processor
 //
 //----------------------------------------------------------------------------------------
 // The Twin64 processor module contains the CPU core, TLBs and caches. The processor
@@ -8,22 +8,21 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - Processor
+// T64 - A 64-bit Processor - Processor
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
-// This program is free software: you can redistribute it and/or modify it under the 
-// terms of the GNU General Public License as published by the Free Software Foundation,
-// either version 3 of the License, or any later version.
+// This program is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should
-//  have received a copy of the GNU General Public License along with this program.  
-// If not, see <http://www.gnu.org/licenses/>.
+// PARTICULAR PURPOSE.  See the GNU General Public License for more details. You 
+// should have received a copy of the GNU General Public License along with this 
+// program. If not, see <http://www.gnu.org/licenses/>.
 //
 //----------------------------------------------------------------------------------------
-#ifndef T64_Processor_h
-#define T64_Processor_h
+#pragma once
 
 #include "T64-Common.h"
 #include "T64-Util.h"
@@ -39,7 +38,6 @@ struct T64Processor;
 //----------------------------------------------------------------------------------------
 // Processor Options. None defined yet. A place holder. 
 //
-//
 //----------------------------------------------------------------------------------------
 enum T64Options : uint32_t {
 
@@ -47,11 +45,20 @@ enum T64Options : uint32_t {
 };
 
 //----------------------------------------------------------------------------------------
+// CPU. The execution unit. We could support several types. So far, we do not.
+//
+//----------------------------------------------------------------------------------------
+enum T64CpuType : int {
+
+    T64_CPU_T_NIL = 0
+};
+
+//----------------------------------------------------------------------------------------
 // TLBs. A translation lookaside buffer is essential. We support a TLB kind, and
 // fully associative TLBs. TLB kind specifies the kind of cache, i.e. instruction, 
 // data or unified TLB. TLB type encoded as follows:
 //
-//  T64_TT_<sets>S
+//  T64_TT_<type>_<sets>S
 //
 //----------------------------------------------------------------------------------------
 enum T64TlbKind : int {
@@ -100,15 +107,6 @@ enum T64CacheType : int {
 };
 
 //----------------------------------------------------------------------------------------
-// CPU. The execution unit. We could support several types. So far, we do not.
-//
-//----------------------------------------------------------------------------------------
-enum T64CpuType : int {
-
-    T64_CPU_T_NIL = 0
-};
-
-//----------------------------------------------------------------------------------------
 // Cache line info consisting of valid, modified and the cache tag.
 //
 //----------------------------------------------------------------------------------------
@@ -120,11 +118,11 @@ struct T64CacheLineInfo {
 };
 
 //----------------------------------------------------------------------------------------
-// The cache submodule. The CPU can have one or two caches. All access will go through
-// the cache submodule, even when the request is a non-cached request. The CPU
-// uses the read, write, flush and purge methods for access. The getting a cache line
-// method is used by the simulator for displaying cache data. In addition, the cache
-// maintains a set of statistics.
+// The cache submodule. The CPU can have one or two caches. All access will go 
+// through the cache submodule, even when the request is a non-cached request. 
+// The CPU uses the read, write, flush and purge methods for access. The getting 
+// a cache line method is used by the simulator for displaying cache data. In
+// addition, the cache maintains a set of statistics.
 //
 //----------------------------------------------------------------------------------------
 struct T64Cache {
@@ -239,10 +237,10 @@ struct T64TlbEntry {
 };
 
 //----------------------------------------------------------------------------------------
-// The TLB submodule. A CPU can have one or two TLBs. Our TLBs are simple arrays of
-// entries, i.e. modeling a full associative array with a LRU replacement policy.
-// The CPU uses the lookup, insert and purge methods. The simulator uses the methods
-// for display and directly inserting or removing an entry.
+// The TLB submodule. A CPU can have one or two TLBs. Our TLBs are simple arrays 
+// of entries, i.e. modeling a full associative array with a LRU replacement 
+// policy. The CPU uses the lookup, insert and purge methods. The simulator uses 
+// the methods for display and directly inserting or removing an entry.
 //
 //----------------------------------------------------------------------------------------
 struct T64Tlb {
@@ -280,7 +278,8 @@ struct T64Tlb {
 };
 
 //----------------------------------------------------------------------------------------
-// The CPU is a execution unit of the processor.
+// The CPU is the execution unit of the processor. It provides access to the 
+// registers and executes an instruction.
 //
 //----------------------------------------------------------------------------------------
 struct T64Cpu {
@@ -348,11 +347,10 @@ struct T64Cpu {
 };
 
 //----------------------------------------------------------------------------------------
-// The CPU core executes the instructions. A processor module contains the CPU core,
-// TLBs and caches. The processor module connects to the system bus for memory and
-// IO access. 
-//
-// ??? a call to "step" must run to completion:
+// The CPU core executes the instructions. A processor module contains the CPU 
+// core, TLBs and caches. The processor module connects to the system bus for 
+// memory and IO access. The unit is a single step, i.e. one instruction. A call
+// to step must run to completion:
 // 
 // STEP
 //      EXEC
@@ -361,10 +359,12 @@ struct T64Cpu {
 //          end
 //
 //          EXEC work
+//      END
+// END
 //
-//      end
+// The processor participates in the cache coherence protocol and has methods that
+// are called from the system object.
 //
-// end
 //----------------------------------------------------------------------------------------
 struct T64Processor : T64Module {
     
@@ -417,7 +417,6 @@ struct T64Processor : T64Module {
     T64Cache        *getICachePtr( );
     T64Cache        *getDCachePtr( );
 
-    
 private:
 
     friend struct   T64Cpu;
@@ -433,5 +432,3 @@ private:
     T64Word         instructionCount    = 0;
     T64Word         cycleCount          = 0;
 };
-
-#endif // T64_Processor_h

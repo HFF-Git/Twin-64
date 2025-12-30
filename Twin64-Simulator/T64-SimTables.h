@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin64 - A 64-bit CPU Simulator - Simulator Tables
+//  Twin64Sim - A 64-bit CPU Simulator - Simulator Constants and Tables
 //
 //----------------------------------------------------------------------------------------
 // SimTables contains the simulator constant table data, such as the command line
@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU Simulator - Simulator Tables
+// Twin64Sim - A 64-bit CPU Simulator - Simulator Constants and Tables
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 

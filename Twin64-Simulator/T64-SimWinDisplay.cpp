@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator window subsystem
+// Twin64Sim - A 64-bit CPU Simulator - Window subsystem
 //
 //----------------------------------------------------------------------------------------
 // This module contains the window display routines. The window subsystem uses a 
@@ -9,7 +9,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator window subsystem
+// Twin64Sim - A 64-bit CPU Simulator - Window subsystem
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 

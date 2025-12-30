@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - One Line Assembler
+// T64 - A 64-bit Processor - One Line Assembler
 //
 //----------------------------------------------------------------------------------------
 // The one line assembler assembles an instruction without further context. It is 
@@ -13,7 +13,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// T64 - A 64-bit CPU - One Line Assembler
+// T64 - A 64-bit Processor - One Line Assembler
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under the 
@@ -1360,9 +1360,9 @@ void checkOfsAlignment( int ofs, uint32_t instrFlags ) {
 
     if ( ! ( instrFlags & IF_B )) { 
 
-        if ( ! ((( instrFlags & IF_H ) && ( isAligned( ofs, 2 ))) ||
-            (( instrFlags & IF_W ) && ( isAligned( ofs, 4 ))) ||
-            (( instrFlags & IF_D ) && ( isAligned( ofs, 8 ))))) 
+        if ( ! ((( instrFlags & IF_H ) && ( isAlignedDataAdr( ofs, 2 ))) ||
+            (( instrFlags & IF_W ) && ( isAlignedDataAdr( ofs, 4 ))) ||
+            (( instrFlags & IF_D ) && ( isAlignedDataAdr( ofs, 8 ))))) 
             throw( ERR_INVALID_OFS );
     }
 }

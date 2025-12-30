@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-//  Twin64 - A 64-bit CPU - ELF file loader
+//  Twin64Sim - A 64-bit CPU Simulator - ELF file loader
 //
 //----------------------------------------------------------------------------------------
 // The ELF file loader will load an executable file into the simulator physical 
@@ -8,9 +8,10 @@
 // program. No virtual memory setup, no access rights checking and so on. Just 
 // plain load into physical memory whatever you find in the ELF file.
 //
+// ??? refine when we know how an ELF is actually structured for IPL, libs, etc.
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU -Simulator command window
+// Twin64Sim - A 64-bit CPU Simulator - ELF file loader
 // Copyright (C) 2020 - 2026 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU - Simulator command window
+// Twin64Sim - A 64-bit CPU Simulator - Command window
 //
 //----------------------------------------------------------------------------------------
 // The command window is the last screen area below all enabled windows displayed.
@@ -15,7 +15,7 @@
 //
 //----------------------------------------------------------------------------------------
 //
-// Twin64 - A 64-bit CPU -Simulator command window
+// Twin64Sim - A 64-bit CPU Simulator - Command window
 // Copyright (C) 2025 - 2025 Helmut Fieres
 //
 // This program is free software: you can redistribute it and/or modify it under 
