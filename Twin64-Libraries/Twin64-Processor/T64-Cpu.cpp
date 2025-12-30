@@ -457,6 +457,876 @@ void T64Cpu:: dataWriteRegBOfsRegX( uint32_t instr ) {
 }
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluAddOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0: {
+                        
+            T64Word val1 = getRegB( instrReg );
+            T64Word val2 = getRegA( instrReg );
+            addOverFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 + val2 );
+            
+        } break;
+                        
+        case 1: {
+            
+            T64Word val1 = getRegB( instrReg );
+            T64Word val2 = extractInstrScaledImm13( instrReg );
+            addOverFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 + val2 );
+            
+        } break;
+            
+        default: illegalInstrTrap( );
+    }
+                
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemAddOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0: {
+            
+            T64Word val1 = getRegR( instrReg );
+            T64Word val2 = dataReadRegBOfsImm13( instrReg );
+            addOverFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 + val2 );
+            
+        } break;
+            
+        case 1: {
+            
+            T64Word val1 = getRegR( instrReg );
+            T64Word val2 = dataReadRegBOfsRegX( instrReg );
+
+            addOverFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 + val2 );
+            
+        } break;
+            
+        default: illegalInstrTrap( );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluSubOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0: {
+            
+            T64Word val1 = getRegB( instrReg );
+            T64Word val2 = getRegA( instrReg );
+            subUnderFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 - val2 );
+            
+        } break;
+            
+        case 1: {
+            
+            T64Word val1 = getRegB( instrReg );
+            T64Word val2 = extractInstrImm15( instrReg );
+            subUnderFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 - val2 );
+            
+        } break;
+            
+        default: illegalInstrTrap( );
+    }
+                
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemSubOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0: {
+            
+            T64Word val1 = getRegR( instrReg );
+            T64Word val2 = dataReadRegBOfsImm13( instrReg );
+            subUnderFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 - val2 );
+            
+        } break;
+            
+        case 1: {
+            
+            T64Word val1 = getRegR( instrReg );
+            T64Word val2 = dataReadRegBOfsRegX( instrReg );
+            subUnderFlowCheck( val1, val2 );
+            setRegR( instrReg, val1 - val2 );
+            
+        } break;
+            
+        default: illegalInstrTrap( );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluAndOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = getRegA( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 & val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = extractInstrImm15( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 & val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemAndOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsImm13( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 & val2; 
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsRegX( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 & val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluOrOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = getRegA( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 | val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = extractInstrImm15( instrReg );
+        if ( extractInstrBit( instrReg, 20 ))   val1 = ~ val1;
+        T64Word res = val1 | val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemOrOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsImm13( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 | val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsRegX( instrReg );
+        if ( extractInstrBit( instrReg, 20 ))   val1 = ~ val1;
+        T64Word res = val1 | val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluXorOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = getRegA( instrReg );
+        if ( extractInstrBit( instrReg, 20 ))   val1 = ~ val1;
+        T64Word res  = val1 ^ val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegB( instrReg );
+        T64Word val2 = extractInstrImm15( instrReg ); 
+        if ( extractInstrBit( instrReg, 20 ))   val1 = ~ val1;
+        T64Word res = val1 ^ val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemXorOp( ) {
+
+    if ( extractInstrBit( instrReg, 19 )) {
+                    
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsImm13( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 ^ val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    else {
+        
+        T64Word val1 = getRegR( instrReg );
+        T64Word val2 = dataReadRegBOfsRegX( instrReg );
+        if ( extractInstrBit( instrReg, 20 )) val1 = ~ val1;
+        T64Word res = val1 ^ val2;
+        if ( extractInstrBit( instrReg, 21 )) res = ~ res;
+        setRegR( instrReg, res );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluCmpOp( ) {
+
+     T64Word val1 = getRegB( instrReg );
+    T64Word val2 = 0;
+    
+    if ( extractInstrBit( instrReg, 19 )) val2 = extractInstrImm15( instrReg );
+    else                                  val2 = getRegA( instrReg );
+
+    if ( evalCond( extractInstrField( instrReg, 19, 3 ), val1, val2 ))
+        setRegR( instrReg, 1 );
+    else 
+        setRegR( instrReg, 0 );
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemCmpOp( ) {
+
+    T64Word val1 = getRegB( instrReg );
+    T64Word val2 = 0;
+    T64Word res  = 0;
+    
+    if ( extractInstrBit( instrReg, 19 )) val2 = dataReadRegBOfsRegX( instrReg );
+    else                                  val2 = dataReadRegBOfsImm13( instrReg );
+    
+    if ( evalCond( extractInstrField( instrReg, 19, 3 ), val1, val2 ))
+        setRegR( instrReg, 1 );
+    else 
+        setRegR( instrReg, 0 );
+
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluBitOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0: { 
+            
+            T64Word val = getRegB( instrReg );
+            T64Word res  = 0;
+            int     pos  = 0;
+            int     len  = extractInstrField( instrReg, 0, 6 );
+            
+            if ( extractInstrBit( instrReg, 13 ))   
+                pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
+            else                               
+                pos = extractInstrField( instrReg, 6, 6 );
+            
+            if ( extractInstrBit( instrReg, 12 ))  
+                res = extractSignedField64( val, (int) pos, len );
+            else                               
+                res = extractField64( val, (int) pos, len );
+            
+            setRegR( instrReg, res );
+            
+        } break;
+            
+        case 1: {
+            
+            T64Word val1 = 0;
+            T64Word val2 = 0;
+            T64Word res  = 0;
+            int     pos  = 0;
+            int     len  = (int) extractInstrField( instrReg, 0, 6 );
+            
+            if ( extractInstrBit( instrReg, 13 ))    
+                pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
+            else                                
+                pos = (int) extractInstrField( instrReg, 6, 6 );
+            
+            if ( extractInstrBit( instrReg, 12 ))    
+                val1 = 0;
+            else                                
+                val1 = getRegR( instrReg );
+            
+            if ( extractInstrBit( instrReg, 14 ))    
+                val2 = extractInstrField( instrReg, 15, 4 );
+            else                                
+                val2 = getRegB( instrReg );
+            
+            res = depositField( val1, pos, len , val2 );
+            setRegR( instrReg, res );
+            
+        } break;
+            
+        case 3: { 
+            
+            T64Word val1    = getRegB( instrReg );
+            T64Word val2    = getRegA( instrReg );
+            int     shamt   = 0;
+            T64Word res     = 0;
+            
+            if ( extractInstrBit( instrReg, 13 ))    
+                shamt = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
+            else                                
+                shamt = (int) extractInstrField( instrReg, 6, 6 );
+            
+            res = shiftRight128( val1, val2, shamt );
+            setRegR( instrReg, res );
+            
+        } break;
+            
+        default: illegalInstrTrap( );
+    }
+
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluShaOP( ) {
+
+    T64Word val1  = getRegR( instrReg );
+    T64Word val2  = 0;
+    T64Word res   = 0;
+    int     shamt = (int) extractInstrField( instrReg, 20, 2 );
+    
+    if ( extractInstrBit( instrReg, 14 )) val2 = extractInstrImm13( instrReg );
+    else                                  val2 = getRegB( instrReg );
+    
+    if ( extractInstrBit( instrReg, 19 )) { 
+        
+        res = val1 >> shamt;
+    }
+    else {
+        
+        if ( willShiftLeftOverflow( val1, shamt )) overFlowTrap( );
+        res = val1 << shamt;
+    }
+
+    addOverFlowCheck( res, val2 );
+    setRegR( instrReg, res + val2 );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluImmOp( ) {
+
+    T64Word val = extractInstrImm20( instrReg );
+    T64Word res = getRegR( instrReg );
+    
+    switch ( extractInstrField( instrReg, 20, 2 )) {
+            
+        case 0: res = addAdrOfs32( res, val );      break;
+        case 1: res = val << 12;                    break;
+        case 2: depositField( res, 32, 20, val );   break;
+        case 3: depositField( res, 52, 12, val );   break;
+    }
+    
+    setRegR( instrReg, res );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrAluLdoOp( ) {
+
+    T64Word base = getRegB( instrReg );
+    T64Word ofs  = extractInstrScaledImm13( instrReg );
+    T64Word res  = addAdrOfs32( base, ofs );
+    
+    setRegR( instrReg, res );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemLdOp( ) {
+
+    T64Word res = 0;
+                
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 )   
+        res = dataReadRegBOfsImm13( instrReg );
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 )   
+        res = dataReadRegBOfsRegX( instrReg );
+    else
+        illegalInstrTrap( );
+    
+    setRegR( instrReg, res );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemLdrOp( ) {
+
+    T64Word res = 0;
+                
+    if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
+        illegalInstrTrap( );
+    
+    res = dataReadRegBOfsImm13( instrReg );
+    setRegR( instrReg, res );
+    nextInstr( );
+
+    // ??? set reserved flag ?
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemStOp( ) {
+
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 )   
+        dataWriteRegBOfsImm13( instrReg );
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 )   
+        dataWriteRegBOfsRegX( instrReg );
+    else    
+        illegalInstrTrap( );
+    
+    nextInstr( );
+
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrMemStcOp( ) {
+
+    if ( extractInstrField( instrReg, 19, 3 ) == 1 ) 
+        dataWriteRegBOfsImm13( instrReg );
+    else 
+        illegalInstrTrap( );
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrBOp( ) {
+
+    T64Word ofs     = extractInstrImm19( instrReg ) << 2;
+    T64Word rl      = addAdrOfs32( psrReg, 4 );
+    T64Word newIA   = addAdrOfs32( psrReg, ofs );
+    
+    if ( extractInstrBit( instrReg, 19 )) { 
+        
+        // ??? gateway check ?
+        // ??? priv transfer check ?
+
+        psrReg = newIA;
+    }
+    else {
+
+        // ??? priv transfer check ?
+        
+        psrReg = newIA;
+    }
+
+    setRegR( instrReg, rl );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrBrOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+
+        case 0: {
+
+            T64Word ofs     = getRegB( instrReg ) << 2;
+            T64Word rl      = addAdrOfs32( psrReg, 4 );
+            T64Word newIA   = addAdrOfs32( psrReg, ofs );
+    
+            if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
+                illegalInstrTrap( );
+
+            instrAlignmentCheck( newIA );
+        
+            psrReg = newIA;
+            setRegR( instrReg, rl );
+        
+        } break;
+
+        case 1: {
+
+            T64Word base    = getRegB( instrReg );
+            T64Word ofs     = getRegA( instrReg );
+            T64Word rl      = addAdrOfs32( psrReg, 4 );
+            T64Word newIA   = addAdrOfs32( base, ofs );
+    
+            if ( extractInstrField( instrReg, 19, 3 ) != 0 ) 
+                illegalInstrTrap( );
+
+            instrAlignmentCheck( newIA );
+            
+            psrReg = newIA;
+            setRegR( instrReg, rl );
+        
+        } break;
+
+        default: illegalInstrTrap( );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrBbOp( ) {
+
+     bool    testVal = extractInstrBit( instrReg, 19 );
+    bool    testBit = 0;
+    int     pos     = 0;
+    
+    if ( extractInstrBit( instrReg, 20 ))  
+        pos = cRegFile[ CTL_REG_SHAMT ] & 0x3F;
+    else                                    
+        pos = (int) extractInstrField( instrReg, 13, 6 );
+    
+    testBit = extractInstrBit( instrReg, pos );
+    
+    if ( testVal ^ testBit ) { 
+        
+        psrReg =addAdrOfs32( psrReg, extractInstrImm13( instrReg ) << 2 );
+    }
+    else nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrAbrOp( ) {
+
+    T64Word val1    = getRegR( instrReg );
+    T64Word val2    = getRegB( instrReg );
+    T64Word sum     = 0;
+
+    addOverFlowCheck( val1, val2 );
+    sum = val1 + val2;
+    setRegR( instrReg, sum );
+
+    if ( evalCond( extractInstrField( instrReg, 19, 3 ), sum, 0 ))
+        psrReg = addAdrOfs32( psrReg, extractInstrImm15( instrReg ));
+    else 
+        nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrCbrOp( ) {
+
+    T64Word val1    = getRegR( instrReg );
+    T64Word val2    = getRegB( instrReg );
+
+    if ( evalCond( extractInstrField( instrReg, 19, 3 ), val1, val2 ))
+        psrReg = addAdrOfs32( psrReg, extractInstrImm15( instrReg ));
+    else 
+        nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrBrMbrOp( ) {
+
+    T64Word val = getRegB( instrReg );
+        
+    setRegR( instrReg, val );
+    
+    if ( evalCond( extractInstrField( instrReg, 19, 3 ), val, 0 ))
+        psrReg = addAdrOfs32( psrReg, extractInstrImm15( instrReg ));
+    else 
+        nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysMrOp( ) {
+
+    switch ( extractInstrField( instrReg, 19, 3 )) {
+                        
+        case 0:     setRegR( instrReg, 0 ); break; // ??? fix ...
+        case 1:     break;
+
+        default:    illegalInstrTrap( );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysLpaOp( ) {
+
+    privModeCheck( );
+
+    T64Word res = 0;
+    T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instrReg ));
+    
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 )   {
+        
+        
+    }
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 )   {
+        
+        
+    }
+    else illegalInstrTrap( );
+    
+    setRegR( instrReg, res );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysPrbOp( ) {
+
+    T64Word adr         = getRegB( instrReg );
+    bool    privLevel   = false;
+    
+    if ( extractInstrBit( instrReg, 14 )) 
+        privLevel = extractInstrBit( instrReg, 13 );
+    else                                   
+        privLevel = extractBit64( getRegA( instrReg ), 0 );
+    
+    T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instrReg ));
+    if ( e != nullptr ) {
+
+        if ( extractInstrField( instrReg, 19, 3 ) == 0 )   {
+        
+            // PRBR
+        
+        }
+        else if ( extractInstrField( instrReg, 19, 3 ) == 1 )   {
+        
+            // PRBW
+        
+        }
+        else illegalInstrTrap( );
+    }
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysTlbOp( ) {
+
+    // ??? should distinguish between instr and data in the opt1 field ?
+    // ??? need a distinction !!!!
+    
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 ) {
+
+        proc -> dTlb -> insert( getRegB( instrReg ), getRegA( instrReg ));
+        setRegR( instrReg, 1 );
+    }
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 ) {
+        
+        proc -> dTlb -> purge( getRegB( instrReg ));
+    }
+    else illegalInstrTrap( );
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysCaOp( ) {
+
+    // ??? should distinguish between instr and data in the opt1 field ?
+    
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 ) {
+
+        proc -> dCache -> purge( getRegB( instrReg ));
+    }
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 ) {
+        
+        proc -> dCache -> flush( getRegB( instrReg ));
+    }
+    else illegalInstrTrap( );
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysMstOp( ) {
+
+    if ( extractInstrField( instrReg, 19, 3 ) == 0 )   {
+                    
+        // RSM
+    }
+    else if ( extractInstrField( instrReg, 19, 3 ) == 1 )   {
+        
+        // SSM
+    }
+    else illegalInstrTrap( );
+    
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysRfiOp( ) {
+
+    // copy data from the CR places...
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysDiagOp( ) {
+
+    T64Word val1 = getRegB( instrReg );
+    T64Word val2 = getRegA( instrReg );
+    
+    // do DIAG word...
+
+    // ??? perhaps have a diagHandler routine ...
+    
+    setRegR( instrReg, 0 );
+    nextInstr( );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void T64Cpu::instrSysTrapOp( ) {
+
+    // under construction...
+}
+
+//----------------------------------------------------------------------------------------
 // Execute an instruction. This is the key routine of the simulator. Essentially
 // a big case statement. Each instruction is encoded based on the instruction 
 // group and the opcode family. Inside each such cases, the option 1 field 
@@ -471,772 +1341,44 @@ void T64Cpu::instrExecute( uint32_t instr ) {
         
         switch ( opCode ) {
                 
-            case ( OPC_GRP_ALU * 16 + OPC_ADD ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0: {
-                        
-                        T64Word val1 = getRegB( instr );
-                        T64Word val2 = getRegA( instr );
-                        addOverFlowCheck( val1, val2 );
-                        setRegR( instr, val1 + val2 );
-                        
-                    } break;
-                        
-                    case 1: {
-                        
-                        T64Word val1 = getRegB( instr );
-                        T64Word val2 = extractInstrScaledImm13( instr );
-                        addOverFlowCheck( val1, val2 );
-                        setRegR( instr, val1 + val2 );
-                        
-                    } break;
-                        
-                    default: illegalInstrTrap( );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_ADD ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0: {
-                        
-                        T64Word val1 = getRegR( instr );
-                        T64Word val2 = dataReadRegBOfsImm13( instr );
-                        addOverFlowCheck( val1, val2 );
-                        setRegR( instr, val1 + val2 );
-                        
-                    } break;
-                        
-                    case 1: {
-                        
-                        T64Word val1 = getRegR( instr );
-                        T64Word val2 = dataReadRegBOfsRegX( instr );
-
-                        addOverFlowCheck( val1, val2 );
-                        setRegR( instr, val1 + val2 );
-                        
-                    } break;
-                        
-                    default: illegalInstrTrap( );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_SUB ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0: {
-                        
-                        T64Word val1 = getRegB( instr );
-                        T64Word val2 = getRegA( instr );
-                        subUnderFlowCheck( val1, val2 );
-                        setRegR( instr, val1 - val2 );
-                        
-                    } break;
-                        
-                    case 1: {
-                        
-                        T64Word val1 = getRegB( instr );
-                        T64Word val2 = extractInstrImm15( instr );
-                        subUnderFlowCheck( val1, val2 );
-                        setRegR( instr, val1 - val2 );
-                        
-                    } break;
-                        
-                    default: illegalInstrTrap( );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_SUB ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0: {
-                        
-                        T64Word val1 = getRegR( instr );
-                        T64Word val2 = dataReadRegBOfsImm13( instr );
-                        subUnderFlowCheck( val1, val2 );
-                        setRegR( instr, val1 - val2 );
-                        
-                    } break;
-                        
-                    case 1: {
-                        
-                        T64Word val1 = getRegR( instr );
-                        T64Word val2 = dataReadRegBOfsRegX( instr );
-                        subUnderFlowCheck( val1, val2 );
-                        setRegR( instr, val1 - val2 );
-                        
-                    } break;
-                        
-                    default: illegalInstrTrap( );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_AND ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = getRegA( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 & val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractInstrImm15( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 & val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_AND ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsImm13( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 & val2; 
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsRegX( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 & val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_OR ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = getRegA( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 | val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractInstrImm15( instr );
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    T64Word res = val1 | val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_OR ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsImm13( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 | val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsRegX( instr );
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    T64Word res = val1 | val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_XOR ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = getRegA( instr );
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    T64Word res  = val1 ^ val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegB( instr );
-                    T64Word val2 = extractInstrImm15( instr ); 
-                    if ( extractInstrBit( instr, 20 ))   val1 = ~ val1;
-                    T64Word res = val1 ^ val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_XOR ): {
-                
-                if ( extractInstrBit( instr, 19 )) {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsImm13( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 ^ val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                else {
-                    
-                    T64Word val1 = getRegR( instr );
-                    T64Word val2 = dataReadRegBOfsRegX( instr );
-                    if ( extractInstrBit( instr, 20 )) val1 = ~ val1;
-                    T64Word res = val1 ^ val2;
-                    if ( extractInstrBit( instr, 21 )) res = ~ res;
-                    setRegR( instr, res );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):
-            case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
-                
-                T64Word val1 = getRegB( instr );
-                T64Word val2 = 0;
-                
-                if ( extractInstrBit( instr, 19 )) val2 = extractInstrImm15( instr );
-                else                               val2 = getRegA( instr );
-
-                if ( evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ))
-                    setRegR( instr, 1 );
-                else 
-                    setRegR( instr, 0 );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
-            case ( OPC_GRP_MEM * 16 + OPC_CMP_B ): {
-                
-                T64Word val1 = getRegB( instr );
-                T64Word val2 = 0;
-                T64Word res  = 0;
-                
-                if ( extractInstrBit( instr, 19 )) val2 = dataReadRegBOfsRegX( instr );
-                else                               val2 = dataReadRegBOfsImm13( instr );
-                
-                if ( evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ))
-                    setRegR( instr, 1 );
-                else 
-                    setRegR( instr, 0 );
-
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_BITOP ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0: { 
-                        
-                        T64Word val = getRegB( instr );
-                        T64Word res  = 0;
-                        int     pos  = 0;
-                        int     len  = extractInstrField( instr, 0, 6 );
-                        
-                        if ( extractInstrBit( instr, 13 ))   
-                            pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
-                        else                               
-                            pos = extractInstrField( instr, 6, 6 );
-                        
-                        if ( extractInstrBit( instr, 12 ))  
-                            res = extractSignedField64( val, (int) pos, len );
-                        else                               
-                            res = extractField64( val, (int) pos, len );
-                        
-                        setRegR( instr, res );
-                        
-                    } break;
-                        
-                    case 1: {
-                        
-                        T64Word val1 = 0;
-                        T64Word val2 = 0;
-                        T64Word res  = 0;
-                        int     pos  = 0;
-                        int     len  = (int) extractInstrField( instr, 0, 6 );
-                        
-                        if ( extractInstrBit( instr, 13 ))    
-                            pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
-                        else                                
-                            pos = (int) extractInstrField( instr, 6, 6 );
-                        
-                        if ( extractInstrBit( instr, 12 ))    
-                            val1 = 0;
-                        else                                
-                            val1 = getRegR( instr );
-                        
-                        if ( extractInstrBit( instr, 14 ))    
-                            val2 = extractInstrField( instr, 15, 4 );
-                        else                                
-                            val2 = getRegB( instr );
-                        
-                        res = depositField( val1, pos, len , val2 );
-                        setRegR( instr, res );
-                        nextInstr( );
-                        
-                    } break;
-                        
-                    case 3: { 
-                        
-                        T64Word val1    = getRegB( instr );
-                        T64Word val2    = getRegA( instr );
-                        int     shamt   = 0;
-                        T64Word res     = 0;
-                        
-                        if ( extractInstrBit( instr, 13 ))    
-                            shamt = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
-                        else                                
-                            shamt = (int) extractInstrField( instr, 6, 6 );
-                        
-                        res = shiftRight128( val1, val2, shamt );
-                        setRegR( instr, res );
-                        nextInstr( );
-                        
-                    } break;
-                        
-                    default: illegalInstrTrap( );
-                }
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_SHAOP ): {
-                
-                T64Word val1  = getRegR( instr );
-                T64Word val2  = 0;
-                T64Word res   = 0;
-                int     shamt = (int) extractInstrField( instr, 20, 2 );
-                
-                if ( extractInstrBit( instr, 14 )) val2 = extractInstrImm13( instr );
-                else                               val2 = getRegB( instr );
-                
-                if ( extractInstrBit( instr, 19 )) { 
-                    
-                    res = val1 >> shamt;
-                }
-                else {
-                    
-                    if ( willShiftLeftOverflow( val1, shamt )) overFlowTrap( );
-                    res = val1 << shamt;
-                }
-
-                addOverFlowCheck( res, val2 );
-                setRegR( instr, res + val2 );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_IMMOP ): {
-
-                T64Word val = extractInstrImm20( instr );
-                T64Word res = getRegR( instr );
-                
-                switch ( extractInstrField( instr, 20, 2 )) {
-                        
-                    case 0: res = addAdrOfs32( res, val );      break;
-                    case 1: res = val << 12;                    break;
-                    case 2: depositField( res, 32, 20, val );   break;
-                    case 3: depositField( res, 52, 12, val );   break;
-                }
-                
-                setRegR( instr, res );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_ALU * 16 + OPC_LDO ): {
-                
-                T64Word base = getRegB( instr );
-                T64Word ofs  = extractInstrScaledImm13( instr );
-                T64Word res  = addAdrOfs32( base, ofs );
-                
-                setRegR( instr, res );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_LD ): {
-                
-                T64Word res = 0;
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 )   
-                    res = dataReadRegBOfsImm13( instr );
-                else if ( extractInstrField( instr, 19, 3 ) == 1 )   
-                    res = dataReadRegBOfsRegX( instr );
-                else
-                    illegalInstrTrap( );
-                
-                setRegR( instr, res );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_LDR ): {
-                
-                T64Word res = 0;
-                
-                if ( extractInstrField( instr, 19, 3 ) != 0 ) 
-                    illegalInstrTrap( );
-                
-                res = dataReadRegBOfsImm13( instr );
-                setRegR( instr, res );
-                nextInstr( );
-
-                // ??? set reserved flag ?
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_ST ): {
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 )   
-                    dataWriteRegBOfsImm13( instr );
-                else if ( extractInstrField( instr, 19, 3 ) == 1 )   
-                    dataWriteRegBOfsRegX( instr );
-                else    
-                    illegalInstrTrap( );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_MEM * 16 + OPC_STC ): {
-                
-                if ( extractInstrField( instr, 19, 3 ) == 1 ) 
-                    dataWriteRegBOfsImm13( instr );
-                else 
-                    illegalInstrTrap( );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_BR * 16 + OPC_B ): {
-                
-                T64Word ofs     = extractInstrImm19( instr ) << 2;
-                T64Word rl      = addAdrOfs32( psrReg, 4 );
-                T64Word newIA   = addAdrOfs32( psrReg, ofs );
-                
-                if ( extractInstrBit( instr, 19 )) { 
-                    
-                    // ??? gateway check ?
-                    // ??? priv transfer check ?
-
-                    psrReg = newIA;
-                }
-                else {
-
-                    // ??? priv transfer check ?
-                    
-                    psrReg = newIA;
-                }
-
-                setRegR( instr, rl );
-                
-            } break;
-                
-            case ( OPC_GRP_BR * 16 + OPC_BR ): {
-
-                switch ( extractInstrField( instr, 19, 3 )) {
-
-                    case 0: {
-
-                        T64Word ofs     = getRegB( instr ) << 2;
-                        T64Word rl      = addAdrOfs32( psrReg, 4 );
-                        T64Word newIA   = addAdrOfs32( psrReg, ofs );
-                
-                        if ( extractInstrField( instr, 19, 3 ) != 0 ) 
-                            illegalInstrTrap( );
-
-                        instrAlignmentCheck( newIA );
-                    
-                        psrReg = newIA;
-                        setRegR( instr, rl );
-                    
-                    } break;
-
-                    case 1: {
-
-                        T64Word base    = getRegB( instr );
-                        T64Word ofs     = getRegA( instr );
-                        T64Word rl      = addAdrOfs32( psrReg, 4 );
-                        T64Word newIA   = addAdrOfs32( base, ofs );
-                
-                        if ( extractInstrField( instr, 19, 3 ) != 0 ) 
-                            illegalInstrTrap( );
-
-                        instrAlignmentCheck( newIA );
-                       
-                        psrReg = newIA;
-                        setRegR( instr, rl );
-                    
-                    } break;
-
-                    default: illegalInstrTrap( );
-                }
-
-            } break;   
-               
-            case ( OPC_GRP_BR * 16 + OPC_BB ): {
-                
-                bool    testVal = extractInstrBit( instr, 19 );
-                bool    testBit = 0;
-                int     pos     = 0;
-                
-                if ( extractInstrBit( instr, 20 ))  
-                    pos = cRegFile[ CTL_REG_SHAMT ] & 0x3F;
-                else                                    
-                    pos = (int) extractInstrField( instr, 13, 6 );
-                
-                testBit = extractInstrBit( instr, pos );
-                
-                if ( testVal ^ testBit ) { 
-                    
-                    psrReg =addAdrOfs32( psrReg, extractInstrImm13( instr ) << 2 );
-                }
-                else nextInstr( );
-                
-            } break;
-
-            case ( OPC_GRP_BR * 16 + OPC_ABR ): {
-                
-                T64Word val1    = getRegR( instr );
-                T64Word val2    = getRegB( instr );
-                T64Word sum     = 0;
-            
-                addOverFlowCheck( val1, val2 );
-                sum = val1 + val2;
-                setRegR( instr, sum );
-
-                if ( evalCond( extractInstrField( instr, 19, 3 ), sum, 0 ))
-                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
-                else 
-                    nextInstr( );
-                    
-            } break;
-                
-            case ( OPC_GRP_BR * 16 + OPC_CBR ): {
-                
-                T64Word val1    = getRegR( instr );
-                T64Word val2    = getRegB( instr );
-
-                if ( evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ))
-                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
-                else 
-                    nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_BR * 16 + OPC_MBR ): {
-                
-                T64Word val = getRegB(instr );
-        
-                setRegR( instr, val );
-                
-                if ( evalCond( extractInstrField( instr, 19, 3 ), val, 0 ))
-                    psrReg = addAdrOfs32( psrReg, extractInstrImm15( instr ));
-                else 
-                    nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_MR ): {
-                
-                switch ( extractInstrField( instr, 19, 3 )) {
-                        
-                    case 0:     setRegR( instr, 0 ); break; // ??? fix ...
-                    case 1:     break;
-
-                    default:    illegalInstrTrap( );
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_LPA ): {
-                
-                privModeCheck( );
-
-                T64Word res = 0;
-                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 )   {
-                    
-                    
-                }
-                else if ( extractInstrField( instr, 19, 3 ) == 1 )   {
-                    
-                    
-                }
-                else illegalInstrTrap( );
-                
-                setRegR( instr, res );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_PRB ): {
-                
-                T64Word adr         = getRegB( instr );
-                bool    privLevel   = false;
-                
-                if ( extractInstrBit( instr, 14 )) 
-                    privLevel = extractInstrBit( instr, 13 );
-                else                                   
-                    privLevel = extractBit64( getRegA( instr ), 0 );
-                
-                T64TlbEntry *e = proc -> dTlb -> lookup( getRegB( instr ));
-                if ( e != nullptr ) {
-
-                    if ( extractInstrField( instr, 19, 3 ) == 0 )   {
-                    
-                        // PRBR
-                    
-                    }
-                    else if ( extractInstrField( instr, 19, 3 ) == 1 )   {
-                    
-                        // PRBW
-                    
-                    }
-                    else throw ( T64Trap( ILLEGAL_INSTR_TRAP ));
-                }
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_TLB ): {
-
-                // ??? should distinguish between instr and data in the opt1 field ?
-                // ??? need a distinction !!!!
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 ) {
-
-                    proc -> dTlb -> insert( getRegB( instr ), getRegA( instr ));
-                    setRegR( instr, 1 );
-                }
-                else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
-                    
-                    proc -> dTlb -> purge( getRegB( instr ));
-                }
-                else illegalInstrTrap( );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_CA ): {
-
-                // ??? should distinguish between instr and data in the opt1 field ?
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 ) {
-
-                    proc -> dCache -> purge( getRegB( instr ));
-                }
-                else if ( extractInstrField( instr, 19, 3 ) == 1 ) {
-                    
-                    proc -> dCache -> flush( getRegB( instr ));
-                }
-                else illegalInstrTrap( );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_MST ): {
-                
-                if ( extractInstrField( instr, 19, 3 ) == 0 )   {
-                    
-                    // RSM
-                }
-                else if ( extractInstrField( instr, 19, 3 ) == 1 )   {
-                    
-                    // SSM
-                }
-                else illegalInstrTrap( );
-                
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_RFI ): {
-                
-                // copy data from the CR places...
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_DIAG ): {
-                
-                T64Word val1 = getRegB( instr );
-                T64Word val2 = getRegA( instr );
-                
-                // do DIAG word...
-
-                // ??? perhaps have a diagHandler routine ...
-                
-                setRegR( instr, 0 );
-                nextInstr( );
-                
-            } break;
-                
-            case ( OPC_GRP_SYS * 16 + OPC_TRAP ): {
-                
-                // under construction...
-                
-            } break;
-                
+            case ( OPC_GRP_ALU * 16 + OPC_ADD ):    instrAluAddOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_ADD ):    instrMemAddOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_SUB ):    instrAluSubOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_SUB ):    instrMemSubOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_AND ):    instrAluAndOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_AND ):    instrMemAndOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_OR ):     instrAluOrOp( );    break;
+            case ( OPC_GRP_MEM * 16 + OPC_OR ):     instrMemOrOp( );    break;
+            case ( OPC_GRP_ALU * 16 + OPC_XOR ):    instrAluXorOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_XOR ):    instrMemXorOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):  instrAluCmpOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_CMP_B ):  instrAluCmpOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):  instrMemCmpOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_CMP_B ):  instrMemCmpOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_BITOP ):  instrAluBitOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_SHAOP ):  instrAluShaOP( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_IMMOP ):  instrAluImmOp( );   break;
+            case ( OPC_GRP_ALU * 16 + OPC_LDO ):    instrAluLdoOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_LD ):     instrMemLdOp( );    break;
+            case ( OPC_GRP_MEM * 16 + OPC_LDR ):    instrMemLdrOp( );   break;
+            case ( OPC_GRP_MEM * 16 + OPC_ST ):     instrMemStOp( );    break;
+            case ( OPC_GRP_MEM * 16 + OPC_STC ):    instrMemStcOp( );   break;
+            case ( OPC_GRP_BR * 16 + OPC_B ):       instrBrBOp( );      break;
+            case ( OPC_GRP_BR * 16 + OPC_BR ):      instrBrBrOp( );     break;
+            case ( OPC_GRP_BR * 16 + OPC_BB ):      instrBrBbOp( );     break;
+            case ( OPC_GRP_BR * 16 + OPC_ABR ):     instrBrAbrOp( );    break;
+            case ( OPC_GRP_BR * 16 + OPC_CBR ):     instrBrCbrOp( );    break;
+            case ( OPC_GRP_BR * 16 + OPC_MBR ):     instrBrMbrOp( );    break;
+            case ( OPC_GRP_SYS * 16 + OPC_MR ):     instrSysMrOp( );    break;
+            case ( OPC_GRP_SYS * 16 + OPC_LPA ):    instrSysLpaOp( );   break;
+            case ( OPC_GRP_SYS * 16 + OPC_PRB ):    instrSysPrbOp( );   break;
+            case ( OPC_GRP_SYS * 16 + OPC_TLB ):    instrSysTlbOp( );   break;
+            case ( OPC_GRP_SYS * 16 + OPC_CA ):     instrSysCaOp( );    break;
+            case ( OPC_GRP_SYS * 16 + OPC_MST ):    instrSysMstOp( );   break;
+            case ( OPC_GRP_SYS * 16 + OPC_RFI ):    instrSysRfiOp( );   break;
+            case ( OPC_GRP_SYS * 16 + OPC_DIAG ):   instrSysDiagOp( );  break;
+            case ( OPC_GRP_SYS * 16 + OPC_TRAP ):   instrSysTrapOp( );  break;
+           
             default: illegalInstrTrap( );
         }
     }

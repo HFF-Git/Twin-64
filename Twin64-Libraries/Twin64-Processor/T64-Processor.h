@@ -348,6 +348,42 @@ struct T64Cpu {
     void            dataWriteRegBOfsImm13( uint32_t instr );
     void            dataWriteRegBOfsRegX( uint32_t instr );
 
+    void            instrAluAddOp( );
+    void            instrMemAddOp( );
+    void            instrAluSubOp( );
+    void            instrMemSubOp( );
+    void            instrAluAndOp( );
+    void            instrMemAndOp( );
+    void            instrAluOrOp( );
+    void            instrMemOrOp( );
+    void            instrAluXorOp( );
+    void            instrMemXorOp( );
+    void            instrAluCmpOp( );
+    void            instrMemCmpOp( );
+    void            instrAluBitOp( );
+    void            instrAluShaOP( );
+    void            instrAluImmOp( );
+    void            instrAluLdoOp( );
+    void            instrMemLdOp( );
+    void            instrMemLdrOp( );
+    void            instrMemStOp( );
+    void            instrMemStcOp( );
+    void            instrBrBOp( );
+    void            instrBrBrOp( );
+    void            instrBrBbOp( );
+    void            instrBrAbrOp( );
+    void            instrBrCbrOp( );
+    void            instrBrMbrOp( );
+    void            instrSysMrOp( );
+    void            instrSysLpaOp( );
+    void            instrSysPrbOp( );
+    void            instrSysTlbOp( );
+    void            instrSysCaOp( );
+    void            instrSysMstOp( );
+    void            instrSysRfiOp( );
+    void            instrSysDiagOp( );
+    void            instrSysTrapOp( );
+
     void            instrExecute( uint32_t instr );
 
     T64Word         cRegFile[ T64_MAX_CREGS ];
