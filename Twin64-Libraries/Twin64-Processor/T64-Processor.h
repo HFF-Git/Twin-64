@@ -320,9 +320,11 @@ struct T64Cpu {
     void            privModeCheck( );
     bool            regionIdCheck( uint32_t pId, bool wMode );
     void            instrAlignmentCheck( T64Word vAdr );
-    void            instrProtectionCheck( T64Word adr );
+    void            instrRegionIdCheck( T64Word adr );
+    void            instrAccessRightsCheck( T64TlbEntry *tlbPtr, uint8_t accMode );
     void            dataAlignmentCheck( T64Word vAdr, int len );
-    void            dataProtectionCheck( T64Word adr, bool wMode );
+    void            dataRegionIdCheck( T64Word adr, bool wMode );
+    void            dataAccessRightsCheck( T64TlbEntry *tlbPtr, uint8_t accMode );
     void            addOverFlowCheck( T64Word val1, T64Word val2 );
     void            subUnderFlowCheck( T64Word val1, T64Word val2 );
 
@@ -332,13 +334,7 @@ struct T64Cpu {
     T64Word         getRegB( uint32_t instr );
     T64Word         getRegA( uint32_t instr );
     void            setRegR( uint32_t instr, T64Word val );
-    
-    T64Word         extractImm13( uint32_t instr );
-    T64Word         extractImm15( uint32_t instr );
-    T64Word         extractImm19( uint32_t instr );
-    T64Word         extractImm20U( uint32_t instr );
-    T64Word         extractDwField( uint32_t instr );
-    
+   
     T64Word         instrRead( T64Word vAdr );
     T64Word         dataRead( T64Word vAdr, int len, bool sExt );
     T64Word         dataReadRegBOfsImm13( uint32_t instr );
@@ -348,41 +344,41 @@ struct T64Cpu {
     void            dataWriteRegBOfsImm13( uint32_t instr );
     void            dataWriteRegBOfsRegX( uint32_t instr );
 
-    void            instrAluAddOp( );
-    void            instrMemAddOp( );
-    void            instrAluSubOp( );
-    void            instrMemSubOp( );
-    void            instrAluAndOp( );
-    void            instrMemAndOp( );
-    void            instrAluOrOp( );
-    void            instrMemOrOp( );
-    void            instrAluXorOp( );
-    void            instrMemXorOp( );
-    void            instrAluCmpOp( );
-    void            instrMemCmpOp( );
-    void            instrAluBitOp( );
-    void            instrAluShaOP( );
-    void            instrAluImmOp( );
-    void            instrAluLdoOp( );
-    void            instrMemLdOp( );
-    void            instrMemLdrOp( );
-    void            instrMemStOp( );
-    void            instrMemStcOp( );
-    void            instrBrBOp( );
-    void            instrBrBrOp( );
-    void            instrBrBbOp( );
-    void            instrBrAbrOp( );
-    void            instrBrCbrOp( );
-    void            instrBrMbrOp( );
-    void            instrSysMrOp( );
-    void            instrSysLpaOp( );
-    void            instrSysPrbOp( );
-    void            instrSysTlbOp( );
-    void            instrSysCaOp( );
-    void            instrSysMstOp( );
-    void            instrSysRfiOp( );
-    void            instrSysDiagOp( );
-    void            instrSysTrapOp( );
+    void            instrAluAddOp( T64Instr instr );
+    void            instrMemAddOp( T64Instr instr );
+    void            instrAluSubOp( T64Instr instr );
+    void            instrMemSubOp( T64Instr instr );
+    void            instrAluAndOp( T64Instr instr );
+    void            instrMemAndOp( T64Instr instr );
+    void            instrAluOrOp( T64Instr instr );
+    void            instrMemOrOp( T64Instr instr );
+    void            instrAluXorOp( T64Instr instr );
+    void            instrMemXorOp( T64Instr instr );
+    void            instrAluCmpOp( T64Instr instr );
+    void            instrMemCmpOp( T64Instr instr );
+    void            instrAluBitOp( T64Instr instr );
+    void            instrAluShaOP( T64Instr instr );
+    void            instrAluImmOp( T64Instr instr );
+    void            instrAluLdoOp( T64Instr instr );
+    void            instrMemLdOp( T64Instr instr );
+    void            instrMemLdrOp( T64Instr instr);
+    void            instrMemStOp( T64Instr instr );
+    void            instrMemStcOp( T64Instr instr );
+    void            instrBrBOp( T64Instr instr );
+    void            instrBrBrOp( T64Instr instr );
+    void            instrBrBbOp( T64Instr instr );
+    void            instrBrAbrOp( T64Instr instr );
+    void            instrBrCbrOp( T64Instr instr );
+    void            instrBrMbrOp( T64Instr instr );
+    void            instrSysMrOp( T64Instr instr );
+    void            instrSysLpaOp( T64Instr instr );
+    void            instrSysPrbOp( T64Instr instr );
+    void            instrSysTlbOp( T64Instr instr );
+    void            instrSysCaOp( T64Instr instr );
+    void            instrSysMstOp( T64Instr instr );
+    void            instrSysRfiOp( T64Instr instr );
+    void            instrSysDiagOp( T64Instr instr );
+    void            instrSysTrapOp( T64Instr instr );
 
     void            instrExecute( uint32_t instr );
 

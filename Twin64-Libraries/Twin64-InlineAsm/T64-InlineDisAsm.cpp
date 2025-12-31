@@ -513,7 +513,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 return ( snprintf( buf, LEN_32, "R%d, R%d, %d",
                                    extractInstrRegR( instr ),
                                    extractInstrRegB( instr ),
-                                   extractInstrImm15( instr )));
+                                   extractInstrSignedImm15( instr )));
             }
             else {
                 
@@ -617,7 +617,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 return ( snprintf( buf, LEN_32, "R%d, R%d, %d",
                                    extractInstrRegR( instr ),
                                    extractInstrRegB( instr ),
-                                   extractInstrImm15( instr )));
+                                   extractInstrSignedImm15( instr )));
             }
             else {
                 
@@ -651,7 +651,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 
                 return ( snprintf( buf, LEN_32, "R%d, %d(R%d)",
                                    extractInstrRegR( instr ),
-                                   extractInstrScaledImm13( instr ),
+                                   extractInstrSignedScaledImm13( instr ),
                                    extractInstrRegB( instr )));
             }
             else {
@@ -669,7 +669,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 
                 return ( snprintf( buf, LEN_32, "R%d, %d(R%d)",
                                    extractInstrRegR( instr ),
-                                   extractInstrScaledImm13( instr ),
+                                   extractInstrSignedScaledImm13( instr ),
                                    extractInstrRegB( instr )));
             }
             else {
@@ -680,7 +680,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             
         case ( OPC_GRP_BR * 16 + OPC_B ): {
             
-            int cursor = snprintf( buf, LEN_32, ", %d", extractInstrImm19( instr ));
+            int cursor = snprintf( buf, LEN_32, ", %d", extractInstrSignedImm19( instr ));
             
             if ( extractInstrField( instr, 26, 4 ) != 0 ) {
 
@@ -693,7 +693,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
 
         case ( OPC_GRP_BR * 16 + OPC_BE ): {
 
-            int cursor = snprintf( buf, LEN_32, "%d", extractInstrImm15( instr ));
+            int cursor = snprintf( buf, LEN_32, "%d", extractInstrSignedImm15( instr ));
 
             cursor += snprintf( buf + cursor, LEN_32, "(R%d)", extractInstrRegB( instr ));
             
@@ -744,7 +744,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 cursor += snprintf( buf + cursor, LEN_32, ", %d", 
                                     extractInstrField( instr, 13, 6 ));
             
-            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrImm13( instr ));
+            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrSignedImm13( instr ));
             return ( cursor );
         }
             
@@ -755,7 +755,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                    extractInstrRegR( instr ),
                                    extractInstrRegB( instr ));
             
-            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrImm15( instr ));
+            cursor += snprintf( buf + cursor, LEN_32, ", %d", extractInstrSignedImm15( instr ));
             
             return ( cursor );
         }
@@ -788,7 +788,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 
                 return ( snprintf( buf, LEN_32, "R%d, %d(R%d)",
                                    extractInstrRegR( instr ),
-                                   extractInstrImm13( instr ),
+                                   extractInstrSignedImm13( instr ),
                                    extractInstrRegB( instr )));
             }
             else {
