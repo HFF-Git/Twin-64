@@ -305,7 +305,7 @@ struct T64Cpu {
     private: 
 
     bool            isPhysMemAdr( T64Word vAdr );
-    bool            evalCond( int cond, T64Word val1, T64Word val2 );
+    int             evalCond( int cond, T64Word val1, T64Word val2 );
 
     void            privModeOperationTrap( );
     void            instrTlbMissTrap( T64Word adr );
@@ -365,7 +365,9 @@ struct T64Cpu {
     void            instrMemStOp( T64Instr instr );
     void            instrMemStcOp( T64Instr instr );
     void            instrBrBOp( T64Instr instr );
+    void            instrBrBeOp( T64Instr instr );
     void            instrBrBrOp( T64Instr instr );
+    void            instrBrBvOp( T64Instr instr );
     void            instrBrBbOp( T64Instr instr );
     void            instrBrAbrOp( T64Instr instr );
     void            instrBrCbrOp( T64Instr instr );
@@ -381,6 +383,8 @@ struct T64Cpu {
     void            instrSysTrapOp( T64Instr instr );
 
     void            instrExecute( uint32_t instr );
+
+    T64Word         diagOpHandler( int opt, T64Word arg1, T64Word arg2 );
 
     T64Word         cRegFile[ T64_MAX_CREGS ];
     T64Word         gRegFile[ T64_MAX_GREGS ];
