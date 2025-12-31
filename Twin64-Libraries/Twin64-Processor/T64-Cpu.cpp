@@ -1153,39 +1153,25 @@ void T64Cpu::instrSysLpaOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 // SYS:PRB operation.
 //
-// ??? rethink the encoding .... should use opt2 field for encoding...
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysPrbOp( T64Instr instr ) {
 
     T64Word vAdr        = getRegB( instr );
     bool    privLevel   = false;
-    int     opt         = extractInstrField( instr, 19, 3 );
-    
-    if ( extractInstrBit( instr, 14 )) 
-        privLevel = extractInstrBit( instr, 13 );
-    else                                   
-        privLevel = extractBit64( getRegA( instr ), 0 );
-    
+    int     mode        = extractInstrField( instr, 13, 2 );
+    int     privLevel   = extractBit64( psrReg, 62 ); // ??? do better...
+
+    if ( mode == 3 ) mode = extractField64( getRegA( instr ), 0, 2 );
+   
     T64TlbEntry *e = proc -> dTlb -> lookup( vAdr );
-    if ( e != nullptr ) {
+    if ( e == nullptr ) ;  // ??? non-access trap ?
 
-        if ( opt == 0 )   {
+    if ( privLevel == 1 ) {
 
-            privLevel = extractInstrBit( instr, 13 );
-        
-
-            // PRBR
-        
-        }
-        else if ( opt == 1 )   {
-        
-            // PRBW
-        
-        }
-        else illegalInstrTrap( );
+        setRegR( instr, (( e -> pageType == mode ) ? 1 : 0 ));
     }
-    else ; // ??? a trap ?
-    
+    else setRegR( instr, 1 );
+
     nextInstr( );
 }
 
