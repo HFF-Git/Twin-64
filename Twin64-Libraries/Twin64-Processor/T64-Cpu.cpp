@@ -1157,7 +1157,6 @@ void T64Cpu::instrSysLpaOp( T64Instr instr ) {
 void T64Cpu::instrSysPrbOp( T64Instr instr ) {
 
     T64Word vAdr        = getRegB( instr );
-    bool    privLevel   = false;
     int     mode        = extractInstrField( instr, 13, 2 );
     int     privLevel   = extractBit64( psrReg, 62 ); // ??? do better...
 

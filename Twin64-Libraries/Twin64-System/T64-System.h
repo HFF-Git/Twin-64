@@ -170,6 +170,8 @@ struct T64System {
 
     T64System( );
 
+    int                 getSystemState( );
+
     int                 addToModuleMap( T64Module *module );
     int                 removeFromModuleMap( T64Module *module );
     

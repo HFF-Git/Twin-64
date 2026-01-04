@@ -424,6 +424,10 @@ void SimWinAbsMem::drawBanner( ) {
     printNumericField( getHomeItemAdr( ), fmtDesc | FMT_HEX_2_4_4 );
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
+
+    // ??? align current item address ?
+
+    // ??? correlate toggle val with radix....
 }
 
 //----------------------------------------------------------------------------------------

@@ -728,6 +728,20 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     //
     //------------------------------------------------------------------------------------
     {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWC,
+        .cmdNameStr     = (char *)  "cwc",
+        .cmdSyntaxStr   = (char *)  "cwc",
+        .helpStr        = (char *)  "clears the command window"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWL,
+        .cmdNameStr     = (char *)  "cwl",
+        .cmdSyntaxStr   = (char *)  "cwl <lines>",
+        .helpStr        = (char *)  "set command window lines"
+    },
+
+    {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WOFF,
         .cmdNameStr     = (char *) "woff",
         .cmdSyntaxStr   = (char *) "woff",
@@ -737,8 +751,93 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WDEF,
         .cmdNameStr     = (char *) "wdef",
-        .cmdSyntaxStr   = (char *) "wdef",
+        .cmdSyntaxStr   = (char *) "wdef [ <start> [ , <end> ]] | 'ALL'",
         .helpStr        = (char *) "reset the windows to their default values"
+    },
+    
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WB,
+        .cmdNameStr     = (char *)  "wb",
+        .cmdSyntaxStr   = (char *)  "wb [ <amt> ] [ , <wNum> ]",
+        .helpStr        = (char *)  "move backward by n items"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WC,
+        .cmdNameStr     = (char *)  "wc",
+        .cmdSyntaxStr   = (char *)  "wc <wNum>",
+        .helpStr        = (char *)  "set the window as current window"
+    },
+    
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WE,
+        .cmdNameStr     = (char *)  "we",
+        .cmdSyntaxStr   = (char *)  "we [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        = (char *)  "enable window"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WD,
+        .cmdNameStr     = (char *)  "wd",
+        .cmdSyntaxStr   = (char *)  "wd [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        = (char *)  "disable window"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WF,
+        .cmdNameStr     = (char *)  "wf",
+        .cmdSyntaxStr   = (char *)  "wf [ <amt> ] [ , <wNum> ]",
+        .helpStr        = (char *)  "move backward by n items"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WH,
+        .cmdNameStr     = (char *)  "wh",
+        .cmdSyntaxStr   = (char *)  "wh [ <pos> ] [ , <wNum> ]",
+        .helpStr        = (char *)  "set window home position"
+    },
+
+      {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WJ,
+        .cmdNameStr     = (char *)  "wj",
+        .cmdSyntaxStr   = (char *)  "wj <pos> [ , <wNum> ]",
+        .helpStr        = (char *)  "set window start to new position"
+    },
+
+     {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WK,
+        .cmdNameStr     = (char *)  "wk",
+        .cmdSyntaxStr   = (char *)  "wk [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        = (char *)  "remove a range of windows"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WL,
+        .cmdNameStr     = (char *)  "wl",
+        .cmdSyntaxStr   = (char *)  "wl <lines> [ , <wNum> ]",
+        .helpStr        = (char *)  "set window lines including banner line"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
+        .cmdNameStr     = (char *)  "wn",
+        .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
+        .helpStr        = (char *)  "create a new window " 
+                                    "( CPU, ITLB, DTLB, ICACHE, DCACHE, MEM, CODE, TEXT )"
+    },
+    
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
+        .cmdNameStr     = (char *)  "wr",
+        .cmdSyntaxStr   = (char *)  "wr [ <rdx> [ , <wNum> ]]",
+        .helpStr        = (char *)  "set window radix"
+    },
+
+    {
+        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WS,
+        .cmdNameStr     = (char *)  "ws",
+        .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <wStart> ] [ , <wEnd>]",
+        .helpStr        = (char *)  "move a range of windows into stack <stackNum>"
     },
     
     {
@@ -756,73 +855,10 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     },
 
     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WE,
-        .cmdNameStr     = (char *)  "we",
-        .cmdSyntaxStr   = (char *)  "we <wNum>",
-        .helpStr        = (char *)  "enable window"
-    },
-
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WD,
-        .cmdNameStr     = (char *)  "wd",
-        .cmdSyntaxStr   = (char *)  "wd <wNum>",
-        .helpStr        = (char *)  "disable window"
-    },
-
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
-        .cmdNameStr     = (char *)  "wr",
-        .cmdSyntaxStr   = (char *)  "wr [ <rdx> [ , <wNum> ]]",
-        .helpStr        = (char *)  "set window radix"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WF,
-        .cmdNameStr     = (char *)  "wf",
-        .cmdSyntaxStr   = (char *)  "wf [ <amt> ] [ , <wNum> ]",
-        .helpStr        = (char *)  "move backward by n items"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WB,
-        .cmdNameStr     = (char *)  "wb",
-        .cmdSyntaxStr   = (char *)  "wb [ <amt> ] [ , <wNum> ]",
-        .helpStr        = (char *)  "move backward by n items"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WH,
-        .cmdNameStr     = (char *)  "wh",
-        .cmdSyntaxStr   = (char *)  "wh [ <pos> ] [ , <wNum> ]",
-        .helpStr        = (char *)  "set window home position"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WJ,
-        .cmdNameStr     = (char *)  "wj",
-        .cmdSyntaxStr   = (char *)  "wj <pos> [ , <wNum> ]",
-        .helpStr        = (char *)  "set window start to new position"
-    },
-
-    {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WT,
         .cmdNameStr     = (char *)  "wt",
         .cmdSyntaxStr   = (char *)  "wt [ <wNum>, [ <toggleVal ]]",
         .helpStr        = (char *)  "toggle through alternate window content"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WL,
-        .cmdNameStr     = (char *)  "wl",
-        .cmdSyntaxStr   = (char *)  "wl <lines> [ , <wNum> ]",
-        .helpStr        = (char *)  "set window lines including banner line"
-    },
-    
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WC,
-        .cmdNameStr     = (char *)  "wc",
-        .cmdSyntaxStr   = (char *)  "wc <wNum>",
-        .helpStr        = (char *)  "set the window as current window"
     },
     
     {
@@ -832,42 +868,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .helpStr        = (char *)  "exchange current window with this window"
     },
     
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
-        .cmdNameStr     = (char *)  "wn",
-        .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
-        .helpStr        = (char *)  "create a new window " 
-                                    "( CPU, ITLB, DTLB, ICACHE, DCACHE, MEM, CODE, TEXT )"
-    },
-
-     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WK,
-        .cmdNameStr     = (char *)  "wk",
-        .cmdSyntaxStr   = (char *)  "wk [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *)  "remove a range of windows"
-    },
-
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WS,
-        .cmdNameStr     = (char *)  "ws",
-        .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <wStart> ] [ , <wEnd>]",
-        .helpStr        = (char *)  "move a range of windows into stack <stackNum>"
-    },
-
-    {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWL,
-        .cmdNameStr     = (char *)  "cwl",
-        .cmdSyntaxStr   = (char *)  "cwl <lines>",
-        .helpStr        = (char *)  "set command window lines"
-    },
-
-     {
-        .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWC,
-        .cmdNameStr     = (char *)  "cwc",
-        .cmdSyntaxStr   = (char *)  "cwc",
-        .helpStr        = (char *)  "clears the command window"
-    },
-
     //------------------------------------------------------------------------------------
     // Predefined Functions.
     //

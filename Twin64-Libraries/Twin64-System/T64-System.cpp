@@ -99,6 +99,15 @@ void T64System::initModuleMap( ) {
 }
 
 //----------------------------------------------------------------------------------------
+//
+// ??? under construction...
+//----------------------------------------------------------------------------------------
+int T64System::getSystemState( ) {
+
+    return( 0 );
+}
+
+//----------------------------------------------------------------------------------------
 // Add to the module map. The entries in the module map are sorted by the SPA 
 // address range, which also cannot overlap. We look for the insertion position,
 // shift all entries up after this position and insert the new entry.

@@ -964,8 +964,8 @@ struct SimWin {
     
     SimWinType      winType             = WT_NIL;
     int             winIndex            = 0;
-    char            winName[ MAX_WIN_NAME];
     int             winModNum           = -1;
+    char            winName[ MAX_WIN_NAME];
     SimWinSize      winDefSizes[ MAX_WIN_TOGGLES ];
     
     bool            winEnabled          = false;
@@ -1281,12 +1281,10 @@ private:
     void            winOnCmd( );
     void            winOffCmd( );
     void            winDefCmd( );
-    void            winStacksEnable( );
-    void            winStacksDisable( );
-
+    void            winStacksEnableCmd( bool enable );
+    
     void            winCurrentCmd( );
-    void            winEnableCmd( );
-    void            winDisableCmd( );
+    void            winEnableCmd( bool enable );
     void            winSetRadixCmd( );
     
     void            winForwardCmd( );
@@ -1345,9 +1343,9 @@ public:
     
     void            windowsOn( );
     void            windowsOff( );
-    void            windowDefaults( int winNum );
+    void            windowDefaults( int winNumStart, int winNumEnd );
     void            windowCurrent( int winNum );
-    void            windowEnable( int winNum, bool enable );
+    void            windowEnable( int winNumStart, int winNumEnd, bool enable );
     void            winStacksEnable( int stackNum, bool enable );
     void            windowRadix( int rdx, int winNum );
     void            windowSetRows( int rows, int winNum );

@@ -469,7 +469,7 @@ struct T64Processor : T64Module {
     T64Tlb          *getDTlbPtr( );
     T64Cache        *getICachePtr( );
     T64Cache        *getDCachePtr( );
-
+    
 private:
 
     friend struct   T64Cpu;
