@@ -445,10 +445,13 @@ void SimCommandsWin::clearCmdWin( ) {
 //      CT_WIN_SPECIAL: analyze a MS windows special character.
 //
 // A carriage return character will append a zero to the command line input got 
-// so far. We are done reading the input line. Next, we emit a carriage return to
-// the console. The prompt and the command string along with a carriage return 
-// are appended to the command output buffer. Before returning to the caller, the 
-// last thing to do is to remove any comment from the line.
+// so far. We check wether the command ended with a "\" in which case we have a 
+// multi-line input. A special prompt is displayed and we keep reading in command
+// lines. After the final carriage return, we are done reading the input line. 
+//
+// The prompt and the command string along with a carriage return are appended to
+// the command output buffer. Before returning to the caller, the last thing to do
+//is to remove any comment from the line.
 //
 // The left and right arrows move the cursor in the command line. Backspacing and
 // inserting will then take place at the current cursor position shifting any 
@@ -511,38 +514,33 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
                 }
                 else if ( isCarriageReturnChar( ch )) {
 
-                    #if 0
-                  
                     if ( cmdBufLen > 0 && cmdBuf[ cmdBufLen - 1 ] == '\\' ) {
 
                         cmdBufLen--;
                         cmdBuf[ cmdBufLen ] = '\0';
 
-                        glb -> console ->writeCarriageReturn( );
+                        glb -> console -> writeCarriageReturn( );
 
                         if ( glb -> console -> isConsole( ) ) {
 
                             glb->console -> writeChars( ">>" ); 
+                            promptBufLen = 2;                       
                         }
 
-                        // Reset cursor for the new physical line
                         cmdBufCursor = cmdBufLen;
-
-                        // Continue reading instead of returning
-                        break;
+                        promptBufLen = 2;
                     }
+                    else {
+                  
+                        cmdBuf[ cmdBufLen ] = '\0';
+                        glb -> console -> writeCarriageReturn();
 
-                    #endif
-
-                    cmdBuf[ cmdBufLen ] = '\0';
-                    glb -> console -> writeCarriageReturn();
-
-                    winOut -> addToBuffer( promptBuf );
-                    winOut -> addToBuffer( cmdBuf );
-                    winOut -> addToBuffer( "\n" );
-                    cmdBufLen = removeComment( cmdBuf );
-                    return ( cmdBufLen );
-
+                        winOut -> addToBuffer( promptBuf );
+                        winOut -> addToBuffer( cmdBuf );
+                        winOut -> addToBuffer( "\n" );
+                        cmdBufLen = removeComment( cmdBuf );
+                        return ( cmdBufLen );
+                    }
                 }
                 else if ( isBackSpaceChar( ch )) {
                     
@@ -561,12 +559,13 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
                        
                         insertChar( cmdBuf, ch, &cmdBufLen, &cmdBufCursor );
                         
-                        if ( isprint( ch ))
-                            glb -> console -> writeCharAtLinePos( ch, 
-                                                cmdBufCursor + promptBufLen );
+                        if ( isprint( ch )) {
+
+                            glb -> console -> writeChars( "%c", ch );
+                        }
                     }
                 }
-                
+
             } break;
                 
             case CT_ESCAPE: {

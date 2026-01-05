@@ -365,6 +365,11 @@ void SimFormatter::setAbsCursor( int row, int col ) {
     writeChars((char *) "\x1b[%d;%dH", row, col );
 }
 
+void SimFormatter::setCursorInLine( int col ) {
+    
+    writeChars((char *) "\x1b[%dG", col );
+}
+
 void SimFormatter::setWindowSize( int row, int col ) {
     
     writeChars((char *) "\x1b[8;%d;%dt", row, col );

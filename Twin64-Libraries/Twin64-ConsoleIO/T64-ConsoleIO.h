@@ -150,6 +150,7 @@ struct SimFormatter {
     void            clearScreen( );
     void            clearLine( );
     void            setAbsCursor( int row, int col );
+    void            setCursorInLine( int col ); 
     void            setWindowSize( int row, int col );
     void            setScrollArea( int start, int end );
     void            clearScrollArea( );
