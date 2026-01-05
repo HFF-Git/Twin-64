@@ -1635,9 +1635,11 @@ void SimCommandsWin::runCmd( ) {
 //  S [ <steps> ]
 //
 // ??? we need to handle the console window. It should be enabled before we pass 
-// control to the CPU. Make it the current window, saving the previous current window.
-// Put the console mode into non-blocking and hand over to the CPU. On return from 
-// the CPU steps, enable blocking mode again and restore the current window.
+// control to the CPU. Make it the current window, saving the previous current 
+// window. Put the console mode into non-blocking and hand over to the CPU. On 
+// return from the CPU steps, enable blocking mode again and restore the current 
+// window.
+// 
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::stepCmd( ) {
     
@@ -2429,7 +2431,7 @@ void SimCommandsWin::winCurrentCmd( ) {
     int winNum = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
     
     tok -> checkEOS( );
-    glb -> winDisplay -> windowCurrent( internalWinNum( winNum ));
+    glb -> winDisplay -> setCurrentWindow( internalWinNum( winNum ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -2662,7 +2664,7 @@ void SimCommandsWin::winKillWinCmd( ) {
     }
     else if ( tok -> isToken( TOK_ALL )) {
 
-        winNumStart = 0;
+        winNumStart = 1;
         winNumEnd   = MAX_WINDOWS;
     }
     else {

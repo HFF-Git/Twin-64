@@ -12,7 +12,7 @@ A system programming language compiler for the Twin-64 System. The idea is to ha
 <array-typ>         ->  "ARRAY" <const-expr> "OF" <typ>
                         "END
 
-<struct-typ>        ->  "STRUCT" [ "(" <ident> ")" ]
+<record-typ>        ->  "RECORD" [ "(" <ident> ")" ]
                         [ <field-list> ]
                         "END"    
 
@@ -33,12 +33,15 @@ A system programming language compiler for the Twin-64 System. The idea is to ha
 <var-decl>          ->  "VAR"   <ident> [ "=" <value> ] ";"
 
 <func-decl>         ->  "FUNC" <ident> 
-                        "<parm-list>
+                        "(" <parm-list> ")"
                         [ ":" <typ> ] ";"
+                        <option-list>
                         <stmt-seq>
                         "END"
 
-<parm-list>         -> "(" [ <ident> ":" <type> ] { "," <ident> ":" <type> } ")"
+<parm-list>         -> [ <ident> ":" <type> ] { "," <ident> ":" <type> }
+
+<option-list>       -> { "OPTION" <ident> "=" <val> ";" }
 
 <module-decl>       ->  "MODULE"
                         [ <import-decl> ] 
@@ -70,6 +73,8 @@ A system programming language compiler for the Twin-64 System. The idea is to ha
 ```
 
 ## Expressions
+
+rework expressions, they are much simpler....
 
 ```
 <expr>              ->  <simple-expr> <rel-op> <simple-expr>

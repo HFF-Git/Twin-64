@@ -103,21 +103,29 @@ int  SimWinDisplay::getCurrentWindow( ) {
 
 void SimWinDisplay::setCurrentWindow( int winNum ) {
 
-    if ( validWindowNum( winNum )) currentWinNum = winNum;
+    if ( validWindowNum( winNum )) {
+     
+        previousWinNum = currentWinNum;
+        currentWinNum  = winNum;
+    }
     else throw( ERR_INVALID_WIN_ID );
 }
 
 SimWinType SimWinDisplay::getCurrentWinType( ) {
 
-    if ( validWindowNum( currentWinNum )) 
+    if ( validWindowNum( currentWinNum )) {
+
         return( windowList[ currentWinNum ] -> getWinType( ));
+    }
     else throw( ERR_INVALID_WIN_ID );
 }
 
 int SimWinDisplay::getCurrentWinModNum( ) {
 
-     if ( validWindowNum( currentWinNum )) 
+     if ( validWindowNum( currentWinNum )) {
+
         return( windowList[ currentWinNum ] -> getWinModNum( ));
+     } 
      else throw( ERR_INVALID_WIN_ID );
 }
 
@@ -152,8 +160,10 @@ bool SimWinDisplay::validWindowType( SimTokId winType ) {
 
 char *SimWinDisplay::getWinName( int winNum ) {
 
-    if ( validWindowNum( winNum )) 
+    if ( validWindowNum( winNum )) {
+
         return( windowList[ winNum ] -> getWinName( ));
+    }
     else throw( ERR_INVALID_WIN_ID );
 }   
 
@@ -193,8 +203,7 @@ bool SimWinDisplay::isCurrentWin( int winNum ) {
     return(( validWindowNum( winNum ) && ( currentWinNum == winNum )));
 }
 
-
-bool SimWinDisplay::isWinScrollable ( int typ ) {
+bool SimWinDisplay::isScrollableWin ( int typ ) {
 
         return (( typ == WT_MEM_WIN     ) ||
                 ( typ == WT_CODE_WIN    ) ||
@@ -441,8 +450,6 @@ void SimWinDisplay::reDraw( ) {
 //----------------------------------------------------------------------------------------
 // The entry point to showing windows is to draw the screen on the "windows on" 
 // command and to clean up when we switch back to line mode. 
-
-//
 //
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowsOn( ) {
@@ -485,19 +492,6 @@ void SimWinDisplay::windowDefaults( int winNumStart, int winNumEnd ) {
     }
 
     cmdWin -> setDefaults( );
-}
-
-//----------------------------------------------------------------------------------------
-// A user defined window can be set to be the current user window. Commands that 
-// allow to specify a window number will use the window set by default then. Note
-// that each user defined command that specifies the window number in its command
-// will also set the current value. The user window becomes the actual window.
-//
-//----------------------------------------------------------------------------------------
-void SimWinDisplay::windowCurrent( int winNum ) {
-    
-    if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
-    currentWinNum = winNum; 
 }
 
 //----------------------------------------------------------------------------------------
@@ -558,17 +552,16 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
         }
     }
 
-    currentWinNum = winNumEnd;
+    setCurrentWindow( winNumEnd );
 }
 
 //----------------------------------------------------------------------------------------
 // A window can be added to or removed from the window list shown. We are passed 
 // an optional windows number, which is used when there are user defined windows
 // for locating the window object. If we remove a window and the window is the
-// current window, we select another one.
+// current window, we select the previous current window.
 //
 //
-// ??? fix to deal with ranges .... 
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowEnable( int winNumStart, int winNumEnd, bool enable ) {
     
@@ -580,33 +573,21 @@ void SimWinDisplay::windowEnable( int winNumStart, int winNumEnd, bool enable ) 
 
     if ( enable ) {
 
-        currentWinNum = winNumStart; 
-        setWinReFormat( );
+        setCurrentWindow( winNumStart );
     }
     else {
-        
-        if ( currentWinNum == winNumStart ) {
 
-            int winStack = windowList[ winNumStart ] -> getWinStack( );
+        for ( int i = 0; i < MAX_WINDOWS; i++ ) {
 
-            for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+            if ( i == currentWinNum ) {
 
-                if (( windowList[ i ] != nullptr ) &&
-                    ( windowList[ i ] -> getWinStack( ) == winStack) &&
-                    ( windowList[ i ] -> isEnabled( ))) {
-
-                    currentWinNum = i;
-                    break;
-                }
+                currentWinNum = previousWinNum;
+                break;
             }
-
-            // ??? what if there was no enabled window in this stack ?
-            // ??? perhaps write a routine that first check stack then all.
-            
-        }
-
-        setWinReFormat( );
+        } 
     }
+
+    setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -624,7 +605,7 @@ void SimWinDisplay::windowRadix( int rdx, int winNum ) {
     if ( ! validWindowNum( winNum )) throw ( ERR_INVALID_WIN_ID );
          
     windowList[ winNum ] -> setRadix( rdx );
-    currentWinNum = winNum;
+    setCurrentWindow( winNum );
     
     setWinReFormat( );
 }

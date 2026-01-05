@@ -138,10 +138,44 @@ bool  SimConsoleIO::isConsole( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "setBlockingMode" will put the terminal into blocking or non-blocking mode. For the
-// command interpreter we will use the blocking mode, i.e. we wait for character input.
-// When the CPU runs, the console IO must be in non-blocking, and we check for input on
-// each CPU "tick".
+// "getConsoleSize" will return the current size of the terminal screen in rows
+// and columns. Of course there are platform differences.
+//
+//----------------------------------------------------------------------------------------
+int  SimConsoleIO::getConsoleSize( int &rows, int &cols ) {
+    
+    #if __APPLE__
+    struct winsize w;
+    if ( ioctl( STDOUT_FILENO, TIOCGWINSZ, &w ) == -1 ) {
+        rows = 24;
+        cols = 80;
+        return ( -1 );
+    }
+    else {
+        rows = w.ws_row;
+        cols = w.ws_col;
+        return ( 0 );
+    }
+    #else
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if ( GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE ), &csbi ) ) {
+        cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+        return ( 0 );
+    }
+    else {
+        rows = 24;
+        cols = 80;
+        return ( -1 );
+    }
+    #endif
+}
+
+//----------------------------------------------------------------------------------------
+// "setBlockingMode" will put the terminal into blocking or non-blocking mode. For
+// the command interpreter we will use the blocking mode, i.e. we wait for character
+// input. When the CPU runs, the console IO must be in non-blocking, and we check 
+// for input on each CPU "tick".
 //
 //----------------------------------------------------------------------------------------
 void SimConsoleIO::setBlockingMode( bool enabled ) {

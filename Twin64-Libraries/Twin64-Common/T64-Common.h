@@ -43,6 +43,7 @@
 #include <stdarg.h>
 #include <iostream>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #else
 #define NOMINMAX
 #include <windows.h>

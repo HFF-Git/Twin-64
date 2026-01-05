@@ -758,14 +758,14 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WB,
         .cmdNameStr     = (char *)  "wb",
-        .cmdSyntaxStr   = (char *)  "wb [ <amt> ] [ , <wNum> ]",
+        .cmdSyntaxStr   = (char *)  "wb [ <amt> ] [ , <winNum> ]",
         .helpStr        = (char *)  "move backward by n items"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WC,
         .cmdNameStr     = (char *)  "wc",
-        .cmdSyntaxStr   = (char *)  "wc <wNum>",
+        .cmdSyntaxStr   = (char *)  "wc <winNum>",
         .helpStr        = (char *)  "set the window as current window"
     },
     
@@ -786,21 +786,21 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WF,
         .cmdNameStr     = (char *)  "wf",
-        .cmdSyntaxStr   = (char *)  "wf [ <amt> ] [ , <wNum> ]",
-        .helpStr        = (char *)  "move backward by n items"
+        .cmdSyntaxStr   = (char *)  "wf [ <amt> ] [ , <winNum> ]",
+        .helpStr        = (char *)  "move forward by n items"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WH,
         .cmdNameStr     = (char *)  "wh",
-        .cmdSyntaxStr   = (char *)  "wh [ <pos> ] [ , <wNum> ]",
+        .cmdSyntaxStr   = (char *)  "wh [ <itemAdr> ] [ , <winNum> ]",
         .helpStr        = (char *)  "set window home position"
     },
 
       {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WJ,
         .cmdNameStr     = (char *)  "wj",
-        .cmdSyntaxStr   = (char *)  "wj <pos> [ , <wNum> ]",
+        .cmdSyntaxStr   = (char *)  "wj <itemAdr> [ , <winNum> ]",
         .helpStr        = (char *)  "set window start to new position"
     },
 
@@ -814,14 +814,14 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WL,
         .cmdNameStr     = (char *)  "wl",
-        .cmdSyntaxStr   = (char *)  "wl <lines> [ , <wNum> ]",
+        .cmdSyntaxStr   = (char *)  "wl <lines> [ , <winNum> ]",
         .helpStr        = (char *)  "set window lines including banner line"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
         .cmdNameStr     = (char *)  "wn",
-        .cmdSyntaxStr   = (char *)  "wn <type> [ , <argStr> ]",
+        .cmdSyntaxStr   = (char *)  "wn <type> [ , <arg1> [ , <arg2> ]]",
         .helpStr        = (char *)  "create a new window " 
                                     "( CPU, ITLB, DTLB, ICACHE, DCACHE, MEM, CODE, TEXT )"
     },
@@ -829,42 +829,42 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
         .cmdNameStr     = (char *)  "wr",
-        .cmdSyntaxStr   = (char *)  "wr [ <rdx> [ , <wNum> ]]",
+        .cmdSyntaxStr   = (char *)  "wr [ <rdx> [ , <winNum> ]]",
         .helpStr        = (char *)  "set window radix"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WS,
         .cmdNameStr     = (char *)  "ws",
-        .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <wStart> ] [ , <wEnd>]",
+        .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <start> ] [ , <end>]",
         .helpStr        = (char *)  "move a range of windows into stack <stackNum>"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSE,
         .cmdNameStr     = (char *) "wse",
-        .cmdSyntaxStr   = (char *) "wse [ <stackNum> ]",
+        .cmdSyntaxStr   = (char *) "wse <stackNum> | ALL",
         .helpStr        = (char *) "enable window stacks"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSD,
         .cmdNameStr     = (char *) "wsd",
-        .cmdSyntaxStr   = (char *) "wsd [ <stackNum> ]",
+        .cmdSyntaxStr   = (char *) "wsd <stackNum> | ALL",
         .helpStr        = (char *) "disable window stacks"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WT,
         .cmdNameStr     = (char *)  "wt",
-        .cmdSyntaxStr   = (char *)  "wt [ <wNum>, [ <toggleVal ]]",
+        .cmdSyntaxStr   = (char *)  "wt [ <winNum>, [ <toggleVal ]]",
         .helpStr        = (char *)  "toggle through alternate window content"
     },
     
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WX,
         .cmdNameStr     = (char *)  "wx",
-        .cmdSyntaxStr   = (char *)  "wx <wNum>",
+        .cmdSyntaxStr   = (char *)  "wx <winNum>",
         .helpStr        = (char *)  "exchange current window with this window"
     },
     

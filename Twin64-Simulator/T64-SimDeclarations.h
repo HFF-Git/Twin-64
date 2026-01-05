@@ -1375,7 +1375,7 @@ public:
     bool            isCurrentWin( int winNum );
     SimWinType      getCurrentWinType( );
     int             getCurrentWinModNum( );
-    bool            isWinScrollable ( int winNum );
+    bool            isScrollableWin ( int winNum );
     bool            isWinEnabled( int winNum );
     bool            isWindowsOn( );
 
@@ -1397,6 +1397,7 @@ public:
     void            setWindowOrigins( int winStack, int rowOfs = 1, int colOfs = 1 );
    
     int             currentWinNum                   = -1;
+    int             previousWinNum                  = -1;
     bool            winModeOn                       = true;
     bool            winReFormatPending              = false;
 
