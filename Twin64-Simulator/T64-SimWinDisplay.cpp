@@ -533,9 +533,9 @@ void SimWinDisplay::winStacksEnable( int stackNum, bool enable ) {
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd ) {
 
-    if ( ! validWindowStackNum( winStack )) throw ( ERR_INVALID_WIN_STACK_ID );
-    if ( ! validWindowNum( winNumStart )) throw ( ERR_INVALID_WIN_ID );
-    if ( ! validWindowNum( winNumEnd )) throw ( ERR_INVALID_WIN_ID );
+    if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
+    if ( winNumStart < 0 ) throw ( ERR_INVALID_WIN_ID );
+    if ( winNumEnd >= MAX_WINDOWS ) throw ( ERR_INVALID_WIN_ID );
     
     if ( winNumStart > winNumEnd ) {
         
@@ -561,33 +561,32 @@ void SimWinDisplay::windowSetStack( int winStack, int winNumStart, int winNumEnd
 // for locating the window object. If we remove a window and the window is the
 // current window, we select the previous current window.
 //
-//
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::windowEnable( int winNumStart, int winNumEnd, bool enable ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
-    if ( winNumStart == -1 ) winNumStart = currentWinNum;
-    if ( ! validWindowNum( winNumStart )) throw ( ERR_INVALID_WIN_ID );
-    
-    windowList[ winNumStart ] -> setEnable( enable );
-
-    if ( enable ) {
-
-        setCurrentWindow( winNumStart );
+    if ( winNumStart < 0 ) throw ( ERR_INVALID_WIN_ID );
+    if ( winNumEnd >= MAX_WINDOWS ) throw ( ERR_INVALID_WIN_ID );
+   
+    if ( winNumStart > winNumEnd ) {
+        
+        int tmp     = winNumStart;
+        winNumStart = winNumEnd;
+        winNumEnd   = tmp;
     }
-    else {
+    
+    for ( int i = winNumStart; i <= winNumEnd; i++ ) {
 
-        for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+        if ( windowList[ i ] != nullptr ) {
 
-            if ( i == currentWinNum ) {
+            if (( i == currentWinNum ) && ( ! enable )) {
 
                 currentWinNum = previousWinNum;
-                break;
             }
+
+            windowList[ i ] -> setEnable( enable );
         } 
     }
-
-    setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------

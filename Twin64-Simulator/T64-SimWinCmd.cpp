@@ -1210,11 +1210,58 @@ void  SimCommandsWin::displayAbsMemContentAsCode( T64Word adr, T64Word len ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "parseWinNumRange" will parse a window number or a range of window numbers. It
+// is entered with the token being either "ALL" or a number. The result is the
+// start and end window numbers in the range. Used by quite a few window commands.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::parseWinNumRange( int *winNumStart, int *winNumEnd ) {
+
+    *winNumStart = -1;
+    *winNumEnd   = - 1;
+
+    if ( tok -> isToken( TOK_EOS )) {
+        
+        *winNumStart = glb -> winDisplay -> getCurrentWindow( );
+        *winNumEnd   = *winNumStart;
+    } 
+    else if ( tok -> isToken( TOK_ALL )) {
+
+        tok -> nextToken( );
+
+        *winNumStart = 0;
+        *winNumEnd   = MAX_WINDOWS - 1;
+    }
+    else if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+        *winNumStart = eval -> acceptNumExpr( ERR_INVALID_ARG, 0, MAX_WINDOWS - 1 );
+
+        if ( tok -> isToken( TOK_COMMA )) {
+
+            tok -> nextToken( );
+
+            if ( tok -> tokTyp( ) == TYP_NUM ) {
+
+                *winNumEnd = eval -> acceptNumExpr( ERR_INVALID_ARG, 
+                                                   *winNumStart, 
+                                                   MAX_WINDOWS - 1 );
+            }
+            else throw( ERR_INVALID_ARG );
+        }
+        else *winNumEnd = *winNumStart;
+
+        *winNumStart = internalWinNum( *winNumStart );
+        *winNumEnd   = internalWinNum( *winNumEnd );
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // "execCmdsFromFile" will open a text file and interpret each line as a command. 
 // This routine is used by the "XF" command and also as the handler for the program
 // argument option to execute a file before entering the command loop.
 //
 // XF "<file-path>"
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execCmdsFromFile( char* fileName ) {
     
@@ -1267,6 +1314,7 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
 // commands, widow commands and predefined functions.
 //
 //  HELP ( cmdId | ‘commands‘ | 'wcommands‘ | ‘wtypes‘ | ‘predefined‘ | 'regset' )
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::helpCmd( ) {
     
@@ -1325,6 +1373,7 @@ void SimCommandsWin::helpCmd( ) {
 // development.
 //
 // EXIT <val>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::exitCmd( ) {
     
@@ -1412,6 +1461,7 @@ void SimCommandsWin::envCmd( ) {
 // Execute commands from a file command. 
 //
 // XF "<filepath>"
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::execFileCmd( ) {
     
@@ -1425,6 +1475,7 @@ void SimCommandsWin::execFileCmd( ) {
 // One day, we may have more structure to the command and what it is loading.
 //
 // LF "<filepath>"
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::loadElfFileCmd( ) {
     
@@ -1437,6 +1488,7 @@ void SimCommandsWin::loadElfFileCmd( ) {
 // typically used during startup when all modules are created. 
 // 
 //  NM <mType> [ { "," <key> "=" <value> }* ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::addModuleCmd( ) {
 
@@ -1457,6 +1509,7 @@ void SimCommandsWin::addModuleCmd( ) {
 // module map. The garbage collector does the (sad) rest.
 //
 //  RM <mNum>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::removeModuleCmd( ) {
 
@@ -1482,6 +1535,7 @@ void SimCommandsWin::removeModuleCmd( ) {
 // modules are plugged in. This command shows all known modules.
 //
 //  DM [ <mNum> ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayModuleCmd( ) {
 
@@ -1535,6 +1589,7 @@ void SimCommandsWin::displayModuleCmd( ) {
 // windows, especially the ones we disabled.
 //
 //  DW [ <sNum> ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayWindowCmd( ) {
 
@@ -1621,6 +1676,7 @@ void SimCommandsWin::resetCmd( ) {
 // detected.
 //
 //  RUN
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::runCmd( ) {
     
@@ -1657,6 +1713,7 @@ void SimCommandsWin::stepCmd( ) {
 // Write line command. We analyze the expression and print out the result.
 //
 //  W <expr> [ , <rdx> ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::writeLineCmd( ) {
     
@@ -1747,6 +1804,7 @@ void SimCommandsWin::histCmd( ) {
 // command interpreter for execution.
 //
 //  DO <cmdNum>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::doCmd( ) {
 
@@ -1772,6 +1830,7 @@ void SimCommandsWin::doCmd( ) {
 // will take the last command entered.
 //
 //  REDO <cmdNum>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::redoCmd( ) {
     
@@ -1804,6 +1863,7 @@ void SimCommandsWin::redoCmd( ) {
 // used for showing the offset value.
 //
 //  DA <ofs> [ "," <len> [ "," <fmt> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayAbsMemCmd( ) {
     
@@ -1852,6 +1912,7 @@ void SimCommandsWin::displayAbsMemCmd( ) {
 // Modify absolute memory command. 
 //
 //  MA <ofs> <val>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyAbsMemCmd( ) {
     
@@ -1870,6 +1931,7 @@ void SimCommandsWin::modifyAbsMemCmd( ) {
 // We must be in windows mode and the current window must be a CPU type window.
 //
 //  MR <reg> <val>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::modifyRegCmd( ) {
    
@@ -1928,6 +1990,7 @@ void SimCommandsWin::modifyRegCmd( ) {
 //
 //  PICA <vAdr> 
 //  PDCA <vAdr> 
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeCacheCmd( ) {
    
@@ -1955,6 +2018,7 @@ void SimCommandsWin::purgeCacheCmd( ) {
 //
 //  FDCA <vAdr> 
 //  FICA <vAdr>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::flushCacheCmd( ) {
 
@@ -1991,7 +2055,8 @@ void SimCommandsWin::flushCacheCmd( ) {
 //  IITLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
 //  IDTLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
 //
-// We could get the flags as an identifier string and parse the individual characters.
+// ??? We could get the flags as an identifier string and parse the individual 
+// characters.
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
@@ -2041,6 +2106,7 @@ void SimCommandsWin::insertTLBCmd( ) {
 //
 //  PITLB  <vAdr>
 //  PDTLB  <vAdr>
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::purgeTLBCmd( ) {
 
@@ -2065,6 +2131,9 @@ void SimCommandsWin::purgeTLBCmd( ) {
 //----------------------------------------------------------------------------------------
 // Global windows commands. 
 //
+//  WON
+//  WOFF
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winOnCmd( ) {
    
@@ -2082,6 +2151,7 @@ void SimCommandsWin::winOffCmd( ) {
 //
 //  WSE [ <stackNum> | ALL ]
 //  WSD [ <stackNum> | ALL ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winStacksEnableCmd( bool enable ) {
 
@@ -2095,7 +2165,6 @@ void SimCommandsWin::winStacksEnableCmd( bool enable ) {
             if ( stackNum > MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
 
             stackNum -= 1;
-
             glb -> winDisplay -> winStacksEnable( stackNum, enable );
         }
         else if ( tok -> isToken( TOK_ALL )) {
@@ -2108,14 +2177,15 @@ void SimCommandsWin::winStacksEnableCmd( bool enable ) {
         else throw( ERR_INVALID_ARG );
     }
 
-    glb -> winDisplay -> setWinReFormat( );
     tok -> checkEOS( );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
 // Window default command. We accept a range of windows.
 //
 //  WDEF [[ <winNumStart> [ "," <winNumEnd]] | "ALL" ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winDefCmd( ) {
 
@@ -2123,34 +2193,11 @@ void SimCommandsWin::winDefCmd( ) {
     int winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
-    if ( tok -> isToken( TOK_EOS )) {
-        
-        winNumStart = glb -> winDisplay -> getCurrentWindow( );
-        winNumEnd   = winNumStart;
-    }
-    else if ( tok -> isToken( TOK_ALL )) {
 
-        winNumStart = 0;
-        winNumEnd   = MAX_WINDOWS;
-    }
-    else {
-
-        winNumStart = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );
-    
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            tok -> nextToken( );
-            winNumEnd = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );     
-        }
-
-        if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
-    }
-
+    parseWinNumRange( &winNumStart, &winNumEnd );
     tok -> checkEOS( );
 
-    glb -> winDisplay -> windowDefaults( internalWinNum( winNumStart ), 
-                                         internalWinNum( winNumEnd ));
+    glb -> winDisplay -> windowDefaults( winNumStart, winNumEnd );
     glb -> winDisplay -> setWinReFormat( );
 }
 
@@ -2160,6 +2207,7 @@ void SimCommandsWin::winDefCmd( ) {
 //
 //  <win>E [[ <winNumStart> [ "," <winNumEnd]] || "ALL" ]
 //  <win>D [[ <winNumStart> [ "," <winNumEnd]] || "ALL" ]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winEnableCmd( bool enable ) {
     
@@ -2167,34 +2215,11 @@ void SimCommandsWin::winEnableCmd( bool enable ) {
     int winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
-    if ( tok -> isToken( TOK_EOS )) {
-        
-        winNumStart = glb -> winDisplay -> getCurrentWindow( );
-        winNumEnd   = winNumStart;
-    }
-    else if ( tok -> isToken( TOK_ALL )) {
 
-        winNumStart = 0;
-        winNumEnd   = MAX_WINDOWS;
-    }
-    else {
-
-        winNumStart = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );
-    
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            tok -> nextToken( );
-            winNumEnd = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );     
-        }
-
-        if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
-    }
-
+    parseWinNumRange( &winNumStart, &winNumEnd );
     tok -> checkEOS( );
-    glb -> winDisplay -> windowEnable( internalWinNum( winNumStart ), 
-                                       internalWinNum( winNumEnd ),
-                                       enable );
+    
+    glb -> winDisplay -> windowEnable( winNumStart, winNumEnd, enable );
     glb -> winDisplay -> setWinReFormat( );
 }
 
@@ -2203,7 +2228,8 @@ void SimCommandsWin::winEnableCmd( bool enable ) {
 // command and the format option and pass the tokens to the screen handler. The 
 // window number is optional, used for user definable windows.
 //
-//  <win>R [ <radix> [ "," <winNumS> ]
+//  <win>R [ <radix> [ "," <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetRadixCmd( ) {
 
@@ -2300,6 +2326,7 @@ void SimCommandsWin::winBackwardCmd( ) {
 // dependent. The window number is optional, used for user definable windows.
 //
 //  <win>H [ <pos> [ "," <winNum> ]]
+//
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winHomeCmd( ) {
    
@@ -2401,6 +2428,7 @@ void SimCommandsWin::winSetCmdWinRowsCmd( ) {
     int winLines = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, MAX_CMD_LINES );
     tok -> checkEOS( );
     glb -> winDisplay -> windowSetCmdWinRows( winLines );
+    glb -> winDisplay -> setWinReFormat( );
 }
 
 //----------------------------------------------------------------------------------------
@@ -2655,32 +2683,11 @@ void SimCommandsWin::winKillWinCmd( ) {
     int winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
-    
-    if ( tok -> isToken( TOK_EOS )) {
-        
-        winNumStart = glb -> winDisplay -> getCurrentWindow( );
-        winNumEnd   = winNumStart;
-    }
-    else if ( tok -> isToken( TOK_ALL )) {
 
-        winNumStart = 1;
-        winNumEnd   = MAX_WINDOWS;
-    }
-    else {
+    parseWinNumRange( &winNumStart, &winNumEnd );
+    tok -> checkEOS( );
 
-        winNumStart = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );
-    
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            tok -> nextToken( );
-            winNumEnd = eval -> acceptNumExpr( ERR_EXPECTED_NUMERIC, 1, MAX_WINDOWS );     
-        }
-
-        if ( winNumStart > winNumEnd ) winNumEnd = winNumStart;
-    }
-    
-    glb -> winDisplay -> windowKill( internalWinNum( winNumStart ), 
-                                     internalWinNum( winNumEnd ));
+    glb -> winDisplay -> windowKill( winNumStart, winNumEnd );
     glb -> winDisplay -> setWinReFormat( );
 }
 
@@ -2710,24 +2717,15 @@ void SimCommandsWin::winSetStackCmd( ) {
     else if ( tok -> isToken( TOK_COMMA )) {
         
         tok -> nextToken( );
-        winNumStart = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
-        
-        if ( tok -> isToken( TOK_COMMA )) {
-            
-            tok -> nextToken( );
-            winNumEnd = eval -> acceptNumExpr( ERR_INVALID_WIN_ID, 1, MAX_WINDOWS );
-        }
-        else winNumEnd = winNumStart;
 
+        parseWinNumRange( &winNumStart, &winNumEnd );
         tok -> checkEOS( );
     }
     else throw ( ERR_EXPECTED_COMMA );
 
-     if ( winStack >= MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
+    if ( winStack >= MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
    
-    glb -> winDisplay -> windowSetStack( winStack - 1,
-                                         internalWinNum( winNumStart ), 
-                                         internalWinNum( winNumEnd ));
+    glb -> winDisplay -> windowSetStack( winStack - 1, winNumStart, winNumEnd );
     glb -> winDisplay -> setWinReFormat( );
 }
 

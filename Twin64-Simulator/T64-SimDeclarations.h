@@ -1236,6 +1236,8 @@ private:
   
     void            displayAbsMemContent( T64Word ofs, T64Word len, int rdx = 16 );
     void            displayAbsMemContentAsCode( T64Word ofs, T64Word len );
+
+    void            parseWinNumRange( int *winNumStart, int *winNumEnd );
     
     void            exitCmd( );
     void            helpCmd( );
