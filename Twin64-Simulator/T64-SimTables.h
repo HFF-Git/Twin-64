@@ -649,7 +649,7 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MR,
         .cmdNameStr     = (char *) "mr",
-        .cmdSyntaxStr   = (char *) "mr <cpu> <reg> <val>",
+        .cmdSyntaxStr   = (char *) "mr <reg> <val>",
         .helpStr        = (char *) "modify a CPU register"
     },
     
@@ -691,14 +691,16 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ITLB_I,
         .cmdNameStr     = (char *) "iitlb",
-        .cmdSyntaxStr   = (char *) "iitlb <vAdr> , <pAdr> , <size> , <acc> , <flags>",
+        .cmdSyntaxStr   = (char *) "iitlb <vAdr> , <pAdr> , <size> , "
+                                   "<acc> , [ , L [ , U ]]",
         .helpStr        = (char *) "inserts an entry into the instruction TLB"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ITLB_D,
         .cmdNameStr     = (char *) "idtlb",
-        .cmdSyntaxStr   = (char *) "idtlb <vAdr> , <pAdr> , <info>",
+        .cmdSyntaxStr   = (char *) "idtlb <vAdr> , <pAdr> , <size> , "
+                                   "<acc> , [ , L [ , U ]]",
         .helpStr        = (char *) "inserts an entry into the data TLB"
     },
     
@@ -885,14 +887,6 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
         .cmdSyntaxStr   = (char *) "disasm ( <instr> )",
         .helpStr        = (char *) "returns the assemble string for an instruction value"
     },
-
-    {
-        .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_HASH,
-        .cmdNameStr     = (char *) "hash",
-        .cmdSyntaxStr   = (char *) "hash ( <extAdr> )",
-        .helpStr        = (char *) "returns the hash value of a virtual address"
-    },
-
 
     // ??? a ton of functions for processor attributes ....
    

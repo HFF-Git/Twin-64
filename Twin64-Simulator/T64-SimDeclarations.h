@@ -376,7 +376,9 @@ enum SimErrMsgId : int {
     ERR_MEM_OP_FAILED               = 700,
 
     ERR_CREATE_PROC_MODULE          = 701,
-    ERR_CREATE_MEM_MODULE           = 702
+    ERR_CREATE_MEM_MODULE           = 702,
+
+    ERR_INVALID_TLB_ACC_FLAG        = 800
 };
 
 //----------------------------------------------------------------------------------------
@@ -505,6 +507,7 @@ struct SimTokenizer {
     
     bool            isToken( SimTokId tokId );
     bool            isTokenTyp( SimTokTypeId typId );
+    bool            isTokenIdent( char *name );  
 
     SimToken        token( );
     SimTokTypeId    tokTyp( );

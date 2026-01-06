@@ -116,6 +116,12 @@ bool SimTokenizer::isTokenTyp( SimTokTypeId typId )  {
     return( currentToken.typ == typId ); 
 }
 
+bool SimTokenizer::isTokenIdent( char *name ) { 
+    
+    return( currentToken.typ == TYP_IDENT && 
+            strcmp( currentToken.name, name ) == 0 );
+}
+
 SimToken SimTokenizer::token( ) { 
     
     return( currentToken );    

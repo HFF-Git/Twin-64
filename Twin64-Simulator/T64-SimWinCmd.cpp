@@ -2078,11 +2078,10 @@ void SimCommandsWin::flushCacheCmd( ) {
 // Insert into TLB command. We have two modes. We must be in windows mode and the 
 // current window must be a TLB window. 
 //
-//  IITLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
-//  IDTLB <vAdr> "," <pAdr> "," <pSize> "," <acc> "," <flags>
+//  IITLB <vAdr> "," <pAdr> "," <pSize> "," <acc> [ "," "L" [ "," "U" ]]
+//  IDTLB <vAdr> "," <pAdr> "," <pSize> "," <acc> [ "," "L" [ "," "U" ]]
 //
-// ??? We could get the flags as an identifier string and parse the individual 
-// characters.
+// ??? cross check flags field for correct position...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::insertTLBCmd( ) {
 
@@ -2094,15 +2093,35 @@ void SimCommandsWin::insertTLBCmd( ) {
     T64Word size = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, 15 );
     tok -> acceptComma( );
     T64Word acc = eval -> acceptNumExpr( ERR_INVALID_NUM, 0, 15 );
-    tok -> acceptComma( );
-    T64Word flags = eval -> acceptNumExpr( ERR_INVALID_NUM, 0 );
-    tok -> checkEOS( );
 
     T64Word info = 0;    
-    info = depositField( info, 58, 4, flags );
     info = depositField( info, 40, 4, acc );
     info = depositField( info, 36, 4, size );
     info = depositField( info, 12, 24, pAdr >> T64_PAGE_OFS_BITS );
+
+    if ( tok -> isToken( TOK_COMMA )) {
+
+        tok -> nextToken( );
+        if ( tok -> isTokenIdent((char *) "L" )) {
+
+            info = depositField( info, 56, 2, 0x1 );
+            tok -> nextToken( );
+
+            if ( tok -> isToken( TOK_COMMA )) {
+
+                tok -> nextToken( );
+                if ( tok -> isTokenIdent((char *) "U" )) {
+
+                    info = depositField( info, 58, 2, 0x2 );
+                    tok -> nextToken( );
+                }
+                else throw( ERR_INVALID_TLB_ACC_FLAG );
+            }
+        }
+        else throw( ERR_INVALID_TLB_ACC_FLAG );
+    }
+    
+    tok -> checkEOS( );
 
     if ( glb -> winDisplay -> getCurrentWinType( ) != WT_TLB_WIN ) 
         throw( ERR_INVALID_WIN_TYPE );
