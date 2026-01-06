@@ -716,6 +716,25 @@ int SimCommandsWin::promptYesNoCancel( char *promptStr ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "configureT64Sim" configures the simulator system. If there is a config file 
+// specified, we read it in and process the commands found there. This way, we
+// can set up  the simulator environment before entering the command loop.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::configureT64Sim( ) {     
+    
+    if ( glb -> console -> isConsole( )) {
+        
+        winOut -> writeChars( "Configuring Twin-64 Simulator...\n" );
+       
+        // ??? just use execute file ...
+        // ??? if fails write to log ?
+
+        winOut -> writeChars( "Configuration done.\n\n" );
+    }
+}
+
+//----------------------------------------------------------------------------------------
 // A little helper function to ensure that windows are enabled.
 //
 //----------------------------------------------------------------------------------------
@@ -1243,12 +1262,19 @@ void SimCommandsWin::parseWinNumRange( int *winNumStart, int *winNumEnd ) {
             if ( tok -> tokTyp( ) == TYP_NUM ) {
 
                 *winNumEnd = eval -> acceptNumExpr( ERR_INVALID_ARG, 
-                                                   *winNumStart, 
-                                                   MAX_WINDOWS - 1 );
+                                                    0, 
+                                                    MAX_WINDOWS - 1 );
             }
             else throw( ERR_INVALID_ARG );
         }
         else *winNumEnd = *winNumStart;
+
+         if ( *winNumStart > *winNumEnd ) {
+
+            int tmp     = *winNumStart;
+            *winNumStart = *winNumEnd;
+            *winNumEnd   = tmp;
+        }
 
         *winNumStart = internalWinNum( *winNumStart );
         *winNumEnd   = internalWinNum( *winNumEnd );
@@ -2242,25 +2268,27 @@ void SimCommandsWin::winSetRadixCmd( ) {
         glb -> winDisplay -> windowRadix( rdx, internalWinNum( winNum ));
         return;
     }
-    
-    if ( tok -> isToken( TOK_COMMA )) {
+    else if ( tok -> isToken( TOK_COMMA )) {
         
         rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
         tok -> nextToken( );
+
+        winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
     }
     else {
         
         if      ( tok -> isToken( TOK_DEC )) rdx = 10;
         else if ( tok -> isToken( TOK_HEX )) rdx = 16;
         else throw( ERR_INVALID_RADIX );
+
+        tok -> nextToken( );
+        if ( tok -> isToken( TOK_COMMA )) {
+        
+            tok -> nextToken( );
+            winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
+        }
     }
     
-    if ( tok -> isToken( TOK_COMMA )) {
-        
-        tok -> nextToken( );
-        winNum = eval -> acceptNumExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );
-    }
-
     tok -> checkEOS( );
     glb -> winDisplay -> windowRadix( rdx, internalWinNum( winNum ));
 }
@@ -2859,7 +2887,9 @@ void SimCommandsWin::cmdInterpreterLoop( ) {
     glb -> winDisplay -> reDraw( );
    
     printWelcome( );
-    glb -> winDisplay -> setWinReFormat( );
+    glb -> winDisplay -> reDraw( );
+
+    configureT64Sim( );
     glb -> winDisplay -> reDraw( );
     
     while ( true ) {

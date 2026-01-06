@@ -146,12 +146,10 @@ const int MAX_ENV_VARIABLES         = 256;
 //
 //----------------------------------------------------------------------------------------
 enum SimWinType : int {
-    
-    WT_NIL          = 0,    WT_CMD_WIN      = 1,
-    WT_CONSOLE_WIN  = 2,    WT_TEXT_WIN     = 3,
-    WT_CPU_WIN      = 4,    WT_TLB_WIN      = 5,
-    WT_CACHE_WIN    = 6,    WT_MEM_WIN      = 7,
-    WT_CODE_WIN     = 8  
+
+    WT_NIL,                     WT_CMD_WIN,                 WT_CONSOLE_WIN,
+    WT_TEXT_WIN,                WT_CPU_WIN,                 WT_TLB_WIN,
+    WT_CACHE_WIN,               WT_MEM_WIN,                 WT_CODE_WIN
 };
 
 //----------------------------------------------------------------------------------------
@@ -160,10 +158,10 @@ enum SimWinType : int {
 //----------------------------------------------------------------------------------------
 enum SimTokTypeId : int {
 
-    TYP_NIL     = 0,        TYP_NUM     = 1,        TYP_STR     = 2,
-    TYP_BOOL    = 3,        TYP_SYM     = 4,        TYP_IDENT   = 5,
-    TYP_CMD     = 6,        TYP_WCMD    = 7,        TYP_P_FUNC  = 8,
-    TYP_GREG    = 9,        TYP_CREG    = 10,       TYP_PREG    = 11 
+    TYP_NIL,                    TYP_NUM,                    TYP_STR,
+    TYP_BOOL,                   TYP_SYM,                    TYP_IDENT,
+    TYP_CMD,                    TYP_WCMD,                   TYP_P_FUNC,
+    TYP_GREG,                   TYP_CREG,                   TYP_PREG
 };
 
 //----------------------------------------------------------------------------------------
@@ -179,124 +177,85 @@ enum SimTokId : uint16_t {
     // General tokens and symbols.
     //
     //------------------------------------------------------------------------------------
-    TOK_NIL                 = 100,      TOK_ERR                 = 101,
-    TOK_EOS                 = 102,      TOK_COMMA               = 103,
-    TOK_PERIOD              = 104,      TOK_COLON               = 105,
-    TOK_LPAREN              = 106,      TOK_RPAREN              = 107,
-    TOK_QUOTE               = 108,      TOK_EQUAL               = 109,
-
-    TOK_PLUS                = 110,      TOK_MINUS               = 111,
-    TOK_MULT                = 112,      TOK_DIV                 = 113,
-    TOK_MOD                 = 114,      TOK_REM                 = 115,
-    TOK_NEG                 = 116,      TOK_AND                 = 117,
-    TOK_OR                  = 118,      TOK_XOR                 = 119,
-    TOK_EQ                  = 120,      TOK_NE                  = 121,
-    TOK_LT                  = 122,      TOK_GT                  = 123,
-    TOK_LE                  = 124,      TOK_GE                  = 125,
+    TOK_NIL,                    TOK_ERR,                    TOK_EOS,
+    TOK_COMMA,                  TOK_PERIOD,                 TOK_COLON,
+    TOK_LPAREN,                 TOK_RPAREN,                 TOK_QUOTE,
+    TOK_EQUAL,                  TOK_PLUS,                   TOK_MINUS,
+    TOK_MULT,                   TOK_DIV,                    TOK_MOD,
+    TOK_REM,                    TOK_NEG,                    TOK_AND,
+    TOK_OR,                     TOK_XOR,                    TOK_EQ,
+    TOK_NE,                     TOK_LT,                     TOK_GT,
+    TOK_LE,                     TOK_GE,
 
     //------------------------------------------------------------------------------------
     // Token symbols.
     //------------------------------------------------------------------------------------
-    TOK_IDENT               = 200,      TOK_NUM                 = 201,
-    TOK_STR                 = 202,
-
-    TOK_DEF                 = 203,      TOK_ALL                 = 204,
-    TOK_DEC                 = 205,      TOK_HEX                 = 206,
-    TOK_MEM                 = 207,      TOK_CODE                = 208,
-    TOK_STATS               = 209,      TOK_TEXT                = 210,
-
-    TOK_SYS                 = 211,      TOK_PROC                = 212,
-    TOK_CPU                 = 213,      TOK_IO                  = 214,
-    TOK_ITLB                = 215,      TOK_DTLB                = 216,
-    TOK_ICACHE              = 217,      TOK_DCACHE              = 218,
-
-    TOK_TLB_FA_64S          = 219,      TOK_TLB_FA_128S         = 220,
-
-    TOK_CACHE_SA_2W_128S_4L = 221,      TOK_CACHE_SA_4W_128S_4L = 222,
-    TOK_CACHE_SA_8W_128S_4L = 223,
-
-    TOK_CACHE_SA_2W_64S_8L  = 224,      TOK_CACHE_SA_4W_64S_8L  = 225,
-    TOK_CACHE_SA_8W_64S_8L  = 226,
-
-    TOK_MEM_READ_ONLY       = 227,      TOK_MEM_READ_WRITE      = 228,
-    TOK_MOD_SPA_ADR         = 229,      TOK_MOD_SPA_LEN         = 230,
+    TOK_IDENT,                  TOK_NUM,                    TOK_STR,
+    TOK_DEF,                    TOK_ALL,                    TOK_DEC,
+    TOK_HEX,                    TOK_MEM,                    TOK_CODE,
+    TOK_STATS,                  TOK_TEXT,                   TOK_SYS,
+    TOK_PROC,                   TOK_CPU,                    TOK_IO,
+    TOK_ITLB,                   TOK_DTLB,                   TOK_ICACHE,
+    TOK_DCACHE,                 TOK_TLB_FA_64S,             TOK_TLB_FA_128S,
+    TOK_CACHE_SA_2W_128S_4L,    TOK_CACHE_SA_4W_128S_4L,    TOK_CACHE_SA_8W_128S_4L,
+    TOK_CACHE_SA_2W_64S_8L,     TOK_CACHE_SA_4W_64S_8L,     TOK_CACHE_SA_8W_64S_8L,
+    TOK_MEM_READ_ONLY,          TOK_MEM_READ_WRITE,         TOK_MOD_SPA_ADR,
+    TOK_MOD_SPA_LEN,
 
     //------------------------------------------------------------------------------------
     // Line Commands.
     //
     //------------------------------------------------------------------------------------
-    CMD_SET                 = 300,
-
-    CMD_EXIT                = 301,      CMD_HELP                = 302,
-    CMD_DO                  = 303,      CMD_REDO                = 304,
-    CMD_HIST                = 305,      CMD_ENV                 = 306,
-
-    CMD_XF                  = 307,      CMD_LF                  = 308,
-    CMD_WRITE_LINE          = 309,      CMD_DM                  = 310,
-    CMD_DW                  = 311,      CMD_NM                  = 312,
-    CMD_RM                  = 313,
-
-    CMD_RESET               = 314,      CMD_RUN                 = 315,
-    CMD_STEP                = 316,      CMD_MR                  = 317,
-    CMD_DA                  = 318,      CMD_MA                  = 319,
-    CMD_ITLB_I              = 320,      CMD_ITLB_D              = 321,
-    CMD_PTLB_I              = 322,      CMD_PTLB_D              = 323,
-    CMD_PCA_I               = 324,      CMD_PCA_D               = 325,
-    CMD_FCA_I               = 326,      CMD_FCA_D               = 327,
+    CMD_SET,                    CMD_EXIT,                   CMD_HELP,
+    CMD_DO,                     CMD_REDO,                   CMD_HIST,
+    CMD_ENV,                    CMD_XF,                     CMD_LF,
+    CMD_WRITE_LINE,             CMD_DM,                     CMD_DW,
+    CMD_NM,                     CMD_RM,                     CMD_RESET,
+    CMD_RUN,                    CMD_STEP,                   CMD_MR,
+    CMD_DA,                     CMD_MA,                     CMD_ITLB_I,
+    CMD_ITLB_D,                 CMD_PTLB_I,                 CMD_PTLB_D,
+    CMD_PCA_I,                  CMD_PCA_D,                  CMD_FCA_I,
+    CMD_FCA_D,
 
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
     //
     //------------------------------------------------------------------------------------
-    WCMD_SET                = 400,      WTYPE_SET               = 401,
-    CMD_WON                 = 402,      CMD_WOFF                = 403,
-    CMD_WDEF                = 404,      CMD_CWL                 = 405,
-    CMD_CWC                 = 406,      CMD_WSE                 = 407,
-    CMD_WSD                 = 408,
-
-    CMD_WE                  = 409,      CMD_WD                  = 410,
-    CMD_WR                  = 411,      CMD_WF                  = 412,
-    CMD_WB                  = 413,      CMD_WH                  = 414,
-    CMD_WJ                  = 415,      CMD_WL                  = 416,
-    CMD_WN                  = 417,      CMD_WK                  = 418,
-    CMD_WS                  = 419,      CMD_WC                  = 420,
-    CMD_WT                  = 421,      CMD_WX                  = 422,
+    WCMD_SET,                   WTYPE_SET,                  CMD_WON,
+    CMD_WOFF,                   CMD_WDEF,                   CMD_CWL,
+    CMD_CWC,                    CMD_WSE,                    CMD_WSD,
+    CMD_WE,                     CMD_WD,                     CMD_WR,
+    CMD_WF,                     CMD_WB,                     CMD_WH,
+    CMD_WJ,                     CMD_WL,                     CMD_WN,
+    CMD_WK,                     CMD_WS,                     CMD_WC,
+    CMD_WT,                     CMD_WX,
 
     //------------------------------------------------------------------------------------
     // Predefined Function Tokens.
     //
     //------------------------------------------------------------------------------------
-    PF_SET                  = 500,
-    PF_ASSEMBLE             = 501,      PF_DIS_ASM              = 502,
-    PF_HASH                 = 503,      PF_S32                  = 504,
+    PF_SET,                     PF_ASSEMBLE,                PF_DIS_ASM,
+    PF_HASH,                    PF_S32,
 
     //------------------------------------------------------------------------------------
     // General, Control and PSW Register Tokens.
     //
     //------------------------------------------------------------------------------------
-    REG_SET                 = 600,
+    REG_SET,                    GR_0,                       GR_1,
+    GR_2,                       GR_3,                       GR_4,
+    GR_5,                       GR_6,                       GR_7,
+    GR_8,                       GR_9,                       GR_10,
+    GR_11,                      GR_12,                      GR_13,
+    GR_14,                      GR_15,                      GR_SET,
 
-    GR_0                    = 610,      GR_1                    = 611,
-    GR_2                    = 612,      GR_3                    = 613,
-    GR_4                    = 614,      GR_5                    = 615,
-    GR_6                    = 616,      GR_7                    = 617,
-    GR_8                    = 618,      GR_9                    = 619,
-    GR_10                   = 620,      GR_11                   = 621,
-    GR_12                   = 622,      GR_13                   = 623,
-    GR_14                   = 624,      GR_15                   = 625,
-    GR_SET                  = 626,
+    CR_0,                       CR_1,                       CR_2,
+    CR_3,                       CR_4,                       CR_5,
+    CR_6,                       CR_7,                       CR_8,
+    CR_9,                       CR_10,                      CR_11,
+    CR_12,                      CR_13,                      CR_14,
+    CR_15,                      CR_SET,                     
 
-    CR_0                    = 630,      CR_1                    = 631,
-    CR_2                    = 632,      CR_3                    = 633,
-    CR_4                    = 634,      CR_5                    = 635,
-    CR_6                    = 636,      CR_7                    = 637,
-    CR_8                    = 638,      CR_9                    = 639,
-    CR_10                   = 640,      CR_11                   = 641,
-    CR_12                   = 642,      CR_13                   = 643,
-    CR_14                   = 644,      CR_15                   = 645,
-    CR_SET                  = 646,
-
-    PR_IA                   = 650,      PR_ST                   = 651
+    PR_IA,                      PR_ST
 };
 
 //----------------------------------------------------------------------------------------
@@ -328,8 +287,6 @@ enum SimErrMsgId : int {
 
     ERR_INVALID_MODULE_TYPE         = 24,
    
-
-
     ERR_INVALID_NUM                 = 25,
     
     // -----
@@ -461,19 +418,19 @@ struct SimGlobals;
 //----------------------------------------------------------------------------------------
 enum SimCmdLineArgOptions : int {
 
-    CL_OPT_NO_ARGUMENT          = 0,
-    CL_OPT_REQUIRED_ARGUMENT    = 1, 
-    CL_OPT_OPTIONAL_ARGUMENT    = 2    
+    CL_OPT_NO_ARGUMENT,         
+    CL_OPT_REQUIRED_ARGUMENT,   
+    CL_OPT_OPTIONAL_ARGUMENT
 };
 
 enum SimCmdLineArgVal : int {
 
-    CL_ARG_VAL_NIL              = 0,
-    CL_ARG_VAL_HELP             = 1,
-    CL_ARG_VAL_VERSION          = 2,
-    CL_ARG_VAL_VERBOSE          = 3,
-    CL_ARG_VAL_CONFIG_FILE      = 4,
-    CL_ARG_VAL_LOG_FILE         = 5
+    CL_ARG_VAL_NIL,             
+    CL_ARG_VAL_HELP,             
+    CL_ARG_VAL_VERSION,
+    CL_ARG_VAL_VERBOSE,        
+    CL_ARG_VAL_CONFIG_FILE,      
+    CL_ARG_VAL_LOG_FILE
 };
 
 struct SimCmdLineOptions {
@@ -1224,10 +1181,11 @@ private:
     void            printWelcome( );
     int             buildCmdPrompt( char *promptStr, int promptStrLen );
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
-    
     void            evalInputLine( char *cmdBuf );
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
+
+    void            configureT64Sim( );
 
     void            ensureWinModeOn( );
     void            printStackInfoField( uint32_t fmtDesc = 0,

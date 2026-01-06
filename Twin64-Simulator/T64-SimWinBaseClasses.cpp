@@ -708,11 +708,11 @@ void SimWinOutBuffer::addToBuffer( const char *buf ) {
             
             if (( buf[ i ]  == '\n' ) || ( charPos >= MAX_WIN_OUT_LINE_SIZE - 1 )) {
                 
-                currentLine[ charPos ]      = '\0'; // Null-terminate the current line
+                currentLine[ charPos ]      = '\0'; 
                 charPos                     = 0;
-                
                 topIndex                    = ( topIndex + 1 ) % MAX_WIN_OUT_LINES;
-                buffer[ topIndex ] [ 0 ]    = '\0'; // Clear the new line
+                currentLine                 = buffer[topIndex];
+                buffer[ topIndex ] [ 0 ]    = '\0'; 
                 
             } 
             else currentLine[ charPos++ ] = buf[ i ];

@@ -400,7 +400,7 @@ void SimWinAbsMem::setDefaults( ) {
 //----------------------------------------------------------------------------------------
 void SimWinAbsMem::drawBanner( ) {
     
-    uint32_t    fmtDesc = FMT_BOLD | FMT_INVERSE;
+    uint32_t fmtDesc = FMT_BOLD | FMT_INVERSE;
 
     if ( getWinToggleVal( ) == 2 )  setRadix( 10 ); 
     else                            setRadix( 16 ); 
@@ -425,7 +425,10 @@ void SimWinAbsMem::drawBanner( ) {
     padLine( fmtDesc );
     printRadixField( fmtDesc | FMT_LAST_FIELD );
 
-    // ??? align current item address ?
+    if ( ! isAlignedDataAdr( getCurrentItemAdr( ), 8 )) {
+        
+        setCurrentItemAdr( rounddown( getCurrentItemAdr( ), 8 ));
+    }   
 
     // ??? correlate toggle val with radix....
 }
@@ -1103,9 +1106,8 @@ void SimWinConsole::putChar( char ch ) {
 
 // ??? what about the read part. Do we just get a character from the terminal input 
 // and add it to the output side ? Or is this a function of the console driver code
-// written for the simulator ?
-
-// ??? should we add the switch to and from the console in this class ?
+// written for the simulator ? should we add the switch to and from the console in 
+// this class ?
 
 //----------------------------------------------------------------------------------------
 // The banner line for console window.

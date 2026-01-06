@@ -1954,6 +1954,7 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
 //
 //      LDO [.B/H/W/D] <targetReg> "," [ <ofs> "," ] "(" <baseReg> ")"
 //
+// ??? issue when missing ofs ?? should be an optional parm ...
 //----------------------------------------------------------------------------------------
 void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
