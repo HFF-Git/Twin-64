@@ -1952,9 +1952,8 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
 // The "LDO" instruction computes the address of an operand, and stores the result
 // in "R". Like the MemOp family, the LDO instruction has a dataWidth field.
 //
-//      LDO [.B/H/W/D] <targetReg> "," [ <ofs> "," ] "(" <baseReg> ")"
+//      LDO [.B/H/W/D] <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
-// ??? issue when missing ofs ?? should be an optional parm ...
 //----------------------------------------------------------------------------------------
 void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
@@ -1964,16 +1963,24 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
     if ( instrFlags & ~IM_LDO_OP ) throw ( ERR_INVALID_INSTR_OPT );
+    if (( instrFlags & IM_LDO_OP ) == 0 ) instrFlags |=  IF_D;
 
     setInstrDwField( instr, instrFlags );
-    if ( instrFlags & IF_M ) depositInstrBit( instr, 20, true );
-
+   
     acceptRegR( instr );
     acceptComma( );
 
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
-    else throw( ERR_EXPECTED_NUMERIC );
+    if (  isToken( TOK_NUM )) {
+        
+        parseExpr( &rExpr );
+        if ( rExpr.typ == TYP_NUM ) {
+            
+            checkOfsAlignment( rExpr.val, instrFlags );
+            depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
+        }
+        else throw( ERR_EXPECTED_NUMERIC );
+    }
+    else depositInstrScaledImm13( instr, 0 );
     
     acceptLparen( );
     acceptRegB( instr );
@@ -2009,6 +2016,12 @@ void parseMemOp( T64Instr *instr, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) { 
             
         throw ( ERR_INVALID_INSTR_OPT );
+    }
+
+    if ((( instrOpToken == TOK_OP_LD  ) && (( instrFlags & IM_LD_OP ) == 0 )) ||
+        (( instrOpToken == TOK_OP_ST  ) && (( instrFlags & IM_ST_OP ) == 0 ))) {
+            
+         instrFlags |= IF_D;
     }
     
     if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) { 
