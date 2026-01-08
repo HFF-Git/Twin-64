@@ -171,8 +171,6 @@ public:
         this -> arg1     = arg1;
     }
     
-private:
-    
     T64TrapCode trapCode;
     T64Word     instrAdr;
     uint32_t    arg0;
@@ -196,7 +194,7 @@ enum ControlRegId : int {
     CTL_REG_PID_3       = 7,
 
     CTL_REG_IVA         = 8,
-    CTL_REG_IPSW        = 9,
+    CTL_REG_IPSR        = 9,
     CTL_REG_IINSTR      = 10,
     CTL_REG_IARG_0      = 11,
     CTL_REG_IARG_1      = 12,

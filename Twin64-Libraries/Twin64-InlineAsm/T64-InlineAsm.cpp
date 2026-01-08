@@ -1381,11 +1381,19 @@ void checkOfsAlignment( int ofs, uint32_t instrFlags ) {
 // of an option group can be set.
 //
 // There are some instruction options that are exclusive to each other. There will 
-// be a check for this case after all options have been analyzed.
+// be a check for this case after all options have been analyzed and the option 
+// mask has been created. There are also some instructions that require at least
+// one option from a particular group to be set. And there are instructions that 
+// have a default option if none from a particular group has been set. This will
+// also be handled after all options have been analyzed.
 //
-// One final quirk. The branch instruction "B" conflicts with the ".B" option. We
+// One more quirk. The branch instruction "B" conflicts with the ".B" option. We
 // need to check the context. The tokenizer recognizes an opCOde, we patch the 
 // token to be an identifier.
+//
+// Once all instruction options have been analyzed, we do a final check to see if 
+// the options set are valid for the particular instruction. For example, the EXTR  
+// instruction cannot have any data width options set.
 //
 //----------------------------------------------------------------------------------------
 void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
@@ -1474,7 +1482,57 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         nextToken( );
     }
+
+    if ((( instrOpToken == TOK_OP_LD  ) && (( instrMask & IM_LD_OP )  == 0 )) ||
+        (( instrOpToken == TOK_OP_ST  ) && (( instrMask & IM_ST_OP )  == 0 )) ||
+        (( instrOpToken == TOK_OP_LDO ) && (( instrMask & IM_LDO_OP ) == 0 )) ||
+        (( instrOpToken == TOK_OP_LDR )                                     ) ||
+        (( instrOpToken == TOK_OP_STC )                                     )) {
+            
+         instrMask |= IF_D;
+    }
+
+    // ??? Validate instruction options based on instruction type.
+
+    if ((( instrOpToken == TOK_OP_ADD  ) && ( instrMask & ~IM_ADD_OP    )) ||
+        (( instrOpToken == TOK_OP_SUB  ) && ( instrMask & ~IM_SUB_OP    )) ||
+        (( instrOpToken == TOK_OP_AND  ) && ( instrMask & ~IM_AND_OP    )) ||
+        (( instrOpToken == TOK_OP_OR   ) && ( instrMask & ~IM_OR_OP     )) ||
+        (( instrOpToken == TOK_OP_XOR  ) && ( instrMask & ~IM_XOR_OP    )) ||
+        (( instrOpToken == TOK_OP_CMP  ) && ( instrMask & ~IM_CMP_OP    )) ||
+
+        (( instrOpToken == TOK_OP_EXTR ) && ( instrMask & ~IM_EXTR_OP   )) ||
+        (( instrOpToken == TOK_OP_DEP  ) && ( instrMask & ~IM_DEP_OP    )) ||
+
+        (( instrOpToken == TOK_OP_SHL1A ) && ( instrMask & ~IM_SHLxA_OP )) ||
+        (( instrOpToken == TOK_OP_SHL2A ) && ( instrMask & ~IM_SHLxA_OP )) ||
+        (( instrOpToken == TOK_OP_SHL3A ) && ( instrMask & ~IM_SHLxA_OP )) ||
+
+        (( instrOpToken == TOK_OP_SHR1A ) && ( instrMask & ~IM_SHRxA_OP )) ||
+        (( instrOpToken == TOK_OP_SHR2A ) && ( instrMask & ~IM_SHRxA_OP )) ||
+        (( instrOpToken == TOK_OP_SHR3A ) && ( instrMask & ~IM_SHRxA_OP )) ||
+
+        (( instrOpToken == TOK_OP_LDO   ) && ( instrMask & ~IM_LDO_OP   )) ||
+        (( instrOpToken == TOK_OP_LDI   ) && ( instrMask & ~IM_LDI_OP   )) ||
+        (( instrOpToken == TOK_OP_ADDIL ) && ( instrMask & ~IM_NIL      )) || 
+        
+        (( instrOpToken == TOK_OP_ABR  ) && ( instrMask & ~IM_ABR_OP    )) ||
+        (( instrOpToken == TOK_OP_CBR  ) && ( instrMask & ~IM_CBR_OP    )) ||
+        (( instrOpToken == TOK_OP_MBR  ) && ( instrMask & ~IM_MBR_OP    )) ||
+
+        (( instrOpToken == TOK_OP_LD   ) && ( instrMask & ~IM_LD_OP     )) ||
+        (( instrOpToken == TOK_OP_ST   ) && ( instrMask & ~IM_ST_OP     )) ||
+        (( instrOpToken == TOK_OP_LDR  ) && ( instrMask & ~IM_NIL       )) ||
+        (( instrOpToken == TOK_OP_STC  ) && ( instrMask & ~IM_NIL       )) ||
     
+        (( instrOpToken == TOK_OP_B    ) && ( instrMask & ~IM_B_OP      )) ||
+        (( instrOpToken == TOK_OP_BB   ) && ( instrMask & ~IM_BB_OP     )) ||
+        
+        (( instrOpToken == TOK_OP_NOP  ) && ( instrMask & ~IM_NIL       ))) { 
+    
+            throw ( ERR_INVALID_INSTR_OPT );
+        }
+
     *instrFlags = instrMask;
 }
 
@@ -1550,17 +1608,6 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    
-    if ((( instrOpToken == TOK_OP_ADD ) && ( instrFlags & ~IM_ADD_OP )) ||
-        (( instrOpToken == TOK_OP_SUB ) && ( instrFlags & ~IM_SUB_OP )) ||
-        (( instrOpToken == TOK_OP_AND ) && ( instrFlags & ~IM_AND_OP )) ||
-        (( instrOpToken == TOK_OP_OR  ) && ( instrFlags & ~IM_OR_OP  )) ||
-        (( instrOpToken == TOK_OP_XOR ) && ( instrFlags & ~IM_XOR_OP )) ||
-        (( instrOpToken == TOK_OP_CMP ) && ( instrFlags & ~IM_CMP_OP ))) {
-            
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-
     acceptRegR( instr );
     acceptComma( );
 
@@ -1649,9 +1696,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else if ( instrOpToken == TOK_OP_CMP ) {
 
-        if ( ! hasCmpCodeFlags( instrFlags )) 
-            throw( ERR_INVALID_INSTR_MODE );
-
+        if ( ! hasCmpCodeFlags( instrFlags )) throw( ERR_INVALID_INSTR_MODE );
         setInstrCompareCondField( instr, instrFlags );
     }
 }
@@ -1672,11 +1717,6 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_EXTR ) && ( instrFlags & ~IM_EXTR_OP )) {
-        
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-    
     acceptRegR( instr );
     acceptComma( );
     acceptRegB( instr ); 
@@ -1727,11 +1767,7 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_DEP ) && ( instrFlags & ~IM_DEP_OP )) {
-        
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-    
+
     if ( instrFlags & IF_Z ) depositInstrBit( instr, 12, true );
     
     acceptRegR( instr );
@@ -1826,13 +1862,6 @@ void parseInstrSHLxA( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
 
-    if ((( instrOpToken == TOK_OP_SHL1A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHL2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHL3A ) && ( instrFlags & ~IM_SHLxA_OP ))) {
-
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-    
     switch( instrOpToken ) {
         
         case TOK_OP_SHL1A: depositInstrField( instr, 13, 2, 1 ); break;
@@ -1877,13 +1906,7 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if ((( instrOpToken == TOK_OP_SHR1A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHR2A ) && ( instrFlags & ~IM_SHLxA_OP )) ||
-        (( instrOpToken == TOK_OP_SHR3A ) && ( instrFlags & ~IM_SHLxA_OP ))) {
-
-        throw ( ERR_INVALID_INSTR_OPT );
-    } 
-
+   
     switch( instrOpToken ) {
         
         case TOK_OP_SHL1A: depositInstrField( instr, 13, 2, 1 ); break;
@@ -1928,16 +1951,6 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_LDI ) && ( instrFlags & ~IM_LDI_OP  )) {
-
-        throw ( ERR_INVALID_INSTR_OPT );
-    } 
-
-    if (( instrOpToken == TOK_OP_ADDIL  ) && ( instrFlags & ~IM_NIL )) { 
-        
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-    
     acceptRegR( instr );
     acceptComma( );
     
@@ -1962,11 +1975,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if ( instrFlags & ~IM_LDO_OP ) throw ( ERR_INVALID_INSTR_OPT );
-    if (( instrFlags & IM_LDO_OP ) == 0 ) instrFlags |=  IF_D;
-
     setInstrDwField( instr, instrFlags );
-   
     acceptRegR( instr );
     acceptComma( );
 
@@ -2009,31 +2018,12 @@ void parseMemOp( T64Instr *instr, uint32_t instrOpToken ) {
     uint32_t    instrFlags  = IF_NIL;
     
     nextToken( );
-    parseInstrOptions( &instrFlags, instrOpToken );
-    if ((( instrOpToken == TOK_OP_LD  ) && ( instrFlags & ~IM_LD_OP ))  ||
-        (( instrOpToken == TOK_OP_ST  ) && ( instrFlags & ~IM_ST_OP ))  ||
-        (( instrOpToken == TOK_OP_LDR ) && ( instrFlags & ~IM_NIL   ))  ||
-        (( instrOpToken == TOK_OP_STC ) && ( instrFlags & ~IM_NIL   ))) { 
-            
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-
-    if ((( instrOpToken == TOK_OP_LD  ) && (( instrFlags & IM_LD_OP ) == 0 )) ||
-        (( instrOpToken == TOK_OP_ST  ) && (( instrFlags & IM_ST_OP ) == 0 ))) {
-            
-         instrFlags |= IF_D;
-    }
-    
-    if (( instrOpToken == TOK_OP_LDR ) || ( instrOpToken == TOK_OP_STC )) { 
-        
-        instrFlags |= IF_D;
-    }
-    
+    parseInstrOptions( &instrFlags, instrOpToken );  
     setInstrDwField( instr, instrFlags );
-    if ( instrFlags & IF_U ) depositInstrBit( instr, 20, true );
-
     acceptRegR( instr );
     acceptComma( );
+
+    if ( instrFlags & IF_U ) depositInstrBit( instr, 20, true );
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
@@ -2073,11 +2063,6 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_B  ) && ( instrFlags & ~IM_B_OP )) {
-
-        throw ( ERR_INVALID_INSTR_OPT );
-    } 
-    
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
      
@@ -2190,10 +2175,6 @@ void parseInstrBB( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if (( instrOpToken == TOK_OP_BB  ) && ( instrFlags & ~IM_BB_OP )) {
-
-        throw ( ERR_INVALID_INSTR_OPT );        
-    } 
     
     if ( instrFlags & IF_T ) depositInstrBit( instr, 19, true );
     
@@ -2229,13 +2210,6 @@ void parseInstrXBR( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    if ((( instrOpToken == TOK_OP_ABR  ) && ( instrFlags & ~IM_ABR_OP )) ||
-        (( instrOpToken == TOK_OP_CBR  ) && ( instrFlags & ~IM_CBR_OP )) ||
-        (( instrOpToken == TOK_OP_MBR  ) && ( instrFlags & ~IM_MBR_OP ))) {
-        
-        throw ( ERR_INVALID_INSTR_OPT );
-    }
-  
     acceptRegR( instr );
     acceptComma( );
     acceptRegB( instr );
@@ -2487,7 +2461,10 @@ void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     acceptComma( );
     
     parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) depositInstrFieldU( instr, 0, 8, (uint32_t) rExpr.val );
+    if ( rExpr.typ == TYP_NUM ) { 
+        
+        depositInstrFieldU( instr, 0, 8, (uint32_t) rExpr.val );
+    }
     else throw ( ERR_EXPECTED_NUMERIC );
     
     acceptEOS( );

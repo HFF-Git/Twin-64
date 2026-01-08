@@ -517,7 +517,7 @@ void T64Cpu::instrMemAddOp( T64Instr instr ) {
     switch ( extractInstrField( instr, 19, 3 )) {
                         
         case 0: val2 = getRegA( instr ); break;       
-        case 1: val2 = extractInstrSignedScaledImm13( instr ); break;
+        case 1: val2 = dataReadRegBOfsImm13( instr ); break;
         default: illegalInstrTrap( );
     }
 
@@ -1308,7 +1308,7 @@ void T64Cpu::instrSysRfiOp( T64Instr instr ) {
     if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
 
     setRegR( instr, psrReg ); // ??? or + 4 ?
-    psrReg = cRegFile[ CTL_REG_IPSW ];
+    psrReg = cRegFile[ CTL_REG_IPSR ];
 }
 
 //----------------------------------------------------------------------------------------
@@ -1394,11 +1394,20 @@ void T64Cpu::instrExecute( uint32_t instr ) {
         }
     }
     catch ( const T64Trap t ) {
-        
+
+        T64TrapCode code = t.trapCode;
+
         // ??? we are here because we trapped some level deep...
-        // the emulator will finalize in the trap info and the next instruction 
-        // to execute will be that of a trap handler.
-        
+        // ??? figure out if we trap inside an instruction or between instructions.
+
+        cRegFile[ CTL_REG_IPSR   ] = t.instrAdr;
+        cRegFile[ CTL_REG_IINSTR ] = t.arg0;
+        cRegFile[ CTL_REG_IARG_0 ] = t.arg0;
+        cRegFile[ CTL_REG_IARG_1 ] = t.arg1;  
+
+        // ??? PSR to the IVA content...
+
+        // ??? for some traps - re-raise...
     }
 }
 
