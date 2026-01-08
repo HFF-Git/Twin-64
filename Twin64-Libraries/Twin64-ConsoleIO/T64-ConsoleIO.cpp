@@ -142,32 +142,40 @@ bool  SimConsoleIO::isConsole( ) {
 // and columns. Of course there are platform differences.
 //
 //----------------------------------------------------------------------------------------
-int  SimConsoleIO::getConsoleSize( int &rows, int &cols ) {
+int  SimConsoleIO::getConsoleSize( int *rows, int *cols ) {
     
     #if __APPLE__
+
     struct winsize w;
     if ( ioctl( STDOUT_FILENO, TIOCGWINSZ, &w ) == -1 ) {
-        rows = 24;
-        cols = 80;
+
+        *rows = 24;
+        *cols = 80;
         return ( -1 );
     }
     else {
-        rows = w.ws_row;
-        cols = w.ws_col;
+
+        *rows = w.ws_row;
+        *cols = w.ws_col;
         return ( 0 );
     }
+
     #else
+    
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     if ( GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE ), &csbi ) ) {
-        cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-        rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+        *cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        *rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
         return ( 0 );
     }
     else {
-        rows = 24;
-        cols = 80;
+
+        *rows = 24;
+        *cols = 80;
         return ( -1 );
     }
+    
     #endif
 }
 

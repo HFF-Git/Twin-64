@@ -344,6 +344,11 @@ void SimWinDisplay::setWindowOrigins( int winStack, int rowOffset, int colOffset
 // When the screen size changed, we just redraw the screen with the command screen
 // going last. The command screen will have a columns size across all visible stacks.
 //
+// If the terminal screen is not large enough to hold all windows, we set a flag
+// to reformat the screen on the next command input. This gives the terminal a
+// chance to resize itself. However, the resetting of the terminal size is only
+// done after the next command input.
+//
 //----------------------------------------------------------------------------------------
 void SimWinDisplay::reDraw( ) {
     
@@ -419,6 +424,15 @@ void SimWinDisplay::reDraw( ) {
         maxColumnsNeeded    = cmdWin -> getDefColumns( );
         
         cmdWin -> setWinOrigin( 1, 1 );
+    }
+
+    int actualRows = 0;
+    int actualCols = 0;
+    glb -> console -> getConsoleSize( &actualRows, &actualCols );
+
+    if  (( actualRows < maxRowsNeeded ) || ( actualCols < maxColumnsNeeded )) {
+
+        winReFormatPending = true;
     }
    
     if ( winReFormatPending ) {
