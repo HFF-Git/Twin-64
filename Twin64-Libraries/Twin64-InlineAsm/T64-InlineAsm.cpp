@@ -345,10 +345,10 @@ enum InstrFlags : uint32_t {
     IM_ADD_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_SUB_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_AND_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N | IF_C ),
-    IM_OR_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
+    IM_OR_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_N | IF_C ),
     IM_XOR_OP   = ( IF_B | IF_H | IF_W | IF_D | IF_N ),
     IM_CMP_OP   = ( IF_B | IF_H | IF_W | IF_D | 
-                    IF_EQ | IF_NE | IF_LT | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
+                    IF_EQ | IF_NE | IF_LT | IF_LE | IF_GT | IF_GE ),
     IM_EXTR_OP  = ( IF_S ),
     IM_DEP_OP   = ( IF_Z | IF_I ),
     IM_SHLxA_OP = ( IF_I ),
@@ -469,7 +469,7 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_XOR,   .val = ( OPG_ALU | OPF_XOR    | OPM_FLD_0 ) },
     
     {   .name   = "CMP",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP    | OPM_FLD_0 ) },
+        .tid    = TOK_OP_CMP,   .val = ( OPG_ALU | OPF_CMP_A  | OPM_FLD_0 ) },
     
     {   .name   = "EXTR",       .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_EXTR,  .val = ( OPG_ALU | OPF_BITOP  | OPM_FLD_0 ) },
@@ -1617,7 +1617,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         replaceInstrGroupField( instr, OPG_MEM );
 
         if ( instrOpToken == TOK_OP_CMP ) 
-           replaceInstrOpCodeField( instr, OPC_CMP_A );
+           replaceInstrOpCodeField( instr, OPF_CMP_A );
 
         checkOfsAlignment( rExpr.val, instrFlags );
         setInstrDwField( instr, instrFlags );
@@ -1633,32 +1633,28 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
         if ( isToken( TOK_COMMA )) {
             
             if ( hasDataWidthFlags( instrFlags )) throw ( ERR_INVALID_INSTR_MODE );
-            
+
+            replaceInstrGroupField( instr, OPG_ALU );
+
             int tmpRegId = (int) rExpr.val;
             
             nextToken( );
             parseExpr( &rExpr );
             if ( rExpr.typ == TYP_NUM ) {
 
-                replaceInstrGroupField( instr, OPG_ALU );
-
                 if ( instrOpToken == TOK_OP_CMP ) 
-                    replaceInstrOpCodeField( instr, OPF_CMP_A );
-            
-                depositInstrBit( instr, 19, true );
+                    replaceInstrOpCodeField( instr, OPF_CMP_B );
+                else
+                    depositInstrBit( instr, 19, true );
+
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrImm15( instr, (uint32_t) rExpr.val );
             }
             else if ( rExpr.typ == TYP_GREG ) {
 
-                if ( instrOpToken == TOK_OP_CMP ) {
-
-                    replaceInstrGroupField( instr, OPG_ALU );
-
-                    if ( instrOpToken == TOK_OP_CMP )
-                        replaceInstrOpCodeField( instr, OPF_CMP_B );
-                }
-
+                if ( instrOpToken == TOK_OP_CMP )
+                    replaceInstrOpCodeField( instr, OPF_CMP_A );
+            
                 depositInstrRegB( instr, tmpRegId );
                 depositInstrRegA( instr, (uint32_t) rExpr.val );
             }
@@ -1672,9 +1668,10 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
             
             if ( instrOpToken == TOK_OP_CMP )
                 replaceInstrOpCodeField( instr, OPF_CMP_B );
+            else
+                depositInstrBit( instr, 19, true );
 
             setInstrDwField( instr, instrFlags );
-            depositInstrBit( instr, 19, true );
             depositInstrRegA( instr, (uint32_t) rExpr.val );
             
             nextToken( );

@@ -194,8 +194,8 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_CMP_B ): {
             
             int cursor = snprintf( buf, LEN_16, "CMP" );
-            cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
             cursor += printCondField( buf + cursor, extractInstrField( instr, 19, 3 ));
+            cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
             return ( cursor );
         }
             
@@ -504,9 +504,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         case ( OPC_GRP_ALU * 16 + OPC_SUB   ):
         case ( OPC_GRP_ALU * 16 + OPC_AND   ):
         case ( OPC_GRP_ALU * 16 + OPC_OR    ):
-        case ( OPC_GRP_ALU * 16 + OPC_XOR   ):
-        case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):
-        case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
+        case ( OPC_GRP_ALU * 16 + OPC_XOR   ): {
             
             if ( extractInstrBit( instr, 19 )) {
                 
@@ -523,7 +521,26 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                    extractInstrRegA( instr )));
             }
         }
+
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_A ):
+        case ( OPC_GRP_ALU * 16 + OPC_CMP_B ): {
             
+            if ( extractInstrBit( instr, 26 )) {
+                
+                return ( snprintf( buf, LEN_32, "R%d, R%d, %d",
+                                   extractInstrRegR( instr ),
+                                   extractInstrRegB( instr ),
+                                   extractInstrSignedImm15( instr )));
+            }
+            else {
+                
+                return ( snprintf( buf, LEN_32, "R%d, R%d, R%d",
+                                   extractInstrRegR( instr ),
+                                   extractInstrRegB( instr ),
+                                   extractInstrRegA( instr )));
+            }
+        }
+ 
         case ( OPC_GRP_ALU * 16 + OPC_BITOP ): {
             
             switch ( extractInstrField( instr, 19, 3 )) {
@@ -640,14 +657,31 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         case ( OPC_GRP_MEM * 16 + OPC_AND   ):
         case ( OPC_GRP_MEM * 16 + OPC_OR    ):
         case ( OPC_GRP_MEM * 16 + OPC_XOR   ):
-        case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
-        case ( OPC_GRP_MEM * 16 + OPC_CMP_B ):
         case ( OPC_GRP_MEM * 16 + OPC_LD    ):
         case ( OPC_GRP_MEM * 16 + OPC_ST    ):
         case ( OPC_GRP_MEM * 16 + OPC_LDR   ):
         case ( OPC_GRP_MEM * 16 + OPC_STC   ): {
             
             if ( extractInstrBit( instr, 19 ) == 0 ) {
+                
+                return ( snprintf( buf, LEN_32, "R%d, %d(R%d)",
+                                   extractInstrRegR( instr ),
+                                   extractInstrSignedScaledImm13( instr ),
+                                   extractInstrRegB( instr )));
+            }
+            else {
+                
+                return ( snprintf( buf, LEN_32, "R%d, R%d(R%d)",
+                                   extractInstrRegR( instr ),
+                                   extractInstrRegA( instr ),
+                                   extractInstrRegB( instr )));
+            }
+        }
+
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_A ):
+        case ( OPC_GRP_MEM * 16 + OPC_CMP_B ): {
+            
+            if ( extractInstrBit( instr, 26 ) == 0 ) {
                 
                 return ( snprintf( buf, LEN_32, "R%d, %d(R%d)",
                                    extractInstrRegR( instr ),
