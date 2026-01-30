@@ -72,10 +72,11 @@ enum ErrId : int {
     ERR_EXPECTED_GENERAL_REG        = 29,
     ERR_EXPECTED_POS_ARG            = 30,
     ERR_EXPECTED_LEN_ARG            = 31,
-    ERR_EXPECTED_BR_OFS             = 32,
-    ERR_EXPECTED_CONTROL_REG        = 33,
-    ERR_EXPECTED_PRB_ARG            = 34,
-    ERR_UNEXPECTED_EOS              = 35,
+    ERR_BIT_RANGE_EXCEEDS           = 32,
+    ERR_EXPECTED_BR_OFS             = 33,
+    ERR_EXPECTED_CONTROL_REG        = 34,
+    ERR_EXPECTED_PRB_ARG            = 35,
+    ERR_UNEXPECTED_EOS              = 36,
    
     ERR_EXPR_TYPE_MATCH             = 40,
     ERR_NUMERIC_OVERFLOW            = 41,
@@ -119,6 +120,7 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_EXPECTED_GENERAL_REG,     (char *) "Expected a general register" },
     { ERR_EXPECTED_POS_ARG,         (char *) "Expected a position argument" },
     { ERR_EXPECTED_LEN_ARG,         (char *) "Expected a length argument" },
+    { ERR_BIT_RANGE_EXCEEDS,        (char *) "Bit range exceeds word size" }, 
     { ERR_EXPECTED_BR_OFS,          (char *) "Expected a branch offset" },
     { ERR_EXPECTED_CONTROL_REG,     (char *) "Expected a control register" },
     { ERR_EXPECTED_PRB_ARG,         (char *) "Expected the PRB argument" },
@@ -401,22 +403,22 @@ const Token AsmTokTab[ ] = {
     // Control registers.
     //
     //------------------------------------------------------------------------------------
-    { .name = "C0",     .typ = TYP_CREG,    .tid = TOK_CR_0,    .val = 0    },
-    { .name = "C1",     .typ = TYP_CREG,    .tid = TOK_CR_1,    .val = 1    },
-    { .name = "C2",     .typ = TYP_CREG,    .tid = TOK_CR_2,    .val = 2    },
-    { .name = "C3",     .typ = TYP_CREG,    .tid = TOK_CR_3,    .val = 3    },
-    { .name = "C4",     .typ = TYP_CREG,    .tid = TOK_CR_4,    .val = 4    },
-    { .name = "C5",     .typ = TYP_CREG,    .tid = TOK_CR_5,    .val = 5    },
-    { .name = "C6",     .typ = TYP_CREG,    .tid = TOK_CR_6,    .val = 6    },
-    { .name = "C7",     .typ = TYP_CREG,    .tid = TOK_CR_7,    .val = 7    },
-    { .name = "C8",     .typ = TYP_CREG,    .tid = TOK_CR_8,    .val = 8    },
-    { .name = "C9",     .typ = TYP_CREG,    .tid = TOK_CR_9,    .val = 9    },
-    { .name = "C10",    .typ = TYP_CREG,    .tid = TOK_CR_10,   .val = 10   },
-    { .name = "C11",    .typ = TYP_CREG,    .tid = TOK_CR_11,   .val = 11   },
-    { .name = "C12",    .typ = TYP_CREG,    .tid = TOK_CR_12,   .val = 12   },
-    { .name = "C13",    .typ = TYP_CREG,    .tid = TOK_CR_13,   .val = 13   },
-    { .name = "C14",    .typ = TYP_CREG,    .tid = TOK_CR_14,   .val = 14   },
-    { .name = "C15",    .typ = TYP_CREG,    .tid = TOK_CR_15,   .val = 15   },
+    {   .name = "C0",   .typ = TYP_CREG,    .tid = TOK_CR_0,    .val = 0    },
+    {   .name = "C1",   .typ = TYP_CREG,    .tid = TOK_CR_1,    .val = 1    },
+    {   .name = "C2",   .typ = TYP_CREG,    .tid = TOK_CR_2,    .val = 2    },
+    {   .name = "C3",   .typ = TYP_CREG,    .tid = TOK_CR_3,    .val = 3    },
+    {   .name = "C4",   .typ = TYP_CREG,    .tid = TOK_CR_4,    .val = 4    },
+    {   .name = "C5",   .typ = TYP_CREG,    .tid = TOK_CR_5,    .val = 5    },
+    {   .name = "C6",   .typ = TYP_CREG,    .tid = TOK_CR_6,    .val = 6    },
+    {   .name = "C7",   .typ = TYP_CREG,    .tid = TOK_CR_7,    .val = 7    },
+    {   .name = "C8",   .typ = TYP_CREG,    .tid = TOK_CR_8,    .val = 8    },
+    {   .name = "C9",   .typ = TYP_CREG,    .tid = TOK_CR_9,    .val = 9    },
+    {   .name = "C10",  .typ = TYP_CREG,    .tid = TOK_CR_10,   .val = 10   },
+    {   .name = "C11",  .typ = TYP_CREG,    .tid = TOK_CR_11,   .val = 11   },
+    {   .name = "C12",  .typ = TYP_CREG,    .tid = TOK_CR_12,   .val = 12   },
+    {   .name = "C13",  .typ = TYP_CREG,    .tid = TOK_CR_13,   .val = 13   },
+    {   .name = "C14",  .typ = TYP_CREG,    .tid = TOK_CR_14,   .val = 14   },
+    {   .name = "C15",  .typ = TYP_CREG,    .tid = TOK_CR_15,   .val = 15   },
 
     //------------------------------------------------------------------------------------
     // Runtime architecture register names for general registers.
@@ -444,7 +446,7 @@ const Token AsmTokTab[ ] = {
     { .name = "RL",     .typ = TYP_GREG,    .tid = TOK_GR_14,   .val =  14  },
     { .name = "SP",     .typ = TYP_GREG,    .tid = TOK_GR_15,   .val =  15  },
     
-    { .name = "SAR",    .typ = TYP_GREG,    .tid = TOK_GR_1,    .val =  1   },
+    { .name = "SAR",    .typ = TYP_CREG,    .tid = TOK_CR_4,    .val =  2   },
     
     //------------------------------------------------------------------------------------
     // Assembler mnemonics. Like all other tokens, we have the name, the type and the 
@@ -1267,7 +1269,7 @@ inline void depositInstrImm13( T64Instr *instr, int val ) {
 
 inline void depositInstrScaledImm13( T64Instr *instr, int val ) {
    
-    val = val >> extractInstrField( *instr, 13, 2 );
+    val = val >> extractInstrFieldU( *instr, 13, 2 );
     
     if ( isInRangeForInstrBitField( val, 13 )) depositInstrField( instr, 0, 13, val );
     else throw ( ERR_IMM_VAL_RANGE );
@@ -1711,6 +1713,8 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr       = INIT_EXPR;
     uint32_t    instrFlags  = IF_NIL;
+    uint32_t    pos         = 0;
+    uint32_t    len         = 0;
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
@@ -1722,9 +1726,10 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-       depositInstrFieldS( instr, 6, 6, (uint32_t) rExpr.val );
+       depositInstrFieldU( instr, 6, 6, (uint32_t) rExpr.val );
+       pos = (uint32_t) rExpr.val;
     }
-    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.val == 1 )) {
+    else if (( rExpr.typ == TYP_CREG ) && ( rExpr.val == 2 )) {
         
         depositInstrBit( instr, 13, true );
     }
@@ -1735,13 +1740,16 @@ void parseInstrEXTR( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) { 
         
-        depositInstrFieldS( instr, 0, 6, (uint32_t) rExpr.val );
+        depositInstrFieldU( instr, 0, 6, (uint32_t) rExpr.val );
+        len = (uint32_t) rExpr.val;
     }
     else throw ( ERR_EXPECTED_LEN_ARG );
-    
+ 
     if ( instrFlags & IF_S ) depositInstrBit( instr, 12, true );
     
     acceptEOS( );
+
+    if ( pos + len > 64 ) throw ( ERR_BIT_RANGE_EXCEEDS );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1761,6 +1769,8 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr        rExpr      = INIT_EXPR;
     uint32_t    instrFlags = IF_NIL;
+    uint32_t    pos         = 0;
+    uint32_t    len         = 0;
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
@@ -1777,34 +1787,38 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else if ( rExpr.typ == TYP_NUM )    {
         
-        depositInstrFieldS( instr, 15, 4, (uint32_t) rExpr.val );
-        depositInstrBit( instr, 11, true );
+        depositInstrFieldU( instr, 15, 4, (uint32_t) rExpr.val );
+        depositInstrBit( instr, 14, true );
+    }
+    else throw ( ERR_EXPECTED_POS_ARG );
+    
+    acceptComma( );
+
+    parseExpr( &rExpr );
+    if (( rExpr.typ == TYP_CREG ) && ( rExpr.val == 2 )) {
+        
+        depositInstrBit( instr, 13, true );
+    }
+    else if ( rExpr.typ == TYP_NUM ) {
+        
+        depositInstrFieldU( instr, 6, 6, (uint32_t) rExpr.val );
+        pos = (uint32_t) rExpr.val;
     }
     else throw ( ERR_EXPECTED_POS_ARG );
     
     acceptComma( );
     
     parseExpr( &rExpr );
-    if (( rExpr.typ == TYP_GREG ) && ( rExpr.val == 1 )) {
+    if ( rExpr.typ == TYP_NUM ) { 
         
-        depositInstrBit( instr, 13, true );
-    }
-    else if ( rExpr.typ == TYP_NUM ) {
-        
-        depositInstrFieldS( instr, 6, 6, (uint32_t) rExpr.val );
+        depositInstrFieldU( instr, 0, 6, (uint32_t) rExpr.val );
+        len = (uint32_t) rExpr.val;
     }
     else throw ( ERR_EXPECTED_LEN_ARG );
     
-    acceptComma( );
-    
-    parseExpr( &rExpr );
-    if ( rExpr.typ == TYP_NUM ) { 
-        
-        depositInstrFieldS( instr, 0, 6, (uint32_t) rExpr.val );
-    }
-    else throw ( ERR_EXPECTED_NUMERIC );
-    
     acceptEOS( );
+
+    if ( pos + len > 64 ) throw ( ERR_BIT_RANGE_EXCEEDS );
 }
 
 //----------------------------------------------------------------------------------------
@@ -1831,9 +1845,9 @@ void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
         
-        depositInstrFieldS( instr, 0, 6, (uint32_t) rExpr.val );
+        depositInstrFieldU( instr, 0, 6, (uint32_t) rExpr.val );
     }
-    else if (( rExpr.typ == TYP_GREG ) && ( rExpr.val == 1 )) {
+    else if (( rExpr.typ == TYP_CREG ) && ( rExpr.val == 2 )) {
         
         depositInstrBit( instr, 13, true );
     }

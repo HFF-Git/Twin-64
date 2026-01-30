@@ -186,14 +186,14 @@ inline int extractInstrBit( T64Instr arg, int bitpos ) {
     return (( arg >> bitpos ) & 0x1 );
 }
 
-inline int extractInstrField( T64Instr arg, int bitpos, int len ) {
+inline int extractInstrFieldU( T64Instr arg, int bitpos, int len ) {
     
     if ( bitpos > 31 ) return ( 0 );
     if ( bitpos + len > 32 ) return ( 0 );
     return (( arg >> bitpos ) & (( 1L << len ) - 1 ));
 }
 
-inline int extractInstrSignedField( T64Instr arg, int bitpos, int len ) {
+inline int extractInstrFieldS( T64Instr arg, int bitpos, int len ) {
     
     T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
     
@@ -211,42 +211,42 @@ inline T64Word signExtend( T64Word data, int pos ) {
 
 inline int extractInstrOpGroup( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 30, 2 ));
+    return ( extractInstrFieldU( instr, 30, 2 ));
 }
 
 inline int extractInstrOpCode( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 26, 4 ));
+    return ( extractInstrFieldU( instr, 26, 4 ));
 }
 
 inline int extractInstrOptField( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 19, 3 ));
+    return ( extractInstrFieldU( instr, 19, 3 ));
 }
 
 inline int extractInstrRegR( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 22, 4 ));
+    return ( extractInstrFieldU( instr, 22, 4 ));
 }
 
 inline int extractInstrRegB( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 15, 4 ));
+    return ( extractInstrFieldU( instr, 15, 4 ));
 }
 
 inline int extractInstrRegA( T64Instr instr ) {
     
-    return ( extractInstrField( instr, 9, 4 ));
+    return ( extractInstrFieldU( instr, 9, 4 ));
 }
 
 inline int extractInstrDwField( T64Instr instr) {
     
-    return ( extractInstrField( instr, 13, 2 ));
+    return ( extractInstrFieldU( instr, 13, 2 ));
 }
 
 inline int extractInstrSignedImm13( T64Instr instr ) {
     
-    return ( extractInstrSignedField( instr, 0, 13 ));
+    return ( extractInstrFieldS( instr, 0, 13 ));
 }
 
 inline int extractInstrSignedScaledImm13( T64Instr instr ) {
@@ -256,17 +256,17 @@ inline int extractInstrSignedScaledImm13( T64Instr instr ) {
 
 inline int extractInstrSignedImm15( T64Instr instr ) {
     
-    return ( extractInstrSignedField( instr, 0, 15 ));
+    return ( extractInstrFieldS( instr, 0, 15 ));
 }
 
 inline int extractInstrSignedImm19( T64Instr instr ) {
     
-    return ( extractInstrSignedField( instr, 0, 19 ));
+    return ( extractInstrFieldS( instr, 0, 19 ));
 }
 
 inline int extractInstrImm20( T64Instr instr ) {
 
-    return ( extractInstrField( instr, 0, 20 ));
+    return ( extractInstrFieldU( instr, 0, 20 ));
 }
 
 //----------------------------------------------------------------------------------------

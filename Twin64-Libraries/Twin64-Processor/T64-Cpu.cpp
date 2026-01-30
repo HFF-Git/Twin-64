@@ -493,7 +493,7 @@ void T64Cpu::instrAluAddOp( T64Instr instr ) {
     T64Word val1 = getRegB( instr );
     T64Word val2 = 0;
 
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                         
         case 0: val2 = getRegA( instr ); break;       
         case 1: val2 = extractInstrSignedImm15( instr ); break;
@@ -514,7 +514,7 @@ void T64Cpu::instrMemAddOp( T64Instr instr ) {
     T64Word val1 = getRegR( instr );
     T64Word val2 = 0;
                
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                         
         case 0: val2 = getRegA( instr ); break;       
         case 1: val2 = dataReadRegBOfsImm13( instr ); break;
@@ -535,7 +535,7 @@ void T64Cpu::instrAluSubOp( T64Instr instr ) {
     T64Word val1 = getRegR( instr );
     T64Word val2 = 0;
     
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                         
         case 0: val2 = getRegA( instr ); break;       
         case 1: val2 = extractInstrSignedImm15( instr ); break;
@@ -556,7 +556,7 @@ void T64Cpu::instrMemSubOp( T64Instr instr ) {
     T64Word val1 = getRegR( instr );
     T64Word val2 = 0;
 
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                    
         case 0: val2 = getRegA( instr ); break;       
         case 1: val2 = extractInstrSignedScaledImm13( instr ); break;
@@ -696,7 +696,7 @@ void T64Cpu::instrAluCmpOp( T64Instr instr ) {
     else if ( opCode == OPC_CMP_B ) val2 = extractInstrSignedImm15( instr );
     else illegalInstrTrap( );
     
-    setRegR( instr, evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ));
+    setRegR( instr, evalCond( extractInstrFieldU( instr, 19, 3 ), val1, val2 ));
     nextInstr( );
 }
 
@@ -714,7 +714,7 @@ void T64Cpu::instrMemCmpOp( T64Instr instr ) {
     else if ( opCode == OPC_CMP_B ) val2 = dataReadRegBOfsRegX( instr );
     else illegalInstrTrap( );
     
-    setRegR( instr, evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ));
+    setRegR( instr, evalCond( extractInstrFieldU( instr, 19, 3 ), val1, val2 ));
     nextInstr( );
 }
 
@@ -728,19 +728,19 @@ void T64Cpu::instrMemCmpOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrAluBitOp( T64Instr instr ) {
 
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                         
         case 0: { 
             
             T64Word val = getRegB( instr );
             T64Word res  = 0;
             int     pos  = 0;
-            int     len  = extractInstrField( instr, 0, 6 );
+            int     len  = extractInstrFieldU( instr, 0, 6 );
             
             if ( extractInstrBit( instr, 13 ))   
                 pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
             else                               
-                pos = extractInstrField( instr, 6, 6 );
+                pos = extractInstrFieldU( instr, 6, 6 );
             
             if ( extractInstrBit( instr, 12 ))  
                 res = extractSignedField64( val, pos, len );
@@ -757,17 +757,17 @@ void T64Cpu::instrAluBitOp( T64Instr instr ) {
             T64Word val2 = 0;
             T64Word res  = 0;
             int     pos  = 0;
-            int     len  = (int) extractInstrField( instr, 0, 6 );
+            int     len  = (int) extractInstrFieldU( instr, 0, 6 );
             
             if ( extractInstrBit( instr, 13 ))    
                 pos = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
             else                                
-                pos = (int) extractInstrField( instr, 6, 6 );
+                pos = (int) extractInstrFieldU( instr, 6, 6 );
             
             if ( ! extractInstrBit( instr, 12 )) val1 = getRegR( instr );
             
             if ( extractInstrBit( instr, 14 ))    
-                val2 = extractInstrField( instr, 15, 4 );
+                val2 = extractInstrFieldU( instr, 15, 4 );
             else                                
                 val2 = getRegB( instr );
             
@@ -786,7 +786,7 @@ void T64Cpu::instrAluBitOp( T64Instr instr ) {
             if ( extractInstrBit( instr, 13 ))    
                 shamt = (int) cRegFile[ CTL_REG_SHAMT ] & 0x3F;
             else                                
-                shamt = (int) extractInstrField( instr, 0, 6 );
+                shamt = (int) extractInstrFieldU( instr, 0, 6 );
             
             res = shiftRight128( val1, val2, shamt );
             setRegR( instr, res );
@@ -808,8 +808,8 @@ void T64Cpu::instrAluShaOP( T64Instr instr ) {
     T64Word val1  = getRegB( instr );
     T64Word val2  = 0;
     T64Word res   = 0;
-    int     shamt = extractInstrField( instr, 13, 2 );
-    int     opt   = extractInstrField( instr, 19, 3 );
+    int     shamt = extractInstrFieldU( instr, 13, 2 );
+    int     opt   = extractInstrFieldU( instr, 19, 3 );
     
     switch (  opt ) {
 
@@ -849,7 +849,7 @@ void T64Cpu::instrAluImmOp( T64Instr instr ) {
     T64Word val = extractInstrImm20( instr );
     T64Word res = getRegR( instr );
     
-    switch ( extractInstrField( instr, 20, 2 )) {
+    switch ( extractInstrFieldU( instr, 20, 2 )) {
             
         case 0: res = addAdrOfs32( res, val );      break;
         case 1: res = val << 12;                    break;
@@ -880,7 +880,7 @@ void T64Cpu::instrAluLdoOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemLdOp( T64Instr instr ) {
 
-    int opt = extractInstrField( instr, 19, 3 );
+    int opt = extractInstrFieldU( instr, 19, 3 );
 
     if      ( opt == 0 ) setRegR( instr, dataReadRegBOfsImm13( instr ));
     else if ( opt == 1 ) setRegR( instr, dataReadRegBOfsRegX( instr ));
@@ -895,7 +895,7 @@ void T64Cpu::instrMemLdOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemLdrOp( T64Instr instr ) {
           
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
     
     setRegR( instr, dataReadRegBOfsImm13( instr ));
     nextInstr( );
@@ -909,7 +909,7 @@ void T64Cpu::instrMemLdrOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemStOp( T64Instr instr ) {
 
-    int opt = extractInstrField( instr, 19, 3 );
+    int opt = extractInstrFieldU( instr, 19, 3 );
 
     if      ( opt == 0 ) dataWriteRegBOfsImm13( instr );
     else if ( opt == 1 ) dataWriteRegBOfsRegX( instr );
@@ -924,7 +924,7 @@ void T64Cpu::instrMemStOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemStcOp( T64Instr instr ) {
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
         
     dataWriteRegBOfsImm13( instr );
     nextInstr( );
@@ -969,7 +969,7 @@ void T64Cpu::instrBrBeOp( T64Instr instr ) {
     T64Word newIA     = addAdrOfs32( newIABase, ofs );
     T64Word rl        = addAdrOfs32( psrReg, 4 );
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( ); 
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( ); 
 
     // ??? priv check ?
 
@@ -986,7 +986,7 @@ void T64Cpu::instrBrBrOp( T64Instr instr ) {
     T64Word newIA = addAdrOfs32( psrReg, getRegB( instr ));
     T64Word rl    = addAdrOfs32( psrReg, 4 );
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
 
     instrAlignmentCheck( newIA );
     psrReg = newIA;
@@ -1004,7 +1004,7 @@ void T64Cpu::instrBrBvOp( T64Instr instr ) {
     T64Word rl      = addAdrOfs32( psrReg, 4 );
     T64Word newIA   = addAdrOfs32( base, ofs );
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
 
     instrAlignmentCheck( newIA );
     psrReg = newIA;
@@ -1026,7 +1026,7 @@ void T64Cpu::instrBrBbOp( T64Instr instr ) {
     if ( extractInstrBit( instr, 20 ))  
         pos = cRegFile[ CTL_REG_SHAMT ] & 0x3F;
     else                                    
-        pos = (int) extractInstrField( instr, 13, 6 );
+        pos = (int) extractInstrFieldU( instr, 13, 6 );
     
     testBit = extractInstrBit( instr, pos );
     
@@ -1051,7 +1051,7 @@ void T64Cpu::instrBrAbrOp( T64Instr instr ) {
     sum = val1 + val2;
     setRegR( instr, sum );
 
-    if ( evalCond( extractInstrField( instr, 19, 3 ), sum, 0 ))
+    if ( evalCond( extractInstrFieldU( instr, 19, 3 ), sum, 0 ))
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
     else 
         nextInstr( );
@@ -1066,7 +1066,7 @@ void T64Cpu::instrBrCbrOp( T64Instr instr ) {
     T64Word val1    = getRegR( instr );
     T64Word val2    = getRegB( instr );
 
-    if ( evalCond( extractInstrField( instr, 19, 3 ), val1, val2 ))
+    if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val1, val2 ))
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
     else 
         nextInstr( );
@@ -1082,7 +1082,7 @@ void T64Cpu::instrBrMbrOp( T64Instr instr ) {
         
     setRegR( instr, val );
     
-    if ( evalCond( extractInstrField( instr, 19, 3 ), val, 0 ))
+    if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val, 0 ))
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
     else 
         nextInstr( );
@@ -1102,18 +1102,18 @@ void T64Cpu::instrBrMbrOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysMrOp( T64Instr instr ) {
 
-    switch ( extractInstrField( instr, 19, 3 )) {
+    switch ( extractInstrFieldU( instr, 19, 3 )) {
                         
         case 0:     {
             
-            int cReg = extractInstrField( instr, 0, 4 );
+            int cReg = extractInstrFieldU( instr, 0, 4 );
             setRegR( instr, cRegFile[ cReg ] ); 
             
         } break;
 
         case 1: {
 
-            int cReg = extractInstrField( instr, 0, 4 );
+            int cReg = extractInstrFieldU( instr, 0, 4 );
             cRegFile[ cReg ] = getRegR( instr );
 
         } break;
@@ -1141,7 +1141,7 @@ void T64Cpu::instrSysLpaOp( T64Instr instr ) {
     T64Word ofs  = getRegA( instr );
     T64Word vAdr = addAdrOfs32( base, ofs );
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
 
     T64TlbEntry *e = proc -> dTlb -> lookup( vAdr );
     if ( e == nullptr ) setRegR( instr, 0 );
@@ -1157,7 +1157,7 @@ void T64Cpu::instrSysLpaOp( T64Instr instr ) {
 void T64Cpu::instrSysPrbOp( T64Instr instr ) {
 
     T64Word vAdr        = getRegB( instr );
-    int     mode        = extractInstrField( instr, 13, 2 );
+    int     mode        = extractInstrFieldU( instr, 13, 2 );
     int     privLevel   = extractBit64( psrReg, 62 ); // ??? do better...
 
     if ( mode == 3 ) mode = extractField64( getRegA( instr ), 0, 2 );
@@ -1185,7 +1185,7 @@ void T64Cpu::instrSysPrbOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysTlbOp( T64Instr instr ) {
 
-    int opt = extractInstrField( instr, 19, 3 );
+    int opt = extractInstrFieldU( instr, 19, 3 );
 
     switch ( opt ) {
 
@@ -1236,7 +1236,7 @@ void T64Cpu::instrSysTlbOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysCaOp( T64Instr instr ) {
 
-    int     opt = extractInstrField( instr, 19, 3 );
+    int     opt = extractInstrFieldU( instr, 19, 3 );
     T64Word vAdr = addAdrOfs32( getRegB( instr ), getRegA( instr ));
 
     switch ( opt ) {
@@ -1284,7 +1284,7 @@ void T64Cpu::instrSysCaOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysMstOp( T64Instr instr ) {
 
-    int opt = extractInstrField( instr, 19, 3 );
+    int opt = extractInstrFieldU( instr, 19, 3 );
 
     if ( opt == 0 )   {
                     
@@ -1305,7 +1305,7 @@ void T64Cpu::instrSysMstOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysRfiOp( T64Instr instr ) {
 
-    if ( extractInstrField( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
 
     setRegR( instr, psrReg ); // ??? or + 4 ?
     psrReg = cRegFile[ CTL_REG_IPSR ];
@@ -1317,8 +1317,8 @@ void T64Cpu::instrSysRfiOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysDiagOp( T64Instr instr ) {
 
-    int diagOpt = ( extractInstrField( instr, 19, 3 ) * 4 ) + 
-                    extractInstrField( instr, 13, 2 );
+    int diagOpt = ( extractInstrFieldU( instr, 19, 3 ) * 4 ) + 
+                    extractInstrFieldU( instr, 13, 2 );
 
     setRegR( instr, diagOpHandler( diagOpt, getRegB( instr ), getRegA( instr )));
     nextInstr( );
@@ -1330,8 +1330,8 @@ void T64Cpu::instrSysDiagOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrSysTrapOp( T64Instr instr ) {
 
-    int trapOpt = ( extractInstrField( instr, 19, 3 ) * 4 ) + 
-                    extractInstrField( instr, 13, 2 );
+    int trapOpt = ( extractInstrFieldU( instr, 19, 3 ) * 4 ) + 
+                    extractInstrFieldU( instr, 13, 2 );
 
     // ??? throw the trap
 
