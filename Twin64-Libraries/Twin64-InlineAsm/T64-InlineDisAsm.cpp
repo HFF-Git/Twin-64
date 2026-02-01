@@ -606,7 +606,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                     
                     if ( extractInstrBit( instr, 13 )) {
                         
-                        return ( snprintf( buf, LEN_32, "R%d, R%d, R%d",
+                        return ( snprintf( buf, LEN_32, "R%d, R%d, R%d, SAR",
                                            extractInstrRegR( instr ),
                                            extractInstrRegB( instr ),
                                            extractInstrRegA( instr )));
