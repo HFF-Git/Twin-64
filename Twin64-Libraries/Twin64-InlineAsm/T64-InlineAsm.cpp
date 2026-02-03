@@ -770,7 +770,7 @@ void parseNum( ) {
     if ( currentChar == '0' ) {
         
         nextChar( );
-        if (( currentChar == 'x' ) || ( currentChar == 'X' )) {
+        if (( currentChar == 'X' ) || ( currentChar == 'x' )) {
             
             base        = 16;
             maxDigits   = 16;
@@ -870,13 +870,13 @@ void parseIdent( ) {
             if ( isdigit( currentChar )) {
                 
                 parseNum( );
-                currentToken.val &= 0x00000000000003FF;
+                currentToken.val &= 0x0000000000000FFF;
                 return;
             }
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
         }
     }
-    else if (( currentChar == 'S' ) || ( currentChar == 's' )) {
+    else if (( currentChar == 'M' ) || ( currentChar == 'm' )) {
         
         addChar( identBuf, sizeof( identBuf ), currentChar );
         nextChar( );
