@@ -200,7 +200,7 @@ enum TokId : int {
     TOK_OP_SHL1A    = 314,  TOK_OP_SHL2A    = 315,  TOK_OP_SHL3A    = 316,
     TOK_OP_SHR1A    = 317,  TOK_OP_SHR2A    = 318,  TOK_OP_SHR3A    = 319,
     
-    TOK_OP_LDI      = 331,  TOK_OP_ADDIL    = 332,  TOK_OP_LDO      = 333,
+    TOK_OP_LDIL     = 331,  TOK_OP_ADDIL    = 332,  TOK_OP_LDO      = 333,
     TOK_OP_LD       = 334,  TOK_OP_LDR      = 335,
     TOK_OP_ST       = 337,  TOK_OP_STC      = 338,
     
@@ -500,8 +500,8 @@ const Token AsmTokTab[ ] = {
     {   .name   = "SHR3A",      .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_SHR3A, .val = ( OPG_ALU | OPF_SHAOP  | OPM_FLD_2 ) },
     
-    {   .name   = "LDI",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_LDI,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
+    {   .name   = "LDIL",       .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_LDIL,   .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
 
     {   .name   = "ADDIL",      .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_ADDIL, .val = ( OPG_ALU | OPF_IMMOP  | OPM_FLD_0 ) },
@@ -1515,7 +1515,7 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHR3A ) && ( instrMask & ~IM_SHRxA_OP )) ||
 
         (( instrOpToken == TOK_OP_LDO   ) && ( instrMask & ~IM_LDO_OP   )) ||
-        (( instrOpToken == TOK_OP_LDI   ) && ( instrMask & ~IM_LDI_OP   )) ||
+        (( instrOpToken == TOK_OP_LDIL   ) && ( instrMask & ~IM_LDI_OP   )) ||
         (( instrOpToken == TOK_OP_ADDIL ) && ( instrMask & ~IM_NIL      )) || 
         
         (( instrOpToken == TOK_OP_ABR  ) && ( instrMask & ~IM_ABR_OP    )) ||
@@ -1920,9 +1920,9 @@ void parseInstrSHRxA( uint32_t *instr, uint32_t instrOpToken ) {
    
     switch( instrOpToken ) {
         
-        case TOK_OP_SHL1A: depositInstrField( instr, 13, 2, 1 ); break;
-        case TOK_OP_SHL2A: depositInstrField( instr, 13, 2, 2 ); break;
-        case TOK_OP_SHL3A: depositInstrField( instr, 13, 2, 3 ); break;
+        case TOK_OP_SHR1A: depositInstrField( instr, 13, 2, 1 ); break;
+        case TOK_OP_SHR2A: depositInstrField( instr, 13, 2, 2 ); break;
+        case TOK_OP_SHR3A: depositInstrField( instr, 13, 2, 3 ); break;
     }
     
     acceptRegR( instr );
@@ -1977,6 +1977,7 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
 // in "R". Like the MemOp family, the LDO instruction has a dataWidth field.
 //
 //      LDO [.B/H/W/D] <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
+//      LDO <targetReg> "," [ <indexReg> ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
@@ -1990,15 +1991,22 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     acceptRegR( instr );
     acceptComma( );
 
-    if (  isToken( TOK_NUM )) {
+    parseExpr( &rExpr );
+    if ( rExpr.typ == TYP_NUM ) {
         
-        parseExpr( &rExpr );
-        if ( rExpr.typ == TYP_NUM ) {
-            
             checkOfsAlignment( rExpr.val, instrFlags );
             depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
+    }
+    else if ( rExpr.typ == TYP_GREG) {
+
+        if (( hasDataWidthFlags( instrFlags )) && ( ! instrFlags & IF_D )) {
+            
+            throw ( ERR_INVALID_INSTR_OPT );
         }
-        else throw( ERR_EXPECTED_NUMERIC );
+
+        depositInstrFieldU( instr, 13, 2, 0 );
+        depositInstrBit( instr, 19, true );
+        depositInstrRegA( instr, (uint32_t) rExpr.val );
     }
     else depositInstrScaledImm13( instr, 0 );
     
@@ -2589,7 +2597,7 @@ void parseLine( char *inputStr, uint32_t *instr ) {
             case TOK_OP_SHR2A:
             case TOK_OP_SHR3A:  parseInstrSHRxA( instr, instrOpToken );     break;
                 
-            case TOK_OP_LDI:
+            case TOK_OP_LDIL:
             case TOK_OP_ADDIL:  parseInstrImmOp( instr, instrOpToken );     break;
                 
             case TOK_OP_LDO:    parseInstrLDO( instr, instrOpToken );       break;

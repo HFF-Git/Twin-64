@@ -704,10 +704,14 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                                    extractInstrSignedScaledImm13( instr ),
                                    extractInstrRegB( instr )));
             }
-            else {
-
-                return( snprintf( buf, LEN_32, "***" ));
-            }
+            else if ( extractInstrBit( instr, 19 ) == 1 ) {
+            
+                return ( snprintf( buf, LEN_32, "R%d, R%d(R%d)",
+                                   extractInstrRegR( instr ),
+                                   extractInstrRegA( instr ),
+                                   extractInstrRegB( instr )));
+            } 
+            else return( snprintf( buf, LEN_32, "***" ));
         }
             
         case ( OPC_GRP_BR * 16 + OPC_B ): {
