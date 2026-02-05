@@ -2036,7 +2036,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
 //       ST  [.B/H/W/D ] <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //       ST  [.B/H/W/D ] <sourceReg> ","  [ <indexReg> ] "(" <baseReg> ")"
 //
-//       LDR               <targetReg> ","  [ <ofs> ] "(" <baseReg> ")"
+//       LDR               <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
 //       STC               <sourceReg> "," [ <ofs> ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
