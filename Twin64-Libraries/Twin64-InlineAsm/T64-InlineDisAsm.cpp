@@ -278,7 +278,11 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
         case ( OPC_GRP_ALU * 16 + OPC_LDO ): {
             
             int cursor = snprintf( buf, LEN_16, "LDO" );
-            cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
+            if ( extractInstrFieldU( instr, 19, 3) == 0 ) {
+                
+                cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
+            }
+            
             return ( cursor );
         }
             
