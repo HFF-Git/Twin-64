@@ -277,7 +277,7 @@ inline int extractInstrImm20( T64Instr instr ) {
 inline void depositInstrField( T64Instr *instr, int bitpos, int len, T64Word value ) {
     
     uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
-    *instr = (( *instr & ~mask ) | (( value << bitpos ) & mask ));
+    *instr = (( *instr & ~ mask ) | (( value << bitpos ) & mask ));
 }
 
 inline void depositInstrBit( T64Instr *instr, int bitpos, bool value ) {

@@ -355,10 +355,12 @@ enum InstrFlags : uint32_t {
     IM_DEP_OP   = ( IF_Z | IF_I ),
     IM_SHLxA_OP = ( IF_I ),
     IM_SHRxA_OP = ( IF_I ),
-    IM_LDI_OP   = ( IF_L | IF_R | IF_U ),
+    IM_LDI_OP   = ( IF_L | IF_M | IF_U ),
     IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_U ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
+    IM_LDR_OP   = ( IF_D | IF_U ),
+    IM_STC_OP   = ( IF_D ),
     IM_B_OP     = ( IF_G ),
     IM_BB_OP    = ( IF_T | IF_F ),
     IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE ),
@@ -850,8 +852,8 @@ void parseIdent( ) {
             if ( isdigit( currentChar )) {
                 
                 parseNum( );
-                currentToken.val &= 0x00000000FFFFFC00;
-                currentToken.val >>= 10;
+                currentToken.val &= 0x00000000FFFFF000;
+                currentToken.val >>= 12;
                 return;
             }
             else throw ( ERR_INVALID_CHAR_IN_IDENT );
@@ -1452,6 +1454,8 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
                 }
             }
         }
+
+        // ??? should each such tests bracketed by the opCode ?
         
         int cnt = 0;
         if ( instrMask & IF_B   ) cnt ++;
@@ -1478,7 +1482,7 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         
         cnt = 0;
         if ( instrMask & IF_L ) cnt ++;
-        if ( instrMask & IF_S ) cnt ++;
+        if ( instrMask & IF_M ) cnt ++;
         if ( instrMask & IF_U ) cnt ++;
         if ( cnt > 1 ) throw ( ERR_DUPLICATE_INSTR_OPT );
         
@@ -1515,7 +1519,7 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHR3A ) && ( instrMask & ~IM_SHRxA_OP )) ||
 
         (( instrOpToken == TOK_OP_LDO   ) && ( instrMask & ~IM_LDO_OP   )) ||
-        (( instrOpToken == TOK_OP_LDIL   ) && ( instrMask & ~IM_LDI_OP   )) ||
+        (( instrOpToken == TOK_OP_LDIL  ) && ( instrMask & ~IM_LDI_OP   )) ||
         (( instrOpToken == TOK_OP_ADDIL ) && ( instrMask & ~IM_NIL      )) || 
         
         (( instrOpToken == TOK_OP_ABR  ) && ( instrMask & ~IM_ABR_OP    )) ||
@@ -1524,8 +1528,8 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
 
         (( instrOpToken == TOK_OP_LD   ) && ( instrMask & ~IM_LD_OP     )) ||
         (( instrOpToken == TOK_OP_ST   ) && ( instrMask & ~IM_ST_OP     )) ||
-        (( instrOpToken == TOK_OP_LDR  ) && ( instrMask & ~IM_NIL       )) ||
-        (( instrOpToken == TOK_OP_STC  ) && ( instrMask & ~IM_NIL       )) ||
+        (( instrOpToken == TOK_OP_LDR  ) && ( instrMask & ~IM_LDR_OP    )) ||
+        (( instrOpToken == TOK_OP_STC  ) && ( instrMask & ~IM_STC_OP    )) ||
     
         (( instrOpToken == TOK_OP_B    ) && ( instrMask & ~IM_B_OP      )) ||
         (( instrOpToken == TOK_OP_BB   ) && ( instrMask & ~IM_BB_OP     )) ||
@@ -1962,6 +1966,11 @@ void parseInstrImmOp( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
+
+    if ( instrFlags & IF_L ) depositInstrFieldU( instr, 20, 2, 1 );
+    else if ( instrFlags & IF_M ) depositInstrFieldU( instr, 20, 2, 2 );
+    else if ( instrFlags & IF_U ) depositInstrFieldU( instr, 20, 2, 3 );
+
     acceptRegR( instr );
     acceptComma( );
     
@@ -1999,7 +2008,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     }
     else if ( rExpr.typ == TYP_GREG) {
 
-        if (( hasDataWidthFlags( instrFlags )) && ( ! instrFlags & IF_D )) {
+        if (( hasDataWidthFlags( instrFlags )) && ( ! ( instrFlags & IF_D ))) {
             
             throw ( ERR_INVALID_INSTR_OPT );
         }

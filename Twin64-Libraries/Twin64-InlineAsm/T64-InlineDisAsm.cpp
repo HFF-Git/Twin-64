@@ -306,10 +306,8 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
         case ( OPC_GRP_MEM * 16 + OPC_LDR ): {
             
             int cursor = snprintf( buf, LEN_16, "LDR" );
-            if ( extractInstrFieldU( instr, 19, 3) != 0 ) {
-                
-                cursor += snprintf( buf + cursor, 4, ".**" );
-            }
+            if ( extractInstrBit( instr, 20 )) 
+                cursor += snprintf( buf + cursor, 4, ".U" );
             
             return ( cursor );
         }
