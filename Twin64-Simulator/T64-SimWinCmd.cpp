@@ -2000,6 +2000,77 @@ void SimCommandsWin::redoCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// The "IF" command support conditional execution of commands. The command is 
+// perhaps most useful in a script file. We will implement a simple skip
+// forward method, reflecting the potential nesting of IFs via the call stack.
+//
+// ifCmd( evalEnabled )
+//    │
+//    ├── evaluate condition
+//    │
+//    ├── TRUE
+//    │     │
+//    │     ├── execute commands
+//    │     ├── nested if → ifCmd( true )
+//    │     └── reach else/elseif/endif
+//    │
+//    └── FALSE
+//          │
+//          └── scan forward
+//                │
+//                ├── nested if → skip nested construct
+//                ├── matching elseif → evaluate
+//                ├── matching else → execute
+//                └── matching endif → return
+//
+//
+//
+// ??? how much of the read command line / evaluate must re replicate ?
+// ??? can we generalize the existing command loop ?
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::ifCmd( bool evalEnabled ) {
+
+    bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
+    tok -> checkEOS( );
+
+    if ( res ) {
+
+        bool done = false;
+
+        do {
+
+            // ??? change command prompt to indicate a true IF branch
+            // ??? read command line. 
+            // execute commands until reaching an "ELSEIF" or "ELSE" or "ENDIF"
+
+            done = true; // ??? for now ...
+    
+        } while ( ! done );
+    }
+    else {
+
+        // ??? change command prompt to indicate a false IF branch ?
+        // ??? read command line.
+
+        // read commands until reached "ELSEIF" or "ELSE" or "ENDIF"
+        // an IF command will be called with evalEnabled = false
+
+    }
+
+    throw ( ERR_NOT_SUPPORTED );
+}
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::whileCmd( ) {
+
+    throw ( ERR_NOT_SUPPORTED );
+}
+
+//----------------------------------------------------------------------------------------
 // The "check" command is similar to the assert command. It will evaluate a 
 // boolean expression and report the outcome. In contrast to "assert" execution
 // continues after reporting the outcome.
@@ -3040,7 +3111,7 @@ void SimCommandsWin::winSetStackCmd( ) {
 // Evaluate input line. There are commands, functions, expressions and so on. 
 // This routine sets up the tokenizer and dispatches based on the first token in
 // the input line. The commands are also added to the command history, with the 
-// exception of the HITS, DO and REDOP commands.
+// exception of the HITS, DO and REDO commands.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::evalInputLine( char *cmdBuf ) {
@@ -3052,7 +3123,8 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
             tok -> setupTokenizer( cmdBuf, (SimToken *) cmdTokTab );
             tok -> nextToken( );
             
-            if (( tok -> isTokenTyp( TYP_CMD )) || ( tok -> isTokenTyp( TYP_WCMD ))) {
+            if (( tok -> isTokenTyp( TYP_CMD )) || 
+                ( tok -> isTokenTyp( TYP_WCMD ))) {
                 
                 currentCmd = tok -> tokId( );
                 tok -> nextToken( );
@@ -3062,8 +3134,8 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     ( currentCmd != CMD_REDO )) {
                     
                     hist -> addCmdLine( cmdBuf );
-                    glb -> env -> 
-                        setEnvVar((char *) ENV_CMD_CNT, (T64Word) hist -> getCmdNum( ));
+                    glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
+                                            (T64Word) hist -> getCmdNum( ));
                 }
                 
                 switch( currentCmd ) {
@@ -3081,6 +3153,9 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
                     case CMD_HIST:          histCmd( );                     break;
                     case CMD_DO:            doCmd( );                       break;
                     case CMD_REDO:          redoCmd( );                     break;
+
+                    case CMD_IF:            ifCmd( );                       break;
+                    case CMD_WHILE:         whileCmd( );                    break;
 
                     case CMD_ASSERT:        assertCheckCmd( true );         break;
                     case CMD_CHECK:         assertCheckCmd( );              break;
@@ -3155,6 +3230,22 @@ void SimCommandsWin::evalInputLine( char *cmdBuf ) {
 }
 
 //----------------------------------------------------------------------------------------
+// "executeCommand" will just execute one command line. We build the actual 
+// prompt, read the command line and then evaluate it.
+// 
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::executeCommand( ) {
+
+    char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
+    char cmdPrompt[ MAX_CMD_LINE_SIZE ];
+
+    buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
+    int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
+
+    if ( cmdLen > 0 ) evalInputLine( cmdLineBuf );
+}
+
+//----------------------------------------------------------------------------------------
 // "cmdInterpreterSetup" sets up the command line interpreter. It is called once
 // at the start of the simulator.
 //
@@ -3181,16 +3272,10 @@ void SimCommandsWin::cmdInterpreterSetup( ) {
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::cmdInterpreterLoop( ) {
-    
-    char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
-    char cmdPrompt[ MAX_CMD_LINE_SIZE ];
-
+   
     while ( true ) {
-        
-        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
-        int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-        if ( cmdLen > 0 ) evalInputLine( cmdLineBuf );
+        executeCommand( );
         glb -> winDisplay -> reDraw( );
     }
 }

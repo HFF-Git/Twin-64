@@ -669,7 +669,7 @@ struct SimExpr {
     } u;
 };
 
-const SimExpr INIT_EXPR = { .typ = TYP_NIL, .u.val = 0 };
+const SimExpr INIT_EXPR = { .typ = TYP_NIL, .u = { .val = 0 }};
 
 //----------------------------------------------------------------------------------------
 // The expression evaluator object. We use the "parseExpr" routine wherever we expect
@@ -1263,6 +1263,7 @@ private:
     int             buildCmdPrompt( char *promptStr, int promptStrLen );
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
     void            evalInputLine( char *cmdBuf );
+    void            executeCommand( );      
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
 
@@ -1296,6 +1297,9 @@ private:
     void            histCmd( );
     void            doCmd( );
     void            redoCmd( );
+
+    void            ifCmd( bool evalEnabled = true );
+    void            whileCmd( );
 
     void            assertCheckCmd( bool doExit = false );
     void            writeLogCmd( );
