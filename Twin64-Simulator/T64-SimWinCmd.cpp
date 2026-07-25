@@ -2000,6 +2000,63 @@ void SimCommandsWin::redoCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// The "IF" command implements conditional execution. We need a support method
+// for skipping a false branch while still paying attention to nested IF commands.
+// This method will read a command line, one at a time and check for IF, ELSE,
+// ELSEIF and ENDIF commands.
+//
+// ??? we cannot consume the ELSEIF ???
+// ??? what of skipCommands will return the buffer ... ???
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::skipCmdBranch( ) {
+
+    char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
+    char cmdPrompt[ MAX_CMD_LINE_SIZE ];
+    bool done = false;
+
+    do {
+
+        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
+        int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
+
+        if ( cmdLen > 0 ) {
+                
+            tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
+            tok -> nextToken( );
+                
+            if (( tok -> isTokenTyp( TYP_CMD )) || 
+                ( tok -> isTokenTyp( TYP_WCMD ))) {
+                    
+                currentCmd = tok -> tokId( );
+                tok -> nextToken( );
+                        
+                switch( currentCmd ) {
+
+                    case CMD_IF: {
+
+                        // we need to nest to match ENDIFs....
+
+                    } break;
+
+                    case CMD_ELSEIF:
+                    case CMD_ELSE: 
+                    case CMD_ENDIF: {
+
+                        // we reached end of branch
+
+                        done = true;
+
+                    } break;
+
+                    default: ;
+                }
+            }
+        }
+    } 
+    while ( ! done );
+}
+
+//----------------------------------------------------------------------------------------
 // The "IF" command support conditional execution of commands. The command is 
 // perhaps most useful in a script file. We will implement a simple skip
 // forward method, reflecting the potential nesting of IFs via the call stack.
@@ -2024,41 +2081,62 @@ void SimCommandsWin::redoCmd( ) {
 //                └── matching endif → return
 //
 //
-//
-// ??? how much of the read command line / evaluate must re replicate ?
-// ??? can we generalize the existing command loop ?
-//
+// ??? this is a lot of repeating code ... think about it ...
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::ifCmd( bool evalEnabled ) {
 
     bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
     tok -> checkEOS( );
 
-    if ( res ) {
+    char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
+    char cmdPrompt[ MAX_CMD_LINE_SIZE ];
+    bool done = false;
 
-        bool done = false;
+    throw ( ERR_NOT_SUPPORTED ); // ??? for now ...
+
+    if ( res ) {
 
         do {
 
-            // ??? change command prompt to indicate a true IF branch
-            // ??? read command line. 
-            // execute commands until reaching an "ELSEIF" or "ELSE" or "ENDIF"
+            buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt )); // ??? for true branch 
+            int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-            done = true; // ??? for now ...
+            if ( cmdLen > 0 ) {
+
+                tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
+                tok -> nextToken( );
+
+                if (( tok -> isToken( CMD_ELSEIF )) ||
+                    ( tok -> isToken( CMD_ELSE )) ||
+                    ( tok -> isToken( CMD_ENDIF ))) {
+
+                    done = true; // ??? for now ...
+                }
+                else evalInputLine( cmdLineBuf ); 
+            }
     
         } while ( ! done );
     }
     else {
 
-        // ??? change command prompt to indicate a false IF branch ?
-        // ??? read command line.
+        do {
 
-        // read commands until reached "ELSEIF" or "ELSE" or "ENDIF"
-        // an IF command will be called with evalEnabled = false
+            buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt )); // ??? for false branch 
+            int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
+            if ( cmdLen > 0 ) {
+
+                tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
+                tok -> nextToken( );
+
+                // execute commands until reaching an "ELSEIF" or "ELSE" or "ENDIF"
+                // an IF command will be called with evalEnabled = false
+
+                done = true; // ??? for now ...
+            }
+        }
+        while ( ! done );
     }
-
-    throw ( ERR_NOT_SUPPORTED );
 }
 
 //----------------------------------------------------------------------------------------

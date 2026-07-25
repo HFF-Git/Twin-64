@@ -1298,6 +1298,7 @@ private:
     void            doCmd( );
     void            redoCmd( );
 
+    void            skipCmdBranch( );
     void            ifCmd( bool evalEnabled = true );
     void            whileCmd( );
 
