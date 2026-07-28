@@ -164,9 +164,10 @@ enum SimWinType : int {
 enum SimTokTypeId : int {
 
     TYP_NIL,                    TYP_NUM,                    TYP_STR,
-    TYP_BOOL,                   TYP_SYM,                    TYP_IDENT,
-    TYP_CMD,                    TYP_WCMD,                   TYP_P_FUNC,
-    TYP_GREG,                   TYP_CREG,                   TYP_PREG
+    TYP_BOOL,                   TYP_COND,                   TYP_SYM,       
+    TYP_IDENT,                  TYP_CMD,                    TYP_WCMD,                   
+    TYP_P_FUNC,                 TYP_GREG,                   TYP_CREG,                   
+    TYP_PREG
 };
 
 //----------------------------------------------------------------------------------------
@@ -185,7 +186,7 @@ enum SimTokId : uint16_t {
     TOK_NIL,                    TOK_ERR,                    TOK_EOS,
     TOK_COMMA,                  TOK_PERIOD,                 TOK_COLON,
     TOK_LPAREN,                 TOK_RPAREN,                 TOK_LBRACK,
-    TOK_RBRACK,                 TOK_QUOTE,                  TOK_EX_MARK,
+    TOK_RBRACK,                 TOK_QUOTE,                 
     TOK_EQUAL,                  TOK_PLUS,                   TOK_MINUS,
     TOK_MULT,                   TOK_DIV,                    TOK_MOD,
     TOK_REM,                    TOK_NEG,                    TOK_AND,
@@ -228,6 +229,8 @@ enum SimTokId : uint16_t {
     CMD_MR,                     CMD_DM,                     CMD_MB,             
     CMD_MS,                     CMD_MW,                     CMD_MD,     
     CMD_DWIN,                   CMD_ECHO,                   CMD_LOG,
+    CMD_IF,                     CMD_ELSEIF,                 CMD_ELSE,
+    CMD_ENDIF,                  CMD_WHILE,                  CMD_ENDWHILE,
     
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -250,7 +253,6 @@ enum SimTokId : uint16_t {
     PF_ADD_OFS,                 PF_REGION,                  PF_OFS,
     PF_PAGE,
                         
-
     //------------------------------------------------------------------------------------
     // General, Control and PSW Register Tokens.
     //
@@ -655,7 +657,7 @@ struct SimTokenizerFromFile : public SimTokenizer {
 //
 //----------------------------------------------------------------------------------------
 struct SimExpr {
-    
+
     SimTokTypeId typ;
    
     union {
@@ -666,6 +668,8 @@ struct SimExpr {
 
     } u;
 };
+
+const SimExpr INIT_EXPR = { .typ = TYP_NIL, .u = { .val = 0 }};
 
 //----------------------------------------------------------------------------------------
 // The expression evaluator object. We use the "parseExpr" routine wherever we expect
@@ -679,27 +683,37 @@ struct SimExprEvaluator {
     SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok );
     
     void            setTokenizer( SimTokenizer *tok );
-    void            parseExpr( SimExpr *rExpr );
+    
     T64Word         acceptNumExpr( SimErrMsgId errCode, 
                                    T64Word low = INT64_MIN, 
                                    T64Word high = INT64_MAX );
 
     bool            acceptBoolExpr( SimErrMsgId errCode );
     char            *acceptStringExpr( SimErrMsgId errCode );
+    void            parseExpr( SimExpr *rExpr, bool evalEnabled = true );
     
     private:
     
-    void            parseSimpleExpr( SimExpr *rExpr );
-    void            parseTerm( SimExpr *rExpr );
-    void            parseFactor( SimExpr *rExpr );
+    void            parseOrExpr( SimExpr *rExpr, bool evalEnabled );
+    void            parseAndExpr( SimExpr *rExpr, bool evalEnabled );
+    void            parseNotExpr( SimExpr *rExpr, bool evalEnabled );
+    void            parseRelationExpr( SimExpr *rExpr, bool evalEnabled );
+    void            parseSimpleExpr( SimExpr *rExpr, bool evalEnabled );
+    void            parseTerm( SimExpr *rExpr, bool evalEnabled );
+    void            parseFactor( SimExpr *rExpr, bool evalEnabled );
+    void            parseRegister( SimExpr *rExpr, bool evalEnabled );
+    void            parseMemData( SimExpr *rExpr, bool evalEnabled );
 
-    void            parsePredefinedFunction( SimToken funcId, SimExpr *rExpr );    
-    void            pFuncAssemble( SimExpr *rExpr );
-    void            pFuncDisAssemble( SimExpr *rExpr );
-    void            pFuncAddOffset( SimExpr *rExpr );
-    void            pFuncRegion( SimExpr *rExpr );
-    void            pFuncOffset( SimExpr *rExpr );
-    void            pFuncPage( SimExpr *rExpr );  
+    void            parsePredefinedFunction( SimToken funcId, 
+                                             SimExpr *rExpr, 
+                                             bool evalEnabled );    
+
+    void            pFuncAssemble( SimExpr *rExpr, bool evalEnabled );
+    void            pFuncDisAssemble( SimExpr *rExpr, bool evalEnabled );
+    void            pFuncAddOffset( SimExpr *rExpr, bool evalEnabled );
+    void            pFuncRegion( SimExpr *rExpr, bool evalEnabled );
+    void            pFuncOffset( SimExpr *rExpr, bool evalEnabled );
+    void            pFuncPage( SimExpr *rExpr, bool evalEnabled );  
     
     SimGlobals      *glb        = nullptr;
     SimTokenizer    *tok        = nullptr;
@@ -1249,6 +1263,7 @@ private:
     int             buildCmdPrompt( char *promptStr, int promptStrLen );
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
     void            evalInputLine( char *cmdBuf );
+    void            executeCommand( );      
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
 
@@ -1282,6 +1297,10 @@ private:
     void            histCmd( );
     void            doCmd( );
     void            redoCmd( );
+
+    void            skipCmdBranch( );
+    void            ifCmd( bool evalEnabled = true );
+    void            whileCmd( );
 
     void            assertCheckCmd( bool doExit = false );
     void            writeLogCmd( );

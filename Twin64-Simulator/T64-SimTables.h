@@ -65,10 +65,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "IO",         .typ = TYP_SYM,     .tid = TOK_IO                       },
     { .name = "TEXT",       .typ = TYP_SYM,     .tid = TOK_TEXT                     },
 
-    { .name = "AND",        .typ = TYP_SYM,     .tid = TOK_AND                      },
-    { .name = "OR",         .typ = TYP_SYM,     .tid = TOK_OR                       },
-    { .name = "XOR",        .typ = TYP_SYM,     .tid = TOK_XOR                      },
-
     { .name = "&&",         .typ = TYP_SYM,     .tid = TOK_LAND                     },
     { .name = "||",         .typ = TYP_SYM,     .tid = TOK_LOR                      },
     { .name = "!",          .typ = TYP_SYM,     .tid = TOK_LNOT                     },
@@ -138,6 +134,14 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ASSERT",     .typ = TYP_CMD,     .tid = CMD_ASSERT                   },
     { .name = "CHECK",      .typ = TYP_CMD,     .tid = CMD_CHECK                    },
     { .name = "LOG",        .typ = TYP_CMD,     .tid = CMD_LOG                      },
+
+    { .name = "IF",         .typ = TYP_CMD,     .tid = CMD_IF                       },
+    { .name = "ELSEIF",     .typ = TYP_CMD,     .tid = CMD_ELSEIF                   },
+    { .name = "ELSE",       .typ = TYP_CMD,     .tid = CMD_ELSE                     },
+    { .name = "ENDIF",      .typ = TYP_CMD,     .tid = CMD_ENDIF                    },
+
+    { .name = "WHILE",      .typ = TYP_CMD,     .tid = CMD_WHILE                    },
+    { .name = "ENDWHILE",   .typ = TYP_CMD,     .tid = CMD_ENDWHILE                 },
     
     //------------------------------------------------------------------------------------
     // Window command tokens.
