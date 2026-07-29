@@ -277,9 +277,6 @@ inline int extractInstrSignedImm13( T64Instr instr ) {
 }
 
 inline int extractInstrSignedScaledImm13( T64Instr instr ) {
-
-    int tmp = extractInstrDwField( instr );
-    int tmp2 = extractInstrSignedImm13( instr );
     
     return ( extractInstrSignedImm13( instr ) << extractInstrDwField( instr ));
 }
