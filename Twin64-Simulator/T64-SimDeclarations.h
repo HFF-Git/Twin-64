@@ -1262,7 +1262,8 @@ private:
     void            printWelcome( );
     int             buildCmdPrompt( char *promptStr, int promptStrLen );
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
-    void            evalInputLine( char *cmdBuf );
+    void            processCmdLine( char *cmdBuf, bool evalEnabled = true );
+    SimTokId        peekAtInputLine( char *cmdBuf );
     void            executeCommand( );      
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
     int             promptYesNoCancel( char *promptStr );
@@ -1298,8 +1299,8 @@ private:
     void            doCmd( );
     void            redoCmd( );
 
-    void            skipCmdBranch( );
-    void            ifCmd( bool evalEnabled = true );
+    void            skipIfCmd( );
+    void            ifCmd( );
     void            whileCmd( );
 
     void            assertCheckCmd( bool doExit = false );

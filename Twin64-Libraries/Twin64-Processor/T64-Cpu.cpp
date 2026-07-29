@@ -1000,7 +1000,7 @@ void T64Cpu::instrAluBitOp( T64Instr instr ) {
             
         } break;
             
-        case 3: { 
+        case 2: { 
             
             T64Word val1    = getRegB( instr );
             T64Word val2    = getRegA( instr );
@@ -1092,7 +1092,7 @@ void T64Cpu::instrAluImmOp( T64Instr instr ) {
     
     switch ( extractInstrFieldU( instr, 20, 2 )) {
             
-        case 0: res = addAdrOfs32( res, val );              break;
+        case 0: res = addAdrOfs32( res, ( val << 12 ));     break;
         case 1: res = val << 12;                            break;
         case 2: res = depositField64( res, 32, 20, val );   break;
         case 3: res = depositField64( res, 52, 12, val );   break;

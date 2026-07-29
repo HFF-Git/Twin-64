@@ -277,6 +277,9 @@ inline int extractInstrSignedImm13( T64Instr instr ) {
 }
 
 inline int extractInstrSignedScaledImm13( T64Instr instr ) {
+
+    int tmp = extractInstrDwField( instr );
+    int tmp2 = extractInstrSignedImm13( instr );
     
     return ( extractInstrSignedImm13( instr ) << extractInstrDwField( instr ));
 }
@@ -363,7 +366,7 @@ inline void depositBit64( T64Word *arg, uint8_t bitpos, uint8_t val ) {
 }
 
 inline T64Word depositField64( T64Word word,
-                               uint8_t bitpos,
+                               int     bitpos,
                                int     len,
                                T64Word value) {
 

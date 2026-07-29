@@ -202,8 +202,8 @@ public:
 enum ControlRegId : int {
     
     CTL_REG_CPU_INFO    = 0,
-    CTL_REG_SHAMT       = 1,
-    CTL_REG_REC_CNTR    = 2,
+    CTL_REG_REC_CNTR    = 1,
+    CTL_REG_SHAMT       = 2,
     CTL_REG_RESERVED_3  = 3,
 
     CTL_REG_PID_0       = 4,

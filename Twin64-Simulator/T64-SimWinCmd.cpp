@@ -1344,7 +1344,7 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
             }
 
             removeComment( cmdLineBuf );
-            evalInputLine( cmdLineBuf );
+            processCmdLine( cmdLineBuf );
 
             cmdLineBuf[0] = '\0'; 
         }
@@ -1959,7 +1959,7 @@ void SimCommandsWin::doCmd( ) {
     
     char *cmdStr = hist -> getCmdLine( cmdId );
     
-    if ( cmdStr != nullptr ) evalInputLine( cmdStr );
+    if ( cmdStr != nullptr ) processCmdLine( cmdStr );
     else throw ( ERR_OUT_OF_HIST_BOUNDS );
 }
 
@@ -1995,7 +1995,7 @@ void SimCommandsWin::redoCmd( ) {
         
         glb -> console -> writeChars( "%s", tmpCmd );
         if ( readCmdLine( tmpCmd, (int) strlen( tmpCmd ), (char *)"" ))
-             evalInputLine( tmpCmd );
+             processCmdLine( tmpCmd );
     }
 }
 
@@ -2005,137 +2005,129 @@ void SimCommandsWin::redoCmd( ) {
 // This method will read a command line, one at a time and check for IF, ELSE,
 // ELSEIF and ENDIF commands.
 //
-// ??? we cannot consume the ELSEIF ???
-// ??? what of skipCommands will return the buffer ... ???
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::skipCmdBranch( ) {
+void SimCommandsWin::skipIfCmd( ) {
 
     char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
     char cmdPrompt[ MAX_CMD_LINE_SIZE ];
-    bool done = false;
 
-    do {
+    for ( ;; ) {
 
         buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
+
         int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-        if ( cmdLen > 0 ) {
-                
-            tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
-            tok -> nextToken( );
-                
-            if (( tok -> isTokenTyp( TYP_CMD )) || 
-                ( tok -> isTokenTyp( TYP_WCMD ))) {
-                    
-                currentCmd = tok -> tokId( );
-                tok -> nextToken( );
-                        
-                switch( currentCmd ) {
+        if ( cmdLen <= 0 )
+            continue;
 
-                    case CMD_IF: {
+        tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
+        tok -> nextToken( );
 
-                        // we need to nest to match ENDIFs....
+        if ( tok -> isToken( CMD_IF )) {
 
-                    } break;
-
-                    case CMD_ELSEIF:
-                    case CMD_ELSE: 
-                    case CMD_ENDIF: {
-
-                        // we reached end of branch
-
-                        done = true;
-
-                    } break;
-
-                    default: ;
-                }
-            }
+            // Recursively skip nested IF construct.
+            skipIfCmd( );
         }
-    } 
-    while ( ! done );
+        else if ( tok -> isToken( CMD_ENDIF )) {
+
+            return;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
-// The "IF" command support conditional execution of commands. The command is 
-// perhaps most useful in a script file. We will implement a simple skip
-// forward method, reflecting the potential nesting of IFs via the call stack.
+// The "IF" command supports conditional execution.
 //
-// ifCmd( evalEnabled )
-//    │
-//    ├── evaluate condition
-//    │
-//    ├── TRUE
-//    │     │
-//    │     ├── execute commands
-//    │     ├── nested if → ifCmd( true )
-//    │     └── reach else/elseif/endif
-//    │
-//    └── FALSE
-//          │
-//          └── scan forward
-//                │
-//                ├── nested if → skip nested construct
-//                ├── matching elseif → evaluate
-//                ├── matching else → execute
-//                └── matching endif → return
+// An IF construct consists of one or more candidate branches:
 //
+//     IF <condition>
+//         ...
+//     ELSEIF <condition>
+//         ...
+//     ELSE
+//         ...
+//     ENDIF
 //
-// ??? this is a lot of repeating code ... think about it ...
+// The first branch whose condition evaluates to true is executed. Once a branch
+// has been executed, all following ELSEIF and ELSE branches are skipped.
+//
+// Nested IF constructs are handled recursively by processCmdLine() -> ifCmd().
+// When a branch is not selected, skipIfCmd() is used to skip the complete
+// nested IF construct.
+//
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::ifCmd( bool evalEnabled ) {
+void SimCommandsWin::ifCmd( ) {
 
-    bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
+    bool branchTaken = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
     tok -> checkEOS( );
 
     char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
     char cmdPrompt[ MAX_CMD_LINE_SIZE ];
-    bool done = false;
 
-    throw ( ERR_NOT_SUPPORTED ); // ??? for now ...
+    for ( ;; ) {
 
-    if ( res ) {
+        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
 
-        do {
+        int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-            buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt )); // ??? for true branch 
-            int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
+        if ( cmdLen <= 0 )
+            continue;
 
-            if ( cmdLen > 0 ) {
+        tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
+        tok -> nextToken( );
 
-                tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
-                tok -> nextToken( );
+        //----------------------------------------------------------------------------
+        // A branch has already executed. Everything else is skipped until ENDIF.
+        //----------------------------------------------------------------------------
 
-                if (( tok -> isToken( CMD_ELSEIF )) ||
-                    ( tok -> isToken( CMD_ELSE )) ||
-                    ( tok -> isToken( CMD_ENDIF ))) {
+        if ( branchTaken ) {
 
-                    done = true; // ??? for now ...
-                }
-                else evalInputLine( cmdLineBuf ); 
+            if ( tok -> isToken( CMD_IF )) {
+
+                // Skip nested IF construct.
+                skipIfCmd( );
             }
-    
-        } while ( ! done );
-    }
-    else {
+            else if ( tok -> isToken( CMD_ENDIF )) {
 
-        do {
+                return;
+            }
 
-            buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt )); // ??? for false branch 
-            int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
+            // ELSEIF, ELSE and ordinary commands are ignored.
+            continue;
+        }
 
-            if ( cmdLen > 0 ) {
+        //----------------------------------------------------------------------------
+        // No branch has executed yet. Look for the next possible branch.
+        //----------------------------------------------------------------------------
 
-                tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
-                tok -> nextToken( );
+        if ( tok -> isToken( CMD_ELSEIF )) {
 
-                // execute commands until reaching an "ELSEIF" or "ELSE" or "ENDIF"
-                // an IF command will be called with evalEnabled = false
+            bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
+            tok -> checkEOS( );
 
-                done = true; // ??? for now ...
+            if ( res )
+                branchTaken = true;
+        }
+        else if ( tok -> isToken( CMD_ELSE )) {
+
+            tok -> checkEOS( );
+            branchTaken = true;
+        }
+        else if ( tok -> isToken( CMD_ENDIF )) {
+
+            return;
+        }
+        else {
+
+            // We are inside a false branch. Skip ordinary commands.
+            //
+            // A nested IF needs special treatment, otherwise its ENDIF
+            // could be mistaken for the ENDIF belonging to this IF.
+            if ( tok -> isToken( CMD_IF )) {
+
+                skipIfCmd( );
             }
         }
-        while ( ! done );
     }
 }
 
@@ -3186,120 +3178,135 @@ void SimCommandsWin::winSetStackCmd( ) {
 }
 
 //----------------------------------------------------------------------------------------
-// Evaluate input line. There are commands, functions, expressions and so on. 
-// This routine sets up the tokenizer and dispatches based on the first token in
-// the input line. The commands are also added to the command history, with the 
-// exception of the HITS, DO and REDO commands.
+// "peekAtInputLine" is called from the IF command handler. We need to look at
+// a command buffer to see what the command is without executing it.
 //
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::evalInputLine( char *cmdBuf ) {
+SimTokId SimCommandsWin::peekAtInputLine( char *cmdBuf ) {
+
+    if ( strlen( cmdBuf ) > 0 ) return( TOK_NIL );
+    
+    tok -> setupTokenizer( cmdBuf, (SimToken *) cmdTokTab );
+    tok -> nextToken( );
+            
+    if (( tok -> isTokenTyp( TYP_CMD )) || 
+        ( tok -> isTokenTyp( TYP_WCMD )))  return( tok -> tokId( ));
+
+    return( TOK_NIL );
+}
+
+//----------------------------------------------------------------------------------------
+// Process an input line. This routine sets up the tokenizer and dispatches 
+// based on the first token it the input line. The commands are also added to 
+// the command history, with the exception of the HITS, DO and REDO commands.
+// The evaluation enabled parameter indicates whether we should actually 
+// execute the command. This option is needed to support the command line
+// skips in an ID command false branch.
+//
+//----------------------------------------------------------------------------------------
+void SimCommandsWin::processCmdLine( char *cmdBuf, bool evalEnabed ) {
     
     try {
         
-        if ( strlen( cmdBuf ) > 0 ) {
+        if ( strlen( cmdBuf ) <= 0 ) return;
+        
+        tok -> setupTokenizer( cmdBuf, (SimToken *) cmdTokTab );
+        tok -> nextToken( );
             
-            tok -> setupTokenizer( cmdBuf, (SimToken *) cmdTokTab );
-            tok -> nextToken( );
+        if ( ! (( tok -> isTokenTyp( TYP_CMD )) || 
+                ( tok -> isTokenTyp( TYP_WCMD )))) {
+
+            hist -> addCmdLine( cmdBuf );
+            glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
+                                    (T64Word) hist -> getCmdNum( ));
+            throw ( ERR_INVALID_CMD );
+        }      
+
+        currentCmd = tok -> tokId( );
+        tok -> nextToken( );
+        
+        if (( currentCmd != CMD_HIST ) &&
+            ( currentCmd != CMD_DO ) &&
+            ( currentCmd != CMD_REDO )) {
             
-            if (( tok -> isTokenTyp( TYP_CMD )) || 
-                ( tok -> isTokenTyp( TYP_WCMD ))) {
+            hist -> addCmdLine( cmdBuf );
+            glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
+                                    (T64Word) hist -> getCmdNum( ));
+        }
+
+        switch( currentCmd ) {
                 
-                currentCmd = tok -> tokId( );
-                tok -> nextToken( );
+            case TOK_NIL:                                           break;
+            case CMD_EXIT:          exitCmd( );                     break;
                 
-                if (( currentCmd != CMD_HIST ) &&
-                    ( currentCmd != CMD_DO ) &&
-                    ( currentCmd != CMD_REDO )) {
-                    
-                    hist -> addCmdLine( cmdBuf );
-                    glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
-                                            (T64Word) hist -> getCmdNum( ));
-                }
+            case CMD_HELP:          helpCmd( );                     break;
+            case CMD_ENV:           envCmd( );                      break;
+            case CMD_XF:            execFileCmd( );                 break;
+            case CMD_LOADELF:       loadElfFileCmd( );              break;
                 
-                switch( currentCmd ) {
-                        
-                    case TOK_NIL:                                           break;
-                    case CMD_EXIT:          exitCmd( );                     break;
-                        
-                    case CMD_HELP:          helpCmd( );                     break;
-                    case CMD_ENV:           envCmd( );                      break;
-                    case CMD_XF:            execFileCmd( );                 break;
-                    case CMD_LOADELF:       loadElfFileCmd( );              break;
-                        
-                    case CMD_WRITE_LINE:    writeLineCmd( );                break;
-                        
-                    case CMD_HIST:          histCmd( );                     break;
-                    case CMD_DO:            doCmd( );                       break;
-                    case CMD_REDO:          redoCmd( );                     break;
+            case CMD_WRITE_LINE:    writeLineCmd( );                break;
+                
+            case CMD_HIST:          histCmd( );                     break;
+            case CMD_DO:            doCmd( );                       break;
+            case CMD_REDO:          redoCmd( );                     break;
 
-                    case CMD_IF:            ifCmd( );                       break;
-                    case CMD_WHILE:         whileCmd( );                    break;
+            case CMD_WHILE:         whileCmd( );                    break;
 
-                    case CMD_ASSERT:        assertCheckCmd( true );         break;
-                    case CMD_CHECK:         assertCheckCmd( );              break;
-                    case CMD_LOG:           writeLogCmd( );                 break;
-                        
-                    case CMD_RESET:         resetCmd( );                    break;
-                    case CMD_HALT:          haltCmd( );                     break;
-                    case CMD_RUN:           runCmd( );                      break;
-                    case CMD_STEP:          stepCmd( );                     break;
+            case CMD_ASSERT:        assertCheckCmd( true );         break;
+            case CMD_CHECK:         assertCheckCmd( );              break;
+            case CMD_LOG:           writeLogCmd( );                 break;
+                
+            case CMD_RESET:         resetCmd( );                    break;
+            case CMD_HALT:          haltCmd( );                     break;
+            case CMD_RUN:           runCmd( );                      break;
+            case CMD_STEP:          stepCmd( );                     break;
 
-                    case CMD_NMOD:          addModuleCmd( );                break;
-                    case CMD_RMOD:          removeModuleCmd( );             break;
-                    case CMD_DMOD:          displayModuleCmd( );            break;   
+            case CMD_NMOD:          addModuleCmd( );                break;
+            case CMD_RMOD:          removeModuleCmd( );             break;
+            case CMD_DMOD:          displayModuleCmd( );            break;   
 
-                    case CMD_DWIN:          displayWindowCmd( );            break;  
-                    case CMD_ECHO:          echoCmd( cmdBuf );              break;
+            case CMD_DWIN:          displayWindowCmd( );            break;  
+            case CMD_ECHO:          echoCmd( cmdBuf );              break;
 
-                    case CMD_MR:            modifyRegCmd( );                break;
-                        
-                    case CMD_DM:            displayMemCmd( );               break;
+            case CMD_MR:            modifyRegCmd( );                break;
+                
+            case CMD_DM:            displayMemCmd( );               break;
 
-                    case CMD_MB:
-                    case CMD_MS:
-                    case CMD_MW:
-                    case CMD_MD:            modifyMemCmd( );                break;
-                        
-                    case CMD_ITLB:          insertTLBCmd( );                break;
-                    case CMD_PTLB:          purgeTLBCmd( );                 break;
-                    
-                    case CMD_WON:           winOnCmd( );                    break;
-                    case CMD_WOFF:          winOffCmd( );                   break;
-                    case CMD_WDEF:          winDefCmd( );                   break;
-                    case CMD_WSE:           winStacksEnableCmd( true );     break;
-                    case CMD_WSD:           winStacksEnableCmd( false );    break;
-                        
-                    case CMD_WC:            winCurrentCmd( );               break;
-                    case CMD_WN:            winNewWinCmd( );                break;
-                    case CMD_WK:            winKillWinCmd( );               break;
-                    case CMD_WS:            winSetStackCmd( );              break;
-                    case CMD_WT:            winToggleCmd( );                break;
-                    case CMD_WX:            winExchangeCmd( );              break;
-                    case CMD_WL:            winSetRowsCmd( );               break;
-                    case CMD_WF:            winForwardCmd( );               break;
-                    case CMD_WB:            winBackwardCmd( );              break;
-                    case CMD_WH:            winHomeCmd( );                  break;
-                    case CMD_WJ:            winJumpCmd( );                  break;
-                    case CMD_WE:            winEnableCmd( true );           break;
-                    case CMD_WD:            winEnableCmd( false );          break;
-                    case CMD_WR:            winSetRadixCmd( );              break;   
-                    
-                    case CMD_CWL:           winSetCmdWinRowsCmd( );         break;
-                    case CMD_CWC:           winClearCmdWinCmd( );           break;
-                    
-                    default:                throw ( ERR_INVALID_CMD );
-                }
-            }
-            else {
+            case CMD_MB:
+            case CMD_MS:
+            case CMD_MW:
+            case CMD_MD:            modifyMemCmd( );                break;
+                
+            case CMD_ITLB:          insertTLBCmd( );                break;
+            case CMD_PTLB:          purgeTLBCmd( );                 break;
             
-                hist -> addCmdLine( cmdBuf );
-                glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
-                                        (T64Word) hist -> getCmdNum( ));
-                throw ( ERR_INVALID_CMD );
-            }
+            case CMD_WON:           winOnCmd( );                    break;
+            case CMD_WOFF:          winOffCmd( );                   break;
+            case CMD_WDEF:          winDefCmd( );                   break;
+            case CMD_WSE:           winStacksEnableCmd( true );     break;
+            case CMD_WSD:           winStacksEnableCmd( false );    break;
+                
+            case CMD_WC:            winCurrentCmd( );               break;
+            case CMD_WN:            winNewWinCmd( );                break;
+            case CMD_WK:            winKillWinCmd( );               break;
+            case CMD_WS:            winSetStackCmd( );              break;
+            case CMD_WT:            winToggleCmd( );                break;
+            case CMD_WX:            winExchangeCmd( );              break;
+            case CMD_WL:            winSetRowsCmd( );               break;
+            case CMD_WF:            winForwardCmd( );               break;
+            case CMD_WB:            winBackwardCmd( );              break;
+            case CMD_WH:            winHomeCmd( );                  break;
+            case CMD_WJ:            winJumpCmd( );                  break;
+            case CMD_WE:            winEnableCmd( true );           break;
+            case CMD_WD:            winEnableCmd( false );          break;
+            case CMD_WR:            winSetRadixCmd( );              break;   
+            
+            case CMD_CWL:           winSetCmdWinRowsCmd( );         break;
+            case CMD_CWC:           winClearCmdWinCmd( );           break;
+            
+            default:                throw ( ERR_INVALID_CMD );
         }
     }
-    
     catch ( SimErrMsgId errNum ) {
         
         glb -> env -> setEnvVar((char *) ENV_EXIT_CODE, (T64Word) -1 );
@@ -3320,7 +3327,7 @@ void SimCommandsWin::executeCommand( ) {
     buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
     int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-    if ( cmdLen > 0 ) evalInputLine( cmdLineBuf );
+    if ( cmdLen > 0 ) processCmdLine( cmdLineBuf );
 }
 
 //----------------------------------------------------------------------------------------

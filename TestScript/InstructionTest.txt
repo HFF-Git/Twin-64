@@ -165,9 +165,8 @@ mr ia:4,0
 s,4
 check r6:4 == 0,"Test CMP.EQ R6,R5,16383"
 
-
 xf "../TestScript/InitOperands.txt"
-
+mw 0,asm("CMP.LT R6,R5,16383")
 mr r6:4,0xffff
 mw 0,asm("CMP.LT R6,R5,16383")
 mr ia:4,0
@@ -234,10 +233,10 @@ xf "../TestScript/InitOperands.txt"
 mw 0,asm("dep r6,r4,19,4")
 mr ia:4,0
 s,4
-check r6:4 == 0x0c,"Test dep r6,r4,19,4"
+check r6:4 == 0x068_0000,"Test dep r6,r4,19,4"
 
 log "---------------"
-log "DSR  illegeal instruction"
+log "DSR"
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mw 0,asm("dsr r6,r3,r4,4")
@@ -246,7 +245,7 @@ s,4
 check r6:4 == 0x0c,"Test dsr r6,r4,r3,4"
 
 log "---------------"
-log "SHLxA  manual wrong"
+log "SHLxA"
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mw 0,asm("SHL1A r6,r2,r3")
@@ -286,7 +285,7 @@ s,4
 check r6:4 == 0x4003,"Test ADDIL R6,4"
 
 log "---------------"
-log "LDO  manual regx fehlt"
+log "LDO"
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mr r6:4,3
