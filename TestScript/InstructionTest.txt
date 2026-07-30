@@ -289,17 +289,17 @@ log "LDO"
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mr r6:4,3
-mw 0,asm("LDO.b r6,24(r2)")
+mw 0,asm("LDO r6,24(r2)")
 mr ia:4,0
 s,4
-check r6:4 == 0x218,"Test LDO.b r6,24(r2)"
+check r6:4 == r2 + 24,"Test LDO r6,24(r2)"
 
 xf "../TestScript/InitOperands.txt"
 mr r6:4,3
-mw 0,asm("LDO.w r6,24(r2)")
+mw 0,asm("LDO r6,-24(r2)")
 mr ia:4,0
 s,4
-check r6:4 == 0x5138,"Test LDO.w r6,24(r2)"
+check r6:4 == r2 - 24,"Test LDO r6,-24(r2)"
 
 log "---------------"
 log "LD" 
