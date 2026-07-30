@@ -354,7 +354,6 @@ enum InstrFlags : uint32_t {
     IM_SHLxA_OP = ( IF_I ),
     IM_SHRxA_OP = ( IF_I ),
     IM_LDIL_OP  = ( IF_L | IF_M | IF_U ),
-    IM_LDO_OP   = ( IF_B | IF_H | IF_W | IF_D ),
     IM_LD_OP    = ( IF_B | IF_H | IF_W | IF_D | IF_U ),
     IM_ST_OP    = ( IF_B | IF_H | IF_W | IF_D ),
     IM_LDR_OP   = ( IF_D | IF_U ),
@@ -533,7 +532,7 @@ const Token AsmTokTab[ ] = {
         .tid    = TOK_OP_BE,    .val = ( OPG_BR  | OPF_BE     | OPM_FLD_0 ) },
 
     {   .name   = "BR",         .typ = TYP_OP_CODE, 
-        .tid    =   TOK_OP_BR,  .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
+        .tid    = TOK_OP_BR,    .val = ( OPG_BR  | OPF_BR     | OPM_FLD_0 ) },
 
     {   .name   = "BV",         .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_BV,    .val = ( OPG_BR  | OPF_BV     | OPM_FLD_0 ) },
@@ -1528,7 +1527,6 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
 
     if ((( instrOpToken == TOK_OP_LD  ) && (( instrMask & IM_LD_OP )  == 0 )) ||
         (( instrOpToken == TOK_OP_ST  ) && (( instrMask & IM_ST_OP )  == 0 )) ||
-        (( instrOpToken == TOK_OP_LDO ) && (( instrMask & IM_LDO_OP ) == 0 )) ||
         (( instrOpToken == TOK_OP_LDR )                                     ) ||
         (( instrOpToken == TOK_OP_STC )                                     )) {
             
@@ -1553,9 +1551,9 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_SHR2A ) && ( instrMask & ~IM_SHRxA_OP )) ||
         (( instrOpToken == TOK_OP_SHR3A ) && ( instrMask & ~IM_SHRxA_OP )) ||
 
-        (( instrOpToken == TOK_OP_LDO   ) && ( instrMask & ~IM_LDO_OP   )) ||
         (( instrOpToken == TOK_OP_LDIL  ) && ( instrMask & ~IM_LDIL_OP  )) ||
         (( instrOpToken == TOK_OP_ADDIL ) && ( instrMask & ~IM_NIL      )) || 
+         (( instrOpToken == TOK_OP_LDO  ) && ( instrMask & ~IM_NIL      )) ||
         
         (( instrOpToken == TOK_OP_ABR  ) && ( instrMask & ~IM_ABR_OP    )) ||
         (( instrOpToken == TOK_OP_CBR  ) && ( instrMask & ~IM_CBR_OP    )) ||
@@ -2121,7 +2119,7 @@ void parseInstrADDIL( uint32_t *instr, uint32_t instrOpToken ) {
 // result in "R". Like the MemOp family, the LDO instruction has a dataWidth 
 // field.
 //
-//      LDO [.B/H/W/D] <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
+//      LDO <targetReg> "," [ <ofs> ] "(" <baseReg> ")"
 //      LDO <targetReg> "," [ <indexReg> ] "(" <baseReg> ")"
 //
 //----------------------------------------------------------------------------------------
@@ -2132,15 +2130,13 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-    setInstrDwField( instr, instrFlags );
     acceptRegR( instr );
     acceptComma( );
 
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
-        
-            checkOfsAlignment( rExpr.val, instrFlags );
-            depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
+    
+        depositInstrImm15( instr, (uint32_t) rExpr.val );
     }
     else if ( rExpr.typ == TYP_GREG) {
 
@@ -2153,7 +2149,7 @@ void parseInstrLDO( uint32_t *instr, uint32_t instrOpToken ) {
         depositInstrBit( instr, 19, true );
         depositInstrRegA( instr, (uint32_t) rExpr.val );
     }
-    else depositInstrScaledImm13( instr, 0 );
+    else depositInstrImm15( instr, 0 );
     
     acceptLparen( );
     acceptRegB( instr );

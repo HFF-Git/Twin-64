@@ -280,13 +280,7 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
             
         case ( OPC_GRP_ALU * 16 + OPC_LDO ): {
             
-            int cursor = snprintf( buf, LEN_16, "LDO" );
-            if ( extractInstrFieldU( instr, 19, 3 ) == 0 ) {
-                
-                cursor += printDwField( buf + cursor, extractInstrDwField( instr ));
-            }
-            
-            return ( cursor );
+            return( snprintf( buf, LEN_16, "LDO" ));
         }
             
         case ( OPC_GRP_MEM * 16 + OPC_LD ): {
@@ -711,7 +705,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
                 
                 return ( snprintf( buf, LEN_32, "R%d,%d(R%d)",
                                    extractInstrRegR( instr ),
-                                   extractInstrSignedScaledImm13( instr ),
+                                   extractInstrSignedImm15( instr ),
                                    extractInstrRegB( instr )));
             }
             else if ( extractInstrFieldU( instr, 19, 3 ) == 1 ) {
