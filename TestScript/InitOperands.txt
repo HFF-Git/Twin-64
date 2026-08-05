@@ -1,15 +1,17 @@
+##########################################
 # load registers for instruction tests
 ########################################
 reset all
-mr r1:4, 0x00
-mr r2:4, 512
-mr r3:4, 20
-mr r4:4, 0xaaaabbbbccccdddd
-mr r5:4, 0x7fff
+mr r1:CPU_MOD_NUM, 0x00
+mr r2:CPU_MOD_NUM, 512
+mr r3:CPU_MOD_NUM, 20
+mr r4:CPU_MOD_NUM, 0xaaaabbbbccccdddd
+mr r5:CPU_MOD_NUM, 0x7fff
+mr R6:CPU_MOD_NUM, 0
 
+##########################################
 # load memory location for instruction test
 ##########################################
-
 mw 20,0x30
 mw 24,1024
 mw 28,0x3333_4444

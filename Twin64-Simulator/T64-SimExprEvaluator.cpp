@@ -365,10 +365,7 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
     if ( tok -> isToken( TOK_COLON )) {
 
         tok -> nextToken( );
-        if ( tok -> isTokenTyp( TYP_NUM )) modNum = tok -> tokVal( );
-        else throw( ERR_EXPECTED_NUM_VALUE ); 
-
-        tok -> nextToken( );
+        modNum = acceptNumExpr( ERR_EXPECTED_NUM_VALUE, 0, INT32_MAX );
     }
     else modNum = glb -> winDisplay -> getCurrentWinModNum( );
         
@@ -479,7 +476,6 @@ void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
 //                  "~" <factor>                    |
 //                  "(" <expr> ")"
 //
-// ??? how to handle skipEval and negated ?
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseFactor( SimExpr *rExpr, bool evalEnabled ) {
 
@@ -534,7 +530,7 @@ void SimExprEvaluator::parseFactor( SimExpr *rExpr, bool evalEnabled ) {
         if ( tok -> isToken( TOK_RPAREN )) tok -> nextToken( );
         else throw ( ERR_EXPECTED_RPAREN );
     }
-     else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
+    else if ( tok -> isTokenTyp( TYP_P_FUNC )) {
 
         parsePredefinedFunction( tok -> token( ), rExpr, evalEnabled );
     }

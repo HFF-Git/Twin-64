@@ -820,7 +820,7 @@ void SimCommandsWin::configureT64Log( ) {
 
         rtrim( glb -> logFileName );
 
-        glb -> logFile = fopen( glb -> logFileName, "w" );
+        glb -> logFile = fopen( glb -> logFileName, "w+" );
         if ( glb -> logFile == nullptr ) {
 
             if ( glb -> console -> isConsole( )) {
@@ -3219,6 +3219,8 @@ void SimCommandsWin::processCmdLine( char *cmdBuf, bool evalEnabed ) {
             hist -> addCmdLine( cmdBuf );
             glb -> env -> setEnvVar((char *) ENV_CMD_CNT, 
                                     (T64Word) hist -> getCmdNum( ));
+
+            glb ->console -> writeChars( "Invalid command: %s\n", cmdBuf );
             throw ( ERR_INVALID_CMD );
         }      
 
@@ -3304,7 +3306,11 @@ void SimCommandsWin::processCmdLine( char *cmdBuf, bool evalEnabed ) {
             case CMD_CWL:           winSetCmdWinRowsCmd( );         break;
             case CMD_CWC:           winClearCmdWinCmd( );           break;
             
-            default:                throw ( ERR_INVALID_CMD );
+            default:                {
+                
+                glb ->console -> writeChars( "Invalid command: %s\n", cmdBuf );
+                throw ( ERR_INVALID_CMD );
+            } break;
         }
     }
     catch ( SimErrMsgId errNum ) {

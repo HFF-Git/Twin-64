@@ -1114,7 +1114,7 @@ void T64Cpu::instrAluLdoOp( T64Instr instr ) {
 
     switch ( extractInstrFieldU( instr, 19, 3 )) {
 
-        case 0: ofs = extractInstrSignedScaledImm13( instr ); break;
+        case 0: ofs = extractInstrSignedImm15( instr ); break;
         case 1: {
             
             if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );
