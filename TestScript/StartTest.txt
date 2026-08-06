@@ -14,6 +14,7 @@ log "Test TWIN64 instructions"
 # CPU module number
 ############################################
 env CPU_MOD_NUM, 4
+env IVA_ADR, 0x1000
 
 ############################################
 # Test scripts
