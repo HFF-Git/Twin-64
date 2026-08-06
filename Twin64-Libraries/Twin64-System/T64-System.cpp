@@ -439,111 +439,104 @@ void T64System::run( ) {
 // The module can react to the bus event and return true if it has handled the 
 // event, or false if it has not handled the event. 
 //
+// For supporting the LDR/STC instruction, we need to support a bus read 
+// reserved operation. In this case, we lock the access, read the data and
+// set the reservation info in the calling processor module.
+//
 //----------------------------------------------------------------------------------------
-bool T64System::busOpRead( T64Module *mod, T64Word pAdr, uint8_t *data, int len ) {
+bool T64System::busOpRead( T64Module *mod, 
+                           T64Word pAdr, 
+                           uint8_t *data, 
+                           int len,
+                           bool rsv ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return( false );
 
-    return ( mPtr -> busOpReadEvent( pAdr, data, len ));
-}
+    if ( rsv ) {
 
-//----------------------------------------------------------------------------------------
-// Bus read and reserve operation. The LDR instruction implements our foundation
-// for mutexes, semaphores, etc. A bus read reserved operation will just as the 
-// normal read operation read the data value, and also remember the address 
-// used. The operation needs to be protected by a mutex, as we potentially run 
-// several processors.
-//
-//----------------------------------------------------------------------------------------
-bool T64System::busOpReadRsv( T64Module *mod, 
-                              T64Word pAdr, 
-                              uint8_t *data, 
-                              int len ) {
+        { 
+            std::lock_guard<std::mutex> lk(sLock);
 
-    {
-        std::lock_guard<std::mutex> lk(sLock);
+            if ( ! mPtr -> busOpReadEvent( pAdr, data, len )) return( false );
 
-        if (dynamic_cast<T64ProcThreadModule*>( mod )) {
+            if (dynamic_cast<T64ProcThreadModule*>( mod )) {
 
-           (( T64ProcThreadModule *) mod ) -> setRsvInfo( pAdr, true );
+                (( T64ProcThreadModule *) mod ) -> setRsvInfo( pAdr, true );
+            }
+
+             return ( true );
         }
     }
-
-    return ( true );
+    else return ( mPtr -> busOpReadEvent( pAdr, data, len ));
 }
 
 //----------------------------------------------------------------------------------------
 // Bus write operation. The system is the dispatcher for bus operations. We look
 // up the module that covers the address and call the module's bus event handler.
-// Since the write operation could potentially address a location used by a 
-// LDR/STC instruction, we need to synchronize access and if there is an address
-// match clear the reservation.
+//
+// The cond parameter indicates whether the write operation is conditional.
+// A conditional write operation is used by the STC instruction. In this case, 
+// we need to check whether the calling module is a processor and has a valid 
+// reservation for the address. 
+//
+// If the reservation is valid, we clear the reservation and perform the write
+// operation. If the reservation is not valid, we do not perform the write
+// operation. The return value indicates whether the write operation was
+// performed or not.
+//
+// For normal write operations, we just perform the write operation and clear
+// any reservation for the address.
 //
 //----------------------------------------------------------------------------------------
-bool T64System::busOpWrite( T64Module *mod, T64Word pAdr, uint8_t *data, int len ) {
+bool T64System::busOpWrite( T64Module *mod, 
+                            T64Word pAdr, 
+                            uint8_t *data, 
+                            int len, 
+                            bool cond ) {
+
+    bool rStat = false;
 
     T64Module *mPtr = lookupByAdr( pAdr );
     if ( mPtr == nullptr ) return ( false );
 
-    bool rStat;
-
     {
         std::lock_guard<std::mutex> lk(sLock);
-        rStat = mPtr -> busOpWriteEvent( pAdr, data, len );
+
+        if ( cond ) {
+
+            if ( auto p = dynamic_cast<T64ProcThreadModule*>( mod )) {
+
+                if ( p -> getRsvInfo( ) == pAdr ) {
+
+                    if (  p -> isRsvValid( )) {
+
+                        p -> setRsvInfo( pAdr, false );
+                        rStat = mPtr -> busOpWriteEvent( pAdr, data, len );
+                    }
+                    else rStat = false;
+                }
+                else {
+
+                    rStat = mPtr -> busOpWriteEvent( pAdr, data, len );
+                }
+            }
+        }
+        else rStat = mPtr -> busOpWriteEvent( pAdr, data, len );
 
         for ( int i = 0; i < systemProcMapHwm; i ++ ) {
 
             if ( auto p = dynamic_cast<T64ProcThreadModule*>( systemProcMap[ i ] )) {
 
-                if (( p -> isRsvValid( )) && ( p -> getRsvInfo( ) == pAdr )) {
+                if ( p -> getRsvInfo( ) == pAdr ) {
 
                     p -> setRsvInfo( pAdr, false );
                 }
             }
         }
+
+        return ( rStat );
     }
-
-    return ( rStat );
-}
-
-//----------------------------------------------------------------------------------------
-// Bus write conditional operation.This bus operation is only used by the STC 
-// instruction. 
-//
-//----------------------------------------------------------------------------------------
-bool T64System::busOpWriteCond( T64Module *mod,
-                                T64Word pAdr, 
-                                uint8_t *data, 
-                                int     len ) {
-
-    T64Module *mPtr = lookupByAdr( pAdr );
-    if ( mPtr == nullptr ) return ( false );
-
-    bool rStat = false;
-
-    {
-        std::lock_guard<std::mutex> lk(sLock);
-
-        if ( auto p = dynamic_cast<T64ProcThreadModule*>( mPtr )) {
-
-            if (( p -> isRsvValid( )) && ( p -> getRsvInfo( ) == pAdr )) {
-
-                rStat = mPtr -> busOpWriteEvent( pAdr, data, len );
-                rStat = true;
-            }
-        }
-
-        for ( int i = 0; i < systemProcMapHwm; i ++ ) {
-
-            if ( systemProcMap[ i ] != mod ) {
-                
-                busOpControl( mod, T64_CNTRL_EVENT_STORE_OP, pAdr, 0 );
-            }
-        }
-    }
-
-    return ( rStat );
 }
 
 //----------------------------------------------------------------------------------------

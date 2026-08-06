@@ -482,24 +482,14 @@ bool T64Processor::handleControlEvent( T64BBusOpControlEvents event,
 // purge and so on.
 //
 //----------------------------------------------------------------------------------------
-bool T64Processor::busOpRead( T64Word adr, uint8_t *data, int len ) {
+bool T64Processor::busOpRead( T64Word adr, uint8_t *data, int len, bool rsv ) {
 
     return( sys -> busOpRead( this, adr, data, len ));
 }
 
-bool T64Processor::busOpReadRsv( T64Word adr, uint8_t *data, int len ) {
+bool T64Processor::busOpWrite( T64Word adr, uint8_t *data, int len, bool cond ) {
 
-    return( sys -> busOpReadRsv( this, adr, data, len ));
-}
-
-bool T64Processor::busOpWrite( T64Word adr, uint8_t *data, int len ) {
-
-    return( sys -> busOpWrite( this, adr, data, len ));
-}
-
-bool T64Processor::busOpWriteCond( T64Word adr, uint8_t *data, int len ) {
-
-    return( sys -> busOpWriteCond( this, adr, data, len ));
+    return( sys -> busOpWrite( this, adr, data, len, cond ));
 }
 
 bool T64Processor::busOpControl( T64BBusOpControlEvents id, 

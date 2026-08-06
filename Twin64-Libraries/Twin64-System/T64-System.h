@@ -267,7 +267,8 @@ struct T64System {
     bool                busOpRead(  T64Module *mod, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len );
+                                    int len,
+                                    bool rsv = false );
 
     bool                busOpReadRsv( T64Module *mod, 
                                       T64Word pAdr, 
@@ -277,12 +278,8 @@ struct T64System {
     bool                busOpWrite( T64Module *mod, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len );
-
-    bool                busOpWriteCond( T64Module *mod,
-                                        T64Word pAdr, 
-                                        uint8_t *data, 
-                                        int     len );    
+                                    int len,
+                                    bool cond = false );
 
     bool                busOpControl( T64Module *mod,
                                       T64BBusOpControlEvents event,

@@ -301,10 +301,8 @@ struct T64Processor : T64ProcThreadModule {
     void            resetModule( ) override;
     T64TrapCode     executeUnit( ) override;
 
-    bool            busOpRead( T64Word adr, uint8_t *data, int len );
-    bool            busOpReadRsv( T64Word adr, uint8_t *data, int len );
-    bool            busOpWrite( T64Word adr, uint8_t *data, int len );
-    bool            busOpWriteCond( T64Word adr, uint8_t *data, int len );
+    bool            busOpRead( T64Word adr, uint8_t *data, int len, bool rsv );
+    bool            busOpWrite( T64Word adr, uint8_t *data, int len, bool cond = false );
 
     bool            busOpControl( T64BBusOpControlEvents id, 
                                   T64Word            arg1, 

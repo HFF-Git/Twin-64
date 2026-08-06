@@ -404,7 +404,7 @@ T64Word T64Cpu::instrRead( T64Word vAdr ) {
         instrAccCheck( vAdr, instrTlbInfo );      
     }
 
-    if ( ! proc -> busOpRead( pAdr, (uint8_t *) &instr, 4 )) {
+    if ( ! proc -> busOpRead( pAdr, (uint8_t *) &instr, 4, false )) {
 
             machineCheckTrap( vAdr );
     }  
@@ -451,20 +451,9 @@ T64Word T64Cpu::dataRead( T64Word vAdr, int len, bool sExt, bool rsv ) {
         dataReadAccCheck( vAdr, tlbInfo );      
     }
 
-    if ( rsv ) {
+    if ( ! proc -> busOpRead( pAdr, ((uint8_t *) &data ), len, rsv )) {
 
-        if ( ! proc -> busOpReadRsv( pAdr, ((uint8_t *) &data ), len )) {
-
-            machineCheckTrap( pAdr );
-        }
-    }
-    else {
-           
-        if ( ! proc -> busOpRead( pAdr, ((uint8_t *) &data ), len )) {
-
-            machineCheckTrap( pAdr );
-        }
-
+        machineCheckTrap( pAdr );
     }
 
     copyEndianAware(((uint8_t *) &data ), ((uint8_t *) &data ), len );
@@ -521,19 +510,9 @@ bool T64Cpu::dataWrite( T64Word vAdr, T64Word data, int len, bool cond ) {
         dataWriteAccCheck( vAdr, tlbInfo ); 
     }
 
-    if ( cond ) {
+    if ( ! proc -> busOpWrite( pAdr, ((uint8_t *) &data ), len, cond )) {
 
-        if ( ! proc -> busOpWriteCond( pAdr, ((uint8_t *) &data ), len )) {
-
-            machineCheckTrap( pAdr );
-        }
-    }
-    else {
-
-        if ( ! proc -> busOpWrite( pAdr, ((uint8_t *) &data ), len )) {
-
-            machineCheckTrap( pAdr );
-        }
+        machineCheckTrap( pAdr );
     }
 
     return( true );
@@ -1156,7 +1135,6 @@ void T64Cpu::instrMemLdOp( T64Instr instr ) {
 // the address. It will set a reservation valid flag, encoded in bit 63 of 
 // the reserved register.
 //
-// ??? enforce an alignment larger than 8 bytes ?
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemLdrOp( T64Instr instr ) {
 
@@ -1203,7 +1181,6 @@ void T64Cpu::instrMemStOp( T64Instr instr ) {
 // it against the reserved register data. We pass the cond flag to indicate
 // that we do a conditional store bus operation.
 //
-// ??? enforce an alignment larger than 8 bytes ? 
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrMemStcOp( T64Instr instr ) {
 
