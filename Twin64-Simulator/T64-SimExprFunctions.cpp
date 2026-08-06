@@ -39,6 +39,8 @@ namespace {
 //  ASSEMBLE "(" <str> ")"
 //  ASM "(" <str> ")"
 // 
+// ??? how can we get the detailed error messages to the user ?
+//
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr, bool evalEnabled ) {
     
@@ -231,7 +233,6 @@ void SimExprEvaluator::pFuncOffset( SimExpr *rExpr, bool evalEnabled ) {
 //----------------------------------------------------------------------------------------
 // Page function. We take the value and return the virtual page portion.
 //
-// ??? skipEval ?
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::pFuncPage( SimExpr *rExpr, bool evalEnabled ) {
     

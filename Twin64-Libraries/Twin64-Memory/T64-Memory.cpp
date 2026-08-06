@@ -30,6 +30,21 @@
 //----------------------------------------------------------------------------------------
 #include "T64-Memory.h"
 
+// ??? we need a mechanism for the LDR/STC instructions. Since we do not have a
+// cache, we need to have a way to check a reservation address whether it
+// is still valid. We can do this by having a reservation address and a reservation
+// flag. 
+
+// ??? the issue is in contrast to a cache line, that memory can be quite large.
+// What is a good way to divided the memory range into smaller chunks, so that we
+// can check whether a reservation is still valid. ????
+
+// ??? as an alternative, we could have a reservation address and a flag for 
+// each processor accessing this memory. This would limit the number of entries
+// to the number of processors, which can be checked easy and quick. 
+
+// ??? to think about...
+
 //****************************************************************************************
 //****************************************************************************************
 //
