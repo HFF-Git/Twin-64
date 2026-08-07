@@ -1,7 +1,22 @@
 ##########################################
-# load registers for instruction tests
-########################################
+# reset
+##########################################
 reset all
+
+##########################################
+# Setup TLB entries
+##########################################
+itlb CODE_REG_1, U_X_4K  | 0x00_0010_0000
+itlb CODE_REG_2, P_R_4K  | 0x00_0020_0000
+
+itlb DATA_REG_1, U_R_4K  | 0x00_0030_0000
+itlb DATA_REG_2, U_RW_4K | 0x00_0040_0000
+itlb DATA_REG_3, P_R_4K  | 0x00_0050_0000
+itlb DATA_REG_4, P_RW_4K | 0x00_0060_0000
+
+##########################################
+# load registers for instruction tests
+##########################################
 mr r1:CPU_MOD_NUM, 0x00
 mr r2:CPU_MOD_NUM, 512
 mr r3:CPU_MOD_NUM, 20
