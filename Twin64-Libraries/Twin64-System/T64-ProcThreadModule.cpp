@@ -130,7 +130,7 @@ void T64ProcThreadModule::setRsvInfo( T64Word pAdr, bool valid ) {
     rsvValid = valid;
 }
     
-T64Word T64ProcThreadModule::getRsvInfo( ) {
+T64Word T64ProcThreadModule::getRsvAdr( ) {
 
     return( rsvInfo );
 }

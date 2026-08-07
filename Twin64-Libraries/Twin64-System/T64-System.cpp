@@ -507,7 +507,7 @@ bool T64System::busOpWrite( T64Module *mod,
 
             if ( auto p = dynamic_cast<T64ProcThreadModule*>( mod )) {
 
-                if ( p -> getRsvInfo( ) == pAdr ) {
+                if ( p -> getRsvAdr( ) == pAdr ) {
 
                     if (  p -> isRsvValid( )) {
 
@@ -528,7 +528,7 @@ bool T64System::busOpWrite( T64Module *mod,
 
             if ( auto p = dynamic_cast<T64ProcThreadModule*>( systemProcMap[ i ] )) {
 
-                if ( p -> getRsvInfo( ) == pAdr ) {
+                if ( p -> getRsvAdr( ) == pAdr ) {
 
                     p -> setRsvInfo( pAdr, false );
                 }

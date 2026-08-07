@@ -453,7 +453,7 @@ bool T64Processor::handleControlEvent( T64BBusOpControlEvents event,
 
         case T64_CNTRL_EVENT_STORE_OP: {
 
-            if ( getRsvInfo( ) == arg1 ) setRsvInfo( arg1, false );
+            if ( getRsvAdr( ) == arg1 ) setRsvInfo( arg1, false );
             return( true );
 
         } break;

@@ -200,7 +200,7 @@ struct T64ProcThreadModule : T64Module {
     void                    setEnterSimOnTrap( bool val );
   
     void                    setRsvInfo( T64Word pAdr, bool valid );
-    T64Word                 getRsvInfo( );
+    T64Word                 getRsvAdr( );
     bool                    isRsvValid( );
 
     private: 
