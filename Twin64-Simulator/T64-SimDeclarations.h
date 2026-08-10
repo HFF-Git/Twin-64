@@ -230,7 +230,7 @@ enum SimTokId : uint16_t {
     CMD_MS,                     CMD_MW,                     CMD_MD,     
     CMD_DWIN,                   CMD_ECHO,                   CMD_LOG,
     CMD_IF,                     CMD_ELSEIF,                 CMD_ELSE,
-    CMD_ENDIF,                  CMD_WHILE,                  CMD_ENDWHILE,
+    CMD_ENDIF,                  
     
     //------------------------------------------------------------------------------------
     // Window Commands Tokens.
@@ -822,6 +822,10 @@ struct SimCmdHistory {
     
     SimCmdHistory( );
     
+    void enableHistory( bool enable );
+    void disableHistory( );
+    bool isHistoryEnabled( );
+    
     void addCmdLine( const char *cmdStr );
     char *getCmdLine( int cmdRef, int *cmdId = nullptr );
     int  getCmdCount( );
@@ -829,6 +833,7 @@ struct SimCmdHistory {
    
     private:
     
+    bool historyEnabled     = true;
     int nextCmdNum          = 0;
     int head                = 0;
     int tail                = 0;
@@ -1260,9 +1265,9 @@ public:
 private:
     
     void            printWelcome( );
-    int             buildCmdPrompt( char *promptStr, int promptStrLen );
+    int             buildCmdPrompt( char *promptStr, int promptStrLen, char prefix = ' ' );
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
-    void            processCmdLine( char *cmdBuf, bool evalEnabled = true );
+    void            processCmdLine( char *cmdBuf );
     SimTokId        peekAtInputLine( char *cmdBuf );
     void            executeCommand( );      
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
@@ -1301,8 +1306,7 @@ private:
 
     void            skipIfCmd( );
     void            ifCmd( );
-    void            whileCmd( );
-
+   
     void            assertCheckCmd( bool doExit = false );
     void            writeLogCmd( );
     

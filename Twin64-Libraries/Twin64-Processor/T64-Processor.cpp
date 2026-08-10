@@ -460,7 +460,11 @@ bool T64Processor::handleControlEvent( T64BBusOpControlEvents event,
 
         case T64_CNTRL_EVENT_MODULE_PURGE: {
 
-            if ( arg1 == globalTlb -> getModuleNum( )) globalTlb = nullptr;  
+            if (( globalTlb != nullptr ) && 
+                ( arg1 == globalTlb -> getModuleNum( ))) {
+
+                globalTlb = nullptr;
+            }
 
         } break;
 

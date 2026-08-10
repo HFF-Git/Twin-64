@@ -321,11 +321,33 @@ SimCmdHistory::SimCmdHistory( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Enable or disable command history. When disabled, no commands are added to the
+// history stack. When enabled, commands are added to the history stack. The
+// history stack is a circular buffer, so when the stack is full, the oldest
+// command is removed to make room for the new command. We will use this feature
+// when executing commands from a script file. We do not want to fill the history
+// stack with commands from a script file, as it would fill the history stack with
+// commands that are not useful for the user.
+//
+//----------------------------------------------------------------------------------------
+void SimCmdHistory::enableHistory( bool enable ) {
+
+    historyEnabled = enable;
+}
+    
+bool SimCmdHistory::isHistoryEnabled( ) {
+
+    return ( historyEnabled );
+}
+
+//----------------------------------------------------------------------------------------
 // Add a command line. If the history buffer is full, the oldest entry is re-used. 
 // The head index points to the next entry for allocation.
 //
 //----------------------------------------------------------------------------------------
 void SimCmdHistory::addCmdLine( const char *cmdStr ) {
+
+    if ( ! historyEnabled ) return;
     
     SimCmdHistEntry *ptr = &history[ head ];
     
@@ -551,7 +573,9 @@ void SimCommandsWin::clearCmdWin( ) {
 // cursor at the input line, right after the prompt string.
 //
 //----------------------------------------------------------------------------------------
-int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promptBuf ) {
+int SimCommandsWin::readCmdLine( char *cmdBuf, 
+                                 int initialCmdBufLen, 
+                                 char *promptBuf ) {
     
     enum CharType : uint16_t { 
         
@@ -576,7 +600,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf, int initialCmdBufLen, char *promp
         cmdBufLen                   = initialCmdBufLen;
         cmdBufCursor                = initialCmdBufLen;
 
-        glb->console->writeChars("\r %s%s", promptBuf, cmdBuf);
+        glb -> console -> writeChars("\r %s%s", promptBuf, cmdBuf);
         setWinCursor(0, 1 + promptBufLen + cmdBufCursor);
     }
     else cmdBuf[ 0 ] = '\0';
@@ -959,15 +983,29 @@ void SimCommandsWin::printWelcome( ) {
 // "promptCmdLine" lists out the prompt string.
 //
 //----------------------------------------------------------------------------------------
-int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen ) {
-    
-    if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
-            
+int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char prefix ) {
+
+    if ( prefix == ' ' ) {
+
+        if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
+ 
         return ( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
                            (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
         }
-    else return ( snprintf( promptStr, promptStrLen, "->" ));
+        else return ( snprintf( promptStr, promptStrLen, "->", prefix ));
+    }
+    else {
+
+         if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
+ 
+        return ( snprintf( promptStr, promptStrLen,
+                           "%c(%i) ->",
+                           prefix,
+                           (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
+        }
+        else return ( snprintf( promptStr, promptStrLen, "%c->", prefix ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1301,6 +1339,8 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
 
     try {
 
+        hist -> enableHistory( false );
+
         if ( strlen( fileName ) == 0 ) throw( ERR_EXPECTED_FILE_NAME );
 
         rtrim( fileName );
@@ -1350,9 +1390,12 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
         }
 
         fclose( f );
+
+        hist -> enableHistory( true );
     }
     catch ( SimErrMsgId errNum ) {
 
+        hist -> enableHistory( true );
         throw;
     }
 }
@@ -2013,25 +2056,17 @@ void SimCommandsWin::skipIfCmd( ) {
 
     for ( ;; ) {
 
-        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
+        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ), 'F');
 
         int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-        if ( cmdLen <= 0 )
-            continue;
+        if ( cmdLen <= 0 )  continue;
 
         tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
         tok -> nextToken( );
 
-        if ( tok -> isToken( CMD_IF )) {
-
-            // Recursively skip nested IF construct.
-            skipIfCmd( );
-        }
-        else if ( tok -> isToken( CMD_ENDIF )) {
-
-            return;
-        }
+        if      ( tok -> isToken( CMD_IF ))     skipIfCmd( );
+        else if ( tok -> isToken( CMD_ENDIF ))  return;
     }
 }
 
@@ -2051,9 +2086,8 @@ void SimCommandsWin::skipIfCmd( ) {
 // The first branch whose condition evaluates to true is executed. Once a branch
 // has been executed, all following ELSEIF and ELSE branches are skipped.
 //
-// Nested IF constructs are handled recursively by processCmdLine() -> ifCmd().
-// When a branch is not selected, skipIfCmd() is used to skip the complete
-// nested IF construct.
+// The routine is a bit of the outer command interpreter loop in itself. So, 
+// we have to read command lines, tokenize them and also redraw the screen.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::ifCmd( ) {
@@ -2063,81 +2097,109 @@ void SimCommandsWin::ifCmd( ) {
 
     char cmdLineBuf[ MAX_CMD_LINE_SIZE ];
     char cmdPrompt[ MAX_CMD_LINE_SIZE ];
+    char prefixChar = branchTaken ? 'T' : 'F';
 
     for ( ;; ) {
 
-        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ));
+        buildCmdPrompt( cmdPrompt, sizeof( cmdPrompt ), prefixChar );
 
         int cmdLen = readCmdLine( cmdLineBuf, 0, cmdPrompt );
 
-        if ( cmdLen <= 0 )
-            continue;
+        if ( cmdLen <= 0 ) {
 
+            glb -> winDisplay -> reDraw( );
+            continue;
+        }
+            
         tok -> setupTokenizer( cmdLineBuf, (SimToken *) cmdTokTab );
         tok -> nextToken( );
 
-        //----------------------------------------------------------------------------
-        // A branch has already executed. Everything else is skipped until ENDIF.
-        //----------------------------------------------------------------------------
-
         if ( branchTaken ) {
 
-            if ( tok -> isToken( CMD_IF )) {
+            //----------------------------------------------------------------------------
+            // We are executing the selected branch.
+            //----------------------------------------------------------------------------
+            if ( tok -> isToken( CMD_ENDIF )) {
 
-                // Skip nested IF construct.
-                skipIfCmd( );
-            }
-            else if ( tok -> isToken( CMD_ENDIF )) {
-
+                tok -> nextToken( );
+                tok -> checkEOS( );
                 return;
             }
+            else if ( tok -> isToken( CMD_ELSEIF ) ||
+                 tok -> isToken( CMD_ELSE )) {
 
-            // ELSEIF, ELSE and ordinary commands are ignored.
-            continue;
-        }
+                // A branch has already been executed. No following branch
+                // can be selected. Skip everything up to the matching ENDIF.
 
-        //----------------------------------------------------------------------------
-        // No branch has executed yet. Look for the next possible branch.
-        //----------------------------------------------------------------------------
+                skipIfCmd( );
+                return;
+            }
+            else {
 
-        if ( tok -> isToken( CMD_ELSEIF )) {
+                // Ordinary command, including a nested IF.
+                // processCmdLine() will recursively call ifCmd() if this is
+                // a nested IF.
 
-            bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
-            tok -> checkEOS( );
-
-            if ( res )
-                branchTaken = true;
-        }
-        else if ( tok -> isToken( CMD_ELSE )) {
-
-            tok -> checkEOS( );
-            branchTaken = true;
-        }
-        else if ( tok -> isToken( CMD_ENDIF )) {
-
-            return;
+                processCmdLine( cmdLineBuf );
+                glb -> winDisplay -> reDraw( );
+                continue;
+            }
         }
         else {
 
-            // We are inside a false branch. Skip ordinary commands.
-            //
-            // A nested IF needs special treatment, otherwise its ENDIF
-            // could be mistaken for the ENDIF belonging to this IF.
-            if ( tok -> isToken( CMD_IF )) {
+            //----------------------------------------------------------------------------
+            // We are skipping the current branch.
+            //----------------------------------------------------------------------------
+            if ( tok -> isToken( CMD_ELSEIF )) {
+
+                // Try the next candidate branch.
+                tok -> nextToken( );
+                bool res = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
+                tok -> checkEOS( );
+
+                if ( res ) {
+
+                    branchTaken = true;
+                    prefixChar = 'T';
+                }
+
+                continue;
+            }
+            else if ( tok -> isToken( CMD_ELSE )) {
+
+                // ELSE is the unconditional final branch.
+
+                tok -> nextToken( );
+                tok -> checkEOS( );
+
+                branchTaken = true;
+                prefixChar = 'T';
+                continue;
+            }
+            else if ( tok -> isToken( CMD_ENDIF )) {
+
+                tok -> nextToken( );
+                tok -> checkEOS( );
+                return;
+            }
+            else if ( tok -> isToken( CMD_IF )) {
+
+                // Nested IF belongs to the branch we are currently skipping.
+                // Skip its complete construct so that its ENDIF cannot terminate
+                // the enclosing IF.
 
                 skipIfCmd( );
+                continue;
+            }
+            else {
+
+                // Ordinary command, including a nested IF.
+                // We are skipping this branch, so we do not execute it.
+                glb -> winDisplay -> reDraw( );
+                continue;
             }
         }
     }
-}
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-void SimCommandsWin::whileCmd( ) {
-
-    throw ( ERR_NOT_SUPPORTED );
 }
 
 //----------------------------------------------------------------------------------------
@@ -3204,7 +3266,7 @@ SimTokId SimCommandsWin::peekAtInputLine( char *cmdBuf ) {
 // skips in an ID command false branch.
 //
 //----------------------------------------------------------------------------------------
-void SimCommandsWin::processCmdLine( char *cmdBuf, bool evalEnabed ) {
+void SimCommandsWin::processCmdLine( char *cmdBuf ) {
     
     try {
         
@@ -3252,7 +3314,7 @@ void SimCommandsWin::processCmdLine( char *cmdBuf, bool evalEnabed ) {
             case CMD_DO:            doCmd( );                       break;
             case CMD_REDO:          redoCmd( );                     break;
 
-            case CMD_WHILE:         whileCmd( );                    break;
+            case CMD_IF:            ifCmd( );                       break;
 
             case CMD_ASSERT:        assertCheckCmd( true );         break;
             case CMD_CHECK:         assertCheckCmd( );              break;

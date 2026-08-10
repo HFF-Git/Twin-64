@@ -140,9 +140,6 @@ const SimToken cmdTokTab[ ] = {
     { .name = "ELSE",       .typ = TYP_CMD,     .tid = CMD_ELSE                     },
     { .name = "ENDIF",      .typ = TYP_CMD,     .tid = CMD_ENDIF                    },
 
-    { .name = "WHILE",      .typ = TYP_CMD,     .tid = CMD_WHILE                    },
-    { .name = "ENDWHILE",   .typ = TYP_CMD,     .tid = CMD_ENDWHILE                 },
-    
     //------------------------------------------------------------------------------------
     // Window command tokens.
     //
