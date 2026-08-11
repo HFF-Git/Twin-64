@@ -1336,13 +1336,13 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
 
     char lineBuf[ MAX_CMD_LINE_SIZE ];
     char cmdLineBuf[ MAX_CMD_LINE_SIZE ] = "";
+    bool histEable = hist -> isHistoryEnabled( );
 
     try {
 
         hist -> enableHistory( false );
 
         if ( strlen( fileName ) == 0 ) throw( ERR_EXPECTED_FILE_NAME );
-
         rtrim( fileName );
 
         FILE *f = fopen( fileName, "r" );
@@ -1391,11 +1391,11 @@ void SimCommandsWin::execCmdsFromFile( char* fileName ) {
 
         fclose( f );
 
-        hist -> enableHistory( true );
+        hist -> enableHistory( histEable );
     }
     catch ( SimErrMsgId errNum ) {
 
-        hist -> enableHistory( true );
+        hist -> enableHistory( histEable );
         throw;
     }
 }
