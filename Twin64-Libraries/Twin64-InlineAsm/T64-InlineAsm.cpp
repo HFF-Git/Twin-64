@@ -105,7 +105,7 @@ const ErrMsg ErrMsgTable[ ] = {
     { ERR_INVALID_NUM,              (char *) "Invalid number" },
     { ERR_INVALID_OP_CODE,          (char *) "Invalid OpCode" },
     { ERR_INVALID_INSTR_MODE,       (char *) "Invalid instruction mode" },
-    { ERR_INVALID_OFS,              (char *) "Invalid offset" },
+    { ERR_INVALID_OFS,              (char *) "Invalid or unaligned offset" },
     { ERR_INVALID_INSTR_OPT,        (char *) "Invalid instruction option" },
     
     { ERR_EXPECTED_CLOSING_QUOTE,   (char *) "Expected a closing quote" },
@@ -2188,7 +2188,8 @@ void parseMemOp( T64Instr *instr, uint32_t instrOpToken ) {
     
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_NUM ) {
-        
+
+        checkOfsAlignment( rExpr.val, instrFlags );        
         depositInstrBit( instr, 19, false );
         depositInstrScaledImm13( instr, (uint32_t) rExpr.val );
     }

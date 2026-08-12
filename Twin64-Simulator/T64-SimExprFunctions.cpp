@@ -66,8 +66,10 @@ void SimExprEvaluator::pFuncAssemble( SimExpr *rExpr, bool evalEnabled ) {
             rExpr -> u.val = instr;
         }
         else {
-            
-            // ??? how do we map the ASM error codes to out error code ?
+
+            glb -> winDisplay -> getCmdWinHandle( ) -> getWinOutHandle( ) -> 
+                writeChars( "%s\n", inlineAsm -> getErrStr( ret ));
+
             throw ( ERR_IN_ASM_PFUNC );
         }
     }

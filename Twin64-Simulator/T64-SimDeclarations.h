@@ -1259,9 +1259,10 @@ public:
     void            drawBody( );
     void            clearCmdWin( );
     SimTokId        getCurrentCmd( );
+    SimWinOutBuffer *getWinOutHandle( );
     void            cmdInterpreterSetup( ); 
     void            cmdInterpreterLoop( );
-
+    
 private:
     
     void            printWelcome( );
@@ -1269,10 +1270,10 @@ private:
     int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
     void            processCmdLine( char *cmdBuf );
     SimTokId        peekAtInputLine( char *cmdBuf );
-    void            executeCommand( );      
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );
+    void            executeCommand( );      
+    
     int             promptYesNoCancel( char *promptStr );
-
     void            configureT64Sim( );
     void            configureT64Log( );
     int             writeLog( );
@@ -1448,6 +1449,8 @@ public:
     int             getWinStackNum( int winNum );
     int             getWinModNum( int winNum );
 
+    SimCommandsWin  *getCmdWinHandle( );
+
     private:
     
     int             getFreeWindowSlot( );
@@ -1463,9 +1466,6 @@ public:
 
     SimGlobals      *glb                            = nullptr;
     SimWin          *windowList[ MAX_WINDOWS ]      = { nullptr };
-
-    public: 
-
     SimCommandsWin  *cmdWin                         = nullptr;
 };
 

@@ -132,6 +132,15 @@ int SimWinDisplay::getCurrentWinModNum( ) {
 }
 
 //----------------------------------------------------------------------------------------
+// Expression evaluate needs access to command win for error messages.
+//
+//----------------------------------------------------------------------------------------
+SimCommandsWin  *SimWinDisplay::getCmdWinHandle( ) {
+
+    return( cmdWin );
+}
+
+//----------------------------------------------------------------------------------------
 // Attribute functions on window Id, stack and type. A window number is the index into
 // the window list. It is valid when the number is within bounds and the window list 
 // entry is actually used. Window numbers start at 1.

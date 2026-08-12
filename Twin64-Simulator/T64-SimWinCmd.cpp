@@ -904,6 +904,11 @@ SimTokId SimCommandsWin::getCurrentCmd( ) {
     return ( currentCmd );
 }
 
+SimWinOutBuffer *SimCommandsWin::getWinOutHandle( ) {
+
+    return( winOut );
+}
+
 //----------------------------------------------------------------------------------------
 // Print the stack info data. In the command window line, we will have a field 
 // to the very right, which is on when we are in windows mode. It will show which 
@@ -989,11 +994,11 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char pref
 
         if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
  
-        return ( snprintf( promptStr, promptStrLen,
+            return ( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
                            (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
         }
-        else return ( snprintf( promptStr, promptStrLen, "->", prefix ));
+        else return ( snprintf( promptStr, promptStrLen, "->" ));
     }
     else {
 
