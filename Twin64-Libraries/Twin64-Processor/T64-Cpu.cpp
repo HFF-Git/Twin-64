@@ -1322,7 +1322,7 @@ void T64Cpu::instrBrAbrOp( T64Instr instr ) {
 
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), sum, 0 )) {
 
-        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
+        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
     } 
     else nextInstr( );
 }
@@ -1338,7 +1338,7 @@ void T64Cpu::instrBrCbrOp( T64Instr instr ) {
 
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val1, val2 )) {
 
-        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
+        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
     } 
     else nextInstr( );
 }
@@ -1355,7 +1355,7 @@ void T64Cpu::instrBrMbrOp( T64Instr instr ) {
     
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val, 0 )) {
 
-        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ));
+        psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
     }
     else nextInstr( );
 }
