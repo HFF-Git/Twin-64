@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "Twin64-Libraries/Twin64-InlineAsm",
+		"source" : "Twin64-Libraries/Twin64-InlineAsm"
+	}
+}
