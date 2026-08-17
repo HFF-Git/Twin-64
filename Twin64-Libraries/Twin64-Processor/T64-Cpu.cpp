@@ -156,12 +156,17 @@ void T64Cpu::dataMemTlbMissTrap( T64Word adr ) {
 
 void T64Cpu::dataMemNonAccessTlbMissTrap( T64Word adr ) {
 
-    throw( T64Trap( DATA_TLB_MISS_TRAP, psrReg, instrReg, adr ));
+    throw( T64Trap( NON_ACC_DATA_TLB_MISS_TRAP, psrReg, instrReg, adr ));
 }
 
 void T64Cpu::instrTlbMissTrap( T64Word adr ) {
 
     throw( T64Trap( INSTR_TLB_MISS_TRAP, psrReg, instrReg, adr ));
+}
+
+void T64Cpu::instrMemNonAccessTlbMissTrap( T64Word adr ) {
+
+    throw( T64Trap( NON_ACC_INSTR_TLB_MISS_TRAP, psrReg, instrReg, adr ));
 }
 
 void T64Cpu::instrMemAccRightsTrap( T64Word adr ) {
@@ -229,7 +234,7 @@ void T64Cpu::privModeCheck( ) {
     if ( extractPsrXbit( psrReg ) != 0 ) privModeOperationTrap( );
 }
 
-bool T64Cpu::regionIdCheck( uint32_t rId, bool wMode ) {
+bool T64Cpu::regionIdCheck( T64Word rId, int wMode ) {
 
     for ( int i = 4; i < 8; i++ ) {
 
@@ -1467,8 +1472,8 @@ void T64Cpu::instrSysLpaOp( T64Instr instr ) {
 void T64Cpu::instrSysPrbOp( T64Instr instr ) {
 
     T64Word vAdr        = getRegB( instr );
-    int     mode        = extractInstrFieldU( instr, 13, 2 );
-    int     privLevel   = extractPsrXbit( psrReg );
+    T64Word mode        = extractInstrFieldU( instr, 13, 2 );
+    T64Word privLevel   = extractPsrXbit( psrReg );
     
     if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
     if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );
@@ -1671,9 +1676,9 @@ void T64Cpu::instrSysTrapOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 T64TrapCode T64Cpu::executeInstr( ) {
 
-    instrReg = instrRead( extractField64( psrReg, 0, 52 ));
-
     try {
+
+        instrReg = instrRead( extractField64( psrReg, 0, 52 ));
         
         switch ( extractInstrOpCode( instrReg ) ) {
                 
@@ -1721,7 +1726,6 @@ T64TrapCode T64Cpu::executeInstr( ) {
         }
 
         recoveryCounterCheck( );
-
         return ( NO_TRAP );
     }
     catch ( const T64Trap t ) {

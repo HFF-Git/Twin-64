@@ -445,10 +445,14 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
 
             switch ( extractInstrFieldU( instr, 19, 3 )) {
 
-                case 0: return ( snprintf( buf, LEN_16, "PICA" ));
-                case 1: return ( snprintf( buf, LEN_16, "PDCA" ));
-                case 2: return ( snprintf( buf, LEN_16, "FICA" ));
-                case 3: return ( snprintf( buf, LEN_16, "FDCA" ));
+                case 0: return ( snprintf( buf, LEN_16, "FICA" ));
+                case 1: return ( snprintf( buf, LEN_16, "FDCA" ));
+                case 2: return ( snprintf( buf, LEN_16, "PICA" ));
+                case 3: return ( snprintf( buf, LEN_16, "PDCA" ));
+                case 4: return ( snprintf( buf, LEN_16, "FICE" ));
+                case 5: return ( snprintf( buf, LEN_16, "FDCE" ));
+                case 6: return ( snprintf( buf, LEN_16, "PICE" ));
+                case 7: return ( snprintf( buf, LEN_16, "PDCE" ));
                 default: return ( snprintf( buf, 8, "**CA**" ));
             }
         }
@@ -883,18 +887,11 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
 
             if (( field == 0 ) || ( field == 1 )) {
             
-                return ( snprintf( buf + cursor, LEN_32, "R%d,R%d,R%d",
-                                   extractInstrRegR( instr ),
+                return ( snprintf( buf + cursor, LEN_32, "R%d,R%d",
                                    extractInstrRegB( instr ),
                                    extractInstrRegA( instr )));
             }
             else if (( field == 2 ) || ( field == 3 )) {
-
-                if ( extractInstrRegR( instr ) != 0 ) {
-
-                    cursor += snprintf( buf + cursor, LEN_32, "R%d,", 
-                                        extractInstrRegR( instr ));
-                }
 
                 if ( extractInstrRegA( instr ) != 0 ) {
 
@@ -912,12 +909,6 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
         case ( OPC_GRP_SYS * 16 + OPC_CA ): {
 
             int cursor = 0;
-
-            if ( extractInstrRegR( instr ) != 0 ) {
-
-                    cursor += snprintf( buf + cursor, LEN_32, "R%d,", 
-                                        extractInstrRegR( instr ));
-            }
 
             if ( extractInstrRegA( instr ) != 0 ) {
 

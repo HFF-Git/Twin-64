@@ -551,8 +551,8 @@ char SimFormatter::printBit( T64Word val, int pos, char printChar ) {
 
     if ( isInRange( pos, 0, 63 )) {
 
-        if (( val >> pos ) & 0x1 )  return ( toupper( printChar ));
-        else                        return ( tolower( printChar ));
+        if (( val >> pos ) & 0x1 )  return ((char) toupper( printChar ));
+        else                        return ((char) tolower( printChar ));
     }
     else return ( '*' );
 }

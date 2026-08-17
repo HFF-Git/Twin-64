@@ -432,7 +432,7 @@ void SimWin::printTextField( char       *text,
 //----------------------------------------------------------------------------------------
 void SimWin::printBitField( T64Word val, 
                             int pos,
-                            char printChar,
+                            int printChar,
                             uint32_t fmtDesc,
                             int fLen,
                             int row,

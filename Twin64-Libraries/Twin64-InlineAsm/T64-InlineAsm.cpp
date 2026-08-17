@@ -219,8 +219,11 @@ enum TokId : int {
     
     TOK_OP_PICA     = 365,  TOK_OP_PDCA     = 366,  
     TOK_OP_FICA     = 367,  TOK_OP_FDCA     = 368,
+
+    TOK_OP_PICE     = 369,  TOK_OP_PDCE     = 370,  
+    TOK_OP_FICE     = 371,  TOK_OP_FDCE     = 372,
     
-    TOK_OP_RFI      = 371,  TOK_OP_DIAG     = 372,  TOK_OP_TRAP     = 373
+    TOK_OP_RFI      = 373,  TOK_OP_DIAG     = 374,  TOK_OP_TRAP     = 375
 };
 
 //----------------------------------------------------------------------------------------
@@ -233,7 +236,7 @@ struct Token {
     char        name[ MAX_TOKEN_NAME_SIZE ] = { };
     TokTypeId   typ                         = TYP_NIL;
     TokId       tid                         = TOK_NIL;
-     T64Word    val                         = 0;  
+    T64Word     val                         = 0;  
 };
 
 //----------------------------------------------------------------------------------------
@@ -581,15 +584,24 @@ const Token AsmTokTab[ ] = {
 
     {   .name   = "FDCA",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_FDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_1 ) },
-    
+
     {   .name   = "PICA",       .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_PICA,  .val = ( OPG_SYS | OPF_CA     | OPM_FLD_2 ) },
 
     {   .name   = "PDCA",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_PDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_3 ) },
 
-    {   .name   = "FDCA",        .typ = TYP_OP_CODE, 
-        .tid    = TOK_OP_FDCA,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_3 ) },
+    {   .name   = "FICE",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_FICE,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_4 ) },
+
+    {   .name   = "FDCE",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_FDCE,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_5 ) },
+
+    {   .name   = "PICE",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PICE,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_6 ) },
+
+    {   .name   = "PDCE",        .typ = TYP_OP_CODE, 
+        .tid    = TOK_OP_PDCE,   .val = ( OPG_SYS | OPF_CA    | OPM_FLD_7 ) },
     
     {   .name   = "RSM",        .typ = TYP_OP_CODE, 
         .tid    = TOK_OP_RSM,   .val = ( OPG_SYS | OPF_MST    | OPM_FLD_0 ) },
@@ -1195,7 +1207,7 @@ void parseTerm( Expr *rExpr ) {
            ( isToken( TOK_MOD  ))   ||
            ( isToken( TOK_AND  )))  {
         
-        uint8_t op = currentToken.tid;
+        int op = currentToken.tid;
         
         nextToken( );
         parseFactor( &lExpr );
@@ -1245,7 +1257,7 @@ void parseExpr( Expr *rExpr ) {
            ( isToken( TOK_OR    )) ||
            ( isToken( TOK_XOR   ))) {
         
-        uint8_t op = currentToken.tid;
+        int op = currentToken.tid;
         
         nextToken( );
         parseTerm( &lExpr );
@@ -2594,15 +2606,13 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 // virtual address. RegA contains the info on access rights and physical 
 // address fields. The result is in RegR.
 //
-//      IITLB <targetReg> "," <RegB> "," <RegA>
-//      IDTLB <targetReg> "," <RegB> "," <RegA>
+//      IITLB <RegB> "," <RegA>
+//      IDTLB <RegB> "," <RegA>
 //
 //----------------------------------------------------------------------------------------
 void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 
     nextToken( );
-    acceptRegR( instr );
-    acceptComma( );
     acceptRegB( instr );
     acceptComma( );
     acceptRegA( instr );
@@ -2613,8 +2623,8 @@ void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseInstrPurgeTlbOp" removes a translation in the TLB. RegB contains the
 // virtual address base and RegX an offset to be added.
 //
-//      PITLB <targetReg> "," [ <RegX> ] "(" <RegB> ")"
-//      PDTLB <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      PITLB [ <RegX> ] "(" <RegB> ")"
+//      PDTLB [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
 void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2622,13 +2632,7 @@ void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
     Expr rExpr = INIT_EXPR;
 
     nextToken( );
-    acceptRegR( instr );
-    acceptComma( );
-
-    if ( isTokenTyp( TYP_GREG )) {
-
-        acceptRegA( instr );
-    }
+    if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
 
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.val );
@@ -2638,21 +2642,20 @@ void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrFlushCacheOp" assemble the cache flush operation. This only 
-// applies to data or unified caches.
+// "parseInstrCacheOpAdr" assemble the cache flush and purge operation based
+// on a virtual address. This only applies to data or unified caches.
 //
-//      FICA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
-//      FDCA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      FICA [ <RegX> ] "(" <RegB> ")"
+//      FDCA [ <RegX> ] "(" <RegB> ")"
+//      PICA [ <RegX> ] "(" <RegB> ")"
+//      PDCA [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
-void parseInstrFlushCache( uint32_t *instr, uint32_t instrOpToken ) {
+void parseInstrCacheOpByAdr( uint32_t *instr, uint32_t instrOpToken ) {
     
     Expr rExpr = INIT_EXPR;
 
     nextToken( );
-    acceptRegR( instr );
-    acceptComma( );
-
     if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.val );
@@ -2662,22 +2665,21 @@ void parseInstrFlushCache( uint32_t *instr, uint32_t instrOpToken ) {
 }
 
 //----------------------------------------------------------------------------------------
-// "parseInstrPurgeCacheOp" assemble the cache purge operation.
+// "parseInstrCacheOpAdr" assemble the cache flush and purge operation based
+// on a virtual address. This only applies to data or unified caches.
 //
-//      PICA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
-//      PDCA <targetReg> "," [ <RegX> ] "(" <RegB> ")"
+//      FICE [ <RegX> ] "(" <RegB> ")"
+//      FDCE [ <RegX> ] "(" <RegB> ")"
+//      PICE [ <RegX> ] "(" <RegB> ")"
+//      PDCE [ <RegX> ] "(" <RegB> ")"
 //
 //----------------------------------------------------------------------------------------
-void parseInstrPurgeCache( uint32_t *instr, uint32_t instrOpToken ) {
-
+void parseInstrCacheOpByEntry( uint32_t *instr, uint32_t instrOpToken ) {
+    
     Expr rExpr = INIT_EXPR;
 
     nextToken( );
-    acceptRegR( instr );
-    acceptComma( );
-
     if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
-
     parseExpr( &rExpr );
     if ( rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.val );
     else throw ( ERR_EXPECTED_LPAREN );
@@ -2859,12 +2861,16 @@ void parseLine( char *inputStr, uint32_t *instr ) {
 
             case TOK_OP_PITLB:
             case TOK_OP_PDTLB:  parseInstrPurgeTlb( instr, instrOpToken );  break;
-                
-            case TOK_OP_PICA:
-            case TOK_OP_PDCA:   parseInstrPurgeCache( instr, instrOpToken );break;
-
+        
             case TOK_OP_FICA:
-            case TOK_OP_FDCA:   parseInstrFlushCache( instr, instrOpToken );break;
+            case TOK_OP_FDCA: 
+            case TOK_OP_PICA:
+            case TOK_OP_PDCA:    parseInstrCacheOpByAdr( instr, instrOpToken ); break;
+
+            case TOK_OP_FICE:
+            case TOK_OP_FDCE:
+            case TOK_OP_PICE:
+            case TOK_OP_PDCE:   parseInstrCacheOpByEntry( instr, instrOpToken );break;
                 
             case TOK_OP_SSM:
             case TOK_OP_RSM:    parseInstrSregOp( instr, instrOpToken );    break;

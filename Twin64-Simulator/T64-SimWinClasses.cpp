@@ -102,7 +102,7 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 // of 5 in this case.
 //
 //----------------------------------------------------------------------------------------
-size_t calculateStrLen( const char *s, int tabWidth  ) {
+int calculateStrLen( const char *s, int tabWidth  ) {
 
     size_t col = 0;
 

@@ -182,6 +182,7 @@ struct T64Cpu {
     void            privModeOperationTrap( );
 
     void            instrTlbMissTrap( T64Word adr );
+    void            instrMemNonAccessTlbMissTrap( T64Word adr );
     void            instrMemAccRightsTrap( T64Word adr );
     void            instrMemProtectionTrap( T64Word adr );
     void            instrMemAlignmentTrap( T64Word adr );
@@ -197,7 +198,7 @@ struct T64Cpu {
     void            recoveryCounterTrap( );
 
     void            privModeCheck( );
-    bool            regionIdCheck( uint32_t pId, bool wMode );
+    bool            regionIdCheck( T64Word pId, int wMode );
     void            instrAlignmentCheck( T64Word vAdr );
     void            instrAccCheck( T64Word vAdr, uint16_t tlbInfo );
     void            dataAlignmentCheck( T64Word vAdr, int len );

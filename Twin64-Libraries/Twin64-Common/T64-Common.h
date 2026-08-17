@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #else
+#define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 #include <windows.h>
 #include <conio.h>
@@ -191,7 +192,7 @@ public:
     
     T64TrapCode trapCode;
     T64Word     instrAdr;
-    uint32_t    arg0;
+    T64Word     arg0;
     T64Word     arg1;
 };
 
@@ -301,7 +302,6 @@ enum T64IoRegIndex : int {
     T64_IO_COMMAND_REG_OFS  = 1,
     T64_IO_CONFIG_REG_OFS   = 2,
     T64_IO_SPA_ADR_REG_OFS  = 3
-
 };
 
 //----------------------------------------------------------------------------------------

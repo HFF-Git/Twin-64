@@ -40,7 +40,7 @@ void copyStr( char *dst, const char *src, int maxSize, bool upshift ) {
     while (( i < maxSize - 1 ) && ( src[ i ] != '\0' )) {
     
         char c = src[ i ];
-        if ( upshift ) c = toupper( c );
+        if ( upshift ) c = toupper((char ) c );
 
         dst[ i ] = c;
         i++;

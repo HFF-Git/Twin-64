@@ -67,6 +67,13 @@
 // Helper functions.
 //
 //----------------------------------------------------------------------------------------
+inline uint8_t toUint8( T64Word val ) {
+
+    if ( val <= UINT8_MAX ) return ( static_cast<uint8_t> ( val ));
+    else return( UINT8_MAX );
+}
+
+
 inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
     
     return (( adr >= low ) && ( adr <= high ));
@@ -374,7 +381,7 @@ inline T64Word depositField64( T64Word word,
                 (((uint64_t)value << bitpos) & mask));
 }
 
-inline T64Word shiftRight128( T64Word hi, T64Word lo, uint8_t shift ) {
+inline T64Word shiftRight128( T64Word hi, T64Word lo, int shift ) {
     
     if      ( shift == 0 ) return ( lo );
     else if (( shift > 0 ) && ( shift < 64 )) {

@@ -988,7 +988,7 @@ struct SimWin {
 
     void            printBitField(  T64Word val, 
                                     int pos,
-                                    char printChar,
+                                    int printChar,
                                     uint32_t fmtDesc = 0,
                                     int len = 0,
                                     int row = 0,

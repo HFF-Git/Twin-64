@@ -155,7 +155,7 @@ void removeChar( char *buf, int *strSize, int *pos ) {
 // to the right to make room first.
 //
 //----------------------------------------------------------------------------------------
-void insertChar( char *buf, int ch, int *strSize, int *pos ) {
+void insertChar( char *buf, char ch, int *strSize, int *pos ) {
     
     if ( *pos == *strSize ) {
         
@@ -591,7 +591,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf,
     if (( promptBufLen > 0 ) && ( glb -> console -> isConsole( ))) {
 
         glb -> console -> writeChars( " %s", promptBuf );
-        promptBufLen = strlen(promptBuf);
+        promptBufLen = (int) strlen( promptBuf );
     }
     
     if ( initialCmdBufLen > 0 ) {
@@ -633,7 +633,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf,
                         if ( glb -> console -> isConsole( ) ) {
 
                             glb->console -> writeChars( ":" ); 
-                            promptBufLen = strlen(":");                       
+                            promptBufLen = (int) strlen(":");                       
                         }
 
                         cmdBufCursor = cmdBufLen;
@@ -2319,7 +2319,7 @@ void SimCommandsWin::writeLogCmd( ) {
     }
 
     char msgBuf[ MAX_TEXT_LINE_SIZE ];
-    char msgBufLen = 0;
+    int  msgBufLen = 0;
 
     char *msgStr = eval -> acceptStringExpr( ERR_EXPECTED_STRING_VALUE );
     msgBufLen = snprintf( msgBuf, sizeof( msgBuf ), "%s", msgStr );
