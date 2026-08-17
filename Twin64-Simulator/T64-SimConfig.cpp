@@ -42,7 +42,7 @@ namespace {
 //----------------------------------------------------------------------------------------
 int parseCmdLineOptions( int    argc, 
                          char   *argv[ ],
-                         const  SimCmdLineOptions *optionTable,
+                         const  SimCmdLineOptions *optTable,
                          char   **optArg ) {
 
     if ( optIndex >= argc ) return ( -1 );
@@ -59,12 +59,12 @@ int parseCmdLineOptions( int    argc,
     const char *eq      = strchr(name, '=');
     size_t nameLen      = (( eq ) ? ((size_t)( eq - name )) : ( strlen( name )));
 
-    for ( int i = 0; ( optionTable && optionTable[i].name ); i++ ) {
+    for ( int i = 0; ( optTable && optTable[i].name ); i++ ) {
 
-        if (( strncmp( name, optionTable[i].name, nameLen ) == 0 ) &&
-             ( strlen(optionTable[i].name) == nameLen )) {
+        if (( strncmp( name, optTable[i].name, nameLen ) == 0 ) &&
+             ( strlen(optTable[i].name) == nameLen )) {
 
-            if ( optionTable[i].argOpt == CL_OPT_REQUIRED_ARGUMENT) {
+            if ( optTable[i].argOpt == CL_OPT_REQUIRED_ARGUMENT) {
                 
                 if ( eq ) {
 
@@ -77,18 +77,18 @@ int parseCmdLineOptions( int    argc,
                 else {
                     
                     fprintf( stderr, "Option '--%s' requires an argument\n", 
-                            optionTable[ i ].name);
+                            optTable[ i ].name);
                     return ( -1 );
                 }
             } 
-            else if ( optionTable[ i ].argOpt == CL_OPT_OPTIONAL_ARGUMENT ) {
+            else if ( optTable[ i ].argOpt == CL_OPT_OPTIONAL_ARGUMENT ) {
                 
                 *optArg = (( eq ) ? ((char *)( eq + 1 )) : ( NULL ));
             
             } else *optArg = NULL;
     
             optIndex++;
-            return optionTable[ i ].val;
+            return optTable[ i ].val;
         }
     }
 

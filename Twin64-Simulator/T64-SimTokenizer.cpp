@@ -826,11 +826,11 @@ SimTokenizerFromString::SimTokenizerFromString(  ) : SimTokenizer( ) { }
 // called.
 //
 //----------------------------------------------------------------------------------------
-void SimTokenizerFromString::setupTokenizer( char *lineBuf, SimToken *tokTab ) {
+void SimTokenizerFromString::setupTokenizer( char *lineBuf, SimToken *tTab ) {
 
     strncpy( tokenLine, lineBuf, strlen( lineBuf ) + 1 );
     
-    this -> tokTab                  = tokTab;
+    this -> tokTab                  = tTab;
     this -> currentLineLen          = (int) strlen( tokenLine );
     this -> currentCharIndex        = 0;
     this -> currentChar             = ' ';
@@ -869,9 +869,9 @@ SimTokenizerFromFile::~SimTokenizerFromFile( ) {
 // called.
 //
 //----------------------------------------------------------------------------------------
-void SimTokenizerFromFile::setupTokenizer( char *filePath, SimToken *tokTab ) {
+void SimTokenizerFromFile::setupTokenizer( char *filePath, SimToken *tTab ) {
 
-    this -> tokTab          = tokTab;
+    this -> tokTab          = tTab;
     this -> currentChar     = ' ';
 
     openFile( filePath );

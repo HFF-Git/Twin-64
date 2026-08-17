@@ -50,12 +50,6 @@ T64Cpu::T64Cpu( T64Processor *proc, T64CpuType cpuType ) {
 
     this -> proc    = proc;
     this -> cpuType = cpuType;
-    
-    switch ( cpuType ) {
-
-        default: ;
-    }
-
     this -> reset( );
 }
 
@@ -1564,6 +1558,10 @@ void T64Cpu::instrSysTlbOp( T64Instr instr ) {
 //  1 -> FDCA
 //  2 -> PICA
 //  3 -> PDCA
+//  4 -> FICE
+//  5 -> FDCE
+//  6 -> PICE
+//  7 -> PDCE
 //
 // The cache instructions are right now a NOP. They become relevant when we 
 // have true hardware and a real cache. We do however still check that the
@@ -1574,20 +1572,6 @@ void T64Cpu::instrSysCaOp( T64Instr instr ) {
 
     if ( extractInstrFieldU( instr, 13, 2 ) != 0 ) illegalInstrTrap( );
     if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );
-
-    switch ( extractInstrFieldU( instr, 19, 3 )) {
-
-        case 0: 
-        case 1: 
-        case 2:
-        case 3: {
-
-            setRegR( instr, 1 );
-
-        } break;
-
-        default: illegalInstrTrap( );
-    }
     
     nextInstr( );
 }

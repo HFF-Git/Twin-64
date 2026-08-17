@@ -898,11 +898,11 @@ void SimWinDisplay::windowKill( int winNumStart, int winNumEnd ) {
                 
         if ( currentWinNum == i ) {
                  
-            for ( int i = 0; i < MAX_WINDOWS; i++ ) {
+            for ( int j = 0; j < MAX_WINDOWS; j++ ) {
                         
-                if ( validWindowNum( i )) {
+                if ( validWindowNum( j )) {
                             
-                    currentWinNum = i;
+                    currentWinNum = j;
                     break;
                 }
             }
@@ -928,11 +928,11 @@ void SimWinDisplay::windowKillByModNum( int modNum ) {
                 
             if ( currentWinNum == i ) {
                  
-                for ( int i = 1; i < MAX_WINDOWS; i++ ) {
+                for ( int j = 1; j < MAX_WINDOWS; j++ ) {
                         
-                    if ( validWindowNum( i )) {
+                    if ( validWindowNum( j )) {
                             
-                        currentWinNum = i;
+                        currentWinNum = j;
                         break;
                     }
                 }

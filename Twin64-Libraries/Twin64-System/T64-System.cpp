@@ -48,12 +48,12 @@ bool overlap( T64Module *a, T64Module *b ) {
     if (( aSpaLen == 0 ) || ( bSpaLen == 0 )) return ( false );
 
     const T64Word aSpaStart = a -> getSpaAdr( );
-    if ( aSpaLen > UINT64_MAX - aSpaStart ) return ( true );
+    if ( aSpaLen > INT64_MAX - aSpaStart ) return ( true );
 
     const T64Word aSpaEnd = aSpaStart + aSpaLen - 1;
 
     const T64Word bSpaStart = b -> getSpaAdr( );
-    if ( bSpaLen > UINT64_MAX - bSpaStart ) return ( true );
+    if ( bSpaLen > INT64_MAX - bSpaStart ) return ( true );
 
     const T64Word bSpaEnd = bSpaStart + bSpaLen - 1;
 
@@ -63,12 +63,12 @@ bool overlap( T64Module *a, T64Module *b ) {
     const T64Word bHpaLen   = b -> getHpaLen( );
     const T64Word aHpaStart = a -> getHpaAdr( );
 
-    if ( aHpaLen > UINT64_MAX - aHpaStart ) return ( true );
+    if ( aHpaLen > INT64_MAX - aHpaStart ) return ( true );
 
     const T64Word aHpaEnd = aHpaStart + aHpaLen - 1;
 
     const T64Word bHpaStart = b -> getHpaAdr( );
-    if ( bHpaLen > UINT64_MAX - bHpaStart ) return ( true );
+    if ( bHpaLen > INT64_MAX - bHpaStart ) return ( true );
 
     const T64Word bHpaEnd = bHpaStart + bHpaLen - 1;
 

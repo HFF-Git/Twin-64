@@ -3105,12 +3105,11 @@ void SimCommandsWin::winExchangeCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winNewWinCmd( ) {
     
-    SimTokId  winType = TOK_NIL;
-
     ensureWinModeOn( );
-    winType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
+
+    SimTokId  lWinType = tok -> acceptTokSym( ERR_EXPECTED_WIN_ID );
  
-    switch ( winType ) {
+    switch ( lWinType ) {
 
         case TOK_PROC: 
         case TOK_CPU:{
@@ -3216,13 +3215,13 @@ void SimCommandsWin::winKillWinCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::winSetStackCmd( ) {
     
-    int     winStack    = -1;
+    int     lWinStack    = -1;
     int     winNumStart = -1;
     int     winNumEnd   = -1;
     
     if ( ! glb -> winDisplay -> isWinModeOn( )) throw ( ERR_NOT_IN_WIN_MODE );
 
-    winStack = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
+    lWinStack = eval -> acceptNumExpr( ERR_EXPECTED_STACK_ID, 1, MAX_WIN_STACKS );
     
     if ( tok -> isToken( TOK_EOS )) {
         
@@ -3238,9 +3237,9 @@ void SimCommandsWin::winSetStackCmd( ) {
     }
     else throw ( ERR_EXPECTED_COMMA );
 
-    if ( winStack >= MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
+    if ( lWinStack >= MAX_WIN_STACKS ) throw ( ERR_INVALID_WIN_STACK_ID );
    
-    glb -> winDisplay -> windowSetStack( winStack - 1, winNumStart, winNumEnd );
+    glb -> winDisplay -> windowSetStack( lWinStack - 1, winNumStart, winNumEnd );
     glb -> winDisplay -> setWinReFormat( );
 }
 

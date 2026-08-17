@@ -39,10 +39,11 @@ T64Module::T64Module( T64ModuleType    modType,
 
     this -> moduleTyp   = modType;
     this -> moduleNum   = modNum;
-    this -> hpaAdr      = T64_IO_HPA_MEM_START + ( modNum * T64_PAGE_SIZE_BYTES );
-    this -> hpaLen      = T64_PAGE_SIZE_BYTES;
     this -> spaAdr      = spaAdr;
     this -> spaLen      = spaLen;
+
+    this -> hpaAdr      = T64_IO_HPA_MEM_START + moduleNum * T64_PAGE_SIZE_BYTES;
+    this -> hpaLen      = T64_PAGE_SIZE_BYTES;
 }
 
 //----------------------------------------------------------------------------------------

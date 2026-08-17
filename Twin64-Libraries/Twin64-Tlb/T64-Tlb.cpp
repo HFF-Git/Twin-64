@@ -311,13 +311,12 @@ T64GlobalTlb::busOpReadEvent( T64Word pAdr, uint8_t *data, int len )  {
     if ( ! isInIoHpaRange( pAdr )) return( false );
     if ( ! isAlignedAdr( pAdr, sizeof( T64Word) )) return ( false );
 
-    T64Word hpaAdr  =  T64_IO_HPA_MEM_START + moduleNum * T64_PAGE_SIZE_BYTES;
     int     wordIndex           = (( pAdr - hpaAdr ) >> 3 );
     int     regSetIndex         = wordIndex / T64_IO_REG_SET_SIZE;
     int     wordInRegSetIndex   = wordIndex % T64_IO_REG_SET_SIZE;
     int     wordOfs             = pAdr % sizeof( T64Word );
     T64Word tmp                 = 0;
-
+    
     // ??? what registers do we have ?
 
     copyFromReg( data, tmp, 0, len );
@@ -335,13 +334,12 @@ T64GlobalTlb::busOpWriteEvent( T64Word pAdr, uint8_t *data, int len )  {
     if ( ! isInIoHpaRange( pAdr )) return( false );
     if ( ! isAlignedAdr( pAdr, sizeof( T64Word) )) return ( false );
 
-    T64Word hpaAdr  =  T64_IO_HPA_MEM_START + moduleNum * T64_PAGE_SIZE_BYTES;
     int     wordIndex           = (( pAdr - hpaAdr ) >> 3 );
     int     regSetIndex         = wordIndex / T64_IO_REG_SET_SIZE;
     int     wordInRegSetIndex   = wordIndex % T64_IO_REG_SET_SIZE;
     int     wordOfs             = pAdr % sizeof( T64Word );
     T64Word tmp                 = 0;
-
+    
     // ??? what registers can we write ?
 
     return ( false );

@@ -247,7 +247,6 @@ T64GlobalTlb *T64Processor::getGlobalTlbPtr( ) {
 //----------------------------------------------------------------------------------------
 bool T64Processor::handleHPARead( T64Word pAdr, uint8_t *data, int len ) {
 
-    T64Word hpaAdr  =  T64_IO_HPA_MEM_START + moduleNum * T64_PAGE_SIZE_BYTES;
     int     wordIndex           = (( pAdr - hpaAdr ) >> 3 );
     int     regSetIndex         = wordIndex / T64_IO_REG_SET_SIZE;
     int     wordInRegSetIndex   = wordIndex % T64_IO_REG_SET_SIZE;
@@ -400,7 +399,7 @@ bool T64Processor::handleHPARead( T64Word pAdr, uint8_t *data, int len ) {
         }
         else {
 
-            T64Word tmp = ((T64Word) e -> tlbInfo << 48 ) | ( e -> pAdr );
+            tmp = ((T64Word) e -> tlbInfo << 48 ) | ( e -> pAdr );
             copyFromReg( data, tmp, wordOfs, len );
             return( true );
         }
@@ -414,7 +413,6 @@ bool T64Processor::handleHPARead( T64Word pAdr, uint8_t *data, int len ) {
 //----------------------------------------------------------------------------------------
 bool T64Processor::handleHPAWrite( T64Word pAdr, uint8_t *data, int len ) {
 
-    T64Word hpaAdr      =  T64_IO_HPA_MEM_START + moduleNum * T64_PAGE_SIZE_BYTES;
     int     wordIndex   = (( pAdr - hpaAdr ) >> 3 );
     int     regSetIndex = wordIndex / T64_IO_REG_SET_SIZE;
     int     wordOfs     = pAdr % sizeof( T64Word );

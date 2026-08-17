@@ -149,15 +149,8 @@ struct T64Module {
 
     T64Word             hpaAdr      = 0;
     int                 hpaLen      = 0;
-
     T64Word             spaAdr      = 0;
     int                 spaLen      = 0;
-
-    bool                rsvValid    = false;
-    T64Word             rsvInfo     = 0;
-
-    // ??? work in progress ... how do we best represent the regs in a module ?
-    // ??? we should have the fields that are common to every module...
 
     T64Word             mrStatus;
     T64Word             mrCommand;
