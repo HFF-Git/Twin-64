@@ -688,6 +688,10 @@ struct SimExprEvaluator {
                                    T64Word low = INT64_MIN, 
                                    T64Word high = INT64_MAX );
 
+    int             acceptIntExpr( SimErrMsgId errCode, 
+                                   int low = INT32_MIN, 
+                                   int high = INT32_MAX );                              
+
     bool            acceptBoolExpr( SimErrMsgId errCode );
     char            *acceptStringExpr( SimErrMsgId errCode );
     void            parseExpr( SimExpr *rExpr, bool evalEnabled = true );

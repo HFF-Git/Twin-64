@@ -114,7 +114,7 @@ int calculateStrLen( const char *s, int tabWidth  ) {
         s++;
     }
 
-    return col;
+    return ( static_cast<int> ( col ));
 }
 
 //----------------------------------------------------------------------------------------

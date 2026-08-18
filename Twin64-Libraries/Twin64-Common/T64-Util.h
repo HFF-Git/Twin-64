@@ -73,6 +73,11 @@ inline uint8_t toUint8( T64Word val ) {
     else return( UINT8_MAX );
 }
 
+inline uint32_t toUint32( T64Word val ) {
+
+    if ( val <= UINT32_MAX ) return ( static_cast<uint32_t> ( val ));
+    else return( UINT32_MAX );
+}
 
 inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
     
@@ -352,6 +357,7 @@ inline T64Word extractField64( T64Word arg, uint8_t bitpos, int len ) {
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
+#if 0
 inline T64Word extractSignedField64( T64Word arg, uint8_t bitpos, int len ) {
     
     T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
@@ -359,6 +365,17 @@ inline T64Word extractSignedField64( T64Word arg, uint8_t bitpos, int len ) {
     if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
     else             return ( field );
 }
+#else
+inline T64Word extractSignedField64( T64Word arg, int bitpos, int len ) {
+
+    T64Word field = ( arg >> bitpos ) &
+                        ( static_cast<T64Word>(( UINT64_C( 1 ) << len ) - 1 ));
+
+    if ( len < 64 ) return ( field << ( 64 - len )) >> ( 64 - len );
+    else            return ( field );
+
+}
+#endif
 
 inline void depositBit64( T64Word *arg, uint8_t bitpos, uint8_t val ) {
 

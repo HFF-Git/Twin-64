@@ -16,7 +16,7 @@ env CPU_MOD_NUM, 4
 ############################################
 # IVA Table physical location.
 ############################################
-env IVA_ADR, 0x1000
+mr IVA_ADR:CPU_MOD_NUM, 0x1000
 
 ############################################
 # Defines for virtual regions.

@@ -441,8 +441,8 @@ void SimWin::printBitField( T64Word val,
     if ( isInRange( pos, 0, 63 )) {
         
         char buf[ 4 ];
-        if (( val >> pos ) & 0x1 ) buf[ 0 ] = toupper( printChar );
-        else                       buf[ 0 ] = tolower( printChar );
+        if (( val >> pos ) & 0x1 ) buf[ 0 ] = static_cast<char>(toupper(printChar));
+        else                       buf[ 0 ] = static_cast<char>(tolower(printChar));
 
         buf[ 1 ] = '\0';
 

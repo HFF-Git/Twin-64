@@ -148,7 +148,7 @@ s,CPU_MOD_NUM
 check (r6:CPU_MOD_NUM) == 1,"Test CMP.NE R6,R4,R5"
 
 xf "../TestScript/InitOperands.txt"
-r6:CPU_MOD_NUM,0xffff
+mr r6:CPU_MOD_NUM,0xffff
 mw 0,asm("CMP.LE r6,r4,r5")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
@@ -388,13 +388,10 @@ log "---------------"
 log "FICA" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
-mw 0,asm("FDCA r6,r2(r5)")
+mw 0,asm("FDCA r2(r5)")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
-log "how to check??"
-log "what is purpose of RegR?"
-log "emulator shows PICA"
-log "Description of diff of FICA and FDCA missing. (of course I know)"
+check (ia:CPU_MOD_NUM) == 0x4, "FDCA r2(r5)"
 
 log "---------------"
 log "LDIL" 
@@ -428,9 +425,7 @@ xf "../TestScript/InitOperands.txt"
 mw 0,asm("MBR.GT R6,R2, 16")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
-check (r6:CPU_MOD_NUM) == 0x0040, "MBR.GT R6,R2, 16"
-log "IA points to 0x0004", "MBR.GT R6,R2, 16"
-
+check (IA:CPU_MOD_NUM) == 0x0010, "MBR.GT R6,R2, 16"
 
 log "---------------"
 log "Summary"

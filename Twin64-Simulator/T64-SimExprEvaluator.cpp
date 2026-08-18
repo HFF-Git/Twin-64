@@ -899,6 +899,14 @@ T64Word SimExprEvaluator::acceptNumExpr( SimErrMsgId errCode,
      else throw ( errCode );
 }
 
+int SimExprEvaluator::acceptIntExpr( SimErrMsgId errCode, 
+                                         int low, 
+                                         int high ) {
+
+    T64Word value = acceptNumExpr( errCode, low, high );
+    return ( static_cast<int>( value ));                          
+}
+
 bool SimExprEvaluator::acceptBoolExpr( SimErrMsgId errCode ) {
 
     SimExpr rExpr = INIT_EXPR;

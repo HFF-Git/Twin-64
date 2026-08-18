@@ -26,21 +26,23 @@
 
 //----------------------------------------------------------------------------------------
 // Local name space. We try to keep utility functions local to the file.  
-// None so far.
 //
 //----------------------------------------------------------------------------------------
 namespace {
 
 void copyStr( char *dst, const char *src, int maxSize, bool upshift ) {
 
-    if ( !dst || !src || maxSize <= 0 ) return;
+    if (( ! dst ) || ( ! src ) || ( maxSize <= 0 )) return;
 
     int i = 0;
 
-    while (( i < maxSize - 1 ) && ( src[ i ] != '\0' )) {
-    
+    while (( i < maxSize - 1 ) && ( src[i] != '\0' )) {
+
         char c = src[ i ];
-        if ( upshift ) c = toupper((char ) c );
+
+        if ( upshift )
+
+            c = static_cast<char>( toupper( static_cast<unsigned char>( c )));
 
         dst[ i ] = c;
         i++;
