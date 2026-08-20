@@ -67,16 +67,23 @@
 // Helper functions.
 //
 //----------------------------------------------------------------------------------------
-inline uint8_t toUint8( T64Word val ) {
+inline uint8_t clampUint8( T64Word val ) {
 
     if ( val <= UINT8_MAX ) return ( static_cast<uint8_t> ( val ));
     else return( UINT8_MAX );
 }
 
-inline uint32_t toUint32( T64Word val ) {
+inline uint32_t clampUint32( T64Word val ) {
 
     if ( val <= UINT32_MAX ) return ( static_cast<uint32_t> ( val ));
     else return( UINT32_MAX );
+}
+
+inline int clampInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) return( INT32_MIN );
+    if ( val > INT32_MAX ) return( INT32_MAX );
+    return ( static_cast<uint32_t> ( val ));
 }
 
 inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {

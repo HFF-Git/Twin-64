@@ -80,6 +80,17 @@ enum BitOpId : int {
 };
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int toInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
+    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<int> ( val ));
+}
+
+//----------------------------------------------------------------------------------------
 // Add operation.
 //
 //----------------------------------------------------------------------------------------
@@ -355,7 +366,7 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 
     SimTokTypeId regType    = tok -> tokTyp( );
-    int          regId      = tok -> tokVal( );
+    T64Word      regId      = tok -> tokVal( );
     int          modNum     = -1;
 
     rExpr -> typ      = TYP_NIL;
@@ -401,8 +412,8 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
 
-    int  len  = sizeof( T64Word );
-    bool sExt = true;
+    size_t  len  = sizeof( T64Word );
+    bool    sExt = true;
 
     tok -> nextToken( );
 

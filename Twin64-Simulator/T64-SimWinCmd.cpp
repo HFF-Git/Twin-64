@@ -39,6 +39,17 @@
 namespace {
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int toInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
+    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<int> ( val ));
+}
+
+//----------------------------------------------------------------------------------------
 // We think outside in window numbers starting at one. Internally, there is an 
 // array of windows starting at zero. When parsing a command, we map right there.
 // A valid window number from 1 to MAX is mapped, all other numbers are mapped 
