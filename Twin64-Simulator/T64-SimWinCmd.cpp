@@ -450,7 +450,7 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
 void SimCommandsWin::setDefaults( ) {
     
     setWinType( WT_CMD_WIN );
-    setRadix( glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT ));
+    setRadix( glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
     setWinLimitsForToggle( 0, 10, MAX_WIN_ROW_SIZE, 104, MAX_WIN_COL_SIZE );
@@ -997,7 +997,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char pref
  
             return ( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
-                           (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
+                           (int) glb -> env -> getEnvVarNum((char *) ENV_CMD_CNT )));
         }
         else return ( snprintf( promptStr, promptStrLen, "->" ));
     }
@@ -1008,7 +1008,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char pref
         return ( snprintf( promptStr, promptStrLen,
                            "%c(%i) ->",
                            prefix,
-                           (int) glb -> env -> getEnvVarInt((char *) ENV_CMD_CNT )));
+                           (int) glb -> env -> getEnvVarNum((char *) ENV_CMD_CNT )));
         }
         else return ( snprintf( promptStr, promptStrLen, "%c->", prefix ));
     }
@@ -1212,7 +1212,7 @@ void  SimCommandsWin::displayMemContent( T64Word ofs, T64Word len, SimTokId fmtO
         winOut -> printNumber( index, FMT_HEX_2_4_4 );
         winOut -> writeChars( ": " );
         
-        for ( uint32_t i = 0; i < wordsPerLine; i++ ) {
+        for ( int i = 0; i < wordsPerLine; i++ ) {
             
             if ( index < limit ) {
 
@@ -1489,7 +1489,7 @@ void SimCommandsWin::exitCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        int exitVal = glb -> env -> getEnvVarInt((char *) ENV_EXIT_CODE );
+        int exitVal = glb -> env -> getEnvVarNum((char *) ENV_EXIT_CODE );
         exit(( exitVal > 255 ) ? 255 : exitVal );
     }
     else {
@@ -1909,7 +1909,7 @@ void SimCommandsWin::runCmd( ) {
 void SimCommandsWin::writeLineCmd( ) {
     
     SimExpr  rExpr = INIT_EXPR;
-    int      rdx   = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int      rdx   = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
     
     eval -> parseExpr( &rExpr );
     
@@ -2220,7 +2220,7 @@ void SimCommandsWin::ifCmd( ) {
 void SimCommandsWin::assertCheckCmd( bool doExit ) {
 
     char msgBuf[ MAX_TEXT_LINE_SIZE ];
-    char msgBufLen = 0;
+    int  msgBufLen = 0;
     char *msgStr   = nullptr;
     bool bVal      = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
 
@@ -2263,7 +2263,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
     }
 
     glb -> env -> setEnvVar( totaCntName, 
-                        glb -> env ->getEnvVarInt( totaCntName) + 1 );
+                        glb -> env ->getEnvVarNum( totaCntName) + 1 );
 
     if ( bVal ) {
 
@@ -2272,7 +2272,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
                                 "PASS" );
 
         glb -> env -> setEnvVar( passEnvName, 
-                        glb -> env ->getEnvVarInt( passEnvName) + 1 );
+                        glb -> env ->getEnvVarNum( passEnvName) + 1 );
     }
     else {
 
@@ -2281,7 +2281,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
                                 "FAIL" );
 
         glb -> env -> setEnvVar( failEnvName, 
-                        glb -> env ->getEnvVarInt( failEnvName  ) + 1 );
+                        glb -> env ->getEnvVarNum( failEnvName  ) + 1 );
     }
 
     if ( glb -> console -> isConsole( )) {
@@ -2398,7 +2398,7 @@ void SimCommandsWin::writeLogCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayMemCmd( ) {
     
-    int         rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int         rdx     = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
     SimTokId    fmtOpt  = ( rdx == 10 ) ? TOK_DEC : TOK_HEX;
     T64Word     ofs     = 0;
     T64Word     len     = sizeof( T64Word );
@@ -2783,7 +2783,7 @@ void SimCommandsWin::winEnableCmd( bool enable ) {
 void SimCommandsWin::winSetRadixCmd( ) {
 
    
-    int rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+    int rdx     = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
     int winNum  = -1;
    
     if ( tok -> isToken( TOK_EOS )) {
@@ -2793,7 +2793,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
     }
     else if ( tok -> isToken( TOK_COMMA )) {
         
-        rdx = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
+        rdx = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
         tok -> nextToken( );
 
         winNum = eval -> acceptIntExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );

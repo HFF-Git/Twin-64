@@ -138,7 +138,7 @@ inline bool isAlignedOfs( T64Word ofs,  int align ) {
 // little endian machine. Only lengths of 1, 2, 4, or 8 are supported.
 //
 //----------------------------------------------------------------------------------------
-inline bool copyEndianAware( uint8_t *dst, uint8_t *src, int len ) {
+inline bool copyEndianAware( uint8_t *dst, uint8_t *src, size_t len ) {
 
     if (( len != 1 ) && ( len != 2 ) && 
         ( len != 4 ) && ( len != 8 )) return( false );     
@@ -325,17 +325,17 @@ inline void depositInstrBit( T64Instr *instr, int bitpos, bool value ) {
     *instr = (( *instr & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-inline void depositInstrRegR( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegR( T64Instr *instr, T64Word regId ) {
     
     depositInstrField( instr, 22, 4, regId );
 }
 
-inline void depositInstrRegB( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegB( T64Instr *instr, T64Word regId ) {
     
    depositInstrField( instr, 15, 4, regId );
 }
 
-inline void depositInstrRegA( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegA( T64Instr *instr, T64Word regId ) {
     
     depositInstrField( instr, 9, 4, regId );
 }
@@ -350,11 +350,11 @@ inline T64Word extractBit64( T64Word arg, uint8_t bitpos ) {
     return ( arg >> bitpos ) & 1;
 }
 
-inline T64Word extractField64( T64Word arg, uint8_t bitpos, int len ) {
+inline T64Word extractField64( T64Word arg, int bitpos, int len ) {
     
     if ( bitpos > 63 ) return ( 0 );
     if ( bitpos + len > 64 ) return ( 0 );
-    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
+    return ( arg >> bitpos ) & (( UINT64_C( 1 ) << len ) - 1 );
 }
 
 #if 0
@@ -381,21 +381,24 @@ inline void depositBit64( T64Word *arg, uint8_t bitpos, uint8_t val ) {
 
     if ( bitpos <= 63 ) {
 
-        if ( val > 0 ) *arg |= ( 1U << bitpos );
-        else *arg &= ~ ( 1U << bitpos );
+        if ( val > 0 ) *arg |= ( UINT64_C( 1 ) << bitpos );
+        else *arg &= ~ ( UINT64_C( 1 ) << bitpos );
     }
 }
 
-inline T64Word depositField64( T64Word word,
-                               int     bitpos,
-                               int     len,
-                               T64Word value) {
+inline T64Word depositField64(T64Word word, int bitpos, int len, T64Word val ) {
 
-    T64Word mask = ( len >= 64 ) ? ~0ULL : (( 1ULL << len ) - 1) ;
+    uint64_t mask;
+
+    if ( len == 64 ) mask = UINT64_MAX;
+    else             mask = ( UINT64_C( 1 ) << len ) - 1;
+
     mask <<= bitpos;
 
-    return ( T64Word)(((uint64_t)word & ~mask) |
-                (((uint64_t)value << bitpos) & mask));
+    uint64_t result = (static_cast<uint64_t>( word ) & ~mask) |
+                      ((static_cast<uint64_t>( val ) << bitpos ) & mask );
+
+    return ( static_cast<T64Word>( result ));
 }
 
 inline T64Word shiftRight128( T64Word hi, T64Word lo, int shift ) {

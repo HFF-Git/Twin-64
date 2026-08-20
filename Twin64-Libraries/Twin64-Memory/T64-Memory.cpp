@@ -59,7 +59,7 @@ T64Memory::T64Memory( T64System     *sys,
                       T64MemKind    mKind,
                       T64MemType    mType,
                       T64Word       spaAdr,
-                      int           spaLen ) : 
+                      T64Word       spaLen ) : 
 
                       T64Module(    MT_MEM, 
                                     modNum,
@@ -106,7 +106,7 @@ void T64Memory::resetModule( ) {
 // offset on our SPA range. The address needs to be aligned with length parameter.
 //
 //----------------------------------------------------------------------------------------
-bool T64Memory::busOpReadEvent( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Memory::busOpReadEvent( T64Word pAdr, uint8_t *data, size_t len ) {
 
     if ( isInIoAdrRange( pAdr )) {
 
@@ -140,7 +140,7 @@ bool T64Memory::busOpReadEvent( T64Word pAdr, uint8_t *data, int len ) {
 // offset on our SPA range. The address needs to be aligned with length parameter.
 //
 //----------------------------------------------------------------------------------------
-bool T64Memory::busOpWriteEvent( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Memory::busOpWriteEvent( T64Word pAdr, uint8_t *data, size_t len ) {
 
     if ( isInIoAdrRange( pAdr )) {
 

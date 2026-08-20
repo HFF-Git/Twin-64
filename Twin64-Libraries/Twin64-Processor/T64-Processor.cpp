@@ -501,12 +501,12 @@ bool T64Processor::busOpControl( T64BBusOpControlEvents id,
     return( sys -> busOpControl( this, id, arg1, arg2 ));
 }
 
-bool T64Processor::busOpReadEvent( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpReadEvent( T64Word pAdr, uint8_t *data, size_t len ) {
 
     return( handleHPARead( pAdr, data, len ));
 }
 
-bool T64Processor::busOpWriteEvent( T64Word pAdr, uint8_t *data, int len ) {
+bool T64Processor::busOpWriteEvent( T64Word pAdr, uint8_t *data, size_t len ) {
 
     return( handleHPAWrite( pAdr, data, len ));
 }   

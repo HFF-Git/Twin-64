@@ -114,7 +114,7 @@ struct T64Module {
     T64Module( T64ModuleType    modType, 
                int              modNum,
                T64Word          spaAdr,
-               int              spaLen  );
+               T64Word          spaLen  );
 
     virtual             ~T64Module()            = default;
 
@@ -122,10 +122,10 @@ struct T64Module {
     virtual void        resetModule( )          = 0;
 
     virtual bool        
-    busOpReadEvent( T64Word pAdr, uint8_t *data, int len ) = 0;
+    busOpReadEvent( T64Word pAdr, uint8_t *data, size_t len ) = 0;
 
     virtual bool        
-    busOpWriteEvent( T64Word pAdr, uint8_t *data, int len ) = 0;
+    busOpWriteEvent( T64Word pAdr, uint8_t *data, size_t len ) = 0;
 
     virtual bool        
     busOpControlEvent( T64BBusOpControlEvents event, 
@@ -136,9 +136,9 @@ struct T64Module {
     const char          *getModuleTypeName( );
     
     T64Word             getHpaAdr( );
-    int                 getHpaLen( );
+    T64Word             getHpaLen( );
     T64Word             getSpaAdr( );
-    int                 getSpaLen( );
+    T64Word             getSpaLen( );
 
     public: 
 
@@ -148,9 +148,9 @@ struct T64Module {
     protected: 
 
     T64Word             hpaAdr      = 0;
-    int                 hpaLen      = 0;
+    T64Word             hpaLen      = 0;
     T64Word             spaAdr      = 0;
-    int                 spaLen      = 0;
+    T64Word             spaLen      = 0;
 
     T64Word             mrStatus;
     T64Word             mrCommand;
@@ -260,18 +260,18 @@ struct T64System {
     bool                busOpRead(  T64Module *mod, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len,
+                                    size_t len,
                                     bool rsv = false );
 
     bool                busOpReadRsv( T64Module *mod, 
                                       T64Word pAdr, 
                                       uint8_t *data, 
-                                      int len );
+                                      size_t len );
 
     bool                busOpWrite( T64Module *mod, 
                                     T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len,
+                                    size_t len,
                                     bool cond = false );
 
     bool                busOpControl( T64Module *mod,

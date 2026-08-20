@@ -324,9 +324,9 @@ bool readMem( T64System *sys, T64Word adr, uint8_t *val, size_t size ) {
 
     if ( ! translateAdr( sys, adr, &physAdr )) return ( false );
 
-    if ( sys -> busOpRead( nullptr, physAdr, (uint8_t *)val, size)) {
+    if ( sys -> busOpRead( nullptr, physAdr, (uint8_t *)val, size )) {
 
-        copyEndianAware((uint8_t *) val, (uint8_t *) val, size);
+        copyEndianAware((uint8_t *) val, (uint8_t *) val, size );
         return ( true );    
     }
 
@@ -365,7 +365,7 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
     if ( tok -> isToken( TOK_COLON )) {
 
         tok -> nextToken( );
-        modNum = acceptNumExpr( ERR_EXPECTED_NUM_VALUE, 0, INT32_MAX );
+        modNum = acceptIntExpr( ERR_EXPECTED_NUM_VALUE, 0, INT32_MAX );
     }
     else modNum = glb -> winDisplay -> getCurrentWinModNum( );
         

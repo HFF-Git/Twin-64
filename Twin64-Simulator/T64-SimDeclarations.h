@@ -768,7 +768,7 @@ struct SimEnv {
     void            setEnvAttr( char *name, bool predefined, bool readOnly );
     
     bool            getEnvVarBool( char *name, bool def = false );
-    T64Word         getEnvVarInt( char *name, T64Word def = 0 );
+    T64Word         getEnvVarNum( char *name, T64Word def = 0 );
     char            *getEnvVarStr( char *name, char *def = nullptr );
     SimEnvTabEntry  *getEnvEntry( char *name );
     SimEnvTabEntry  *getEnvEntry( int index );
@@ -1078,8 +1078,8 @@ struct SimWinScrollable : SimWin {
     void            setLimitItemAdr( T64Word adr );
     T64Word         getLimitItemAdr( );
     
-    void            setLineIncrementItemAdr( int arg );
-    int             getLineIncrementItemAdr( );
+    void            setLineIncrementItemAdr( T64Word arg );
+    T64Word         getLineIncrementItemAdr( );
 
     void            winHome( T64Word pos = 0 );
     void            winJump( T64Word pos );
@@ -1419,9 +1419,9 @@ public:
     void            windowSetCmdWinRows( int rows );
     void            windowClearCmdWin( );
     
-    void            windowHome( int amt, int winNum );
-    void            windowForward( int amt, int winNum );
-    void            windowBackward( int amt, int winNum );
+    void            windowHome( T64Word amt, int winNum );
+    void            windowForward( T64Word amt, int winNum );
+    void            windowBackward( T64Word amt, int winNum );
     void            windowJump( T64Word pos, int winNum );
     void            windowToggle( int winNum, int toggleVal );
     void            windowExchangeOrder( int winNum );

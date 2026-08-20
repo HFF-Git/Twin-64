@@ -361,7 +361,7 @@ void SimWinDisplay::reDraw( ) {
     int maxRowsNeeded                       = 0;
     int maxColumnsNeeded                    = 0;
     int stackColumnGap                      = 2;
-    int minRowSize = glb -> env -> getEnvVarInt((char *) ENV_WIN_MIN_ROWS );
+    int minRowSize = glb -> env -> getEnvVarNum((char *) ENV_WIN_MIN_ROWS );
     
     if ( winModeOn ) {
        
@@ -669,7 +669,7 @@ void SimWinDisplay::windowClearCmdWin( ) {
 // The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowHome( int pos, int winNum ) {
+void SimWinDisplay::windowHome( T64Word pos, int winNum ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
@@ -688,7 +688,7 @@ void SimWinDisplay::windowHome( int pos, int winNum ) {
 // windows for locating the window object. The window is made the current window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowForward( int amt, int winNum ) {
+void SimWinDisplay::windowForward( T64Word amt, int winNum ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );
@@ -712,7 +712,7 @@ void SimWinDisplay::windowForward( int amt, int winNum ) {
 // window.
 //
 //----------------------------------------------------------------------------------------
-void SimWinDisplay::windowBackward( int amt, int winNum ) {
+void SimWinDisplay::windowBackward( T64Word amt, int winNum ) {
     
     if ( ! winModeOn ) throw( ERR_NOT_IN_WIN_MODE );
     if ( winNum == -1 ) winNum = getCurrentWindow( );

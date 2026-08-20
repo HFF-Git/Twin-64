@@ -35,7 +35,7 @@
 T64Module::T64Module( T64ModuleType    modType, 
                       int              modNum,
                       T64Word          spaAdr,
-                      int              spaLen ) {
+                      T64Word          spaLen ) {
 
     this -> moduleTyp   = modType;
     this -> moduleNum   = modNum;
@@ -81,7 +81,7 @@ T64Word T64Module::getHpaAdr( ) {
     return ( hpaAdr );
 }
 
-int T64Module::getHpaLen( ) {
+T64Word T64Module::getHpaLen( ) {
 
     return ( hpaLen );
 }
@@ -91,7 +91,7 @@ T64Word T64Module::getSpaAdr( )  {
     return ( spaAdr );
 }
 
-int T64Module::getSpaLen( )  {
+T64Word T64Module::getSpaLen( )  {
 
     return ( spaLen );
 }

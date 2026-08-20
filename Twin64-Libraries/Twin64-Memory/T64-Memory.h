@@ -64,15 +64,15 @@ public:
                T64MemKind   mKind,
                T64MemType   mType,
                T64Word      spaAdr,
-               int          spaLen );
+               T64Word      spaLen );
 
     virtual     ~ T64Memory( );
     
     void        initModule( );
     void        resetModule( );
  
-    bool        busOpReadEvent( T64Word pAdr, uint8_t *data, int len );
-    bool        busOpWriteEvent( T64Word pAdr, uint8_t *data, int len );
+    bool        busOpReadEvent( T64Word pAdr, uint8_t *data, size_t len );
+    bool        busOpWriteEvent( T64Word pAdr, uint8_t *data, size_t len );
 
     bool        busOpControlEvent( T64BBusOpControlEvents event, 
                                    T64Word            arg1, 
