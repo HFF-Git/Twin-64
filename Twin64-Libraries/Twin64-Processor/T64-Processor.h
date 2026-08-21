@@ -215,7 +215,7 @@ struct T64Cpu {
     T64Word         getRegA( uint32_t instr );
     void            setRegR( uint32_t instr, T64Word val );
    
-    T64Word         instrRead( T64Word vAdr );
+    T64Instr        instrRead( T64Word vAdr );
     T64Word         dataRead( T64Word vAdr, int len, bool sExt, bool rsv = false );
     T64Word         dataReadRegBOfsImm13( uint32_t instr, bool sExt, bool rsv = false );
     T64Word         dataReadRegBOfsRegX( uint32_t instr, bool sExt );
@@ -311,11 +311,11 @@ struct T64Processor : T64ProcThreadModule {
 
     bool            busOpReadEvent( T64Word pAdr, 
                                     uint8_t *data, 
-                                    int len ) override;
+                                    size_t len ) override;
 
     bool            busOpWriteEvent( T64Word pAdr, 
                                      uint8_t *data, 
-                                     int len ) override; 
+                                     size_t len ) override; 
 
     bool            busOpControlEvent( T64BBusOpControlEvents id, 
                                        T64Word            arg1, 

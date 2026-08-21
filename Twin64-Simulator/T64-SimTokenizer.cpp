@@ -107,31 +107,31 @@ void appendChar(char *&out, char *end, char c) {
 //
 //
 //----------------------------------------------------------------------------------------
-void appendUTF8( char *&out, char *end, uint32_t cp ) {
+void appendUTF8(char *&out, char *end, uint32_t cp) {
 
-    if (cp <= 0x7F) {
-        
-        appendChar( out, end, (char)cp );
+    if ( cp <= 0x7F ) {
+
+        appendChar( out, end, static_cast<char>(cp));
     }
-    else if (cp <= 0x7FF) {
-        
-        appendChar( out, end, 0xC0 | ( cp >> 6 ));
-        appendChar( out, end, 0x80 | ( cp & 0x3F ));
+    else if ( cp <= 0x7FF ) {
+
+        appendChar( out, end, static_cast<char>(0xC0 | (cp >> 6)));
+        appendChar( out, end, static_cast<char>(0x80 | (cp & 0x3F)));
     }
     else if ( cp <= 0xFFFF ) {
-        
-        appendChar( out, end, 0xE0 | ( cp >> 12 ));
-        appendChar( out, end, 0x80 | (( cp >> 6 ) & 0x3F ));
-        appendChar( out, end, 0x80 | ( cp & 0x3F ));
+
+        appendChar( out, end, static_cast<char>(0xE0 | (cp >> 12)));
+        appendChar( out, end, static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+        appendChar( out, end, static_cast<char>(0x80 | (cp & 0x3F)));
     }
     else if ( cp <= 0x10FFFF ) {
-        
-        appendChar( out, end, 0xF0 | ( cp >> 18 ));
-        appendChar( out, end, 0x80 | (( cp >> 12 ) & 0x3F ));
-        appendChar( out, end, 0x80 | (( cp >> 6 ) & 0x3F ));
-        appendChar( out, end, 0x80 | ( cp & 0x3F ));
+
+        appendChar( out, end, static_cast<char>(0xF0 | (cp >> 18)));
+        appendChar( out, end, static_cast<char>(0x80 | ((cp >> 12) & 0x3F)));
+        appendChar( out, end, static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+        appendChar( out, end, static_cast<char>(0x80 | (cp & 0x3F)));
     }
-    else throw( ERR_INVALID_UNICODE_ESCAPE );
+    else throw(ERR_INVALID_UNICODE_ESCAPE);
 }
 
 //----------------------------------------------------------------------------------------

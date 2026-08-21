@@ -67,16 +67,23 @@
 // Helper functions.
 //
 //----------------------------------------------------------------------------------------
-inline uint8_t toUint8( T64Word val ) {
+inline uint8_t clampUint8( T64Word val ) {
 
     if ( val <= UINT8_MAX ) return ( static_cast<uint8_t> ( val ));
     else return( UINT8_MAX );
 }
 
-inline uint32_t toUint32( T64Word val ) {
+inline uint32_t clampUint32( T64Word val ) {
 
     if ( val <= UINT32_MAX ) return ( static_cast<uint32_t> ( val ));
     else return( UINT32_MAX );
+}
+
+inline int clampInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) return( INT32_MIN );
+    if ( val > INT32_MAX ) return( INT32_MAX );
+    return ( static_cast<uint32_t> ( val ));
 }
 
 inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
@@ -138,7 +145,7 @@ inline bool isAlignedOfs( T64Word ofs,  int align ) {
 // little endian machine. Only lengths of 1, 2, 4, or 8 are supported.
 //
 //----------------------------------------------------------------------------------------
-inline bool copyEndianAware( uint8_t *dst, uint8_t *src, int len ) {
+inline bool copyEndianAware( uint8_t *dst, uint8_t *src, size_t len ) {
 
     if (( len != 1 ) && ( len != 2 ) && 
         ( len != 4 ) && ( len != 8 )) return( false );     
@@ -338,17 +345,17 @@ inline void depositInstrBit( T64Instr *instr, size_t bitpos, bool value ) {
     *instr = (( *instr & ~mask ) | (( value << bitpos ) & mask ));
 }
 
-inline void depositInstrRegR( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegR( T64Instr *instr, T64Word regId ) {
     
     depositInstrField( instr, 22, 4, regId );
 }
 
-inline void depositInstrRegB( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegB( T64Instr *instr, T64Word regId ) {
     
    depositInstrField( instr, 15, 4, regId );
 }
 
-inline void depositInstrRegA( T64Instr *instr, uint32_t regId ) {
+inline void depositInstrRegA( T64Instr *instr, T64Word regId ) {
     
     depositInstrField( instr, 9, 4, regId );
 }
@@ -363,11 +370,11 @@ inline T64Word extractBit64( T64Word arg, uint8_t bitpos ) {
     return ( arg >> bitpos ) & 1;
 }
 
-inline T64Word extractField64( T64Word arg, uint8_t bitpos, int len ) {
+inline T64Word extractField64( T64Word arg, int bitpos, int len ) {
     
     if ( bitpos > 63 ) return ( 0 );
     if ( bitpos + len > 64 ) return ( 0 );
-    return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
+    return ( arg >> bitpos ) & (( UINT64_C( 1 ) << len ) - 1 );
 }
 
 inline T64Word extractSignedField64( T64Word arg, int bitpos, int len ) {
@@ -384,8 +391,8 @@ inline void depositBit64( T64Word *arg, size_t bitpos, uint8_t val ) {
 
     if ( bitpos <= 63 ) {
 
-        if ( val > 0 ) *arg |= ( 1U << bitpos );
-        else *arg &= ~ ( 1U << bitpos );
+        if ( val > 0 ) *arg |= ( UINT64_C( 1 ) << bitpos );
+        else *arg &= ~ ( UINT64_C( 1 ) << bitpos );
     }
 }
 

@@ -376,7 +376,7 @@ T64Word T64Cpu::diagOpHandler( int opt, T64Word arg1, T64Word arg2 ) {
 // and access control data.
 //
 //----------------------------------------------------------------------------------------
-T64Word T64Cpu::instrRead( T64Word vAdr ) {
+T64Instr T64Cpu::instrRead( T64Word vAdr ) {
 
     uint32_t instr = 0;
     T64Word  pAdr  = vAdr;

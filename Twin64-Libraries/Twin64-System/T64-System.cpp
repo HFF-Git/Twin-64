@@ -447,7 +447,7 @@ void T64System::run( ) {
 bool T64System::busOpRead( T64Module *mod, 
                            T64Word pAdr, 
                            uint8_t *data, 
-                           int len,
+                           size_t len,
                            bool rsv ) {
 
     T64Module *mPtr = lookupByAdr( pAdr );
@@ -492,7 +492,7 @@ bool T64System::busOpRead( T64Module *mod,
 bool T64System::busOpWrite( T64Module *mod, 
                             T64Word pAdr, 
                             uint8_t *data, 
-                            int len, 
+                            size_t len, 
                             bool cond ) {
 
     bool rStat = false;

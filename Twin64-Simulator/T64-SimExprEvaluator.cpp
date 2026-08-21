@@ -80,6 +80,17 @@ enum BitOpId : int {
 };
 
 //----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int toInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
+    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<int> ( val ));
+}
+
+//----------------------------------------------------------------------------------------
 // Add operation.
 //
 //----------------------------------------------------------------------------------------
@@ -324,9 +335,9 @@ bool readMem( T64System *sys, T64Word adr, uint8_t *val, size_t size ) {
 
     if ( ! translateAdr( sys, adr, &physAdr )) return ( false );
 
-    if ( sys -> busOpRead( nullptr, physAdr, (uint8_t *)val, size)) {
+    if ( sys -> busOpRead( nullptr, physAdr, (uint8_t *)val, size )) {
 
-        copyEndianAware((uint8_t *) val, (uint8_t *) val, size);
+        copyEndianAware((uint8_t *) val, (uint8_t *) val, size );
         return ( true );    
     }
 
@@ -355,7 +366,7 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 
     SimTokTypeId regType    = tok -> tokTyp( );
-    int          regId      = tok -> tokVal( );
+    T64Word      regId      = tok -> tokVal( );
     int          modNum     = -1;
 
     rExpr -> typ      = TYP_NIL;
@@ -365,7 +376,7 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
     if ( tok -> isToken( TOK_COLON )) {
 
         tok -> nextToken( );
-        modNum = acceptNumExpr( ERR_EXPECTED_NUM_VALUE, 0, INT32_MAX );
+        modNum = acceptIntExpr( ERR_EXPECTED_NUM_VALUE, 0, INT32_MAX );
     }
     else modNum = glb -> winDisplay -> getCurrentWinModNum( );
         
@@ -401,8 +412,8 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
 
-    int  len  = sizeof( T64Word );
-    bool sExt = true;
+    size_t  len  = sizeof( T64Word );
+    bool    sExt = true;
 
     tok -> nextToken( );
 

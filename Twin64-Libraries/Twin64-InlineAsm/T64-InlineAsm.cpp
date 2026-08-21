@@ -656,6 +656,18 @@ Token   currentToken;
 //----------------------------------------------------------------------------------------
 void parseExpr( Expr *rExpr );
 
+
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int toInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
+    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<int> ( val ));
+}
+
 //----------------------------------------------------------------------------------------
 // The token lookup function. We just do a linear search.
 //
@@ -1611,7 +1623,7 @@ void acceptRegA( uint32_t *instr ) {
     Expr rExpr = INIT_EXPR;
 
     parseExpr( &rExpr );
-    if (  rExpr.typ == TYP_GREG ) depositInstrRegA( instr, (uint32_t) rExpr.val );
+    if (  rExpr.typ == TYP_GREG ) depositInstrRegA( instr, rExpr.val );
     else throw ( ERR_EXPECTED_GENERAL_REG );
 }
 
@@ -1620,7 +1632,7 @@ void acceptRegB( uint32_t *instr ) {
     Expr rExpr = INIT_EXPR;
 
     parseExpr( &rExpr );
-    if (  rExpr.typ == TYP_GREG ) depositInstrRegB( instr, (uint32_t) rExpr.val );
+    if (  rExpr.typ == TYP_GREG ) depositInstrRegB( instr, rExpr.val );
     else throw ( ERR_EXPECTED_GENERAL_REG );
 }
 
@@ -1686,7 +1698,7 @@ void parseModeTypeInstr( uint32_t *instr, uint32_t instrOpToken ) {
 
             replaceInstrGroupField( instr, OPG_ALU );
 
-            int tmpRegId = (int) rExpr.val;
+            T64Word tmpRegId = rExpr.val;
             
             nextToken( );
             parseExpr( &rExpr );

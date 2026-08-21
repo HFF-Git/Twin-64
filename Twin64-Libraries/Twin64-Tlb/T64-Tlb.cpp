@@ -65,7 +65,7 @@ inline T64Word tlbPageMask( int pSize ) {
 //
 //----------------------------------------------------------------------------------------
 T64TlbEntry* lookupTlbEntry( T64TlbEntry *tlb, 
-                             uint32_t    tlbEntries, 
+                             int         tlbEntries, 
                              T64Word     vAdr ) {
     
     T64TlbEntry *best = nullptr;
@@ -306,7 +306,7 @@ void T64GlobalTlb::resetModule( ) {
 //
 //----------------------------------------------------------------------------------------
 bool 
-T64GlobalTlb::busOpReadEvent( T64Word pAdr, uint8_t *data, int len )  {
+T64GlobalTlb::busOpReadEvent( T64Word pAdr, uint8_t *data, size_t len )  {
 
     if ( ! isInIoHpaRange( pAdr )) return( false );
     if ( ! isAlignedAdr( pAdr, sizeof( T64Word) )) return ( false );
@@ -329,7 +329,7 @@ T64GlobalTlb::busOpReadEvent( T64Word pAdr, uint8_t *data, int len )  {
 //
 //----------------------------------------------------------------------------------------
 bool 
-T64GlobalTlb::busOpWriteEvent( T64Word pAdr, uint8_t *data, int len )  {
+T64GlobalTlb::busOpWriteEvent( T64Word pAdr, uint8_t *data, size_t len )  {
 
     if ( ! isInIoHpaRange( pAdr )) return( false );
     if ( ! isAlignedAdr( pAdr, sizeof( T64Word) )) return ( false );

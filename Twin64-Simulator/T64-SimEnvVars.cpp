@@ -285,7 +285,7 @@ void SimEnv::setEnvAttr( char *name, bool predefined, bool readOnly ) {
 //----------------------------------------------------------------------------------------
 // Environment variables getter functions. Just look up the entry and return the 
 // value. If the entry does not exist, we return an optional default.
-//
+// ??? check the type ?.....
 //----------------------------------------------------------------------------------------
 bool SimEnv::getEnvVarBool( char *name, bool def ) {
     
@@ -295,7 +295,7 @@ bool SimEnv::getEnvVarBool( char *name, bool def ) {
     else                return ( def );
 }
 
-T64Word SimEnv::getEnvVarInt( char *name, T64Word def ) {
+T64Word SimEnv::getEnvVarNum( char *name, T64Word def ) {
     
     int index = lookupEntry( name );
     
