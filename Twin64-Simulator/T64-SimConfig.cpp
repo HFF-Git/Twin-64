@@ -57,7 +57,7 @@ int parseCmdLineOptions( int    argc,
 
     const char *name    = arg + 2;
     const char *eq      = strchr(name, '=');
-    size_t nameLen      = (( eq ) ? ((size_t)( eq - name )) : ( strlen( name )));
+    size_t nameLen      = (( eq ) ? ( static_cast<size_t>( eq - name )) : ( strlen( name )));
 
     for ( int i = 0; ( optTable && optTable[i].name ); i++ ) {
 
@@ -68,7 +68,7 @@ int parseCmdLineOptions( int    argc,
                 
                 if ( eq ) {
 
-                    *optArg = (char *)( eq + 1 );
+                    *optArg = const_cast<char *>( eq + 1 );
                 }
                 else if ( optIndex + 1 < argc ) {
 
@@ -83,7 +83,7 @@ int parseCmdLineOptions( int    argc,
             } 
             else if ( optTable[ i ].argOpt == CL_OPT_OPTIONAL_ARGUMENT ) {
                 
-                *optArg = (( eq ) ? ((char *)( eq + 1 )) : ( NULL ));
+                *optArg = (( eq ) ? (const_cast<char *>( eq + 1 )) : ( NULL ));
             
             } else *optArg = NULL;
     
