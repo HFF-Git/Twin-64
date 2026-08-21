@@ -83,7 +83,7 @@ inline int clampInt32( T64Word val ) {
 
     if ( val < INT32_MIN ) return( INT32_MIN );
     if ( val > INT32_MAX ) return( INT32_MAX );
-    return ( static_cast<uint32_t> ( val ));
+    return ( static_cast<int> ( val ));
 }
 
 inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
@@ -333,16 +333,26 @@ inline int extractInstrImm20( T64Instr instr ) {
 // by the inline assembler.
 //
 //----------------------------------------------------------------------------------------
-inline void depositInstrField( T64Instr *instr, size_t bitpos, size_t len, T64Word value ) {
+inline void depositInstrField( T64Instr *instr,
+                               size_t   bitpos,
+                               size_t   len,
+                               T64Word  value ) {
     
-    uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
-    *instr = (( *instr & ~ mask ) | (( value << bitpos ) & mask ));
+    uint32_t mask = ( len == 32 ) ? UINT32_MAX : ((UINT32_C(1) << len) - 1);
+    mask <<= bitpos;
+
+    *instr = static_cast<T64Instr>(
+                (static_cast<uint32_t>( *instr ) & ~mask ) |
+                ((static_cast<uint32_t>( value ) << bitpos ) & mask ));
 }
 
-inline void depositInstrBit( T64Instr *instr, size_t bitpos, bool value ) {
-    
-    uint32_t mask = 1 << bitpos;
-    *instr = (( *instr & ~mask ) | (( value << bitpos ) & mask ));
+inline void depositInstrBit( T64Instr *instr,
+                             size_t    bitpos,
+                             bool      value ) {
+    uint32_t mask = UINT32_C( 1 ) << bitpos;
+
+    if ( value ) *instr |= static_cast<T64Instr>( mask );
+    else         *instr &= static_cast<T64Instr>(~mask );
 }
 
 inline void depositInstrRegR( T64Instr *instr, T64Word regId ) {
@@ -364,20 +374,24 @@ inline void depositInstrRegA( T64Instr *instr, T64Word regId ) {
 // General extract, deposit and shift functions.
 //
 //----------------------------------------------------------------------------------------
-inline T64Word extractBit64( T64Word arg, uint8_t bitpos ) {
+inline T64Word extractBit64( T64Word arg, size_t bitpos ) {
     
     if ( bitpos > 63 ) return ( 0 );
     return ( arg >> bitpos ) & 1;
 }
 
-inline T64Word extractField64( T64Word arg, int bitpos, int len ) {
+inline T64Word extractField64( T64Word arg, size_t bitpos, size_t len ) {
     
-    if ( bitpos > 63 ) return ( 0 );
-    if ( bitpos + len > 64 ) return ( 0 );
-    return ( arg >> bitpos ) & (( UINT64_C( 1 ) << len ) - 1 );
+    if (( bitpos > 63 ) || ( len > 64 - bitpos )) return ( 0 );
+    if ( len == 64 ) return ( arg );
+
+    uint64_t mask = ( UINT64_C(1) << len ) - 1;
+
+    return ( static_cast<T64Word>(
+                ( static_cast<uint64_t>(arg) >> bitpos ) & mask ));
 }
 
-inline T64Word extractSignedField64( T64Word arg, int bitpos, int len ) {
+inline T64Word extractSignedField64( T64Word arg, size_t bitpos, size_t len ) {
 
     T64Word field = ( arg >> bitpos ) &
                         ( static_cast<T64Word>(( UINT64_C( 1 ) << len ) - 1 ));
@@ -525,9 +539,9 @@ inline bool extractPsrEbit( T64Word psr ) {
     return( extractBit64( psr, 62 ));
 }
 
-inline uint8_t extractPsrXbit( T64Word psr ) {
+inline bool extractPsrXbit( T64Word psr ) {
 
-    return((uint8_t) extractBit64( psr, 61 ));
+    return( extractBit64( psr, 61 ));
 }
 
 inline bool extractPsrRbit( T64Word psr ) {

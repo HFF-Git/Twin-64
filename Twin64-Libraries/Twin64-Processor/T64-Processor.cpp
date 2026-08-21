@@ -413,10 +413,10 @@ bool T64Processor::handleHPARead( T64Word pAdr, uint8_t *data, int len ) {
 //----------------------------------------------------------------------------------------
 bool T64Processor::handleHPAWrite( T64Word pAdr, uint8_t *data, int len ) {
 
-    int     wordIndex   = (( pAdr - hpaAdr ) >> 3 );
-    int     regSetIndex = wordIndex / T64_IO_REG_SET_SIZE;
-    int     wordOfs     = pAdr % sizeof( T64Word );
-    T64Word tmp         = 0;
+    // int     wordIndex   = (( pAdr - hpaAdr ) >> 3 );
+    // int     regSetIndex = wordIndex / T64_IO_REG_SET_SIZE;
+    // int     wordOfs     = pAdr % sizeof( T64Word );
+    // T64Word tmp         = 0;
 
     // ??? what do we cover here ?
 

@@ -89,7 +89,7 @@ SimEnv::SimEnv( SimGlobals *glb, size_t size ) {
 // Utility functions to return variable attributes.
 //
 //----------------------------------------------------------------------------------------
-bool SimEnv::isValid( char *name ) {
+bool SimEnv::isValid( const char *name ) {
     
     int index = lookupEntry( name );
     
@@ -97,7 +97,7 @@ bool SimEnv::isValid( char *name ) {
     else return( false );
 }
 
-bool SimEnv::isReadOnly( char *name ) {
+bool SimEnv::isReadOnly( const char *name ) {
     
     int index = lookupEntry( name );
     
@@ -105,7 +105,7 @@ bool SimEnv::isReadOnly( char *name ) {
     else return( false );
 }
 
-bool SimEnv::isPredefined( char *name ) {
+bool SimEnv::isPredefined( const char *name ) {
     
     int index = lookupEntry( name );
     
@@ -137,7 +137,7 @@ int SimEnv::getEnvHwm( ) {
 // name size, if the name is too large.
 //
 //----------------------------------------------------------------------------------------
-int SimEnv::lookupEntry( char *name ) {
+int SimEnv::lookupEntry( const char *name ) {
     
     SimEnvTabEntry *entry = table;
 
@@ -188,7 +188,7 @@ int SimEnv::findFreeEntry( ) {
 // is deallocated.
 //
 //----------------------------------------------------------------------------------------
-void SimEnv::setEnvVar( char *name, T64Word val ) {
+void SimEnv::setEnvVar( const char *name, T64Word val ) {
     
     int index = lookupEntry( name );
     
@@ -213,7 +213,7 @@ void SimEnv::setEnvVar( char *name, T64Word val ) {
     else enterVar( name, val );
 }
 
-void SimEnv::setEnvVar( char *name, bool val )  {
+void SimEnv::setEnvVar( const char *name, bool val )  {
     
     int index = lookupEntry( name );
     
@@ -238,7 +238,7 @@ void SimEnv::setEnvVar( char *name, bool val )  {
     else enterVar( name, val );
 }
 
-void SimEnv::setEnvVar( char *name, char *str )  {
+void SimEnv::setEnvVar( const char *name, const char *str )  {
    
     int index = lookupEntry( name );
     
@@ -269,7 +269,7 @@ void SimEnv::setEnvVar( char *name, char *str )  {
 // readOnly.
 //
 //----------------------------------------------------------------------------------------
-void SimEnv::setEnvAttr( char *name, bool predefined, bool readOnly ) {
+void SimEnv::setEnvAttr( const char *name, bool predefined, bool readOnly ) {
 
     int index = lookupEntry( name );
 
@@ -383,7 +383,7 @@ void SimEnv::enterVar( const char *name,
 // water mark, adjust the HWM.
 //
 //----------------------------------------------------------------------------------------
-void SimEnv::removeEnvVar( char *name ) {
+void SimEnv::removeEnvVar( const char *name ) {
     
     int index = lookupEntry( name );
     
@@ -409,7 +409,7 @@ void SimEnv::removeEnvVar( char *name ) {
 // Format the ENV entry. 
 //
 //----------------------------------------------------------------------------------------
-int SimEnv::formatEnvEntry( char *name, char *buf, int bufLen ) {
+int SimEnv::formatEnvEntry( const char *name, char *buf, int bufLen ) {
 
     int index = lookupEntry( name );
     return( formatEnvEntry( index, buf, bufLen ));

@@ -69,13 +69,13 @@ void closeElfFile( elfio *reader ) {
 // there are errors.
 //
 //----------------------------------------------------------------------------------------
-bool elfioValidate( elfio *reader, char* msg, int msg_len ) {
+bool elfioValidate( elfio *reader, char* msg, size_t msg_len ) {
     
     std::string error = reader -> validate( );
     
     if ( msg != nullptr && msg_len > 0 ) {
         
-        strncpy( msg, error.c_str( ), (size_t) msg_len - 1 );
+        strncpy( msg, error.c_str( ), msg_len - 1 );
     }
     
     return error.empty( );

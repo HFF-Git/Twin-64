@@ -761,11 +761,11 @@ struct SimEnv {
     
     void            setupPredefined( );
    
-    void            setEnvVar( char *name, T64Word val );
-    void            setEnvVar( char *name, bool val );
-    void            setEnvVar( char *name, char *str );
-    void            removeEnvVar( char *name );
-    void            setEnvAttr( char *name, bool predefined, bool readOnly );
+    void            setEnvVar( const char *name, T64Word val );
+    void            setEnvVar( const char *name, bool val );
+    void            setEnvVar( const char *name, const char *str );
+    void            removeEnvVar( const char *name );
+    void            setEnvAttr( const char *name, bool predefined, bool readOnly );
     
     bool            getEnvVarBool( char *name, bool def = false );
     T64Word         getEnvVarNum( char *name, T64Word def = 0 );
@@ -774,16 +774,16 @@ struct SimEnv {
     SimEnvTabEntry  *getEnvEntry( int index );
 
     int             getEnvHwm( );
-    int             formatEnvEntry( char *name, char *buf, int bufLen );
+    int             formatEnvEntry( const char *name, char *buf, int bufLen );
     int             formatEnvEntry( int index, char *buf, int bufLen );
     
-    bool            isValid( char *name );
-    bool            isReadOnly( char *name );
-    bool            isPredefined( char *name );
+    bool            isValid( const char *name );
+    bool            isReadOnly( const char *name );
+    bool            isPredefined( const char *name );
    
     private:
     
-    int             lookupEntry( char *name );
+    int             lookupEntry( const char *name );
     int             findFreeEntry( );
     
     void            enterVar( const char *name, 
