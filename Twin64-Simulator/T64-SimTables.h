@@ -336,304 +336,304 @@ const int MAX_CMD_TOKEN_TAB = sizeof( cmdTokTab ) / sizeof( SimToken );
 const SimErrMsgTabEntry errMsgTab [ ] = {
     
     { .errNum = NO_ERR,                         
-      .errStr = (char *) "NO_ERR" },
+      .errStr = "NO_ERR" },
 
     { .errNum = ERR_NOT_SUPPORTED,              
-      .errStr = (char *) "Command or Function not supported (yet)" },
+      .errStr = "Command or Function not supported (yet)" },
     
     { .errNum = ERR_INVALID_CMD,                
-      .errStr = (char *) "Invalid command, use help" },
+      .errStr = "Invalid command, use help" },
 
     { .errNum = ERR_NUMERIC_OVERFLOW,                
-      .errStr = (char *) "Numeric overflow in expression" },
+      .errStr = "Numeric overflow in expression" },
     
     { .errNum = ERR_INVALID_CHAR_IN_TOKEN_LINE, 
-      .errStr = (char *) "Invalid char in input line" },
+      .errStr = "Invalid char in input line" },
     
     { .errNum = ERR_INVALID_ARG,                
-      .errStr = (char *) "Invalid argument for command" },
+      .errStr = "Invalid argument for command" },
 
     { .errNum = ERR_INVALID_WIN_ID,             
-      .errStr = (char *) "Invalid window Id" },
+      .errStr = "Invalid window Id" },
 
     { .errNum = ERR_INVALID_REG_ID,             
-      .errStr = (char *) "Invalid register Id" },
+      .errStr = "Invalid register Id" },
 
     { .errNum = ERR_INVALID_RADIX,              
-      .errStr = (char *) "Invalid radix" },
+      .errStr = "Invalid radix" },
 
     { .errNum = ERR_INVALID_EXIT_VAL,           
-      .errStr = (char *) "Invalid program exit code" },
+      .errStr = "Invalid program exit code" },
 
     { .errNum = ERR_INVALID_WIN_STACK_ID,       
-      .errStr = (char *) "Invalid window stack Id" },
+      .errStr = "Invalid window stack Id" },
 
     { .errNum = ERR_INVALID_EXPR,               
-      .errStr = (char *) "Invalid expression" },
+      .errStr = "Invalid expression" },
 
     { .errNum = ERR_INVALID_NUM,
-      .errStr = (char *) "Invalid number" },
+      .errStr = "Invalid number" },
 
     { .errNum = ERR_UNALIGNED_ADDR,             
-      .errStr = (char *) "Unaligned address" },
+      .errStr = "Unaligned address" },
 
     { .errNum = ERR_INVALID_ADDR,           
-      .errStr = (char *) "Invalid address" },
+      .errStr = "Invalid address" },
 
     { .errNum = ERR_INVALID_FMT_OPT,            
-      .errStr = (char *) "Invalid format option" },
+      .errStr = "Invalid format option" },
 
     { .errNum = ERR_INVALID_TOGGLE_VAL,            
-      .errStr = (char *) "Invalid toggle value" },
+      .errStr = "Invalid toggle value" },
 
     { .errNum = ERR_INVALID_WIN_TYPE,           
-      .errStr = (char *) "Invalid window type" },
+      .errStr = "Invalid window type" },
 
     { .errNum = ERR_INVALID_MODULE_TYPE,           
-      .errStr = (char *) "Invalid module type" },
+      .errStr = "Invalid module type" },
 
     { .errNum = ERR_INVALID_MOD_NUM,           
-      .errStr = (char *) "Invalid module number" },
+      .errStr = "Invalid module number" },
 
     { .errNum = ERR_EXPECTED_INSTR_VAL,         
-      .errStr = (char *) "Expected the instruction value" },
+      .errStr = "Expected the instruction value" },
 
     { .errNum = ERR_EXPECTED_FILE_NAME,         
-      .errStr = (char *) "Expected a file name" },
+      .errStr = "Expected a file name" },
 
     { .errNum = ERR_EXPECTED_STACK_ID,          
-      .errStr = (char *) "Expected stack Id" },
+      .errStr = "Expected stack Id" },
 
     { .errNum = ERR_EXPECTED_WIN_ID,            
-      .errStr = (char *) "Expected a window Id" },
+      .errStr = "Expected a window Id" },
 
     { .errNum = ERR_EXPECTED_LPAREN,            
-      .errStr = (char *) "Expected a left paren" },
+      .errStr = "Expected a left paren" },
 
     { .errNum = ERR_EXPECTED_RPAREN,            
-      .errStr = (char *) "Expected a right paren" },
+      .errStr = "Expected a right paren" },
 
     { .errNum = ERR_EXPECTED_LBRACK,            
-      .errStr = (char *) "Expected a left bracket" },
+      .errStr = "Expected a left bracket" },
 
     { .errNum = ERR_EXPECTED_RBRACK,            
-      .errStr = (char *) "Expected a right bracket" },
+      .errStr = "Expected a right bracket" },
 
     { .errNum = ERR_EXPECTED_COMMA,             
-      .errStr = (char *) "Expected a comma" },
+      .errStr = "Expected a comma" },
 
     { .errNum = ERR_EXPECTED_STR,               
-      .errStr = (char *) "Expected a string value" },
+      .errStr = "Expected a string value" },
 
     { .errNum = ERR_EXPECTED_REG_SET,           
-      .errStr = (char *) "Expected a register set" },
+      .errStr = "Expected a register set" },
 
     { .errNum = ERR_EXPECTED_REG_OR_SET,        
-      .errStr = (char *) "Expected a register or register set" },
+      .errStr = "Expected a register or register set" },
 
     { .errNum = ERR_EXPECTED_NUM_VALUE,           
-      .errStr = (char *) "Expected a numeric value" },
+      .errStr = "Expected a numeric value" },
 
     { .errNum = ERR_EXPECTED_BOOL_VALUE,           
-      .errStr = (char *) "Expected a boolean value" },
+      .errStr = "Expected a boolean value" },
 
     { .errNum = ERR_EXPECTED_STRING_VALUE,           
-      .errStr = (char *) "Expected a string value" },
+      .errStr = "Expected a string value" },
 
     { .errNum = ERR_EXPECTED_REL_OP,           
-      .errStr = (char *) "Expected a relational operator" },
+      .errStr = "Expected a relational operator" },
 
     { .errNum = ERR_EXPECTED_EXT_ADR,           
-      .errStr = (char *) "Expected a virtual address" },
+      .errStr = "Expected a virtual address" },
 
     { .errNum = ERR_EXPECTED_GENERAL_REG,       
-      .errStr = (char *) "Expected a general reg" },
+      .errStr = "Expected a general reg" },
 
     { .errNum = ERR_EXPECTED_STEPS,             
-      .errStr = (char *) "Expected number of steps/instr" },
+      .errStr = "Expected number of steps/instr" },
 
     { .errNum = ERR_EXPECTED_START_OFS,         
-      .errStr = (char *) "Expected start offset" },
+      .errStr = "Expected start offset" },
         
     { .errNum = ERR_EXPECTED_LEN,               
-      .errStr = (char *) "Expected length argument" },
+      .errStr = "Expected length argument" },
 
     { .errNum = ERR_EXPECTED_OFS,               
-      .errStr = (char *) "Expected an address" },
+      .errStr = "Expected an address" },
 
     { .errNum = ERR_EXPECTED_INSTR_OPT,         
-      .errStr = (char *) "Expected the instruction options" },
+      .errStr = "Expected the instruction options" },
 
     { .errNum = ERR_EXPECTED_MOD_NUM,         
-      .errStr = (char *) "Expected a module number" },
+      .errStr = "Expected a module number" },
       
     { .errNum = ERR_EXPECTED_AN_OFFSET_VAL,     
-      .errStr = (char *) "Expected an offset value" },
+      .errStr = "Expected an offset value" },
 
     { .errNum = ERR_EXPECTED_FMT_OPT,           
-      .errStr = (char *) "Expected a format option" },
+      .errStr = "Expected a format option" },
 
     { .errNum = ERR_EXPECTED_WIN_TYPE,          
-      .errStr = (char *) "Expected a window type" },
+      .errStr = "Expected a window type" },
 
     { .errNum = ERR_EXPECTED_EXPR,              
-      .errStr = (char *) "Expected an expression" },
+      .errStr = "Expected an expression" },
 
     { .errNum = ERR_EXPCTED_PROC_MODULE,              
-      .errStr = (char *) "Expected a processor module" },
+      .errStr = "Expected a processor module" },
       
     { .errNum = ERR_FILE_NOT_FOUND,             
-      .errStr = (char *) "File not found" },
+      .errStr = "File not found" },
    
     { .errNum = ERR_UNEXPECTED_EOS,             
-      .errStr = (char *) "Unexpected end of command line" },
+      .errStr = "Unexpected end of command line" },
 
     { .errNum = ERR_NOT_IN_WIN_MODE,            
-      .errStr = (char *) "Command only valid in Windows mode" },
+      .errStr = "Command only valid in Windows mode" },
 
     { .errNum = ERR_NOT_INTERACTIVE,            
-      .errStr = (char *) "Command only valid in interactive mode" },
+      .errStr = "Command only valid in interactive mode" },
 
     { .errNum = ERR_OPEN_EXEC_FILE,             
-      .errStr = (char *) "Error while opening exec file" },
+      .errStr = "Error while opening exec file" },
 
     { .errNum = ERR_OPEN_LOG_FILE,             
-      .errStr = (char *) "Error while opening log file" },
+      .errStr = "Error while opening log file" },
 
     { .errNum = ERR_NO_LOG_FILE_CONFIGURED,             
-      .errStr = (char *) "No log file configured" },
+      .errStr = "No log file configured" },
 
     { .errNum = ERR_EXTRA_TOKEN_IN_STR,         
-      .errStr = (char *) "Extra tokens in command line" },
+      .errStr = "Extra tokens in command line" },
 
     { .errNum = ERR_ENV_VALUE_EXPR,             
-      .errStr = (char *) "Invalid expression for ENV variable" },
+      .errStr = "Invalid expression for ENV variable" },
 
     { .errNum = ERR_ENV_VAR_NOT_FOUND,          
-      .errStr = (char *) "ENV variable not found" },
+      .errStr = "ENV variable not found" },
 
     { .errNum = ERR_WIN_TYPE_NOT_CONFIGURED,    
-      .errStr = (char *) "Win object type not configured" },
+      .errStr = "Win object type not configured" },
 
     { .errNum = ERR_EXPR_TYPE_MATCH,            
-      .errStr = (char *) "Expression type mismatch" },
+      .errStr = "Expression type mismatch" },
 
     { .errNum = ERR_EXPR_FACTOR,                
-      .errStr = (char *) "Expression error: factor" },
+      .errStr = "Expression error: factor" },
 
     { .errNum = ERR_INVALID_HEX_ESCAPE,                
-      .errStr = (char *) "Invalid hex escape code for char" },
+      .errStr = "Invalid hex escape code for char" },
 
     { .errNum = ERR_INVALID_UNICODE_ESCAPE,                
-      .errStr = (char *) "Invalid unicode escape code for char" },
+      .errStr = "Invalid unicode escape code for char" },
 
     { .errNum = ERR_STRING_TOO_LONG,                
-      .errStr = (char *) "String size exceeds limit" },
+      .errStr = "String size exceeds limit" },
 
     { .errNum = ERR_TOO_MANY_ARGS_CMD_LINE,     
-      .errStr = (char *) "Too many args in command line" },
+      .errStr = "Too many args in command line" },
 
     { .errNum = ERR_CMD_LINE_TOO_LONG,    
-      .errStr = (char *) "Command line input too long" },
+      .errStr = "Command line input too long" },
 
     { .errNum = ERR_OUT_OF_HIST_BOUNDS, 
-      .errStr = (char *) "Command Id out of history buffer bounds" },
+      .errStr = "Command Id out of history buffer bounds" },
 
     { .errNum = ERR_OFS_LEN_LIMIT_EXCEEDED,     
-      .errStr = (char *) "Offset/Length exceeds limit" },
+      .errStr = "Offset/Length exceeds limit" },
 
     { .errNum = ERR_UNDEFINED_PFUNC,            
-      .errStr = (char *) "Unknown predefined function" },
+      .errStr = "Unknown predefined function" },
 
     { .errNum = ERR_IN_ASM_PFUNC,            
-      .errStr = (char *) "Error in ASM function" },
+      .errStr = "Error in ASM function" },
 
     { .errNum = ERR_IN_DISASM_PFUNC,            
-    .errStr = (char *) "Error in DISASM function" },
+    .errStr = "Error in DISASM function" },
     
     { .errNum = ERR_ENV_PREDEFINED,             
-      .errStr = (char *) "ENV variable is predefined" },
+      .errStr = "ENV variable is predefined" },
 
     { .errNum = ERR_ENV_TABLE_FULL,             
-      .errStr = (char *) "ENV Table is full" },
+      .errStr = "ENV Table is full" },
 
     { .errNum = ERR_INSTR_HAS_NO_OPT,           
-      .errStr = (char *) "Instruction has no option" },
+      .errStr = "Instruction has no option" },
 
     { .errNum = ERR_IMM_VAL_RANGE,              
-      .errStr = (char *) "Immediate value out of range" },
+      .errStr = "Immediate value out of range" },
 
     { .errNum = ERR_POS_VAL_RANGE,              
-      .errStr = (char *) "Bit position value out of range" },
+      .errStr = "Bit position value out of range" },
 
     { .errNum = ERR_LEN_VAL_RANGE,              
-      .errStr = (char *) "Bit field length value out of range" },
+      .errStr = "Bit field length value out of range" },
 
     { .errNum = ERR_OFFSET_VAL_RANGE,           
-      .errStr = (char *) "Offset value out of range" },
+      .errStr = "Offset value out of range" },
 
     { .errNum = ERR_OUT_OF_WINDOWS,             
-      .errStr = (char *) "Cannot create more windows" },
+      .errStr = "Cannot create more windows" },
         
     { .errNum = ERR_TLB_TYPE,                   
-      .errStr = (char *) "Expected a TLB type" },
+      .errStr = "Expected a TLB type" },
 
     { .errNum = ERR_TLB_INSERT_OP,              
-      .errStr = (char *) "Insert in TLB operation error" },
+      .errStr = "Insert in TLB operation error" },
 
     { .errNum = ERR_TLB_PURGE_OP,               
-      .errStr = (char *) "Purge from TLB operation error" },
+      .errStr = "Purge from TLB operation error" },
 
     { .errNum = ERR_TLB_ACC_DATA,               
-      .errStr = (char *) "Invalid TLB insert access data" },
+      .errStr = "Invalid TLB insert access data" },
 
     { .errNum = ERR_TLB_ADR_DATA,               
-      .errStr = (char *) "Invalid TLB insert address data" },
+      .errStr = "Invalid TLB insert address data" },
 
     { .errNum = ERR_TLB_NOT_CONFIGURED,         
-      .errStr = (char *) "TLB type not configured" },
+      .errStr = "TLB type not configured" },
 
     { .errNum = ERR_TLB_SIZE_EXCEEDED,          
-      .errStr = (char *) "TLB size exceeded" },
+      .errStr = "TLB size exceeded" },
 
     { .errNum = ERR_MEM_OP_FAILED,              
-      .errStr = (char *) "Memory operation error" },  
+      .errStr = "Memory operation error" },  
 
     { .errNum = ERR_RESET_MODULE,              
-      .errStr = (char *) "Reset module error" }, 
+      .errStr = "Reset module error" }, 
 
     { .errNum = ERR_HALT_MODULE,              
-      .errStr = (char *) "Halt module error" },
+      .errStr = "Halt module error" },
 
     { .errNum = ERR_STEP_MODULE,              
-      .errStr = (char *) "Step module error" },
+      .errStr = "Step module error" },
 
     { .errNum = ERR_MODULE_TABLE_FULL,              
-      .errStr = (char *) "Module table full" },
+      .errStr = "Module table full" },
 
     { .errNum = ERR_MODULE_RANGE_OVERLAP,              
-      .errStr = (char *) "Module SPA range overlap" },
+      .errStr = "Module SPA range overlap" },
 
     { .errNum = ERR_MODULE_ALREADY_USED,              
-      .errStr = (char *) "Module number already in use" },
+      .errStr = "Module number already in use" },
 
     { .errNum = ERR_CREATE_PROC_MODULE,              
-      .errStr = (char *) "Create processor module error" }, 
+      .errStr = "Create processor module error" }, 
 
     { .errNum = ERR_CREATE_MEM_MODULE,              
-      .errStr = (char *) "Create memory module error" },
+      .errStr = "Create memory module error" },
 
     { .errNum = ERR_INVALID_ELF_FILE,              
-      .errStr = (char *) "Error while open ELF file" },
+      .errStr = "Error while open ELF file" },
 
     { .errNum = ERR_ELF_INVALID_ADR_RANGE,              
-      .errStr = (char *) "ELF: invalid address range" },
+      .errStr = "ELF: invalid address range" },
 
     { .errNum = ERR_ELF_MEMORY_SIZE_EXCEEDED,              
-      .errStr = (char *) "ELF: memory size exceeded" },
+      .errStr = "ELF: memory size exceeded" },
 
     { .errNum = ERR_INVALID_ELF_BYTE_ORDER,              
-      .errStr = (char *) "EELF: invalid byte order" }
+      .errStr = "EELF: invalid byte order" }
    
 };
 
@@ -652,213 +652,213 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     //------------------------------------------------------------------------------------
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_HELP,
-        .cmdNameStr     = (char *) "help",
-        .cmdSyntaxStr   = (char *) "help ( cmdId | ‘commands‘ | "
+        .cmdNameStr     = "help",
+        .cmdSyntaxStr   = "help ( cmdId | ‘commands‘ | "
                                    "'wcommands‘ | ‘predefined‘ )",
-        .helpStr        = (char *) "list help info"
+        .helpStr        = "list help info"
     },
   
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_EXIT,
-        .cmdNameStr     = (char *) "exit",
-        .cmdSyntaxStr   = (char *) "exit (e) [ <val> ]",
-        .helpStr        = (char *) "program exit"
+        .cmdNameStr     = "exit",
+        .cmdSyntaxStr   = "exit (e) [ <val> ]",
+        .helpStr        = "program exit"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_HIST,
-        .cmdNameStr     = (char *) "hist",
-        .cmdSyntaxStr   = (char *) "hist [ depth ]",
-        .helpStr        = (char *) "command history"
+        .cmdNameStr     = "hist",
+        .cmdSyntaxStr   = "hist [ depth ]",
+        .helpStr        = "command history"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DO,
-        .cmdNameStr     = (char *) "do",
-        .cmdSyntaxStr   = (char *) "do [ cmdNum ]",
-        .helpStr        = (char *) "re-execute command"
+        .cmdNameStr     = "do",
+        .cmdSyntaxStr   = "do [ cmdNum ]",
+        .helpStr        = "re-execute command"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_REDO,
-        .cmdNameStr     = (char *) "redo",
-        .cmdSyntaxStr   = (char *) "redo [ cmdNum ]",
-        .helpStr        = (char *) "edit and then re-execute command"
+        .cmdNameStr     = "redo",
+        .cmdSyntaxStr   = "redo [ cmdNum ]",
+        .helpStr        = "edit and then re-execute command"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ENV,
-        .cmdNameStr     = (char *) "env",
-        .cmdSyntaxStr   = (char *) "env [ <var> [ , <val> ]] | env <var>",
-        .helpStr        = (char *) "lists the env tab, a variable, sets a variable"
+        .cmdNameStr     = "env",
+        .cmdSyntaxStr   = "env [ <var> [ , <val> ]] | env <var>",
+        .helpStr        = "lists the env tab, a variable, sets a variable"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_CHECK,
-        .cmdNameStr     = (char *) "check",
-        .cmdSyntaxStr   = (char *) "check <expr> [ , <str> ]",
-        .helpStr        = (char *) "check a boolean condition"
+        .cmdNameStr     = "check",
+        .cmdSyntaxStr   = "check <expr> [ , <str> ]",
+        .helpStr        = "check a boolean condition"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ASSERT,
-        .cmdNameStr     = (char *) "assert",
-        .cmdSyntaxStr   = (char *) "assert <expr> [ , <str> ]",
-        .helpStr        = (char *) "assert a boolean condition"
+        .cmdNameStr     = "assert",
+        .cmdSyntaxStr   = "assert <expr> [ , <str> ]",
+        .helpStr        = "assert a boolean condition"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_LOG,
-        .cmdNameStr     = (char *) "log",
-        .cmdSyntaxStr   = (char *) "log <str> [ , <expr> ]",
-        .helpStr        = (char *) "log a message to the log file"
+        .cmdNameStr     = "log",
+        .cmdSyntaxStr   = "log <str> [ , <expr> ]",
+        .helpStr        = "log a message to the log file"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_XF,
-        .cmdNameStr     = (char *) "xf",
-        .cmdSyntaxStr   = (char *) "xf \"<filePath>\"",
-        .helpStr        = (char *) "execute commands from a file"
+        .cmdNameStr     = "xf",
+        .cmdSyntaxStr   = "xf \"<filePath>\"",
+        .helpStr        = "execute commands from a file"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_LOADELF,
-        .cmdNameStr     = (char *) "loadelf",
-        .cmdSyntaxStr   = (char *) "loadelf \"<filePath>\"",
-        .helpStr        = (char *) "loads an ELF file"
+        .cmdNameStr     = "loadelf",
+        .cmdSyntaxStr   = "loadelf \"<filePath>\"",
+        .helpStr        = "loads an ELF file"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RESET,
-        .cmdNameStr     = (char *) "reset",
-        .cmdSyntaxStr   = (char *) "reset ( <modNum> | 'ALL' )",
-        .helpStr        = (char *) "reset module(s)"
+        .cmdNameStr     = "reset",
+        .cmdSyntaxStr   = "reset ( <modNum> | 'ALL' )",
+        .helpStr        = "reset module(s)"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_HALT,
-        .cmdNameStr     = (char *) "halt",
-        .cmdSyntaxStr   = (char *) "halt ( <modNum> | 'ALL' )",
-        .helpStr        = (char *) "halt module(s)"
+        .cmdNameStr     = "halt",
+        .cmdSyntaxStr   = "halt ( <modNum> | 'ALL' )",
+        .helpStr        = "halt module(s)"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RUN,
-        .cmdNameStr     = (char *) "run",
-        .cmdSyntaxStr   = (char *) "run",
-        .helpStr        = (char *) "run the system ( all processors )"
+        .cmdNameStr     = "run",
+        .cmdSyntaxStr   = "run",
+        .helpStr        = "run the system ( all processors )"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_STEP,
-        .cmdNameStr     = (char *) "step",
-        .cmdSyntaxStr   = (char *) "s [ <steps> [ , <modNum> ]]",
-        .helpStr        = (char *) "single step a module"
+        .cmdNameStr     = "step",
+        .cmdSyntaxStr   = "s [ <steps> [ , <modNum> ]]",
+        .helpStr        = "single step a module"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_HALT,
-        .cmdNameStr     = (char *) "halt",
-        .cmdSyntaxStr   = (char *) "halt",
-        .helpStr        = (char *) "halt the system or a processor"
+        .cmdNameStr     = "halt",
+        .cmdSyntaxStr   = "halt",
+        .helpStr        = "halt the system or a processor"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_WRITE_LINE,
-        .cmdNameStr     = (char *) "w",
-        .cmdSyntaxStr   = (char *) "w <expr> [ , <rdx> ]",
-        .helpStr        = (char *) "evaluates and prints an expression"
+        .cmdNameStr     = "w",
+        .cmdSyntaxStr   = "w <expr> [ , <rdx> ]",
+        .helpStr        = "evaluates and prints an expression"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_NMOD,
-        .cmdNameStr     = (char *) "nmod",
-        .cmdSyntaxStr   = (char *) "nmod <mType> , [ <key> = <val> { , <key> = <val> } ]",
-        .helpStr        = (char *) "adds a module to the system"
+        .cmdNameStr     = "nmod",
+        .cmdSyntaxStr   = "nmod <mType> , [ <key> = <val> { , <key> = <val> } ]",
+        .helpStr        = "adds a module to the system"
     },
 
      {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_RMOD,
-        .cmdNameStr     = (char *) "rmod",
-        .cmdSyntaxStr   = (char *) "rmod <mNum> | ALL",
-        .helpStr        = (char *) "removes modules from the system"
+        .cmdNameStr     = "rmod",
+        .cmdSyntaxStr   = "rmod <mNum> | ALL",
+        .helpStr        = "removes modules from the system"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DMOD,
-        .cmdNameStr     = (char *) "dmod",
-        .cmdSyntaxStr   = (char *) "dmod [ <mNum>]",
-        .helpStr        = (char *) "display module info"
+        .cmdNameStr     = "dmod",
+        .cmdSyntaxStr   = "dmod [ <mNum>]",
+        .helpStr        = "display module info"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DWIN,
-        .cmdNameStr     = (char *) "dwin",
-        .cmdSyntaxStr   = (char *) "dwin [ <sNum>]",
-        .helpStr        = (char *) "display window list info"
+        .cmdNameStr     = "dwin",
+        .cmdSyntaxStr   = "dwin [ <sNum>]",
+        .helpStr        = "display window list info"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MR,
-        .cmdNameStr     = (char *) "mr",
-        .cmdSyntaxStr   = (char *) "mr <reg> , <val>",
-        .helpStr        = (char *) "modify a CPU register"
+        .cmdNameStr     = "mr",
+        .cmdSyntaxStr   = "mr <reg> , <val>",
+        .helpStr        = "modify a CPU register"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_DM,
-        .cmdNameStr     = (char *) "dam",
-        .cmdSyntaxStr   = (char *) "dm <adr> [ , <len> ] [ , <fmt> ]",
-        .helpStr        = (char *) "display memory"
+        .cmdNameStr     = "dam",
+        .cmdSyntaxStr   = "dm <adr> [ , <len> ] [ , <fmt> ]",
+        .helpStr        = "display memory"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MB,
-        .cmdNameStr     = (char *) "mb",
-        .cmdSyntaxStr   = (char *) "mb <adr> , <val>",
-        .helpStr        = (char *) "modify memory byte"
+        .cmdNameStr     = "mb",
+        .cmdSyntaxStr   = "mb <adr> , <val>",
+        .helpStr        = "modify memory byte"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MS,
-        .cmdNameStr     = (char *) "ms",
-        .cmdSyntaxStr   = (char *) "ms <adr> , <val>",
-        .helpStr        = (char *) "modify memory short"
+        .cmdNameStr     = "ms",
+        .cmdSyntaxStr   = "ms <adr> , <val>",
+        .helpStr        = "modify memory short"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MW,
-        .cmdNameStr     = (char *) "mw",
-        .cmdSyntaxStr   = (char *) "mw <adr> , <val>",
-        .helpStr        = (char *) "modify memory word"
+        .cmdNameStr     = "mw",
+        .cmdSyntaxStr   = "mw <adr> , <val>",
+        .helpStr        = "modify memory word"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_MD,
-        .cmdNameStr     = (char *) "md",
-        .cmdSyntaxStr   = (char *) "md <adr> , <val>",
-        .helpStr        = (char *) "modify memory double"
+        .cmdNameStr     = "md",
+        .cmdSyntaxStr   = "md <adr> , <val>",
+        .helpStr        = "modify memory double"
     },
      
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_ITLB,
-        .cmdNameStr     = (char *) "itlb",
-        .cmdSyntaxStr   = (char *) "itlb <arg1> , <arg2>",
-        .helpStr        = (char *) "insert into the global TLB"
+        .cmdNameStr     = "itlb",
+        .cmdSyntaxStr   = "itlb <arg1> , <arg2>",
+        .helpStr        = "insert into the global TLB"
     },
 
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_PTLB,
-        .cmdNameStr     = (char *) "ptlb",
-        .cmdSyntaxStr   = (char *) "ptlb <vAdr>",
-        .helpStr        = (char *) "purge from the global TLB"
+        .cmdNameStr     = "ptlb",
+        .cmdSyntaxStr   = "ptlb <vAdr>",
+        .helpStr        = "purge from the global TLB"
     },
     
     {
         .helpTypeId = TYP_CMD,  .helpTokId  = CMD_WON,
-        .cmdNameStr     = (char *) "won",
-        .cmdSyntaxStr   = (char *) "won",
-        .helpStr        = (char *) "enables windows mode / redraw"
+        .cmdNameStr     = "won",
+        .cmdSyntaxStr   = "won",
+        .helpStr        = "enables windows mode / redraw"
     },
 
     //------------------------------------------------------------------------------------
@@ -867,143 +867,143 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     //------------------------------------------------------------------------------------
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWC,
-        .cmdNameStr     = (char *)  "cwc",
-        .cmdSyntaxStr   = (char *)  "cwc",
-        .helpStr        = (char *)  "clears the command window"
+        .cmdNameStr     =  "cwc",
+        .cmdSyntaxStr   =  "cwc",
+        .helpStr        =  "clears the command window"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_CWL,
-        .cmdNameStr     = (char *)  "cwl",
-        .cmdSyntaxStr   = (char *)  "cwl <lines>",
-        .helpStr        = (char *)  "set command window lines"
+        .cmdNameStr     =  "cwl",
+        .cmdSyntaxStr   =  "cwl <lines>",
+        .helpStr        =  "set command window lines"
     },
 
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WOFF,
-        .cmdNameStr     = (char *) "woff",
-        .cmdSyntaxStr   = (char *) "woff",
-        .helpStr        = (char *) "disables windows mode"
+        .cmdNameStr     = "woff",
+        .cmdSyntaxStr   = "woff",
+        .helpStr        = "disables windows mode"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WDEF,
-        .cmdNameStr     = (char *) "wdef",
-        .cmdSyntaxStr   = (char *) "wdef [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *) "reset the windows to their default values"
+        .cmdNameStr     = "wdef",
+        .cmdSyntaxStr   = "wdef [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        = "reset the windows to their default values"
     },
     
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WB,
-        .cmdNameStr     = (char *)  "wb",
-        .cmdSyntaxStr   = (char *)  "wb [ <amt> ] [ , <winNum> ]",
-        .helpStr        = (char *)  "move backward by n items"
+        .cmdNameStr     =  "wb",
+        .cmdSyntaxStr   =  "wb [ <amt> ] [ , <winNum> ]",
+        .helpStr        =  "move backward by n items"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WC,
-        .cmdNameStr     = (char *)  "wc",
-        .cmdSyntaxStr   = (char *)  "wc <winNum>",
-        .helpStr        = (char *)  "set the window as current window"
+        .cmdNameStr     =  "wc",
+        .cmdSyntaxStr   =  "wc <winNum>",
+        .helpStr        =  "set the window as current window"
     },
     
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WE,
-        .cmdNameStr     = (char *)  "we",
-        .cmdSyntaxStr   = (char *)  "we [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *)  "enable window"
+        .cmdNameStr     =  "we",
+        .cmdSyntaxStr   =  "we [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        =  "enable window"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WD,
-        .cmdNameStr     = (char *)  "wd",
-        .cmdSyntaxStr   = (char *)  "wd [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *)  "disable window"
+        .cmdNameStr     =  "wd",
+        .cmdSyntaxStr   =  "wd [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        =  "disable window"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WF,
-        .cmdNameStr     = (char *)  "wf",
-        .cmdSyntaxStr   = (char *)  "wf [ <amt> ] [ , <winNum> ]",
-        .helpStr        = (char *)  "move forward by n items"
+        .cmdNameStr     =  "wf",
+        .cmdSyntaxStr   =  "wf [ <amt> ] [ , <winNum> ]",
+        .helpStr        =  "move forward by n items"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WH,
-        .cmdNameStr     = (char *)  "wh",
-        .cmdSyntaxStr   = (char *)  "wh [ <itemAdr> ] [ , <winNum> ]",
-        .helpStr        = (char *)  "set window home position"
+        .cmdNameStr     =  "wh",
+        .cmdSyntaxStr   =  "wh [ <itemAdr> ] [ , <winNum> ]",
+        .helpStr        =  "set window home position"
     },
 
       {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WJ,
-        .cmdNameStr     = (char *)  "wj",
-        .cmdSyntaxStr   = (char *)  "wj <itemAdr> [ , <winNum> ]",
-        .helpStr        = (char *)  "set window start to new position"
+        .cmdNameStr     =  "wj",
+        .cmdSyntaxStr   =  "wj <itemAdr> [ , <winNum> ]",
+        .helpStr        =  "set window start to new position"
     },
 
      {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WK,
-        .cmdNameStr     = (char *)  "wk",
-        .cmdSyntaxStr   = (char *)  "wk [ <start> [ , <end> ]] | 'ALL'",
-        .helpStr        = (char *)  "remove a range of windows"
+        .cmdNameStr     =  "wk",
+        .cmdSyntaxStr   =  "wk [ <start> [ , <end> ]] | 'ALL'",
+        .helpStr        =  "remove a range of windows"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WL,
-        .cmdNameStr     = (char *)  "wl",
-        .cmdSyntaxStr   = (char *)  "wl <lines> [ , <winNum> ]",
-        .helpStr        = (char *)  "set window lines including banner line"
+        .cmdNameStr     =  "wl",
+        .cmdSyntaxStr   =  "wl <lines> [ , <winNum> ]",
+        .helpStr        =  "set window lines including banner line"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WN,
-        .cmdNameStr     = (char *)  "wn",
-        .cmdSyntaxStr   = (char *)  "wn <type> [ , <arg1> [ , <arg2> ]]",
-        .helpStr        = (char *)  "create a new window " 
+        .cmdNameStr     =  "wn",
+        .cmdSyntaxStr   =  "wn <type> [ , <arg1> [ , <arg2> ]]",
+        .helpStr        =  "create a new window " 
                                     "( PROC, TLB, MEM, TEXT )"
     },
     
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WR,
-        .cmdNameStr     = (char *)  "wr",
-        .cmdSyntaxStr   = (char *)  "wr [ <rdx> [ , <winNum> ]]",
-        .helpStr        = (char *)  "set window radix"
+        .cmdNameStr     =  "wr",
+        .cmdSyntaxStr   =  "wr [ <rdx> [ , <winNum> ]]",
+        .helpStr        =  "set window radix"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WS,
-        .cmdNameStr     = (char *)  "ws",
-        .cmdSyntaxStr   = (char *)  "ws <stackNum> [ , <start> ] [ , <end>]",
-        .helpStr        = (char *)  "move a range of windows into stack <stackNum>"
+        .cmdNameStr     =  "ws",
+        .cmdSyntaxStr   =  "ws <stackNum> [ , <start> ] [ , <end>]",
+        .helpStr        =  "move a range of windows into stack <stackNum>"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSE,
-        .cmdNameStr     = (char *) "wse",
-        .cmdSyntaxStr   = (char *) "wse <stackNum> | ALL",
-        .helpStr        = (char *) "enable window stacks"
+        .cmdNameStr     = "wse",
+        .cmdSyntaxStr   = "wse <stackNum> | ALL",
+        .helpStr        = "enable window stacks"
     },
     
     {
         .helpTypeId = TYP_WCMD,  .helpTokId  = CMD_WSD,
-        .cmdNameStr     = (char *) "wsd",
-        .cmdSyntaxStr   = (char *) "wsd <stackNum> | ALL",
-        .helpStr        = (char *) "disable window stacks"
+        .cmdNameStr     = "wsd",
+        .cmdSyntaxStr   = "wsd <stackNum> | ALL",
+        .helpStr        = "disable window stacks"
     },
 
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WT,
-        .cmdNameStr     = (char *)  "wt",
-        .cmdSyntaxStr   = (char *)  "wt [ <winNum>, [ <toggleVal ]]",
-        .helpStr        = (char *)  "toggle through alternate window content"
+        .cmdNameStr     =  "wt",
+        .cmdSyntaxStr   =  "wt [ <winNum>, [ <toggleVal ]]",
+        .helpStr        =  "toggle through alternate window content"
     },
     
     {
         .helpTypeId     = TYP_WCMD, .helpTokId  = CMD_WX,
-        .cmdNameStr     = (char *)  "wx",
-        .cmdSyntaxStr   = (char *)  "wx <winNum>",
-        .helpStr        = (char *)  "exchange current window with this window"
+        .cmdNameStr     =  "wx",
+        .cmdSyntaxStr   =  "wx <winNum>",
+        .helpStr        =  "exchange current window with this window"
     },
     
     //------------------------------------------------------------------------------------
@@ -1012,43 +1012,43 @@ const SimHelpMsgEntry cmdHelpTab[ ] = {
     //------------------------------------------------------------------------------------
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_ASSEMBLE,
-        .cmdNameStr     = (char *) "asm",
-        .cmdSyntaxStr   = (char *) "asm ( <asmStr> )",
-        .helpStr        = (char *) "returns the instruction value for an assemble string"
+        .cmdNameStr     = "asm",
+        .cmdSyntaxStr   = "asm ( <asmStr> )",
+        .helpStr        = "returns the instruction value for an assemble string"
     },
     
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_DIS_ASM,
-        .cmdNameStr     = (char *) "disasm",
-        .cmdSyntaxStr   = (char *) "disasm ( <instr> )",
-        .helpStr        = (char *) "returns the assemble string for an instruction value"
+        .cmdNameStr     = "disasm",
+        .cmdSyntaxStr   = "disasm ( <instr> )",
+        .helpStr        = "returns the assemble string for an instruction value"
     },
 
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_REGION,
-        .cmdNameStr     = (char *) "region",
-        .cmdSyntaxStr   = (char *) "region ( <addr> )",
-        .helpStr        = (char *) "returns the virtual region portion of an address"
+        .cmdNameStr     = "region",
+        .cmdSyntaxStr   = "region ( <addr> )",
+        .helpStr        = "returns the virtual region portion of an address"
     },
 
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_PAGE,
-        .cmdNameStr     = (char *) "page",
-        .cmdSyntaxStr   = (char *) "page ( <addr> )",
-        .helpStr        = (char *) "returns the virtual page portion of an address"
+        .cmdNameStr     = "page",
+        .cmdSyntaxStr   = "page ( <addr> )",
+        .helpStr        = "returns the virtual page portion of an address"
     },
 
     {
         .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_OFS,
-        .cmdNameStr     = (char *) "ofs",
-        .cmdSyntaxStr   = (char *) "ofs ( <addr> )",
-        .helpStr        = (char *) "returns the virtual offset portion of an address"
+        .cmdNameStr     = "ofs",
+        .cmdSyntaxStr   = "ofs ( <addr> )",
+        .helpStr        = "returns the virtual offset portion of an address"
     },
 
     {   .helpTypeId = TYP_P_FUNC,  .helpTokId  = PF_ADD_OFS,
-        .cmdNameStr     = (char *) "add_ofs",
-        .cmdSyntaxStr   = (char *) "add_ofs ( <addr> )",
-        .helpStr        = (char *) "returns the address with the offset added"
+        .cmdNameStr     = "add_ofs",
+        .cmdSyntaxStr   = "add_ofs ( <addr> )",
+        .helpStr        = "returns the address with the offset added"
     }
    
 };

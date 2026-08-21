@@ -77,11 +77,11 @@ void copyStr( char *dst, const char *src, int maxSize, bool upshift ) {
 // pointer are used to manage the search, add and remove functions.
 //
 //----------------------------------------------------------------------------------------
-SimEnv::SimEnv( SimGlobals *glb, int size ) {
+SimEnv::SimEnv( SimGlobals *glb, size_t size ) {
    
-    table       = (SimEnvTabEntry *) calloc( size, sizeof( SimEnvTabEntry ));
-    hwm         = table;
-    limit       = &table[ size ];
+    table = static_cast<SimEnvTabEntry *>( calloc( size, sizeof( SimEnvTabEntry )));
+    hwm   = table;
+    limit = &table[ size ];
     this -> glb = glb;
 }
 
@@ -128,7 +128,7 @@ SimEnvTabEntry *SimEnv::getEnvEntry( int index ) {
 
 int SimEnv::getEnvHwm( ) {
 
-    return( hwm - table );
+    return ( static_cast<int>( hwm - table ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ int SimEnv::lookupEntry( char *name ) {
     while ( entry < hwm ) {
         
         if (( entry -> valid ) && ( strcmp( entry -> name, tmp ) == 0 )) 
-            return((int) ( entry - table ));
+            return( static_cast<int> ( entry - table ));
         else entry ++;
     }
     
@@ -317,7 +317,7 @@ char *SimEnv::getEnvVarStr( char *name, char *def ) {
 // variable read only for the ENV command.
 //
 //----------------------------------------------------------------------------------------
-void SimEnv::enterVar( char *name, T64Word  val, bool predefined, bool rOnly ) {
+void SimEnv::enterVar( const char *name, T64Word  val, bool predefined, bool rOnly ) {
     
     int index = findFreeEntry( );
     
@@ -335,7 +335,7 @@ void SimEnv::enterVar( char *name, T64Word  val, bool predefined, bool rOnly ) {
     else throw( ERR_ENV_TABLE_FULL );
 }
 
-void SimEnv::enterVar( char *name, bool val, bool predefined, bool rOnly ) {
+void SimEnv::enterVar( const char *name, bool val, bool predefined, bool rOnly ) {
     
     int index = findFreeEntry( );
     
@@ -353,7 +353,10 @@ void SimEnv::enterVar( char *name, bool val, bool predefined, bool rOnly ) {
     else throw( ERR_ENV_TABLE_FULL );
 }
 
-void SimEnv::enterVar( char *name, char *str, bool predefined, bool rOnly ) {
+void SimEnv::enterVar( const char *name, 
+                       const char *str, 
+                       bool predefined, 
+                       bool rOnly ) {
     
     int index = findFreeEntry( );
     
@@ -471,48 +474,47 @@ int SimEnv::formatEnvEntry( int index, char *buf, int bufLen ) {
 //
 //----------------------------------------------------------------------------------------
 void SimEnv::setupPredefined( ) {
-    
-    enterVar((char *) ENV_PROG_VERSION, (char *) SIM_VERSION, true, false );
-    enterVar((char *) ENV_GIT_BRANCH, (char *) SIM_GIT_BRANCH, true, false );
-    enterVar((char *) ENV_PATCH_LEVEL, (T64Word) SIM_PATCH_LEVEL, true, false );
 
-    enterVar((char *) ENV_CONFIG_FILE, (char *) "", true, false );
-    enterVar((char *) ENV_LOG_FILE, (char *) "", true, false );
+    enterVar( ENV_PROG_VERSION,    SIM_VERSION,       true, false );
+    enterVar( ENV_GIT_BRANCH,      SIM_GIT_BRANCH,    true, false );
+    enterVar( ENV_PATCH_LEVEL,     T64Word{SIM_PATCH_LEVEL}, true, false );
 
-    enterVar((char *) ENV_CHECK_DEF_MSG, (char *) "", true, false );
-    enterVar((char *) ENV_CHECK_PASS_CNT, (T64Word) 0, true, false );  
-    enterVar((char *) ENV_CHECK_FAIL_CNT, (T64Word) 0, true, false );
-    enterVar((char *) ENV_CHECK_TOTAL_CNT, (T64Word) 0, true, false );
+    enterVar( ENV_CONFIG_FILE,     "", true, false );
+    enterVar( ENV_LOG_FILE,        "", true, false );
 
-    enterVar((char *) ENV_ASSERT_DEF_MSG, (char *) "", true, false );
-    enterVar((char *) ENV_ASSERT_PASS_CNT, (T64Word) 0, true, false );
-    enterVar((char *) ENV_ASSERT_FAIL_CNT, (T64Word) 0, true, false );
-    enterVar((char *) ENV_ASSERT_TOTAL_CNT, (T64Word) 0, true, false );
+    enterVar( ENV_CHECK_DEF_MSG,   "", true, false );
+    enterVar( ENV_CHECK_PASS_CNT,  T64Word{0}, true, false );
+    enterVar( ENV_CHECK_FAIL_CNT,  T64Word{0}, true, false );
+    enterVar( ENV_CHECK_TOTAL_CNT, T64Word{0}, true, false );
 
-    enterVar((char *) ENV_SHOW_CMD_CNT, true, true, false );
-    enterVar((char *) ENV_CMD_CNT, (T64Word) 0, true, true );
-    enterVar((char *) ENV_ECHO_CMD_INPUT, false, true, false );
-    enterVar((char *) ENV_EXIT_CODE, (T64Word) 0, true, false );
-    
-    enterVar((char *) ENV_RDX_DEFAULT, (T64Word) 16, true, false );
-    enterVar((char *) ENV_WORDS_PER_LINE, (T64Word) 8, true, false );
-    
-    enterVar((char *) ENV_WIN_MIN_ROWS, (T64Word) 24, true, false );
-    enterVar((char *) ENV_WIN_TEXT_LINE_WIDTH, (T64Word) 90, true, false );
-    enterVar((char *) ENV_WIN_TEXT_TAB_SIZE, (T64Word) 4, true, false );
+    enterVar( ENV_ASSERT_DEF_MSG,  "", true, false );
+    enterVar( ENV_ASSERT_PASS_CNT, T64Word{0}, true, false );
+    enterVar( ENV_ASSERT_FAIL_CNT, T64Word{0}, true, false );
+    enterVar( ENV_ASSERT_TOTAL_CNT,T64Word{0}, true, false );
 
-    enterVar((char *) ENV_HALT_ON_TRAPS, (bool) false, true, false );
+    enterVar( ENV_SHOW_CMD_CNT,    true,  true, false );
+    enterVar( ENV_CMD_CNT,         T64Word{0}, true, true );
+    enterVar( ENV_ECHO_CMD_INPUT,  false, true, false );
+    enterVar( ENV_EXIT_CODE,       T64Word{0}, true, false );
 
-    enterVar((char *) ENV_IO_MEM_START, T64_IO_MEM_START, true, true );
-    enterVar((char *) ENV_IO_MEM_LIMIT, T64_IO_MEM_LIMIT, true, true );
+    enterVar( ENV_RDX_DEFAULT,     T64Word{16}, true, false );
+    enterVar( ENV_WORDS_PER_LINE,  T64Word{8},  true, false );
 
-    enterVar((char *) ENV_PDC_MEM_START, T64_PDC_MEM_START, true, true );
-    enterVar((char *) ENV_PDC_MEM_LIMIT, T64_PDC_MEM_LIMIT, true, true );
+    enterVar( ENV_WIN_MIN_ROWS,        T64Word{24}, true, false );
+    enterVar( ENV_WIN_TEXT_LINE_WIDTH, T64Word{90}, true, false );
+    enterVar( ENV_WIN_TEXT_TAB_SIZE,   T64Word{4},  true, false );
 
-    enterVar((char *) ENV_HPA_MEM_START, T64_IO_HPA_MEM_START, true, true );
-    enterVar((char *) ENV_HPA_MEM_LIMIT, T64_IO_HPA_MEM_LIMIT, true, true );
+    enterVar( ENV_HALT_ON_TRAPS,    false, true, false );
 
-    enterVar((char *) ENV_SPA_MEM_START, T64_IO_SPA_MEM_START, true, true );
-    enterVar((char *) ENV_SPA_MEM_LIMIT, T64_IO_SPA_MEM_LIMIT, true, true );
+    enterVar( ENV_IO_MEM_START,     T64_IO_MEM_START, true, true );
+    enterVar( ENV_IO_MEM_LIMIT,     T64_IO_MEM_LIMIT, true, true );
 
+    enterVar( ENV_PDC_MEM_START,    T64_PDC_MEM_START, true, true );
+    enterVar( ENV_PDC_MEM_LIMIT,    T64_PDC_MEM_LIMIT, true, true );
+
+    enterVar( ENV_HPA_MEM_START,    T64_IO_HPA_MEM_START, true, true );
+    enterVar( ENV_HPA_MEM_LIMIT,    T64_IO_HPA_MEM_LIMIT, true, true );
+
+    enterVar( ENV_SPA_MEM_START,    T64_IO_SPA_MEM_START, true, true );
+    enterVar( ENV_SPA_MEM_LIMIT,    T64_IO_SPA_MEM_LIMIT, true, true );
 }

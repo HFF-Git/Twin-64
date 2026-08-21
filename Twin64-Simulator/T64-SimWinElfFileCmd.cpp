@@ -28,7 +28,13 @@
 //----------------------------------------------------------------------------------------
 #include "T64-SimDeclarations.h"
 #include "T64-SimTables.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #include <elfio/elfio.hpp>
+#pragma clang diagnostic pop
 
 using namespace ELFIO;
 
@@ -55,7 +61,7 @@ elfio *openElfFile( char *fileName ) {
 
 void closeElfFile( elfio *reader ) {
     
-    delete (elfio*) reader;
+    delete reader;
 }
 
 //----------------------------------------------------------------------------------------

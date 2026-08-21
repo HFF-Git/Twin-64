@@ -508,7 +508,7 @@ struct SimCmdLineOptions {
 struct SimErrMsgTabEntry {
     
     SimErrMsgId errNum;
-    char        *errStr;
+    const char  *errStr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -519,9 +519,9 @@ struct SimHelpMsgEntry {
     
     SimTokTypeId    helpTypeId;
     SimTokId        helpTokId;
-    char            *cmdNameStr;
-    char            *cmdSyntaxStr;
-    char            *helpStr;
+    const char      *cmdNameStr;
+    const char      *cmdSyntaxStr;
+    const char      *helpStr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -757,7 +757,7 @@ struct SimEnv {
 
     public:
     
-    SimEnv( SimGlobals *glb, int size );
+    SimEnv( SimGlobals *glb, size_t size );
     
     void            setupPredefined( );
    
@@ -786,18 +786,18 @@ struct SimEnv {
     int             lookupEntry( char *name );
     int             findFreeEntry( );
     
-    void            enterVar( char *name, 
+    void            enterVar( const char *name, 
                               T64Word val, 
                               bool predefined = false, 
                               bool rOnly = false );
 
-    void            enterVar( char *name, 
+    void            enterVar( const char *name, 
                               bool val, 
                               bool predefined = false, 
                               bool rOnly = false );
 
-    void            enterVar( char *name, 
-                              char *str, 
+    void            enterVar( const char *name, 
+                              const char *str, 
                               bool predefined = false, 
                               bool rOnly = false );
    

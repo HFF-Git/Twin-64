@@ -32,3 +32,12 @@ target_link_libraries( ${PROJECT_NAME} PRIVATE
     Twin64-Memory
     ELFIO
 )
+
+target_compile_options(Twin64-Simulator PRIVATE
+    -Wall
+    -Wextra
+    -Wconversion
+    -Wsign-conversion
+    -Wold-style-cast
+    -Wpedantic
+)

@@ -2481,8 +2481,8 @@ void SimCommandsWin::modifyMemCmd( ) {
     else if ( currentCmd == CMD_MW ) len = 4;
     else if ( currentCmd == CMD_MD ) len = 8;
 
-    uint8_t *ptr = (uint8_t *) &val;
-    copyEndianAware((uint8_t *) &val, ptr, len );
+    uint8_t *ptr = reinterpret_cast<uint8_t*> ( &val );
+    copyEndianAware(reinterpret_cast<uint8_t*>(&val), ptr, len);
 
     if ( translateAdr( glb -> system, adr, &adr )) {
  

@@ -188,10 +188,15 @@ inline bool copyEndianAware( uint8_t *dst, uint8_t *src, int len ) {
 // the endianess needs to be corrected to show a big endian layout.
 //
 //----------------------------------------------------------------------------------------
-inline void copyFromReg( uint8_t *dst, T64Word reg, int ofs, int len ) {
+inline void copyFromReg( uint8_t *dst, T64Word reg, size_t ofs, size_t len ) {
 
-    copyEndianAware((uint8_t *) &reg, (uint8_t *) &reg, sizeof( T64Word ));
-    memcpy( dst,  ((uint8_t *) &reg + ofs % sizeof( T64Word )), len );
+    copyEndianAware( reinterpret_cast<uint8_t *> ( &reg ), 
+                     reinterpret_cast<uint8_t *> ( &reg ), 
+                     sizeof( T64Word ));
+
+    memcpy( dst,  
+            ( reinterpret_cast<uint8_t *> ( &reg ) + ofs % sizeof( T64Word )), 
+            len );
 }
 
 //----------------------------------------------------------------------------------------
@@ -215,33 +220,41 @@ inline bool isInRangeForInstrBitFieldU( uint32_t val, int bitLen ) {
 // Instruction field routines.
 //
 //----------------------------------------------------------------------------------------
-inline int extractInstrBit( T64Instr arg, int bitpos ) {
+inline int extractInstrBit( T64Instr arg, size_t bitpos ) {
     
     if ( bitpos > 31 ) return ( 0 );
     return (( arg >> bitpos ) & 0x1 );
 }
 
-inline int extractInstrFieldU( T64Instr arg, int bitpos, int len ) {
+inline int extractInstrFieldU( T64Instr arg, size_t bitpos, size_t len ) {
     
     if ( bitpos > 31 ) return ( 0 );
     if ( bitpos + len > 32 ) return ( 0 );
     return (( arg >> bitpos ) & (( 1L << len ) - 1 ));
 }
 
-inline int extractInstrFieldS( T64Instr arg, int bitpos, int len ) {
+inline int extractInstrFieldS( T64Instr arg, size_t bitpos, size_t len ) {
 
     if ( len == 0 ) return ( 0 );
-    uint64_t field = (arg >> bitpos) & ((1ULL << len) - 1);
-    return (int)((int32_t)(field << (32 - len)) >> (32 - len));
+
+    uint32_t field;
+
+    if ( len == 32 ) field = static_cast<uint32_t>( arg >> bitpos );
+    else
+        field = static_cast<uint32_t>( arg >> bitpos ) &
+                ((UINT32_C( 1 ) << len ) - 1 );
+
+    return ( static_cast<int>(
+        static_cast<int32_t>( field << ( 32 - len )) >> ( 32 - len )));
 }
 
-inline T64Word signExtend( T64Word data, int pos ) {
+inline T64Word signExtend( T64Word data, size_t pos ) {
 
-    T64Word mask = (T64Word)1 << pos;       
-    T64Word extend = ~(mask - 1);       
+    T64Word mask = static_cast<T64Word>(UINT64_C(1) << pos);
+    T64Word extend = ~(mask - 1);
 
-    return (data & mask) ? (data | extend) : (data & ~extend);
-} 
+    return (( data & mask ) ? ( data | extend ) : ( data & ~extend ));
+}
 
 inline int extractInstrOpGroup( T64Instr instr ) {
     
@@ -313,13 +326,13 @@ inline int extractInstrImm20( T64Instr instr ) {
 // by the inline assembler.
 //
 //----------------------------------------------------------------------------------------
-inline void depositInstrField( T64Instr *instr, int bitpos, int len, T64Word value ) {
+inline void depositInstrField( T64Instr *instr, size_t bitpos, size_t len, T64Word value ) {
     
     uint32_t mask = (( 1 << len ) - 1 ) << bitpos;
     *instr = (( *instr & ~ mask ) | (( value << bitpos ) & mask ));
 }
 
-inline void depositInstrBit( T64Instr *instr, int bitpos, bool value ) {
+inline void depositInstrBit( T64Instr *instr, size_t bitpos, bool value ) {
     
     uint32_t mask = 1 << bitpos;
     *instr = (( *instr & ~mask ) | (( value << bitpos ) & mask ));
@@ -357,15 +370,6 @@ inline T64Word extractField64( T64Word arg, uint8_t bitpos, int len ) {
     return ( arg >> bitpos ) & (( 1LL << len ) - 1 );
 }
 
-#if 0
-inline T64Word extractSignedField64( T64Word arg, uint8_t bitpos, int len ) {
-    
-    T64Word field = ( arg >> bitpos ) & (( 1ULL << len ) - 1 );
-    
-    if ( len < 64 )  return ( field << ( 64 - len )) >> ( 64 - len );
-    else             return ( field );
-}
-#else
 inline T64Word extractSignedField64( T64Word arg, int bitpos, int len ) {
 
     T64Word field = ( arg >> bitpos ) &
@@ -375,9 +379,8 @@ inline T64Word extractSignedField64( T64Word arg, int bitpos, int len ) {
     else            return ( field );
 
 }
-#endif
 
-inline void depositBit64( T64Word *arg, uint8_t bitpos, uint8_t val ) {
+inline void depositBit64( T64Word *arg, size_t bitpos, uint8_t val ) {
 
     if ( bitpos <= 63 ) {
 
@@ -387,25 +390,32 @@ inline void depositBit64( T64Word *arg, uint8_t bitpos, uint8_t val ) {
 }
 
 inline T64Word depositField64( T64Word word,
-                               int     bitpos,
-                               int     len,
-                               T64Word value) {
+                               size_t  bitpos,
+                               size_t  len,
+                               T64Word value ) {
+    
+        uint64_t mask = ( len >= 64 ) ? UINT64_MAX : ((UINT64_C(1) << len) - 1 );
 
-    T64Word mask = ( len >= 64 ) ? ~0ULL : (( 1ULL << len ) - 1) ;
     mask <<= bitpos;
 
-    return ( T64Word)(((uint64_t)word & ~mask) |
-                (((uint64_t)value << bitpos) & mask));
+    uint64_t result = ( static_cast<uint64_t>( word ) & ~mask ) |
+                      (( static_cast<uint64_t>( value ) << bitpos ) & mask );
+
+    return ( static_cast<T64Word>( result ));
 }
 
-inline T64Word shiftRight128( T64Word hi, T64Word lo, int shift ) {
+inline T64Word shiftRight128( T64Word hi, T64Word lo, size_t  shift) {
     
-    if      ( shift == 0 ) return ( lo );
-    else if (( shift > 0 ) && ( shift < 64 )) {
-        
-        return (((uint64_t) hi << (64 - shift)) | ((uint64_t) lo >> shift));
+    if ( shift == 0 ) return ( lo );
+
+    if ( shift < 64 ) {
+
+        return ( static_cast<T64Word>(
+                     ( static_cast<uint64_t>(hi) << (64 - shift )) |
+                     ( static_cast<uint64_t>(lo) >> shift )));
     }
-    else return ( lo );
+
+    return ( lo );
 }
 
 //----------------------------------------------------------------------------------------
@@ -614,13 +624,16 @@ inline uint8_t tlbInfoPageSize( T64Word tlbInfo ) {
 //
 //----------------------------------------------------------------------------------------
 inline T64Word addAdrOfs32( T64Word adr, T64Word ofs ) {
-    
-    uint64_t uadr   = (uint64_t) adr;
-    uint32_t lo     = (uint32_t) uadr;
-    uint32_t newLo  = lo + (uint32_t) ofs;
 
-    uint64_t result = (uadr & 0xFFFFFFFF00000000ULL) | (uint64_t)newLo;
-    return (T64Word) result;
+    uint64_t uadr = static_cast<uint64_t>(adr);
+    uint32_t lo   = static_cast<uint32_t>(uadr);
+
+    lo += static_cast<uint32_t>(ofs);
+
+    uint64_t result =
+        (uadr & UINT64_C(0xFFFFFFFF00000000)) | static_cast<uint64_t>(lo);
+
+    return ( static_cast<T64Word>(result));
 }
 
 //----------------------------------------------------------------------------------------
