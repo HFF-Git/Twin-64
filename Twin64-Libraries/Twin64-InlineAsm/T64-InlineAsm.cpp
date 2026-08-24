@@ -2317,7 +2317,7 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
 
-    acceptRegB( instr );
+    acceptRegA( instr );
     
     if ( isToken( TOK_COMMA )) {
 

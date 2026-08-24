@@ -340,7 +340,13 @@ int buildOpCodeStr( char *buf, T64Instr instr ) {
             return ( cursor );
         }
 
-        case ( OPC_GRP_BR * 16 + OPC_BR ): 
+        case ( OPC_GRP_BR * 16 + OPC_BR ): {
+
+            int cursor = snprintf( buf, LEN_16, "BR" );
+            return ( cursor );
+
+        } break;
+
         case ( OPC_GRP_BR * 16 + OPC_BV ): {
 
             int cursor = snprintf( buf, LEN_16, "BR" );
@@ -752,7 +758,7 @@ int buildOperandStr( char *buf, uint32_t instr, int rdx ) {
             
         case ( OPC_GRP_BR * 16 + OPC_BR ): {
 
-            int cursor = snprintf( buf, LEN_32, "R%d", extractInstrRegB( instr ));
+            int cursor = snprintf( buf, LEN_32, "R%d", extractInstrRegA( instr ));
             
             if ( extractInstrRegR( instr ) != 0 ) {
 
