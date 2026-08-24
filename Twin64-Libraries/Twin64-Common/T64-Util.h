@@ -91,24 +91,24 @@ inline bool isInRange( T64Word adr, T64Word low, T64Word high ) {
     return (( adr >= low ) && ( adr <= high ));
 }
 
-inline T64Word roundup(T64Word arg, int round) {
+inline T64Word roundup( T64Word arg, T64Word round ) {
 
     if ( round == 0 ) return arg;
     return (( arg + round - 1 ) / round ) * round;
 }
 
-inline T64Word rounddown( T64Word arg, int round ) {
+inline T64Word rounddown( T64Word arg, T64Word round ) {
 
     if (round == 0) return arg;
     return (arg / round) * round;
 }
 
-inline bool isAligned( T64Word arg, int align ) {
+inline bool isAligned( T64Word arg, T64Word align ) {
 
     return (( arg & ( align - 1 )) == 0 );
 }
 
-inline bool isAlignedAdr( T64Word adr, int align ) {
+inline bool isAlignedAdr( T64Word adr, T64Word align ) {
 
     if (( align == 1 ) || ( align == 2 ) || 
         ( align == 4 ) || ( align == 8 )) {
@@ -118,7 +118,7 @@ inline bool isAlignedAdr( T64Word adr, int align ) {
     else return( false );
 }
 
-inline bool isAlignedPageAdr( T64Word adr, int align ) {
+inline bool isAlignedPageAdr( T64Word adr, T64Word align ) {
 
     if (( align == T64_PAGE_SIZE_BYTES                  ) ||
         ( align == 16 * T64_PAGE_SIZE_BYTES             ) ||
@@ -135,7 +135,7 @@ inline bool isAlignedInstrAdr( T64Word adr ) {
     return (( adr & 0x3 ) == 0 );
 }
 
-inline bool isAlignedOfs( T64Word ofs,  int align ) {
+inline bool isAlignedOfs( T64Word ofs,  T64Word align ) {
 
     return (( ofs & ( align - 1 )) == 0 );
 }

@@ -417,6 +417,8 @@ int SimEnv::formatEnvEntry( const char *name, char *buf, int bufLen ) {
 
 int SimEnv::formatEnvEntry( int index, char *buf, int bufLen ) {
 
+    // ??? how to check that we fit in "bufLen" ?
+
     if (( index >= 0 ) && ( index < ( hwm - table ))) {
 
         SimEnvTabEntry *e = &table[ index ];

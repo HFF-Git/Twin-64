@@ -38,6 +38,6 @@ target_compile_options(Twin64-Simulator PRIVATE
     -Wextra
     -Wconversion
     -Wsign-conversion
-    -Wold-style-cast
+  #  -Wold-style-cast
     -Wpedantic
 )

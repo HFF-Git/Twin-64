@@ -51,7 +51,7 @@ void upshiftStr( char *str ) {
         
         for ( size_t i = 0; i < len; i++ ) {
             
-            str[ i ] = (char) toupper((int) str[ i ] );
+            str[ i ] = static_cast<char> ( toupper((int) str[ i ] ));
         }
     }
 }
@@ -83,7 +83,7 @@ int lookupToken( char *inputStr, SimToken *tokTab ) {
 //----------------------------------------------------------------------------------------
 void addChar( char *buf, int size, char ch ) {
     
-    int len = (int) strlen( buf );
+    size_t len = strlen( buf );
     
     if ( len + 1 < size ) {
         
@@ -97,7 +97,7 @@ void addChar( char *buf, int size, char ch ) {
 //
 //
 //----------------------------------------------------------------------------------------
-void appendChar(char *&out, char *end, char c) {
+void appendChar(char *&out, char *end, char c ) {
    
     if ( out >= end )  throw( ERR_STRING_TOO_LONG );
     *out++ = c;
@@ -294,16 +294,16 @@ void SimTokenizer::parseNum( ) {
 // "parseHex2" gets a two digit hex number.
 //
 //----------------------------------------------------------------------------------------
-int SimTokenizer::parseHex2( ) {
+uint32_t SimTokenizer::parseHex2( ) {
 
-    int value = 0;
+    uint32_t value = 0;
 
     for ( int i = 0; i < 2; i++ ) {
 
         nextChar( );
         int h = hexValue( currentChar) ;
         if ( h < 0 ) throw( ERR_INVALID_HEX_ESCAPE );
-        value = ( value << 4 ) | h;
+        value = ( value << 4 ) | static_cast<uint32_t> ( h );
     }
 
     return value;
@@ -313,16 +313,16 @@ int SimTokenizer::parseHex2( ) {
 // "parseHex4" gets a four digit hex number.
 //
 //----------------------------------------------------------------------------------------
-int SimTokenizer::parseHex4( ) {
+uint32_t SimTokenizer::parseHex4( ) {
 
-    int value = 0;
+    uint32_t value = 0;
 
     for ( int i = 0; i < 4; i++ ) {
 
         nextChar( );
         int h = hexValue( currentChar );
         if ( h < 0 ) throw( ERR_INVALID_UNICODE_ESCAPE );
-        value = ( value << 4 ) | h;
+        value = ( value << 4 ) | static_cast<uint32_t> ( h );
     }
 
     return value;
@@ -341,7 +341,7 @@ uint32_t SimTokenizer::parseHex8( ) {
         nextChar( );
         int h = hexValue( currentChar );
         if ( h < 0 ) throw( ERR_INVALID_UNICODE_ESCAPE) ;
-        value = ( value << 4 ) | h;
+        value = ( value << 4 ) | static_cast<uint32_t> ( h );
     }
 
     return value;
@@ -386,14 +386,14 @@ void SimTokenizer::parseString() {
 
                     case 'x': {
 
-                        int v = parseHex2( );
-                        appendChar( out, end, (char)v) ;
+                        uint32_t v = parseHex2( );
+                        appendChar( out, end, static_cast<char> ( v )) ;
                         
                     } break;
 
                     case 'u': {
 
-                        uint32_t codepoint = parseHex4();
+                        uint32_t codepoint = parseHex4( );
 
                         if ( codepoint >= 0xD800 && codepoint <= 0xDFFF )
                             throw( ERR_INVALID_UNICODE_ESCAPE );
@@ -831,7 +831,7 @@ void SimTokenizerFromString::setupTokenizer( char *lineBuf, SimToken *tTab ) {
     strncpy( tokenLine, lineBuf, strlen( lineBuf ) + 1 );
     
     this -> tokTab                  = tTab;
-    this -> currentLineLen          = (int) strlen( tokenLine );
+    this -> currentLineLen          = strlen( tokenLine );
     this -> currentCharIndex        = 0;
     this -> currentChar             = ' ';
 }

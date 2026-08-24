@@ -362,8 +362,6 @@ enum InstrFlags : uint32_t {
     IM_LDR_OP   = ( IF_D | IF_U ),
     IM_STC_OP   = ( IF_D ),
     IM_B_OP     = ( IF_G ),
-    IM_BR_OP    = ( IF_W | IF_D | IF_Q ),
-    IM_BV_OP    = ( IF_W | IF_D | IF_Q ),
     IM_BB_OP    = ( IF_T | IF_F ),
     IM_CBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE ),
     IM_MBR_OP   = ( IF_EQ | IF_LT | IF_NE | IF_LE | IF_GT | IF_GE | IF_EV | IF_OD ),
@@ -655,18 +653,6 @@ Token   currentToken;
 //
 //----------------------------------------------------------------------------------------
 void parseExpr( Expr *rExpr );
-
-
-//----------------------------------------------------------------------------------------
-//
-//
-//----------------------------------------------------------------------------------------
-int toInt32( T64Word val ) {
-
-    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
-    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
-    return ( static_cast<int> ( val ));
-}
 
 //----------------------------------------------------------------------------------------
 // The token lookup function. We just do a linear search.
@@ -1589,8 +1575,6 @@ void parseInstrOptions( uint32_t *instrFlags, uint32_t instrOpToken ) {
         (( instrOpToken == TOK_OP_STC  ) && ( instrMask & ~IM_STC_OP    )) ||
     
         (( instrOpToken == TOK_OP_B    ) && ( instrMask & ~IM_B_OP      )) ||
-        (( instrOpToken == TOK_OP_BR   ) && ( instrMask & ~IM_BR_OP     )) ||
-        (( instrOpToken == TOK_OP_BV   ) && ( instrMask & ~IM_BV_OP     )) ||
         (( instrOpToken == TOK_OP_BB   ) && ( instrMask & ~IM_BB_OP     )) ||
 
         (( instrOpToken == TOK_OP_MFIA ) && ( instrMask & ~IM_MFIA_OP   )) ||
@@ -1967,7 +1951,10 @@ void parseInstrDEP( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrDSR( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
     
     nextToken( );
     acceptRegR( instr );
@@ -2282,7 +2269,10 @@ void parseInstrB( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrBE( uint32_t *instr, uint32_t instrOpToken ) {
 
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
     
     nextToken( );
     parseExpr( &rExpr );
@@ -2317,7 +2307,7 @@ void parseInstrBE( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseOpBR" is the IA-relative branch adding RegB to IA. Optionally, we can
 // specify a return link register.
 //
-//      BR [.W/D/Q] <regB> [ "," <regR> ]
+//      BR <regB> [ "," <regR> ]
 //
 //----------------------------------------------------------------------------------------
 void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2326,11 +2316,6 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
    
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-
-    if      ( instrFlags & IF_W ) depositInstrField( instr, 13, 2, 0 );
-    else if ( instrFlags & IF_D ) depositInstrField( instr, 13, 2, 1 );
-    else if ( instrFlags & IF_Q ) depositInstrField( instr, 13, 2, 2 );
-    else                          depositInstrField( instr, 13, 2, 0 );
 
     acceptRegB( instr );
     
@@ -2350,7 +2335,7 @@ void parseInstrBR( uint32_t *instr, uint32_t instrOpToken ) {
 // "parseOpBV" is the vectored branch. We add RegX and RegB, which form the 
 // target offset. Optionally, we can specify a return link register.
 //
-//      BV [.W/D/Q] [ <RegX> "," ] "(" <RegB> ")" [ "," <regR> ]
+//      BV [ <RegX> "," ] "(" <RegB> ")" [ "," <regR> ]
 //
 //----------------------------------------------------------------------------------------
 void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
@@ -2360,11 +2345,6 @@ void parseInstrBV( uint32_t *instr, uint32_t instrOpToken ) {
    
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
-
-    if      ( instrFlags & IF_W ) depositInstrField( instr, 13, 2, 0 );
-    else if ( instrFlags & IF_D ) depositInstrField( instr, 13, 2, 1 );
-    else if ( instrFlags & IF_Q ) depositInstrField( instr, 13, 2, 2 );
-    else                          depositInstrField( instr, 13, 2, 0 );
 
     if ( isTokenTyp( TYP_GREG )) {
 
@@ -2479,7 +2459,10 @@ void parseInstrXBR( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrMFCR( uint32_t *instr, uint32_t instrOpToken ) {
    
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     acceptRegR( instr );
@@ -2500,7 +2483,10 @@ void parseInstrMFCR( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrMTCR( uint32_t *instr, uint32_t instrOpToken ) {
 
-     Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
    
     nextToken( );
     acceptRegB( instr );
@@ -2530,7 +2516,7 @@ void parseInstrMTCR( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
 
-    uint32_t instrFlags  = IF_NIL;
+    uint32_t instrFlags = IF_NIL;
     
     nextToken( );
     parseInstrOptions( &instrFlags, instrOpToken );
@@ -2555,7 +2541,10 @@ void parseInstrMFIA( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrLPA( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     acceptRegR( instr );
@@ -2624,6 +2613,10 @@ void parseInstrPRB( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
+
     nextToken( );
     acceptRegB( instr );
     acceptComma( );
@@ -2641,7 +2634,10 @@ void parseInstrInsertTlb( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
 
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
@@ -2665,7 +2661,10 @@ void parseInstrPurgeTlb( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrCacheOpByAdr( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
@@ -2688,7 +2687,10 @@ void parseInstrCacheOpByAdr( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrCacheOpByEntry( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     if ( isTokenTyp( TYP_GREG )) acceptRegA( instr );
@@ -2708,7 +2710,10 @@ void parseInstrCacheOpByEntry( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
    
     nextToken( );
     acceptRegR( instr );
@@ -2732,6 +2737,10 @@ void parseInstrSregOp( uint32_t *instr, uint32_t instrOpToken ) {
 //
 //----------------------------------------------------------------------------------------
 void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
+
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
     
     nextToken( );
     acceptEOS( );
@@ -2746,7 +2755,10 @@ void parseInstrRFI( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
     
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
    
     nextToken( );
     
@@ -2782,7 +2794,10 @@ void parseInstrDIAG( uint32_t *instr, uint32_t instrOpToken ) {
 //----------------------------------------------------------------------------------------
 void parseInstrTrapOp( uint32_t *instr, uint32_t instrOpToken ) {
 
-    Expr rExpr = INIT_EXPR;
+    Expr     rExpr      = INIT_EXPR;
+    uint32_t instrFlags = IF_NIL;
+
+    parseInstrOptions( &instrFlags, instrOpToken );
 
     nextToken( );
     parseExpr( &rExpr );

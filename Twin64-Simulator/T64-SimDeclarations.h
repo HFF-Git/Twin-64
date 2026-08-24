@@ -587,8 +587,8 @@ struct SimTokenizer {
     private:
     
     virtual void    nextChar( ) = 0;
-    int             parseHex2( );
-    int             parseHex4( );
+    uint32_t        parseHex2( );
+    uint32_t        parseHex4( );
     uint32_t        parseHex8( );
     void            parseNum( );
     void            parseString( );
@@ -620,7 +620,7 @@ struct SimTokenizerFromString : public SimTokenizer {
     void            nextChar( );
 
     int             currentCharIndex    = 0;
-    int             currentLineLen      = 0;
+    size_t          currentLineLen      = 0;
     char            tokenLine[ 256 ]    = { 0 };
 
 };

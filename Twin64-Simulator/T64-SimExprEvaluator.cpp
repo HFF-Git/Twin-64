@@ -90,6 +90,12 @@ int toInt32( T64Word val ) {
     return ( static_cast<int> ( val ));
 }
 
+uint32_t toUInt32( T64Word val ) {
+
+    if ( val > UINT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<uint32_t> ( val ));
+}
+
 //----------------------------------------------------------------------------------------
 // Add operation.
 //
@@ -288,12 +294,17 @@ void bitOp( SimExpr *rExpr, SimExpr *lExpr, BitOpId op ) {
 }
 
 //----------------------------------------------------------------------------------------
-// A little helper for comparing types.
+// A little helper for expression checks.
 //
 //----------------------------------------------------------------------------------------
 bool equalTypes( SimExpr *rExpr, SimExpr *lExpr ) {
 
     return ( rExpr -> typ == lExpr -> typ );
+}
+
+bool isNumericExpr( SimExpr *rExpr ) {
+
+    return ( rExpr -> typ == TYP_NUM );
 }
 
 //----------------------------------------------------------------------------------------
@@ -366,7 +377,7 @@ SimExprEvaluator::SimExprEvaluator( SimGlobals *glb, SimTokenizer *tok ) {
 void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 
     SimTokTypeId regType    = tok -> tokTyp( );
-    T64Word      regId      = tok -> tokVal( );
+    int         regId       = static_cast<int> ( tok -> tokVal( ));
     int          modNum     = -1;
 
     rExpr -> typ      = TYP_NIL;
@@ -412,8 +423,8 @@ void SimExprEvaluator::parseRegister( SimExpr *rExpr, bool evalEnabled ) {
 //----------------------------------------------------------------------------------------
 void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
 
-    size_t  len  = sizeof( T64Word );
-    bool    sExt = true;
+    size_t len  = sizeof( T64Word );
+    bool   sExt = true;
 
     tok -> nextToken( );
 
@@ -424,7 +435,7 @@ void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
          tok -> isToken( TOK_DWORD ) ||
          tok -> isToken( TOK_DOUBLE )) {
 
-        len = tok -> tokVal( );
+        len = toUInt32( tok -> tokVal( ));
         tok -> nextToken( );
     }
     else if ( tok -> isToken( TOK_UBYTE ) ||
@@ -433,7 +444,7 @@ void SimExprEvaluator::parseMemData( SimExpr *rExpr, bool evalEnabled ) {
                 tok -> isToken( TOK_UWORD  )) {
 
         sExt = false;
-        len  = tok -> tokVal( );
+        len  = toUInt32( tok -> tokVal( ));
         tok -> nextToken( );
     }
     else ;
@@ -745,9 +756,9 @@ void SimExprEvaluator::parseRelationExpr( SimExpr *rExpr, bool evalEnabled ) {
     parseSimpleExpr( &lExpr, evalEnabled );
 
     if ( ! ( equalTypes( rExpr, &lExpr ))) throw ( ERR_EXPR_TYPE_MATCH );
+    if ( ! ( isNumericExpr( rExpr ))) throw( ERR_EXPR_TYPE_MATCH );
+    if ( ! ( isNumericExpr( &lExpr ))) throw( ERR_EXPR_TYPE_MATCH );
 
-    // ??? check that both are numerics ?
-   
     switch ( relOp ) {
 
         case TOK_EQ: { 

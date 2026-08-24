@@ -1243,8 +1243,7 @@ void T64Cpu::instrBrBeOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrBrBrOp( T64Instr instr ) {
 
-    int     scale = extractInstrFieldU( instr, 13, 2 ) + 2;
-    T64Word newIA = addAdrOfs32( psrReg, getRegB( instr ) << scale );
+    T64Word newIA = addAdrOfs32( psrReg, getRegB( instr ) << 2 );
     T64Word rl    = addAdrOfs32( psrReg, 4 );
 
     if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
@@ -1261,10 +1260,9 @@ void T64Cpu::instrBrBrOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrBrBvOp( T64Instr instr ) {
 
-    int     scale   = extractInstrFieldU( instr, 13, 2 ) + 2;
     T64Word base    = getRegB( instr );
     T64Word rl      = addAdrOfs32( psrReg, 4 );
-    T64Word newIA   = addAdrOfs32( base, getRegA( instr ) << scale );
+    T64Word newIA   = addAdrOfs32( base, getRegA( instr ) << 2 );
 
     if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
     if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );

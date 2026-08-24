@@ -102,7 +102,7 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 // of 5 in this case.
 //
 //----------------------------------------------------------------------------------------
-int calculateStrLen( const char *s, int tabWidth  ) {
+int calculateStrLen( const char *s, size_t tabWidth  ) {
 
     size_t col = 0;
 
@@ -880,7 +880,7 @@ void SimWinMem::drawBanner( ) {
 //----------------------------------------------------------------------------------------
 void SimWinMem::drawMemDataLine32( T64Word itemAdr, uint32_t fmtDesc ) {
 
-    T64Word    limit    = getLineIncrementItemAdr( );
+    int limit = getLineIncrementItemAdr( );
 
     for ( int i = 0; i < limit; i = i + sizeof( uint32_t) ) {
 
