@@ -352,23 +352,24 @@ mw 0,asm("BB.F R2,3,12")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
 check (IA:CPU_MOD_NUM) == 0x0004, "BB.F R2,3,12" 
-log "T/F and V-Bit in document is confusing"
 
 log "---------------"
 log "BR" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
-mw 0,asm("BR.W R3,R6")
+mw 0,asm("BR R3,R6")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
-check (IA:CPU_MOD_NUM) == 0x0050 && (R6:CPU_MOD_NUM) == 0x0004,"BR.W R3,R6"
+check (IA:CPU_MOD_NUM) == 0x0050 && (R6:CPU_MOD_NUM) == 0x0004,"BR R3,R6"
+log "Illegal Instruction"
+
 
 log "---------------"
 log "BV" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mr r2:CPU_MOD_NUM, 12
-mw 0,asm("BV.W R3(R2),R6")
+mw 0,asm("BV R3(R2),R6")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
 log "Illegal Instruction"
@@ -382,7 +383,7 @@ mw 0,asm("CBR.EQ R3,R2,12")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
 check (IA:CPU_MOD_NUM) == 0x000C, "CBR.EQ R3,R2,12" 
-log "IA points to 0x0003"
+
 
 log "---------------"
 log "FICA" 
@@ -419,6 +420,19 @@ s,CPU_MOD_NUM
 check (r6:CPU_MOD_NUM) == 0x0400_3333_4444, "LDR R6,0(R3)"
 
 log "---------------"
+log "STC" 
+log "---------------"
+xf "../TestScript/InitOperands.txt"
+mr r3:CPU_MOD_NUM, 24
+mr R6:CPU_MOD_NUM, 14
+mw 0,asm("STC R6, 0(R3)")
+mr ia:CPU_MOD_NUM,0
+s,CPU_MOD_NUM
+log "(00_0000_0000_0000): 6d81_e000   0000_0000   0000_0000   0000_0000   0000_0000   0000_0030   0000_0000   0000_000e"
+
+
+
+log "---------------"
 log "MBR" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
@@ -426,6 +440,8 @@ mw 0,asm("MBR.GT R6,R2, 16")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
 check (IA:CPU_MOD_NUM) == 0x0010, "MBR.GT R6,R2, 16"
+
+
 
 log "---------------"
 log "Summary"
