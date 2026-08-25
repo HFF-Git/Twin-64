@@ -1246,8 +1246,8 @@ void T64Cpu::instrBrBrOp( T64Instr instr ) {
     T64Word newIA = addAdrOfs32( psrReg, getRegB( instr ) << 2 );
     T64Word rl    = addAdrOfs32( psrReg, 4 );
 
-    if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
-    if ( extractInstrFieldU( instr, 0, 13 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 13, 9 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );
 
     instrAlignmentCheck( newIA );
     psrReg = newIA;
@@ -1265,6 +1265,7 @@ void T64Cpu::instrBrBvOp( T64Instr instr ) {
     T64Word newIA   = addAdrOfs32( base, getRegA( instr ) << 2 );
 
     if ( extractInstrFieldU( instr, 19, 3 ) != 0 ) illegalInstrTrap( );
+    if ( extractInstrFieldU( instr, 13, 2 ) != 0 ) illegalInstrTrap( );
     if ( extractInstrFieldU( instr, 0, 9 ) != 0 ) illegalInstrTrap( );
 
     instrAlignmentCheck( newIA );
@@ -1690,6 +1691,7 @@ T64TrapCode T64Cpu::executeInstr( ) {
             case ( OPC_GRP_BR * 16 + OPC_B ):       instrBrBOp( instrReg );      break;
             case ( OPC_GRP_BR * 16 + OPC_BE ):      instrBrBeOp( instrReg );     break;
             case ( OPC_GRP_BR * 16 + OPC_BR ):      instrBrBrOp( instrReg );     break;
+            case ( OPC_GRP_BR * 16 + OPC_BV ):      instrBrBvOp( instrReg );     break;
             case ( OPC_GRP_BR * 16 + OPC_BB ):      instrBrBbOp( instrReg );     break;
             case ( OPC_GRP_BR * 16 + OPC_ABR ):     instrBrAbrOp( instrReg );    break;
             case ( OPC_GRP_BR * 16 + OPC_CBR ):     instrBrCbrOp( instrReg );    break;

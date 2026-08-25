@@ -358,20 +358,20 @@ log "---------------"
 log "BR" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
-mw 0,asm("BR.W R3,R6")
+mw 0,asm("BR R3,R6")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
-check (IA:CPU_MOD_NUM) == 0x0050 && (R6:CPU_MOD_NUM) == 0x0004,"BR.W R3,R6"
+check (IA:CPU_MOD_NUM) == 0x0050 && (R6:CPU_MOD_NUM) == 0x0004,"BR R3,R6"
 
 log "---------------"
 log "BV" 
 log "---------------"
 xf "../TestScript/InitOperands.txt"
 mr r2:CPU_MOD_NUM, 12
-mw 0,asm("BV.W R3(R2),R6")
+mw 0,asm("BV R3(R2),R6")
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
-log "Illegal Instruction"
+check (IA:CPU_MOD_NUM) == 0x5c && (R6:CPU_MOD_NUM) == 0x0004,"BV R3(R2),R6"
 
 log "---------------"
 log "CBR" 

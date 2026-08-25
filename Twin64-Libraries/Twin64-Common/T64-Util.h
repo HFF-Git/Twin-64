@@ -338,8 +338,8 @@ inline void depositInstrField( T64Instr *instr,
                                size_t   len,
                                T64Word  value ) {
     
-    uint32_t mask = ( len == 32 ) ? UINT32_MAX : ((UINT32_C(1) << len) - 1);
-    mask <<= bitpos;
+    uint32_t mask = ( len == 32 ) ? UINT32_MAX : ((UINT32_C( 1 ) << len ) - 1 );
+    mask = mask << bitpos;
 
     *instr = static_cast<T64Instr>(
                 (static_cast<uint32_t>( *instr ) & ~mask ) |
