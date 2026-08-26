@@ -196,6 +196,7 @@ struct T64Cpu {
     void            overFlowTrap( );
     void            illegalInstrTrap( );
     void            recoveryCounterTrap( );
+    void            branchTakenTrap( T64Word adr );
 
     void            privModeCheck( );
     bool            regionIdCheck( T64Word pId, int wMode );

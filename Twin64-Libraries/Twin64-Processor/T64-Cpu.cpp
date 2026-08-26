@@ -213,6 +213,11 @@ void T64Cpu::recoveryCounterTrap( ) {
     throw( T64Trap( RECOVERY_COUNTER_TRAP, psrReg, instrReg, 0 ));
 }
 
+void T64Cpu::branchTakenTrap( T64Word adr ) {
+
+    throw( T64Trap( BRANCH_TAKEN_TRAP, psrReg, instrReg, adr ));
+}
+
 //----------------------------------------------------------------------------------------
 // Check routines that generate traps. We check for the condition and if not
 // met, raise the corresponding trap. There are  couple of checks. The first
@@ -1217,6 +1222,11 @@ void T64Cpu::instrBrBOp( T64Instr instr ) {
    
     psrReg = newIA;
     setRegR( instr, rl );
+
+    if ( extractPsrJbit( psrReg )) {
+            
+        branchTakenTrap( extractField64( newIA, 0, 52 ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1235,6 +1245,11 @@ void T64Cpu::instrBrBeOp( T64Instr instr ) {
     
     psrReg = newIA;
     setRegR( instr, rl );
+
+    if ( extractPsrJbit( psrReg )) {
+            
+        branchTakenTrap( extractField64( newIA, 0, 52 ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1252,6 +1267,11 @@ void T64Cpu::instrBrBrOp( T64Instr instr ) {
     instrAlignmentCheck( newIA );
     psrReg = newIA;
     setRegR( instr, rl );
+
+    if ( extractPsrJbit( psrReg )) {
+            
+        branchTakenTrap( extractField64( newIA, 0, 52 ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1275,6 +1295,11 @@ void T64Cpu::instrBrBvOp( T64Instr instr ) {
 
     psrReg = (T64Word) result;
     setRegR( instr, rl );
+
+    if ( extractPsrJbit( psrReg )) {
+            
+        branchTakenTrap( extractField64( newIA, 0, 52 ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1300,6 +1325,11 @@ void T64Cpu::instrBrBbOp( T64Instr instr ) {
     if ( testVal ^ testBit ) { 
         
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm13( instr ) << 2 );
+
+        if ( extractPsrJbit( psrReg )) {
+            
+            branchTakenTrap( extractField64( psrReg, 0, 52 ));
+        }
     }
     else nextInstr( );
 }
@@ -1321,6 +1351,11 @@ void T64Cpu::instrBrAbrOp( T64Instr instr ) {
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), sum, 0 )) {
 
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
+
+        if ( extractPsrJbit( psrReg )) {
+            
+            branchTakenTrap( extractField64( psrReg, 0, 52 ));
+        }
     } 
     else nextInstr( );
 }
@@ -1337,6 +1372,11 @@ void T64Cpu::instrBrCbrOp( T64Instr instr ) {
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val1, val2 )) {
 
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
+
+        if ( extractPsrJbit( psrReg )) {
+            
+            branchTakenTrap( extractField64( psrReg, 0, 52 ));
+        }
     } 
     else nextInstr( );
 }
@@ -1354,6 +1394,11 @@ void T64Cpu::instrBrMbrOp( T64Instr instr ) {
     if ( evalCond( extractInstrFieldU( instr, 19, 3 ), val, 0 )) {
 
         psrReg = addAdrOfs32( psrReg, extractInstrSignedImm15( instr ) << 2 );
+        
+        if ( extractPsrJbit( psrReg )) {
+            
+            branchTakenTrap( extractField64( psrReg, 0, 52 ));
+        }
     }
     else nextInstr( );
 }
