@@ -108,7 +108,7 @@ void rtrim( char *s ) {
 // position of the "#" comment indicator. A "#" inside a string is ignored.
 //
 //----------------------------------------------------------------------------------------
-int removeComment( char *cmdBuf ) {
+size_t removeComment( char *cmdBuf ) {
     
     if ( strlen ( cmdBuf ) > 0 ) {
         
@@ -132,7 +132,7 @@ int removeComment( char *cmdBuf ) {
         }
     }
     
-    return ((int) strlen( cmdBuf ));
+    return ( strlen( cmdBuf ));
 }
 
 //----------------------------------------------------------------------------------------
@@ -142,12 +142,13 @@ int removeComment( char *cmdBuf ) {
 // decremented by one.
 //
 //----------------------------------------------------------------------------------------
-void removeChar( char *buf, int *strSize, int *pos ) {
+void removeChar( char *buf, size_t *strSize, size_t *pos ) {
     
-    if ( (*strSize > 0) && (*pos > 0) ) {
+    if (( *strSize > 0 ) && ( *pos > 0 ) ) {
         
         // shift everything left starting from the character BEFORE cursor
-        for ( int i = *pos - 1; i < *strSize; i++ ) {
+        for ( size_t i = *pos - 1; i < *strSize; i++ ) {
+
             buf[i] = buf[i + 1];
         }
         
@@ -166,7 +167,7 @@ void removeChar( char *buf, int *strSize, int *pos ) {
 // to the right to make room first.
 //
 //----------------------------------------------------------------------------------------
-void insertChar( char *buf, int ch, int *strSize, int *pos ) {
+void insertChar( char *buf, int ch, size_t *strSize, size_t *pos ) {
     
     if ( *pos == *strSize ) {
         
@@ -174,7 +175,7 @@ void insertChar( char *buf, int ch, int *strSize, int *pos ) {
     }
     else if ( *pos < *strSize ) {
         
-        for ( int i = *strSize; i > *pos; i-- ) buf[ i ] = buf[ i - 1 ];
+        for ( size_t i = *strSize; i > *pos; i-- ) buf[ i ] = buf[ i - 1 ];
         buf[ *pos ] = static_cast<char> ( ch );
     }
     
@@ -241,37 +242,37 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 }
 
 //----------------------------------------------------------------------------------------
-//
 // "appendPrintf" is a little helper to write an incrementally to a buffer while
 // making sure that the buffer is large enough.
 //
 //----------------------------------------------------------------------------------------
-inline void appendPrintf( char *buf, 
+inline int appendPrintf( char *buf, 
                           size_t bufSize, 
                           int& bufLen,
                           const char *format, ... ) {
 
-    if ( bufLen < 0 || static_cast<size_t>( bufLen ) >= bufSize )
+    if (( bufLen < 0 ) || ( static_cast<size_t>( bufLen ) >= bufSize )) {
 
         throw( ERR_STRING_TOO_LONG );
+    }
 
     va_list args;
-
     va_start( args, format );
-
     int n = vsnprintf(buf + bufLen,
                       bufSize - static_cast<size_t>(bufLen),
                       format,
                       args);
-
     va_end( args );
 
-    if ( n < 0 ||
-        static_cast<size_t>(n) >= bufSize - static_cast<size_t>(bufLen))
+    if (( n < 0 ) ||
+        ( static_cast<size_t>(n) >= bufSize - static_cast<size_t>(bufLen))) {
 
         throw(ERR_STRING_TOO_LONG);
+    }
 
     bufLen += n;
+
+    return( bufLen );
 }
 
 //----------------------------------------------------------------------------------------
@@ -618,25 +619,25 @@ void SimCommandsWin::clearCmdWin( ) {
 // cursor at the input line, right after the prompt string.
 //
 //----------------------------------------------------------------------------------------
-int SimCommandsWin::readCmdLine( char *cmdBuf, 
-                                 int initialCmdBufLen, 
-                                 char *promptBuf ) {
+int SimCommandsWin::readCmdLine( char   *cmdBuf, 
+                                 size_t initialCmdBufLen, 
+                                 char   *promptBuf ) {
     
     enum CharType : uint16_t { 
         
         CT_NORMAL, CT_ESCAPE, CT_ESCAPE_BRACKET, CT_WIN_SPECIAL 
     };
     
-    int         promptBufLen    = static_cast<int> ( strlen( promptBuf ));
-    int         cmdBufCursor    = 0;
-    int         cmdBufLen       = 0;
+    size_t      promptBufLen    = strlen( promptBuf );
+    size_t      cmdBufCursor    = 0;
+    size_t      cmdBufLen       = 0;
     int         ch              = ' ';
     CharType    state           = CT_NORMAL;
     
     if (( promptBufLen > 0 ) && ( glb -> console -> isConsole( ))) {
 
         glb -> console -> writeChars( " %s", promptBuf );
-        promptBufLen = static_cast<int> ( strlen( promptBuf ));
+        promptBufLen = strlen( promptBuf );
     }
     
     if ( initialCmdBufLen > 0 ) {
@@ -646,7 +647,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf,
         cmdBufCursor                = initialCmdBufLen;
 
         glb -> console -> writeChars( "\r %s%s", promptBuf, cmdBuf );
-        setWinCursor( 0, 1 + promptBufLen + cmdBufCursor );
+        setWinCursor( 0, 1U + promptBufLen + cmdBufCursor );
     }
     else cmdBuf[ 0 ] = '\0';
     
@@ -693,7 +694,7 @@ int SimCommandsWin::readCmdLine( char *cmdBuf,
                         winOut -> addToBuffer( cmdBuf );
                         winOut -> addToBuffer( "\n" );
                         cmdBufLen = removeComment( cmdBuf );
-                        return ( cmdBufLen );
+                        return ( static_cast<int> ( cmdBufLen ));
                     }
                 }
                 else if ( isBackSpaceChar( ch )) {
@@ -849,7 +850,6 @@ void SimCommandsWin::cmdLineError( SimErrMsgId errNum, char *argStr ) {
     winOut -> writeChars( "\n" );
 }
 
-
 //----------------------------------------------------------------------------------------
 // "promptYesNoCancel" is a simple function to print a prompt string along with
 // a decision question. The answer can be yes/no or cancel. A positive result is
@@ -979,7 +979,7 @@ void SimCommandsWin::printStackInfoField( uint32_t fmtDesc, int row, int col ) {
 
         if ( stacks[ i ] > 0 ) { 
 
-            stackStrLen = snprintf( stackStr, 4, "S:" );
+            appendPrintf( stackStr, 4, stackStrLen, "S:" );
             break;
         }
     }
@@ -988,7 +988,7 @@ void SimCommandsWin::printStackInfoField( uint32_t fmtDesc, int row, int col ) {
         
         if ( stacks[ i ] > 0 ) {
 
-            stackStrLen += snprintf( stackStr + stackStrLen, 4, "%d", i + 1 );
+            appendPrintf( stackStr, 4, stackStrLen, "%d", i + 1 );
         }
     }
 
@@ -1034,28 +1034,31 @@ void SimCommandsWin::printWelcome( ) {
 // "promptCmdLine" lists out the prompt string.
 //
 //----------------------------------------------------------------------------------------
-int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char prefix ) {
-
+int SimCommandsWin::buildCmdPrompt( char  *promptStr, 
+                                    size_t promptStrLen, 
+                                    char   prefix ) {
+    
+    int len = 0;
+    
     if ( prefix == ' ' ) {
 
         if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
- 
-            return ( snprintf( promptStr, promptStrLen,
-                           "(%i) ->",
-                           glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
+
+            return( appendPrintf( promptStr, promptStrLen, len, "(%d) ->",
+                                glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
         }
-        else return ( snprintf( promptStr, promptStrLen, "->" ));
+        else return ( appendPrintf( promptStr, promptStrLen, len, "->" ));
     }
     else {
 
          if ( glb -> env -> getEnvVarBool((char *) ENV_SHOW_CMD_CNT )) {
  
-        return ( snprintf( promptStr, promptStrLen,
-                           "%c(%i) ->",
-                           prefix,
-                           glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
+        return ( appendPrintf( promptStr, promptStrLen, len,
+                               "%c(%i) ->",
+                               prefix,
+                               glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
         }
-        else return ( snprintf( promptStr, promptStrLen, "%c->", prefix ));
+        else return ( appendPrintf( promptStr, promptStrLen, len, "%c->", prefix ));
     }
 }
 
@@ -1963,7 +1966,7 @@ void SimCommandsWin::writeLineCmd( ) {
         tok -> nextToken( );
         if (( tok -> isToken( TOK_HEX )) || ( tok -> isToken( TOK_DEC ))) {
             
-            rdx = tok -> tokVal( );
+            rdx = toInt32( tok -> tokVal( ));
             tok -> nextToken( );
         }
         else throw ( ERR_INVALID_FMT_OPT );
@@ -2088,7 +2091,7 @@ void SimCommandsWin::redoCmd( ) {
         strncpy( tmpCmd, cmdStr, sizeof( tmpCmd ));
         
         glb -> console -> writeChars( "%s", tmpCmd );
-        if ( readCmdLine( tmpCmd, (int) strlen( tmpCmd ), (char *)"" ))
+        if ( readCmdLine( tmpCmd, strlen( tmpCmd ), (char *)"" ))
              processCmdLine( tmpCmd );
     }
 }
@@ -2274,7 +2277,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
         tok -> nextToken( );
         msgStr = eval -> acceptStringExpr( ERR_EXPECTED_STRING_VALUE );
 
-        msgBufLen += snprintf( msgBuf, sizeof( msgBuf ), "%s : ", msgStr );
+        appendPrintf( msgBuf, sizeof( msgBuf ), msgBufLen, "%s : ", msgStr );
     }
 
     tok -> checkEOS( );
@@ -2282,14 +2285,14 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
     char *textMsgName = nullptr;
     char *passEnvName = nullptr;
     char *failEnvName = nullptr;
-    char *totaCntName = nullptr;
+    char *totalCntName = nullptr;
 
     if ( doExit ) {
 
         textMsgName = (char *) ENV_ASSERT_DEF_MSG;
         passEnvName = (char *) ENV_ASSERT_PASS_CNT;
         failEnvName = (char *) ENV_ASSERT_FAIL_CNT;
-        totaCntName = (char *) ENV_ASSERT_TOTAL_CNT;
+        totalCntName = (char *) ENV_ASSERT_TOTAL_CNT;
 
     }
     else {
@@ -2297,33 +2300,30 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
         textMsgName = (char *) ENV_CHECK_DEF_MSG;
         passEnvName = (char *) ENV_CHECK_PASS_CNT;
         failEnvName = (char *) ENV_CHECK_FAIL_CNT;
-        totaCntName = (char *) ENV_CHECK_TOTAL_CNT;
+        totalCntName = (char *) ENV_CHECK_TOTAL_CNT;
     }
 
     if ( msgStr == nullptr ) {
 
         msgStr = glb -> env -> getEnvVarStr( textMsgName );
         if ( strlen( msgStr ) > 0 )
-            msgBufLen += snprintf( msgBuf, sizeof( msgBuf ), "%s : ", msgStr );
+
+            appendPrintf( msgBuf, sizeof( msgBuf ), msgBufLen, "%s : ", msgStr );
     }
 
-    glb -> env -> setEnvVar( totaCntName, 
-                        glb -> env ->getEnvVarInt( totaCntName) + 1 );
+    glb -> env -> setEnvVar( totalCntName, 
+                        glb -> env -> getEnvVarInt( totalCntName ) + 1 );
 
     if ( bVal ) {
 
-        msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                msgBufLen - sizeof( msgBuf ), 
-                                "PASS" );
+        appendPrintf( msgBuf, sizeof( msgBuf ), msgBufLen, "PASS" );
 
         glb -> env -> setEnvVar( passEnvName, 
                         glb -> env ->getEnvVarInt( passEnvName ) + 1 );
     }
     else {
 
-        msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                msgBufLen - sizeof( msgBuf ), 
-                                "FAIL" );
+        appendPrintf( msgBuf, sizeof( msgBuf ), msgBufLen, "FAIL" );
 
         glb -> env -> setEnvVar( failEnvName, 
                         glb -> env ->getEnvVarInt( failEnvName  ) + 1 );
@@ -2368,7 +2368,7 @@ void SimCommandsWin::writeLogCmd( ) {
     int  msgBufLen = 0;
 
     char *msgStr = eval -> acceptStringExpr( ERR_EXPECTED_STRING_VALUE );
-    msgBufLen = snprintf( msgBuf, sizeof( msgBuf ), "%s", msgStr );
+    appendPrintf( msgBuf, sizeof( msgBuf ), msgBufLen, "%s", msgStr );
 
     if ( tok -> isToken( TOK_COMMA )) {
 
@@ -2496,24 +2496,38 @@ void SimCommandsWin::modifyMemCmd( ) {
     if (( currentCmd == CMD_MW ) && ( adr % 4 != 0 )) throw( ERR_UNALIGNED_ADDR );   
     if (( currentCmd == CMD_MD ) && ( adr % 8 != 0 )) throw( ERR_UNALIGNED_ADDR );  
     
-    // ??? must check for int range !!!!
-    if (( currentCmd == CMD_MB ) && 
-        ( ! isInRange( val, INT8_MIN, INT8_MAX ))) throw( ERR_NUMERIC_RANGE );
+    if ( currentCmd == CMD_MB ) {
 
-    if (( currentCmd == CMD_MS ) && 
-        ( ! isInRange( val, INT16_MIN, INT16_MAX ))) throw( ERR_NUMERIC_RANGE );
+        if ( val > INT8_MAX ) {
 
-    if (( currentCmd == CMD_MW ) && 
-        ( ! isInRange( val, INT32_MIN, INT32_MAX ))) throw( ERR_NUMERIC_RANGE );
+            if ( val > UINT8_MAX ) throw( ERR_NUMERIC_RANGE );
+        }
+        else if ( ! isInRange( val, INT8_MIN, INT8_MAX )) throw( ERR_NUMERIC_RANGE );
+    }
 
-    if (( currentCmd == CMD_MD ) && 
-        ( ! isInRange( val, INT64_MIN, INT64_MAX ))) throw( ERR_NUMERIC_RANGE );
+    if ( currentCmd == CMD_MS ) {
+
+        if ( val > INT16_MAX ) {
+
+            if ( val > UINT16_MAX ) throw( ERR_NUMERIC_RANGE );
+        }
+        else if ( ! isInRange( val, INT16_MIN, INT16_MAX )) throw( ERR_NUMERIC_RANGE );
+    }
+
+    if ( currentCmd == CMD_MW ) {
+
+        if ( val > INT32_MAX ) {
+
+            if ( val > UINT32_MAX ) throw( ERR_NUMERIC_RANGE );
+        }
+        else if ( ! isInRange( val, INT32_MIN, INT32_MAX )) throw( ERR_NUMERIC_RANGE );
+    }
 
     if ( currentCmd == CMD_MB ) val = val & 0xFF;
     if ( currentCmd == CMD_MS ) val = val & 0xFFFF;
     if ( currentCmd == CMD_MW ) val = val & 0xFFFFFFFF;     
 
-    int len = sizeof( T64Word );
+    size_t len = sizeof( T64Word );
     
     if ( currentCmd == CMD_MB ) len = 1;
     else if ( currentCmd == CMD_MS ) len = 2;
@@ -2553,7 +2567,7 @@ void SimCommandsWin::modifyRegCmd( ) {
         ( tok -> tokTyp( ) == TYP_PREG )) {
         
         regSetId    = tok -> tokTyp( );
-        regNum      = tok -> tokVal( );
+        regNum      = toInt32( tok -> tokVal( ));
         tok -> nextToken( );
     }
     else throw ( ERR_INVALID_REG_ID );

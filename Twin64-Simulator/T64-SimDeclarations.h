@@ -762,6 +762,7 @@ struct SimEnv {
     void            setupPredefined( );
    
     void            setEnvVar( const char *name, T64Word val );
+    void            setEnvVar( const char *name, int val );
     void            setEnvVar( const char *name, bool val );
     void            setEnvVar( const char *name, const char *str );
     void            removeEnvVar( const char *name );
@@ -769,7 +770,7 @@ struct SimEnv {
     
     bool            getEnvVarBool( const char *name, bool def = false );
     T64Word         getEnvVarNum( const char *name, T64Word def = 0 );
-    T64Word         getEnvVarInt( const char *name, int def = 0 );
+    int             getEnvVarInt( const char *name, int def = 0 );
     char            *getEnvVarStr( const char *name, char *def = nullptr );
     SimEnvTabEntry  *getEnvEntry( const char *name );
     SimEnvTabEntry  *getEnvEntry( int index );
@@ -1271,8 +1272,8 @@ public:
 private:
     
     void            printWelcome( );
-    int             buildCmdPrompt( char *promptStr, int promptStrLen, char prefix = ' ' );
-    int             readCmdLine( char *cmdBuf, int cmdBufLen, char *promptStr );
+    int             buildCmdPrompt( char *promptStr, size_t promptStrLen, char prefix = ' ' );
+    int             readCmdLine( char *cmdBuf, size_t cmdBufLen, char *promptStr );
     void            processCmdLine( char *cmdBuf );
     SimTokId        peekAtInputLine( char *cmdBuf );
     void            cmdLineError( SimErrMsgId errNum, char *argStr = nullptr );

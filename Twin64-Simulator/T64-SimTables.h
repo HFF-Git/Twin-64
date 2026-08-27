@@ -374,6 +374,9 @@ const SimErrMsgTabEntry errMsgTab [ ] = {
     { .errNum = ERR_INVALID_NUM,
       .errStr = "Invalid number" },
 
+    { .errNum = ERR_NUMERIC_RANGE,
+      .errStr = "Numeric overflow" },
+
     { .errNum = ERR_UNALIGNED_ADDR,             
       .errStr = "Unaligned address" },
 

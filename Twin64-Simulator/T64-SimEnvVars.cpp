@@ -213,6 +213,11 @@ void SimEnv::setEnvVar( const char *name, T64Word val ) {
     else enterVar( name, val );
 }
 
+void SimEnv::setEnvVar( const char *name, int val ) {
+
+    setEnvVar( name, static_cast<T64Word> ( val ));
+}
+
 void SimEnv::setEnvVar( const char *name, bool val )  {
     
     int index = lookupEntry( name );
@@ -303,7 +308,7 @@ T64Word SimEnv::getEnvVarNum( const char *name, T64Word def ) {
     else                return ( def );
 }
 
-T64Word SimEnv::getEnvVarInt( const char *name, int def ) {
+int SimEnv::getEnvVarInt( const char *name, int def ) {
 
     T64Word val = getEnvVarNum( name, def );
 

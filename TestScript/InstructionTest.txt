@@ -69,7 +69,7 @@ check (r6:CPU_MOD_NUM) == 0x5d,"Test and R6,R4,0x7f"
 
 xf "../TestScript/InitOperands.txt"
 mw 0,asm("and.W R4,20(R2)")
-mw 0x200,0xabcd_efab_cdef_abcd
+md 0x200,0xabcd_efab_cdef_abcd
 mr ia:CPU_MOD_NUM,0
 s,CPU_MOD_NUM
 check (R4:CPU_MOD_NUM) == 0x0, "Test and.W R4,20(R1)"

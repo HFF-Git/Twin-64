@@ -1268,7 +1268,7 @@ void T64Cpu::instrBrBeOp( T64Instr instr ) {
 //----------------------------------------------------------------------------------------
 void T64Cpu::instrBrBrOp( T64Instr instr ) {
 
-    T64Word newIA = addAdrOfs32( psrReg, getRegB( instr ) << 2 );
+    T64Word newIA = addAdrOfs32( psrReg, getRegA( instr ) << 2 );
     T64Word rl    = addAdrOfs32( psrReg, 4 );
 
     if ( extractInstrFieldU( instr, 13, 9 ) != 0 ) illegalInstrTrap( );
