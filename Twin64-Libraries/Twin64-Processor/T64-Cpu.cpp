@@ -178,6 +178,11 @@ void T64Cpu::instrMemAlignmentTrap( T64Word adr ) {
     throw( T64Trap( INSTR_ALIGNMENT_TRAP, psrReg, instrReg, adr ));
 }
 
+void T64Cpu::instrBreakPointTrap( ) {
+
+    throw( T64Trap( BREAK_INSTR_TRAP, psrReg, instrReg ));
+}
+
 void T64Cpu::dataMemAccRightsTrap( T64Word adr ) {
 
     throw( T64Trap( DATA_ACC_RIGHTS_TRAP, psrReg, instrReg, adr ));
@@ -335,6 +340,11 @@ void T64Cpu::recoveryCounterCheck( ) {
         cRegFile[ 1 ] -= 1;
         if ( cRegFile[ 1 ] < 0 ) recoveryCounterTrap( );
     }
+}
+
+void T64Cpu::singleStepTrapCheck( ) {
+
+    if ( extractPsrTbit( psrReg )) instrBreakPointTrap( );
 }
 
 void T64Cpu::nextInstr( ) {
@@ -1690,7 +1700,10 @@ void T64Cpu::instrSysTrapOp( T64Instr instr ) {
     int trapOpt = ( extractInstrFieldU( instr, 19, 3 ) * 4 ) + 
                     extractInstrFieldU( instr, 13, 2 );
 
-    throw( T64Trap( USER_DEFINED_TRAP, psrReg, instrReg, trapOpt ));
+    if ( extractPsrBbit( psrReg )) {
+
+        throw( T64Trap( USER_DEFINED_TRAP, psrReg, instrReg, trapOpt ));
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1755,6 +1768,8 @@ T64TrapCode T64Cpu::executeInstr( ) {
         }
 
         recoveryCounterCheck( );
+        singleStepTrapCheck( );
+  
         return ( NO_TRAP );
     }
     catch ( const T64Trap t ) {

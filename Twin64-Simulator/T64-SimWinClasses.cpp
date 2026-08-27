@@ -216,7 +216,7 @@ void SimWinProcState::setDefaults( ) {
     T64Cpu    *cpu                      = proc -> getCpuPtr( );
     
     setWinType( WT_CPU_WIN );
-    setRadix( glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT ));
+    setRadix( glb -> env -> getEnvVarInt( ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 2 );
     setWinToggleVal( 0 );
@@ -1095,7 +1095,7 @@ SimWinText:: ~SimWinText( ) {
 //----------------------------------------------------------------------------------------
 void SimWinText::setDefaults( ) {
 
-    int txWidth = glb -> env -> getEnvVarNum((char *) ENV_WIN_TEXT_LINE_WIDTH );
+    int txWidth = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_LINE_WIDTH );
     
     setWinType( WT_TEXT_WIN );
     
@@ -1154,7 +1154,7 @@ void SimWinText::drawBanner( ) {
 void SimWinText::drawLine( T64Word index ) {
     
     uint32_t    fmtDesc = FMT_DEFAULT;
-    int         tabSize = glb -> env -> getEnvVarNum((char *) ENV_WIN_TEXT_TAB_SIZE );
+    int         tabSize = glb -> env -> getEnvVarInt((char *) ENV_WIN_TEXT_TAB_SIZE );
     char        lineBuf[ MAX_TEXT_LINE_SIZE ];
     int         lineSize = 0;
 
@@ -1276,7 +1276,7 @@ SimWinConsole::SimWinConsole( SimGlobals *glb ) : SimWin( glb ) {
 void SimWinConsole::setDefaults( ) {
     
     setWinType( WT_CONSOLE_WIN );
-    setRadix( glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT ));
+    setRadix( glb -> env -> getEnvVarInt( ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
     setWinLimitsForToggle( 0, 24, MAX_WIN_ROW_SIZE, 112, 112 );

@@ -31,6 +31,23 @@
 //----------------------------------------------------------------------------------------
 namespace {
 
+//----------------------------------------------------------------------------------------
+//
+//
+//----------------------------------------------------------------------------------------
+int toInt32( T64Word val ) {
+
+    if ( val < INT32_MIN ) throw( ERR_NUMERIC_OVERFLOW );
+    if ( val > INT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<int> ( val ));
+}
+
+uint32_t toUInt32( T64Word val ) {
+
+    if ( val > UINT32_MAX ) throw( ERR_NUMERIC_OVERFLOW );
+    return ( static_cast<uint32_t> ( val ));
+}
+
 }; // namespace
 
 //----------------------------------------------------------------------------------------
@@ -94,7 +111,7 @@ void SimExprEvaluator::pFuncDisAssemble( SimExpr *rExpr, bool evalEnabled ) {
     
     SimExpr     lExpr = INIT_EXPR;
     uint32_t    instr = 0;
-    int         rdx   = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
+    int         rdx   = toInt32( glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT ));
     static char        asmStr[ MAX_CMD_LINE_SIZE ];
     
     tok -> nextToken( );

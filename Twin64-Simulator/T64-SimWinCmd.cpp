@@ -241,6 +241,40 @@ void sanitizeLine( const char *inputStr, char *outputStr ) {
 }
 
 //----------------------------------------------------------------------------------------
+//
+// "appendPrintf" is a little helper to write an incrementally to a buffer while
+// making sure that the buffer is large enough.
+//
+//----------------------------------------------------------------------------------------
+inline void appendPrintf( char *buf, 
+                          size_t bufSize, 
+                          int& bufLen,
+                          const char *format, ... ) {
+
+    if ( bufLen < 0 || static_cast<size_t>( bufLen ) >= bufSize )
+
+        throw( ERR_STRING_TOO_LONG );
+
+    va_list args;
+
+    va_start( args, format );
+
+    int n = vsnprintf(buf + bufLen,
+                      bufSize - static_cast<size_t>(bufLen),
+                      format,
+                      args);
+
+    va_end( args );
+
+    if ( n < 0 ||
+        static_cast<size_t>(n) >= bufSize - static_cast<size_t>(bufLen))
+
+        throw(ERR_STRING_TOO_LONG);
+
+    bufLen += n;
+}
+
+//----------------------------------------------------------------------------------------
 // When adding a module, we have a number of error conditions that can occur. 
 // This little helper function maps the error number to an error message and 
 // throws an exception.
@@ -461,7 +495,7 @@ SimCommandsWin::SimCommandsWin( SimGlobals *glb ) : SimWin( glb ) {
 void SimCommandsWin::setDefaults( ) {
     
     setWinType( WT_CMD_WIN );
-    setRadix( glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT ));
+    setRadix( glb -> env -> getEnvVarInt( ENV_RDX_DEFAULT ));
 
     setWinToggleLimit( 1 );
     setWinLimitsForToggle( 0, 10, MAX_WIN_ROW_SIZE, 104, MAX_WIN_COL_SIZE );
@@ -1008,7 +1042,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char pref
  
             return ( snprintf( promptStr, promptStrLen,
                            "(%i) ->",
-                           (int) glb -> env -> getEnvVarNum((char *) ENV_CMD_CNT )));
+                           glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
         }
         else return ( snprintf( promptStr, promptStrLen, "->" ));
     }
@@ -1019,7 +1053,7 @@ int SimCommandsWin::buildCmdPrompt( char *promptStr, int promptStrLen, char pref
         return ( snprintf( promptStr, promptStrLen,
                            "%c(%i) ->",
                            prefix,
-                           (int) glb -> env -> getEnvVarNum((char *) ENV_CMD_CNT )));
+                           glb -> env -> getEnvVarInt( ENV_CMD_CNT )));
         }
         else return ( snprintf( promptStr, promptStrLen, "%c->", prefix ));
     }
@@ -1500,7 +1534,7 @@ void SimCommandsWin::exitCmd( ) {
     
     if ( tok -> isToken( TOK_EOS )) {
         
-        int exitVal = glb -> env -> getEnvVarNum((char *) ENV_EXIT_CODE );
+        int exitVal = glb -> env -> getEnvVarInt( ENV_EXIT_CODE );
         exit(( exitVal > 255 ) ? 255 : exitVal );
     }
     else {
@@ -1843,7 +1877,7 @@ void SimCommandsWin::stepCmd( ) {
     
     if ( tok -> tokTyp( ) == TYP_NUM ) {
 
-        numOfSteps = eval -> acceptIntExpr( ERR_EXPECTED_STEPS, 0, UINT32_MAX );    
+        numOfSteps = eval -> acceptIntExpr( ERR_EXPECTED_STEPS, 0, INT32_MAX );    
     }
 
     if ( tok -> isToken( TOK_COMMA )) {
@@ -1920,7 +1954,7 @@ void SimCommandsWin::runCmd( ) {
 void SimCommandsWin::writeLineCmd( ) {
     
     SimExpr  rExpr = INIT_EXPR;
-    int      rdx   = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
+    int      rdx   = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     
     eval -> parseExpr( &rExpr );
     
@@ -2230,10 +2264,10 @@ void SimCommandsWin::ifCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::assertCheckCmd( bool doExit ) {
 
-    char msgBuf[ MAX_TEXT_LINE_SIZE ];
-    int  msgBufLen = 0;
-    char *msgStr   = nullptr;
-    bool bVal      = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
+    char    msgBuf[ MAX_TEXT_LINE_SIZE ];
+    int     msgBufLen = 0;
+    char    *msgStr   = nullptr;
+    bool    bVal      = eval -> acceptBoolExpr( ERR_EXPECTED_BOOL_VALUE );
 
     if ( tok -> isToken( TOK_COMMA )) {
 
@@ -2274,7 +2308,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
     }
 
     glb -> env -> setEnvVar( totaCntName, 
-                        glb -> env ->getEnvVarNum( totaCntName) + 1 );
+                        glb -> env ->getEnvVarInt( totaCntName) + 1 );
 
     if ( bVal ) {
 
@@ -2283,7 +2317,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
                                 "PASS" );
 
         glb -> env -> setEnvVar( passEnvName, 
-                        glb -> env ->getEnvVarNum( passEnvName) + 1 );
+                        glb -> env ->getEnvVarInt( passEnvName ) + 1 );
     }
     else {
 
@@ -2292,7 +2326,7 @@ void SimCommandsWin::assertCheckCmd( bool doExit ) {
                                 "FAIL" );
 
         glb -> env -> setEnvVar( failEnvName, 
-                        glb -> env ->getEnvVarNum( failEnvName  ) + 1 );
+                        glb -> env ->getEnvVarInt( failEnvName  ) + 1 );
     }
 
     if ( glb -> console -> isConsole( )) {
@@ -2344,42 +2378,28 @@ void SimCommandsWin::writeLogCmd( ) {
         
         eval -> parseExpr( &rExpr );
 
-        switch ( rExpr.typ ) {
-                
-            case TYP_BOOL: {
-                
-                if ( rExpr.u.bVal == true ) {
+        switch (rExpr.typ) {
 
-                    msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                           msgBufLen - sizeof( msgBuf ), 
-                                           " : TRUE " );
-                }
-                else {
+            case TYP_BOOL:
+                if (rExpr.u.bVal)
+                    appendPrintf(msgBuf, sizeof(msgBuf), msgBufLen, " : TRUE ");
+                else
+                    appendPrintf(msgBuf, sizeof(msgBuf), msgBufLen, " : FALSE ");
+                break;
 
-                    msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                           msgBufLen - sizeof( msgBuf ), 
-                                           " : FALSE " );
-                }
-                
-            } break;
-                
-            case TYP_NUM: {
+            case TYP_NUM:
+                appendPrintf(msgBuf, sizeof(msgBuf), msgBufLen,
+                            " : %" PRId64,
+                            static_cast<int64_t>(rExpr.u.val));
+                break;
 
-                msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                       msgBufLen - sizeof( msgBuf ), 
-                                       " : %" PRId64, ( int64_t) rExpr.u.val );
-                
-            } break;
-                
-            case TYP_STR: {
+            case TYP_STR:
+                appendPrintf(msgBuf, sizeof(msgBuf), msgBufLen,
+                            " : \"%s\" ",
+                            rExpr.u.str);
+                break;
 
-                msgBufLen += snprintf( msgBuf + msgBufLen, 
-                                       msgBufLen - sizeof( msgBuf ), 
-                                           " : \"%s\" ", rExpr.u.str );
-                
-            } break;
-                
-            default: throw (  ERR_INVALID_EXPR );
+            default: throw ERR_INVALID_EXPR;
         }
     }
 
@@ -2409,7 +2429,7 @@ void SimCommandsWin::writeLogCmd( ) {
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::displayMemCmd( ) {
     
-    int         rdx     = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
+    int         rdx     = glb -> env -> getEnvVarInt((char *) ENV_RDX_DEFAULT );
     SimTokId    fmtOpt  = ( rdx == 10 ) ? TOK_DEC : TOK_HEX;
     T64Word     ofs     = 0;
     T64Word     len     = sizeof( T64Word );
@@ -2476,10 +2496,18 @@ void SimCommandsWin::modifyMemCmd( ) {
     if (( currentCmd == CMD_MW ) && ( adr % 4 != 0 )) throw( ERR_UNALIGNED_ADDR );   
     if (( currentCmd == CMD_MD ) && ( adr % 8 != 0 )) throw( ERR_UNALIGNED_ADDR );  
     
-    if (( currentCmd == CMD_MB ) && ( val > UINT8_MAX )) throw( ERR_NUMERIC_RANGE );
-    if (( currentCmd == CMD_MS ) && ( val > UINT16_MAX )) throw( ERR_NUMERIC_RANGE );
-    if (( currentCmd == CMD_MW ) && ( val > UINT32_MAX )) throw( ERR_NUMERIC_RANGE );
-    if (( currentCmd == CMD_MD ) && ( val > UINT64_MAX )) throw( ERR_NUMERIC_RANGE );
+    // ??? must check for int range !!!!
+    if (( currentCmd == CMD_MB ) && 
+        ( ! isInRange( val, INT8_MIN, INT8_MAX ))) throw( ERR_NUMERIC_RANGE );
+
+    if (( currentCmd == CMD_MS ) && 
+        ( ! isInRange( val, INT16_MIN, INT16_MAX ))) throw( ERR_NUMERIC_RANGE );
+
+    if (( currentCmd == CMD_MW ) && 
+        ( ! isInRange( val, INT32_MIN, INT32_MAX ))) throw( ERR_NUMERIC_RANGE );
+
+    if (( currentCmd == CMD_MD ) && 
+        ( ! isInRange( val, INT64_MIN, INT64_MAX ))) throw( ERR_NUMERIC_RANGE );
 
     if ( currentCmd == CMD_MB ) val = val & 0xFF;
     if ( currentCmd == CMD_MS ) val = val & 0xFFFF;
@@ -2493,7 +2521,7 @@ void SimCommandsWin::modifyMemCmd( ) {
     else if ( currentCmd == CMD_MD ) len = 8;
 
     uint8_t *ptr = reinterpret_cast<uint8_t*> ( &val );
-    copyEndianAware(reinterpret_cast<uint8_t*>(&val), ptr, len);
+    copyEndianAware(reinterpret_cast<uint8_t*>(&val), ptr, len );
 
     if ( translateAdr( glb -> system, adr, &adr )) {
  
@@ -2794,7 +2822,7 @@ void SimCommandsWin::winEnableCmd( bool enable ) {
 void SimCommandsWin::winSetRadixCmd( ) {
 
    
-    int rdx     = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
+    int rdx     = glb -> env -> getEnvVarInt( ENV_RDX_DEFAULT );
     int winNum  = -1;
    
     if ( tok -> isToken( TOK_EOS )) {
@@ -2804,7 +2832,7 @@ void SimCommandsWin::winSetRadixCmd( ) {
     }
     else if ( tok -> isToken( TOK_COMMA )) {
         
-        rdx = glb -> env -> getEnvVarNum((char *) ENV_RDX_DEFAULT );
+        rdx = glb -> env -> getEnvVarInt( ENV_RDX_DEFAULT );
         tok -> nextToken( );
 
         winNum = eval -> acceptIntExpr( ERR_EXPECTED_WIN_ID, 1, MAX_WINDOWS );

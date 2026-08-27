@@ -767,10 +767,11 @@ struct SimEnv {
     void            removeEnvVar( const char *name );
     void            setEnvAttr( const char *name, bool predefined, bool readOnly );
     
-    bool            getEnvVarBool( char *name, bool def = false );
-    T64Word         getEnvVarNum( char *name, T64Word def = 0 );
-    char            *getEnvVarStr( char *name, char *def = nullptr );
-    SimEnvTabEntry  *getEnvEntry( char *name );
+    bool            getEnvVarBool( const char *name, bool def = false );
+    T64Word         getEnvVarNum( const char *name, T64Word def = 0 );
+    T64Word         getEnvVarInt( const char *name, int def = 0 );
+    char            *getEnvVarStr( const char *name, char *def = nullptr );
+    SimEnvTabEntry  *getEnvEntry( const char *name );
     SimEnvTabEntry  *getEnvEntry( int index );
 
     int             getEnvHwm( );

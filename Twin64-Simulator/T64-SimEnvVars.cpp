@@ -113,7 +113,7 @@ bool SimEnv::isPredefined( const char *name ) {
     else return( false );
 }
 
-SimEnvTabEntry *SimEnv::getEnvEntry( char *name ) {
+SimEnvTabEntry *SimEnv::getEnvEntry( const char *name ) {
     
     int index = lookupEntry( name );
     if ( index >= 0 ) return( &table[ index ] );
@@ -287,7 +287,7 @@ void SimEnv::setEnvAttr( const char *name, bool predefined, bool readOnly ) {
 // value. If the entry does not exist, we return an optional default.
 // ??? check the type ?.....
 //----------------------------------------------------------------------------------------
-bool SimEnv::getEnvVarBool( char *name, bool def ) {
+bool SimEnv::getEnvVarBool( const char *name, bool def ) {
     
     int index = lookupEntry( name );
     
@@ -295,7 +295,7 @@ bool SimEnv::getEnvVarBool( char *name, bool def ) {
     else                return ( def );
 }
 
-T64Word SimEnv::getEnvVarNum( char *name, T64Word def ) {
+T64Word SimEnv::getEnvVarNum( const char *name, T64Word def ) {
     
     int index = lookupEntry( name );
     
@@ -303,7 +303,19 @@ T64Word SimEnv::getEnvVarNum( char *name, T64Word def ) {
     else                return ( def );
 }
 
-char *SimEnv::getEnvVarStr( char *name, char *def ) {
+T64Word SimEnv::getEnvVarInt( const char *name, int def ) {
+
+    T64Word val = getEnvVarNum( name, def );
+
+    if ( ! ( isInRange( val, INT32_MIN, INT32_MAX ))) {
+
+        throw( ERR_NUMERIC_OVERFLOW );
+    }
+
+    return( static_cast<int> ( val ));
+}
+
+char *SimEnv::getEnvVarStr( const char *name, char *def ) {
     
     int index = lookupEntry( name );
     

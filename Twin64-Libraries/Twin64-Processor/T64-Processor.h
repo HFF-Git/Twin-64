@@ -186,6 +186,7 @@ struct T64Cpu {
     void            instrMemAccRightsTrap( T64Word adr );
     void            instrMemProtectionTrap( T64Word adr );
     void            instrMemAlignmentTrap( T64Word adr );
+    void            instrBreakPointTrap( ); 
 
     void            dataMemTlbMissTrap( T64Word adr );
     void            dataMemNonAccessTlbMissTrap( T64Word adr );
@@ -208,6 +209,7 @@ struct T64Cpu {
     void            addOverFlowCheck( T64Word val1, T64Word val2 );
     void            subUnderFlowCheck( T64Word val1, T64Word val2 );
     void            recoveryCounterCheck( );
+    void            singleStepTrapCheck( );
 
     void            nextInstr( );
 
