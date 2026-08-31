@@ -143,6 +143,11 @@ void T64Cpu::machineCheckTrap( T64Word adr ) {
     throw( T64Trap( MACHINE_CHECK, psrReg, instrReg, adr ));
 }
 
+void T64Cpu::externalInterruptTrap( ) {
+
+    throw( T64Trap( EXTERNAL_INTERRUPT, psrReg, instrReg ));
+}
+
 void T64Cpu::dataMemTlbMissTrap( T64Word adr ) {
 
     throw( T64Trap( DATA_TLB_MISS_TRAP, psrReg, instrReg, adr ));
@@ -345,6 +350,11 @@ void T64Cpu::recoveryCounterCheck( ) {
 void T64Cpu::singleStepTrapCheck( ) {
 
     if ( extractPsrTbit( psrReg )) instrBreakPointTrap( );
+}
+
+void T64Cpu::externalInterruptCheck( ) {
+
+    if ( extractPsrIbit( psrReg )) externalInterruptTrap( );
 }
 
 void T64Cpu::nextInstr( ) {

@@ -265,7 +265,7 @@ inline int appendPrintf( char *buf,
     va_end( args );
 
     if (( n < 0 ) ||
-        ( static_cast<size_t>(n) >= bufSize - static_cast<size_t>(bufLen))) {
+        ( static_cast<size_t>(n) > bufSize - static_cast<size_t>(bufLen))) {
 
         throw(ERR_STRING_TOO_LONG);
     }
@@ -988,7 +988,7 @@ void SimCommandsWin::printStackInfoField( uint32_t fmtDesc, int row, int col ) {
         
         if ( stacks[ i ] > 0 ) {
 
-            appendPrintf( stackStr, 4, stackStrLen, "%d", i + 1 );
+            appendPrintf( stackStr, sizeof( stackStr ), stackStrLen, "%d", i + 1 );
         }
     }
 
@@ -1918,6 +1918,12 @@ void SimCommandsWin::stepCmd( ) {
 // window. Put the console mode into non-blocking and hand over to the CPU. On 
 // return from the CPU steps, enable blocking mode again and restore the current 
 // window.
+//
+// ??? when we are inRUN mode, the keyboard input is simply stored in the console
+// IO driver. Likewise, console is just displayed to he screen. ( not sure if
+// we have a separate console window, or just the command window ). After each
+// instruction, the CPU checks if we are in RUN mode and then executes all 
+// I/O driver code steps.
 //
 //----------------------------------------------------------------------------------------
 void SimCommandsWin::runCmd( ) {

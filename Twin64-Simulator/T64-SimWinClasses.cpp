@@ -232,6 +232,7 @@ void SimWinProcState::setDefaults( ) {
     setWinLimitsForToggle( 1, 
                            ROW_BANNERS + 
                            ROW_REG_SUBWINDOW + 
+                           ROW_REG_SUBWINDOW +
                            MIN_ROW_CODE_SUBWINDOW,
                            MAX_ROWS,
                            MAX_COLS, 
@@ -251,7 +252,12 @@ void SimWinProcState::setDefaults( ) {
 
         for ( int i = 0; i < T64_MAX_GREGS; i++ ) {
 
-            lastGRegState[ i ] = cpu -> getControlReg( i ); 
+            lastGRegState[ i ] = cpu -> getGeneralReg( i ); 
+        }
+
+        for ( int i = 0; i < T64_MAX_CREGS; i++ ) {
+
+            lastCRegState[ i ] = cpu -> getControlReg( i ); 
         }
     }
 
@@ -575,6 +581,12 @@ void SimWinProcState::drawBody( ) {
         linePos += 1;
     }
     else if ( toggleVal == 1 ) {
+
+        linePos = drawGRegSubWindow( linePos );
+        
+        setWinCursor( linePos, 1 );
+        glb -> console -> printSeparator( getColumns( ));
+        linePos += 1;
 
         linePos = drawCRegSubWindow( linePos );
     
@@ -930,7 +942,7 @@ void SimWinMem::drawMemDataLine32( T64Word itemAdr, uint32_t fmtDesc ) {
 //----------------------------------------------------------------------------------------
 void SimWinMem::drawMemDataLine64( T64Word itemAdr, uint32_t fmtDesc ) {
 
-    T64Word    limit    = getLineIncrementItemAdr( );
+    T64Word limit = getLineIncrementItemAdr( );
 
     for ( int i = 0; i < limit; i = i + sizeof( T64Word ) ) {
 
@@ -1297,10 +1309,10 @@ void SimWinConsole::putChar( char ch ) {
 }
 
 
-// ??? what about the read part. Do we just get a character from the terminal input 
-// and add it to the output side ? Or is this a function of the console driver code
-// written for the simulator ? should we add the switch to and from the console in 
-// this class ?
+// ??? what about the read part. Do we just get a character from the terminal 
+// input and add it to the output side ? Or is this a function of the console 
+// driver code written for the simulator ? should we add the switch to and from 
+// the console in this class ?
 
 //----------------------------------------------------------------------------------------
 // The banner line for console window.

@@ -767,7 +767,7 @@ int SimWinOutBuffer::writeChar( const char ch ) {
     buf[0] = ch;
     buf[1] = '\0';
 
-    addToBuffer(buf);
+    addToBuffer( buf );
     return 1;
 }
 

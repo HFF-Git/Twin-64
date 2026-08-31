@@ -179,6 +179,7 @@ struct T64Cpu {
     int             evalCond( int cond, T64Word val1, T64Word val2 );
 
     void            machineCheckTrap( T64Word adr );
+    void            externalInterruptTrap( );
     void            privModeOperationTrap( );
 
     void            instrTlbMissTrap( T64Word adr );
@@ -210,6 +211,7 @@ struct T64Cpu {
     void            subUnderFlowCheck( T64Word val1, T64Word val2 );
     void            recoveryCounterCheck( );
     void            singleStepTrapCheck( );
+    void            externalInterruptCheck( );
 
     void            nextInstr( );
 

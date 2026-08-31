@@ -152,7 +152,7 @@ void loadSegmentIntoMemory( elfio           *reader,
 
         for ( Elf64_Addr i = 0; i < memorySize; i += 4  ) {
             
-           if ( ! writeMem( sys, uint32_t( vAdr + i ), 0 )) {
+           if ( ! writeMem( sys, uint32_t( vAdr + i ), 0U )) {
 
                 throw( ERR_MEM_OP_FAILED ); 
            }
