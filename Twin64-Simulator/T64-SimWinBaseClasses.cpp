@@ -267,7 +267,7 @@ void SimWin::toggleWin( int toggleVal ) {
 // cursor position are set at (1,1).
 //
 //----------------------------------------------------------------------------------------
-void SimWin::setWinOrigin( int row, int col ) {
+void SimWin::setWinOrigin( size_t row, size_t col ) {
     
     winAbsCursorRow = row;
     winAbsCursorCol = col;
@@ -283,7 +283,7 @@ void SimWin::setWinOrigin( int row, int col ) {
 // are values starting with 1.
 //
 //----------------------------------------------------------------------------------------
-void SimWin::setWinCursor( int row, int col ) {
+void SimWin::setWinCursor( size_t row, size_t col ) {
     
     if ( row == 0 ) row = lastRowPos;
     if ( col == 0 ) col = lastColPos;

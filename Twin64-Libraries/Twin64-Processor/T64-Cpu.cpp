@@ -1779,6 +1779,7 @@ T64TrapCode T64Cpu::executeInstr( ) {
 
         recoveryCounterCheck( );
         singleStepTrapCheck( );
+        externalInterruptCheck( );
   
         return ( NO_TRAP );
     }

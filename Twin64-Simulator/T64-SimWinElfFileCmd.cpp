@@ -108,8 +108,7 @@ bool writeMem( T64System *sys, int32_t ofs, uint32_t val ) {
 // accordingly.
 //
 //----------------------------------------------------------------------------------------
-void loadSegmentIntoMemory( elfio           *reader, 
-                            segment         *segment, 
+void loadSegmentIntoMemory( segment         *segment, 
                             T64System       *sys,
                             SimWinOutBuffer *winOut ) {
     
@@ -160,7 +159,7 @@ void loadSegmentIntoMemory( elfio           *reader,
         
         for ( Elf64_Addr i = 0; i < fileSize; i += 4  ) {
             
-           if ( ! writeMem( sys, uint32_t( vAdr + i ), wordPtr[ i / 4 ] )) {
+           if ( ! writeMem( sys, vAdr + i, wordPtr[ i / 4 ] )) {
 
                 throw( ERR_MEM_OP_FAILED ); 
            }
@@ -196,10 +195,9 @@ void SimCommandsWin::loadElfFile( char *fileName ) {
         
         Elf_Half numOfSeg = reader -> segments.size( );
         
-        for ( int i = 0; i < numOfSeg; i++ ) {
+        for ( unsigned int i = 0; i < numOfSeg; i++ ) {
             
-            loadSegmentIntoMemory(  reader, 
-                                    reader -> segments[ i ], 
+            loadSegmentIntoMemory(  reader -> segments[ i ], 
                                     glb -> system, 
                                     winOut );
         }

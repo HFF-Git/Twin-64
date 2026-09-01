@@ -341,7 +341,7 @@ void SimWinProcState::drawBanner( ) {
 // stored, the value will be displayed in a different color.
 //
 //----------------------------------------------------------------------------------------
-void SimWinProcState::drawGRegDataLine( int from, int to ) {
+void SimWinProcState::drawGRegDataLine( size_t from, size_t to ) {
 
     uint32_t fmtDesc        = FMT_DEFAULT | FMT_ALIGN_LFT;
     T64Cpu   *cpu           = proc -> getCpuPtr( );
@@ -353,7 +353,7 @@ void SimWinProcState::drawGRegDataLine( int from, int to ) {
     int      numFlen        = glb -> console -> numberFmtLen( rdxFmt );
     uint32_t numFmtField   = fmtDesc | rdxFmt;
 
-    for ( int i = from; i <= to; i++ ) {
+    for ( size_t i = from; i <= to; i++ ) {
 
         T64Word dataVal = cpu -> getGeneralReg( i );
 
@@ -376,7 +376,7 @@ void SimWinProcState::drawGRegDataLine( int from, int to ) {
 // stored, the value will be displayed in a different color.
 //
 //----------------------------------------------------------------------------------------
-void SimWinProcState::drawCRegDataLine( int from, int to ) {
+void SimWinProcState::drawCRegDataLine( size_t from, size_t to ) {
 
     uint32_t fmtDesc        = FMT_DEFAULT | FMT_ALIGN_LFT;
     T64Cpu   *cpu           = proc -> getCpuPtr( );
@@ -388,7 +388,7 @@ void SimWinProcState::drawCRegDataLine( int from, int to ) {
     int      numFlen        = glb -> console -> numberFmtLen( rdxFmt );
     uint32_t numFmtField   = fmtDesc | rdxFmt;
 
-    for ( int i = from; i <= to; i++ ) {
+    for ( size_t i = from; i <= to; i++ ) {
 
         T64Word dataVal = cpu -> getControlReg( i );
 
@@ -410,7 +410,7 @@ void SimWinProcState::drawCRegDataLine( int from, int to ) {
 // window. We show 4 registers per line, with the format "GRn=0x0000_0000_0000_0000". 
 //
 //----------------------------------------------------------------------------------------
-int SimWinProcState::drawGRegSubWindow( int linePos ) {
+size_t SimWinProcState::drawGRegSubWindow( size_t linePos ) {
 
     uint32_t fmtDesc        = FMT_DEFAULT | FMT_ALIGN_LFT;
     int      labelFlen      = 8;
@@ -440,7 +440,7 @@ int SimWinProcState::drawGRegSubWindow( int linePos ) {
 // window. We show 4 registers per line, with the format "CRn=0x0000_0000_0000_0000". 
 //
 //----------------------------------------------------------------------------------------
-int SimWinProcState::drawCRegSubWindow( int linePos ) {
+size_t SimWinProcState::drawCRegSubWindow( size_t linePos ) {
 
     uint32_t fmtDesc        = FMT_DEFAULT | FMT_ALIGN_LFT;
     int      labelFlen      = 8;
@@ -477,7 +477,7 @@ int SimWinProcState::drawCRegSubWindow( int linePos ) {
 // address is in the visible range.
 //
 //----------------------------------------------------------------------------------------
-int SimWinProcState::drawCodeSubWindow( int linePos, int linesLeft ) {
+size_t SimWinProcState::drawCodeSubWindow( size_t linePos, size_t linesLeft ) {
 
     uint32_t    fmtDesc     = FMT_DEFAULT;
     T64Word     currentIa   = proc -> getCpuPtr( ) -> getPsrReg( );
@@ -497,11 +497,11 @@ int SimWinProcState::drawCodeSubWindow( int linePos, int linesLeft ) {
 
     setWinCursor( linePos, 1 );
 
-    for ( int i = 0; i < linesLeft; i++ ) {
+    for ( size_t i = 0; i < linesLeft; i++ ) {
 
         fmtDesc = FMT_DEFAULT;
 
-        T64Word ia = codeWinBaseAdr + ( i * 4 );
+        T64Word ia = codeWinBaseAdr + static_cast<T64Word>( i * 4 );
 
         setWinCursor( linePos + i, 1 );
         printNumericField( ia, FMT_DEFAULT | FMT_HEX_2_4_4_4 );
@@ -892,9 +892,9 @@ void SimWinMem::drawBanner( ) {
 //----------------------------------------------------------------------------------------
 void SimWinMem::drawMemDataLine32( T64Word itemAdr, uint32_t fmtDesc ) {
 
-    int limit = getLineIncrementItemAdr( );
+    T64Word limit = getLineIncrementItemAdr( );
 
-    for ( int i = 0; i < limit; i = i + sizeof( uint32_t) ) {
+    for ( T64Word i = 0; i < limit; i = i + static_cast<T64Word>(sizeof( uint32_t) )) {
 
         uint32_t actualVal = 0;
         if ( readMem( glb -> system, 
@@ -944,9 +944,11 @@ void SimWinMem::drawMemDataLine64( T64Word itemAdr, uint32_t fmtDesc ) {
 
     T64Word limit = getLineIncrementItemAdr( );
 
-    for ( int i = 0; i < limit; i = i + sizeof( T64Word ) ) {
+    for ( T64Word i = 0; i < limit; 
+          i = i + static_cast<T64Word>(sizeof( T64Word )) ) {
 
         T64Word actualVal = 0;
+
         if ( readMem( glb -> system, 
                       itemAdr + i, 
                       (uint8_t *)&actualVal, 
@@ -1028,9 +1030,9 @@ void SimWinMem::drawMemDataLineCode( T64Word itemAdr ) {
 
     printNumericField( instr, fmtDesc | FMT_ALIGN_LFT | FMT_HEX_8, 12 );
 
-    int pos          = getWinCursorCol( );
-    int opCodeField  = disAsm -> getOpCodeFieldWidth( );
-    int operandField = disAsm -> getOperandsFieldWidth( );
+    size_t pos          = getWinCursorCol( );
+    size_t opCodeField  = disAsm -> getOpCodeFieldWidth( );
+    size_t operandField = disAsm -> getOperandsFieldWidth( );
     
     clearField( opCodeField );
     disAsm -> formatOpCode( buf, sizeof( buf ), instr );

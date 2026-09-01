@@ -150,7 +150,7 @@ const int MAX_ENV_VARIABLES         = 256;
 // to create. 
 //
 //----------------------------------------------------------------------------------------
-enum SimWinType : int {
+enum SimWinType : uint16_t {
 
     WT_NIL,                     WT_CMD_WIN,                 WT_CONSOLE_WIN,
     WT_TEXT_WIN,                WT_CPU_WIN,                 WT_TLB_WIN,
@@ -161,7 +161,7 @@ enum SimWinType : int {
 // Command line tokens and expression have a type.
 //
 //----------------------------------------------------------------------------------------
-enum SimTokTypeId : int {
+enum SimTokTypeId : uint16_t {
 
     TYP_NIL,                    TYP_NUM,                    TYP_STR,
     TYP_BOOL,                   TYP_COND,                   TYP_SYM,       
@@ -279,7 +279,7 @@ enum SimTokId : uint16_t {
 //
 // ??? clean up, keep the ones we need...
 //----------------------------------------------------------------------------------------
-enum SimErrMsgId : int {
+enum SimErrMsgId : uint16_t {
     
     NO_ERR                          = 0,
     ERR_NOT_SUPPORTED               = 1,
@@ -953,8 +953,8 @@ struct SimWin {
     int             getColumns( );
     void            setColumns( int arg );
 
-    void            setWinOrigin( int row, int col );
-    void            setWinCursor( int row, int col );
+    void            setWinOrigin( size_t row, size_t col );
+    void            setWinCursor( size_t row, size_t col );
     
     int             getWinCursorRow( );
     int             getWinCursorCol( );
@@ -1039,13 +1039,13 @@ struct SimWin {
     int             winToggleLimit      = 0;
     int             winToggleVal        = 0;
     
-    int             winColumns          = 0;
-    int             winRows             = 0;       
+    size_t          winColumns          = 0;
+    size_t          winRows             = 0;       
 
-    int             winAbsCursorRow     = 0;
-    int             winAbsCursorCol     = 0;
-    int             lastRowPos          = 0;
-    int             lastColPos          = 0;    
+    size_t          winAbsCursorRow     = 0;
+    size_t          winAbsCursorCol     = 0;
+    size_t          lastRowPos          = 0;
+    size_t          lastColPos          = 0;    
 };
 
 //----------------------------------------------------------------------------------------
@@ -1118,11 +1118,11 @@ struct SimWinProcState : SimWin {
 
     private:
 
-    int  drawGRegSubWindow( int linePos );
-    int  drawCRegSubWindow( int linePos);
-    int  drawCodeSubWindow( int linePos, int lineLeft );
-    void drawGRegDataLine( int from, int to );
-    void drawCRegDataLine( int from, int to );
+    size_t  drawGRegSubWindow( size_t linePos );
+    size_t  drawCRegSubWindow( size_t linePos);
+    size_t  drawCodeSubWindow( size_t linePos, size_t lineLeft );
+    void    drawGRegDataLine( size_t from, size_t to );
+    void    drawCRegDataLine( size_t from, size_t to );
     
     T64Processor    *proc;
     T64DisAssemble  *disAsm;
